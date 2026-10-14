@@ -1,6 +1,8 @@
 # PCB-Aperture-CAM-V1 — isolated Codex handoff
 
-**Status: BOOTSTRAP READY / V1 NOT IMPLEMENTED / NOT FOR FABRICATION.**
+**Status: V1 coupon technical validation PASS / Cursor review NOT_RUN / NOT FOR FABRICATION.**
+
+See `docs/STATUS.md` for tested coverage, evidence, commands and limitations. Implementation is in `src/`; actual exported baseline and negative controls are retained under `out/`.
 
 This is an independent experiment to validate a bounded copper-pad-and-trace adjustment relative to a frozen solder-mask aperture. The original synthetic coupon includes a generated **before** state (P1 X=20.35 mm) and a generated **candidate** state (P1 X=20.05 mm). The aperture remains centered at X=20.00 mm. All dimensions and tolerances are synthetic examples, **not** factory specifications.
 

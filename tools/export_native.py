@@ -34,9 +34,10 @@ def main():
     stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S_%fZ')
     run=ROOT/'out'/'native_exports'/stamp
     run.mkdir(parents=True)
-    receipt={'execution':'KICAD_CLI_EXPORT_ONLY_NOT_CAM_ACCEPTANCE','cli':str(cli),'cases':{},'tool_version':None}
+    receipt={'cli_sha256':sha(Path(cli)),'environment':{'KICAD_RUN_FROM_BUILD_DIR':__import__('os').environ.get('KICAD_RUN_FROM_BUILD_DIR')},'execution':'KICAD_CLI_EXPORT_ONLY_NOT_CAM_ACCEPTANCE','cli':str(cli),'cases':{},'tool_version':None}
     try:
         result=execute([cli,'--version'],run/'version.log')
+        receipt['version_command']=result
         receipt['tool_version']=(run/'version.log').read_text().splitlines()[1:3]
         for case in (['before','candidate'] if args.case=='both' else [args.case]):
             source=ROOT/'assets'/'starter'/'fixtures'/case/'kicad'
