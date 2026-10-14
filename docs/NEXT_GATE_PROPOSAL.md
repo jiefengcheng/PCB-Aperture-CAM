@@ -56,3 +56,8 @@ Request independent read-only Cursor review only through a verified authenticate
 ## FC-1 authorization and decision — 2026-10-14
 
 The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier proposal/approval-stop text is retained as history. [FC1_DECISION.md](FC1_DECISION.md) records oracle qualification PASS for one exact Ucamco source, with [FC1_ORACLE_DERIVATION.md](FC1_ORACLE_DERIVATION.md) defining the independent expectations and numerical limits. Extended parser support and realistic PCB validation remain NOT_ESTABLISHED; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. MC-1 and FC-2A are not authorized, and no V2/V3 begins. Stop at this gate.
+
+
+## Historical proposal status — 2026-10-15
+
+This earlier FC-1-only proposal is retained as history. Later explicit authorizations and decisions completed FC-1, V1.5 completion/source-aware qualification, HALPI2 electrical consolidation and the bounded V2 slice. Current result: [V2_DECISION.md](V2_DECISION.md); standing authority is scoped in AGENTS.md and DECISIONS D-016. No preparatory stop or additional approval is required for routine work inside that already authorized slice. No broader production/V3 authority follows.

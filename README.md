@@ -68,3 +68,8 @@ The adopted charter reconciliations and FC-1 were approved on 2026-10-14. [FC1_D
 ## Working V1.5 reader/compositor path
 
 [Completion decision](docs/V1_5_COMPLETION_DECISION.md): both declared nine-layer public-board geometry/preservation profiles pass, with raw FC-1 oracle agreement and source-anchored fault detection. Overall named electrical acceptance remains NOT_ESTABLISHED for GlowStitch because its net intent is absent. Reproduce with `.venv/bin/python -u -m src.completion_run`; new timestamped evidence is retained under `out/v15_completion/`. Frozen V1/FC-1 paths remain unchanged.
+
+
+## Bounded automatic execution
+
+The authorized synthetic MovePadWithConnections V2 slice is complete. See [V2 decision](docs/V2_DECISION.md). Reproduce with `.venv/bin/python tools/v2_run.py`; the executor computes the candidate from the immutable before source and frozen policy, exports through KiCad, validates independently and only then publishes a local accepted bundle. Public-board automatic editing and manufacturing approval are outside this result.

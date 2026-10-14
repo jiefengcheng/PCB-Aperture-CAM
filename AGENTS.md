@@ -38,3 +38,8 @@ The user authorized the bounded source-aware profile described in docs/SOURCE_AW
 ## HALPI2 consolidation authorization — 2026-10-15
 
 User authorized the focused case in docs/HALPI2_ELECTRICAL_CASE.md, superseding the prior stop only to reuse existing pinned HALPI2 electrical evidence and complete the missing named-open control. No new profile, GlowStitch investigation, parser expansion, acquisition, pcb_Z, V2/V3 or remote publication. Case completed; stop.
+
+
+## Active standing V2 authorization — 2026-10-15
+
+The user explicitly granted standing authorization for the proposed bounded synthetic MovePadWithConnections vertical slice and limited read-only pcb_Z inspection/helper integration at /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/pcb_Z. This supersedes preceding stop clauses and checkout-only reading solely for that package and the already pinned KiCad CLI. Do not ask again for routine steps within that scope. Preserve immutable assets, frozen V1/V1.5 decisions/contracts and all historical evidence. All authored code/derived outputs remain in this checkout. No HALPI2 automatic modification, full legacy/SQLite merger, V3, remote publication, global changes or unrelated lanes. The completed bounded result is documented in docs/V2_DECISION.md; technical acceptance is distinct from manufacturing and Cursor review.

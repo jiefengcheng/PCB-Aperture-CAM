@@ -1,0 +1,65 @@
+{
+  "id": "MovePadWithConnections/coupon-v1",
+  "source": "assets/starter/fixtures/before/kicad/coupon.kicad_pcb",
+  "source_sha256": "65dbfc812ddfc25cd4e792e246cf4808cc69180420e6e7d03ddfda2b07057400",
+  "policy": "assets/starter/reference/policy.json",
+  "policy_sha256": "81fbfb66ea4264f3b890a9a11ec06ac12bcb0f5dbe3e077323928d835ac79ba6",
+  "intent": "assets/starter/reference/intended_connections.json",
+  "intent_sha256": "48c471ae59237200398bf815605030a9e07bb0625c54db3409b90a254a39ec59",
+  "target": "29787dde-407e-52c4-8d4f-89a8c02d2b68",
+  "aperture": "d66afa9e-4bbb-57ad-8b48-b1131e256ce8",
+  "dependents": [
+    "e072ccf0-0384-5730-b6a3-6b138a663415",
+    "602c06e5-4143-54fc-928f-13447abe4cc7",
+    "f95659d2-d006-5b1c-8b08-c76127fa42dc"
+  ],
+  "protected_anchor": [
+    20,
+    23
+  ],
+  "strategy": "Nearest feasible axis-aligned pad center; preserve first segment length, 45-degree middle dogleg and final protected anchor",
+  "supported": "One coupon; rectangular unrotated pads, straight front tracks, fixed axis-aligned openings; no new routing, vias, arcs or zones",
+  "publication": "Candidate accepted only after frozen Gerber validation PASS and native object-scope audit; failed work stays quarantined, source/previous accepted revision unchanged",
+  "pcb_Z_path": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/pcb_Z",
+  "pcb_Z_source_sha256": {
+    "application_demo.py": "c758636bad7b6dbf0fc3fc5d0d53268a241c37b22b49858196361ab5918c5af6",
+    "auto_pcb_function.py": "6b58067f00a82e1e6cb2e1c0bbcdb6c61cd4161e2cf7f1fb088361b6a13d16c3",
+    "export_pcb.py": "cd9c55c7ae295b7472f24c9dfdb5e6a725556eeeb2287f24aa3e1e0f2c824719",
+    "group.py": "512a4164c01eeba423ba90ad0f0e6c7facf7af825fc7b7738d09f511ff03f1fa",
+    "import_pcb.py": "0176d2e085b042f097b02fb8926fffa032dc81b993b2b652b72c94347b72f30d",
+    "init_db.py": "e773837912fd4ddb35ca700cf3f358e48a455cebee0f64c600008bfb497be98f",
+    "sql_opr.py": "1c940f7f49388ab69917db982ebd622f172e34a7b38cb3baae03c4b023b01836"
+  },
+  "pcb_Z_allowed_functions": {
+    "import_pcb.py": [
+      "is_graphic_type",
+      "extract_uuid_from_expr",
+      "extract_layer_from_expr",
+      "extract_type_from_expr"
+    ],
+    "group.py": [
+      "get_layer_items",
+      "find_connected_components"
+    ]
+  },
+  "excluded": [
+    "HALPI2 automatic edits",
+    "legacy SQLite/import/export workflow",
+    "V3 planning",
+    "remote publication",
+    "manufacturing approval"
+  ],
+  "required_validation_checks": [
+    "coverage",
+    "fixed_reference",
+    "exposure",
+    "center_registration",
+    "connectivity",
+    "no_short",
+    "copper_assignment",
+    "clearance",
+    "trace_width",
+    "scope",
+    "target_geometry"
+  ]
+}

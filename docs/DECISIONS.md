@@ -38,3 +38,8 @@ User explicitly authorized a separate profile when the pinned GlowStitch source 
 ## D-015 — HALPI2 bounded electrical case, 2026-10-15
 
 User authorized focused reuse/consolidation of HALPI2 evidence and only missing project-local controls. Adopt no new acceptance profile. The existing physical open control did not test a named net pair; added a native-bound J22.1 isolation control, preserving the pad and breaking precisely its 15 required GND pairs. Named case PASS: 120 source-justified GND pairs per layer, all 64 named pads mapped and separation-checked; existing bridge rejected. Explicit native-source reference class, no schematic parity claim. Original aggregate/GlowStitch NOT_ESTABLISHED and source-aware PASS unchanged. See HALPI2_ELECTRICAL_CASE.md. Stop without expanding scope.
+
+
+## D-016 — Standing authorization and bounded V2 result, 2026-10-15
+
+User explicitly granted standing authorization after clarification: implement the proposed end-to-end synthetic MovePadWithConnections slice, including read-only inspection/minimal helper integration of the specified adjacent pcb_Z package. This supersedes prior stops/isolation only for those actions; no per-step approval within scope. Close V1.5 engineering investigation while preserving original NOT_ESTABLISHED and separate positive results. V2 technical PASS: P1 computed at 20.05 mm, T1–T3 synchronized, protected objects preserved, native exports and unchanged validators pass, fault attempts cannot replace accepted output, 48 tests PASS. See V2_DECISION.md. No V3, public-board editing, full legacy/database merger, remote publication or other lanes authorized.

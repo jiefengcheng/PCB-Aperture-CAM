@@ -35,3 +35,8 @@ Historical before/after artwork is `observed` data. Edit sequences and reasons a
 ## FC-1 authorization and decision — 2026-10-14
 
 The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier proposal/approval-stop text is retained as history. [FC1_DECISION.md](FC1_DECISION.md) records oracle qualification PASS for one exact Ucamco source, with [FC1_ORACLE_DERIVATION.md](FC1_ORACLE_DERIVATION.md) defining the independent expectations and numerical limits. Extended parser support and realistic PCB validation remain NOT_ESTABLISHED; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. MC-1 and FC-2A are not authorized, and no V2/V3 begins. Stop at this gate.
+
+
+## Implemented bounded slice — 2026-10-15
+
+[V2_DECISION.md](V2_DECISION.md) supersedes the earlier proposal-only statuses for one synthetic slice, under explicit standing authorization. R-01/R-05 and the single-pad subset of R-02 now have an executed MovePadWithConnections case with a versioned native-ID contract, target/dependent/protected/context distinctions, deterministic solver, native plot, frozen independent checks and transactional rejection. This is a bounded CH-G2/CH-G3 synthetic demonstration; pad-group transforms, partner-approved production operations and strategic gate completion beyond this slice remain unestablished. The formal case is contracts/v2_move_pad.json and each execution emits operation.json; no separate passive-model milestone is needed for this authorized slice. R-03/R-04 and broader production requirements are unchanged.

@@ -55,3 +55,8 @@ The separately authorized source-aware technical profile v1 passes its declared 
 ## HALPI2 electrical evidence consolidation — 2026-10-15
 
 [HALPI2_ELECTRICAL_CASE.md](HALPI2_ELECTRICAL_CASE.md) records a PASS for the existing bounded native-intent same-layer case: 240 GND pairs, all 64 named terminals mapped/separation-checked, plus named-open and short controls. Original V1.5 remains NOT_ESTABLISHED and source-aware profile PASS remains preserved. No whole-board/cross-layer or manufacturing claim. Task complete; stopped.
+
+
+## V1.5 closure and bounded V2 execution — 2026-10-15
+
+The user closed V1.5 as bounded engineering qualification and explicitly granted standing authorization for the synthetic MovePadWithConnections slice plus limited read-only pcb_Z discovery. [V2_DECISION.md](V2_DECISION.md) records technical PASS: computed candidate, actual native export, frozen validation, rejection/rollback and 48 regressions. Original V1.5 aggregate remains NOT_ESTABLISHED; source-aware and HALPI2 case PASS preserved. No HALPI2 automatic edits, V3, full legacy merger or manufacturing approval. Slice complete.
