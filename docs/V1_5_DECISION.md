@@ -55,3 +55,8 @@ Close this V1.5 qualification pass with the above compatibility gaps. A future a
 `tools/qualify_public.py` inventories pinned local Git sources, copies/extracts to `out/v1_5/`, performs no-edit exports, records DRC and applies the frozen V1 importer. `tools/probe_ucamco.py` inventories/probes the acquired official ZIP. Neither tool acquires network data or edits external sources. Qualification refuses to overwrite an existing frozen report. The review packet retains exact executed commands; the reports retain argv, exit codes, warnings, tool hashes and exported file hashes.
 
 Run `.venv/bin/python -m unittest discover -s tests -v` against the retained acquisition and export evidence. Missing evidence fails the qualification tests; tests do not silently skip or fetch replacements. See `out/v1_5/unittest.log` and `out/v1_5/cursor_review_packet.json`.
+
+
+## Charter alignment — 2026-10-14 (documentation only)
+
+[PROJECT_CHARTER.md](PROJECT_CHARTER.md) is the reconciled proposed strategic reference. [CHARTER_INTEGRATION.md](CHARTER_INTEGRATION.md) records the conflicts and proposed corrections; [CHARTER_EVIDENCE_AUDIT.md](CHARTER_EVIDENCE_AUDIT.md) checks retained evidence and records current verification limits. Frozen V1/V1.5 results, operational isolation and acceptance contracts remain unchanged. Strategic CH-G1–CH-G6 labels are separate from existing milestone gates. [NEXT_GATE_PROPOSAL.md](NEXT_GATE_PROPOSAL.md) awaits explicit user approval; no implementation follows from this pointer. Cursor governance review remains NOT_RUN / CHANNEL_UNAVAILABLE unless a direct authenticated channel is verified.

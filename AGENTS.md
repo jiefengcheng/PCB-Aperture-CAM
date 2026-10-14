@@ -13,3 +13,8 @@ You are implementing **PCB Aperture CAM V1**, a newly isolated project. This fil
 9. Preserve the frozen V1 decision and gates. Proceed through the separately authorized V1.5 asset qualification, reporting realistic-design compatibility separately from synthetic correctness. Stop after the V1.5 decision. The user must explicitly authorize V2 automatic editing or V3 AI planning.
 
 Read `docs/CODEX_HANDOFF.md`, `docs/ACCEPTANCE.md`, `docs/CURSOR_PROTOCOL.md`, `docs/PROVENANCE.md` and `docs/STATUS.md` before changing code.
+
+
+## Proposed strategic reference — documentation alignment 2026-10-14
+
+Use `docs/PROJECT_CHARTER.md` as the proposed long-term strategic reference, reconciled in `docs/CHARTER_INTEGRATION.md` and `docs/DECISIONS.md`. All operational rules above remain effective; strategic text grants no implementation, delegation, network or manufacturing authority. Frozen V1/V1.5 acceptance and evidence are preserved. The current authorization is documentation-only alignment and a local commit, followed by a stop for user approval. `docs/NEXT_GATE_PROPOSAL.md` is a proposal; do not begin V2/V3, additional parser implementation, or any new gate without explicit authorization.

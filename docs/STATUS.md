@@ -32,3 +32,8 @@ Available tool inventory exposes no authenticated direct Cursor agent channel. N
 # V1.5 decision — 2026-10-14
 
 Authorized public acquisition and initial read-only qualification completed. Native CLI compatibility established for selected GlowStitch and HALPI2 boards; realistic design validation remains **NOT_ESTABLISHED** because the frozen V1 geometry subset and independent intent/policies do not cover these designs. Ucamco parser probe: 9/11 load/expand without warnings, two aperture-block examples not established. Cursor review remains NOT_RUN / CHANNEL_UNAVAILABLE. See `docs/ROADMAP.md`, `docs/V1_5_DECISION.md`, `contracts/public_sources.json` and `out/v1_5/`. Preserve the historical V1 decision above; the previously stated V1 stop line is superseded only by the explicitly authorized V1.5 phase. Stop here; no V2/V3 started.
+
+
+## Charter alignment — 2026-10-14
+
+Documentation-only alignment of the supplied proposed charter is prepared in `docs/PROJECT_CHARTER.md`, `CHARTER_INTEGRATION.md`, `TRACEABILITY.md`, `DECISIONS.md`, `CHARTER_EVIDENCE_AUDIT.md` and `NEXT_GATE_PROPOSAL.md`. Read-only custody/receipt checks support the historical bounded V1 PASS and V1.5 realistic NOT_ESTABLISHED; 70/70 assets and four current bootstrap tests pass. Historical full-suite logs were inspected, not rerun. Charter reconciliations and FC-1 (one independent aperture-block oracle and support decision) are proposed for approval. No parser, V2/V3, manufacturing-rule or acceptance changes. Cursor governance review NOT_RUN / CHANNEL_UNAVAILABLE. Stop after the documentation commit and request user approval.

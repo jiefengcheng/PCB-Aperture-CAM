@@ -30,3 +30,8 @@ Codex remains sole coordinator, author and integrator. All work stays in this ch
 | A4 Evidence and review | Qualification reports and frozen packet; Cursor actual review status separate | NOT_RUN for unavailable review |
 
 A V1.5 exploration may close with a negative compatibility decision and explicit NOT_ESTABLISHED validation. It must not be described as successful generalization. Compatibility fixtures do not teach correct repairs. No V2 or V3 starts at this gate.
+
+
+## Charter alignment — 2026-10-14 (documentation only)
+
+[PROJECT_CHARTER.md](PROJECT_CHARTER.md) is the reconciled proposed strategic reference. [CHARTER_INTEGRATION.md](CHARTER_INTEGRATION.md) records the conflicts and proposed corrections; [CHARTER_EVIDENCE_AUDIT.md](CHARTER_EVIDENCE_AUDIT.md) checks retained evidence and records current verification limits. Frozen V1/V1.5 results, operational isolation and acceptance contracts remain unchanged. Strategic CH-G1–CH-G6 labels are separate from existing milestone gates. [NEXT_GATE_PROPOSAL.md](NEXT_GATE_PROPOSAL.md) awaits explicit user approval; no implementation follows from this pointer. Cursor governance review remains NOT_RUN / CHANNEL_UNAVAILABLE unless a direct authenticated channel is verified.

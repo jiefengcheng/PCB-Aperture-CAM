@@ -53,3 +53,8 @@ The V1 stop line is independent geometric validation of *actual exported data*. 
 ## Public asset qualification amendment
 
 The authorized V1.5 pass is complete with realistic validation **NOT_ESTABLISHED**. Selected GlowStitch and HALPI2 native boards export in the pinned CLI, while their geometry exceeds frozen V1 coverage. Official Ucamco examples reveal two aperture-block parser gaps. See `docs/ROADMAP.md` and `docs/V1_5_DECISION.md`; source revisions/hashes are in `contracts/public_sources.json`. Public checkouts are immutable local inputs in `external/sources/`, separate from synthetic `assets/`.
+
+
+## Proposed long-term charter
+
+See [docs/PROJECT_CHARTER.md](docs/PROJECT_CHARTER.md) for the proposed strategic reference and [docs/CHARTER_INTEGRATION.md](docs/CHARTER_INTEGRATION.md) for reconciliation with frozen evidence and operational rules. [docs/NEXT_GATE_PROPOSAL.md](docs/NEXT_GATE_PROPOSAL.md) awaits user approval. This alignment authorizes no new implementation.
