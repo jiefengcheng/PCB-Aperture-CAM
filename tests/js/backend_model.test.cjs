@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const {recordedNeighbors}=require('../../web/backend_model.js');
+const snapshot='revision';const row=(source,target)=>({seed:'a',source,target,type:'physical_contact'});
+const sample=(direction,records)=>({source_snapshot:snapshot,layer_scope:'F.Cu',direction,complete:true,status:'COMPLETE',query:{seeds:['a']},records});
+const data={catalog_revision:snapshot,query_samples:[{query:{object:'a',layer:'F.Cu'},status:'COMPLETE',complete:true,matches:[{id:'b'},{id:'c'}]}],native_comparisons:[{layer:'F.Cu',source_snapshot:snapshot,materialized_ids:['a','b','c'],query_samples:{out:sample('out',[row('a','b')]),in:sample('in',[row('c','a')])}}]};
+const before=JSON.stringify(data);
+assert.deepEqual(recordedNeighbors(data,'a','F.Cu','reference').neighbors,['b','c']);
+assert.equal(recordedNeighbors(data,'a','F.Cu','native').status,'MATCH');
+assert.deepEqual(recordedNeighbors(data,'a','F.Cu','native').neighbors,['b','c']);
+assert.equal(recordedNeighbors(data,'b','F.Cu','native').status,'NOT_RECORDED');
+assert.equal(recordedNeighbors(data,'isolated','F.Cu','native').status,'OUTSIDE_MATERIALIZED_SCOPE');
+assert.equal(recordedNeighbors(data,'a','B.Cu','native').status,'NOT_RUN');
+assert.equal(JSON.stringify(data),before);
+const partial=JSON.parse(before);partial.native_comparisons[0].query_samples.out.complete=false;
+assert.equal(recordedNeighbors(partial,'a','F.Cu','native').status,'INCOMPLETE');
+const wrong=JSON.parse(before);wrong.native_comparisons[0].query_samples.out.records[0].target='c';
+assert.equal(recordedNeighbors(wrong,'a','F.Cu','native').status,'MISMATCH');
+console.log('PASS recorded backend equality, explicit scope/sample absence, incomplete results and immutability');

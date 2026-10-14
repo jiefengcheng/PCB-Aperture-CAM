@@ -1,0 +1,328 @@
+{
+  "scope": "Offline DOM harness of supplied HTML; localhost navigation is blocked by container browser policy. Python SHA-256 is exposed only as a crypto.subtle.digest shim for about:blank. Original files unchanged. Native URL loading, native WebCrypto and evidence-popup navigation not tested. Not a rerun of KiCad/executor/backend tests.",
+  "checks": [
+    {
+      "name": "30 state/mode combinations use shared viewbox",
+      "passed": true
+    },
+    {
+      "name": "zoom updates both panes",
+      "passed": true
+    },
+    {
+      "name": "pan updates both panes",
+      "passed": true
+    },
+    {
+      "name": "view interactions preserve embedded scene",
+      "passed": true
+    }
+  ],
+  "browser": "144.0.7559.96",
+  "initial_load_seconds": 16.791,
+  "combinations": [
+    {
+      "case": "synthetic",
+      "state": "before",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: BASELINE",
+      "right_paths": 6
+    },
+    {
+      "case": "synthetic",
+      "state": "before",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: BASELINE",
+      "right_paths": 9
+    },
+    {
+      "case": "synthetic",
+      "state": "before",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: BASELINE",
+      "right_paths": 3
+    },
+    {
+      "case": "synthetic",
+      "state": "computed",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: PASS",
+      "right_paths": 6
+    },
+    {
+      "case": "synthetic",
+      "state": "computed",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: PASS",
+      "right_paths": 9
+    },
+    {
+      "case": "synthetic",
+      "state": "computed",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: PASS",
+      "right_paths": 5
+    },
+    {
+      "case": "synthetic",
+      "state": "disconnected_n1",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 6
+    },
+    {
+      "case": "synthetic",
+      "state": "disconnected_n1",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 9
+    },
+    {
+      "case": "synthetic",
+      "state": "disconnected_n1",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 5
+    },
+    {
+      "case": "synthetic",
+      "state": "bridge",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 6
+    },
+    {
+      "case": "synthetic",
+      "state": "bridge",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 9
+    },
+    {
+      "case": "synthetic",
+      "state": "bridge",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 5
+    },
+    {
+      "case": "synthetic",
+      "state": "shifted_aperture",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 6
+    },
+    {
+      "case": "synthetic",
+      "state": "shifted_aperture",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 9
+    },
+    {
+      "case": "synthetic",
+      "state": "shifted_aperture",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 6
+    },
+    {
+      "case": "synthetic",
+      "state": "protected_p3",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 6
+    },
+    {
+      "case": "synthetic",
+      "state": "protected_p3",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 9
+    },
+    {
+      "case": "synthetic",
+      "state": "protected_p3",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 5
+    },
+    {
+      "case": "halpi2",
+      "state": "positive",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: PASS",
+      "right_paths": 5
+    },
+    {
+      "case": "halpi2",
+      "state": "positive",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: PASS",
+      "right_paths": 8
+    },
+    {
+      "case": "halpi2",
+      "state": "positive",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: PASS",
+      "right_paths": 2
+    },
+    {
+      "case": "halpi2",
+      "state": "open",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 5
+    },
+    {
+      "case": "halpi2",
+      "state": "open",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 8
+    },
+    {
+      "case": "halpi2",
+      "state": "open",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 3
+    },
+    {
+      "case": "halpi2",
+      "state": "bridge",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 5
+    },
+    {
+      "case": "halpi2",
+      "state": "bridge",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 8
+    },
+    {
+      "case": "halpi2",
+      "state": "bridge",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Candidate: FAIL",
+      "right_paths": 4
+    },
+    {
+      "case": "glowstitch",
+      "state": "preserved",
+      "mode": "compare",
+      "shared_viewbox": true,
+      "status": "Geometry verdict: PASS",
+      "right_paths": 5
+    },
+    {
+      "case": "glowstitch",
+      "state": "preserved",
+      "mode": "overlay",
+      "shared_viewbox": true,
+      "status": "Geometry verdict: PASS",
+      "right_paths": 8
+    },
+    {
+      "case": "glowstitch",
+      "state": "preserved",
+      "mode": "delta",
+      "shared_viewbox": true,
+      "status": "Geometry verdict: PASS",
+      "right_paths": 2
+    }
+  ],
+  "viewport_checks": [
+    {
+      "w": 1600,
+      "scroll": 1600,
+      "viewHeight": 440
+    },
+    {
+      "w": 1440,
+      "scroll": 1440,
+      "viewHeight": 440
+    },
+    {
+      "w": 1280,
+      "scroll": 1280,
+      "viewHeight": 440
+    },
+    {
+      "w": 1024,
+      "scroll": 1024,
+      "viewHeight": 380
+    },
+    {
+      "w": 800,
+      "scroll": 800,
+      "viewHeight": 320
+    },
+    {
+      "w": 390,
+      "scroll": 390,
+      "viewHeight": 320
+    }
+  ],
+  "replay_observation": {
+    "event": "1/5 \u00b7 PLANNED \u00b7 source unchanged: true; rollback/preservation: PASS",
+    "right_title": "REPLAY \u00b7 source before candidate creation",
+    "decision": "Candidate: PASS",
+    "metrics": "P1 center\n20.05 mm\nExposed copper\n1.40 mm\u00b2\nRequired rim\n0.15 mm",
+    "detail": "P1 \u00b7 target\n\nIntent: N1\n\n{\n  \"identity\": {\n    \"native_id\": \"29787dde-407e-52c4-8d4f-89a8c02d2b68\",\n    \"source_board_sha256\": \"e09c7459d49ad7499c824ee2ea840189153593f2f9777207b150e602631e6ca9\",\n    \"terminal\": \"P1\"\n  },\n  \"center_display_mm\": [\n    20.05,\n    20\n  ],\n  \"layer\": \"F.Cu\",\n  \"basis\": \"Gerber .P terminal mapped to independent synthetic intent\"\n}\nOpen bound evidence snapshot \u2197",
+    "source_geometry_displayed": true,
+    "after_zoom_title": "REPLAY \u00b7 source before candidate creation",
+    "after_zoom_event": "1/5 \u00b7 PLANNED \u00b7 source unchanged: true; rollback/preservation: PASS",
+    "after_zoom_candidate_path_present": true,
+    "after_zoom_before_path_present": false
+  },
+  "hal_open": {
+    "failed_relationships_shown": 15,
+    "detail": "Expected same-layer GND pairs\n\nAll declared 120 GND pairs on each layer remain connected.\n\n{\n  \"stored_verdict\": \"FAIL\",\n  \"metric\": {\n    \"failed_pairs\": 15,\n    \"required_pairs\": 240\n  },\n  \"source_ids\": [\n    \"J22.1\"\n  ]\n}\nOpen bound evidence snapshot \u2197",
+    "candidate": "Candidate: FAIL",
+    "control": "Fault-control test: PASS \u2014 expected rejection detected\n\nExpected connections FAIL, pad retained; observed FAIL"
+  },
+  "hal_bridge": {
+    "detail": "Different-net separation\n\nNo component joins different qualified source nets.\n\n{\n  \"stored_verdict\": \"FAIL\",\n  \"metric\": [\n    {\n      \"component\": 12,\n      \"source_nets\": [\n        \"/HDMI.D2+\",\n        \"/HDMI.D2-\",\n        \"GND\"\n      ]\n    }\n  ],\n  \"source_ids\": [\n    \"/HDMI.D2+\",\n    \"/HDMI.D2-\",\n    \"GND\"\n  ]\n}\nOpen bound evidence snapshot \u2197",
+    "candidate": "Candidate: FAIL",
+    "control": "Fault-control test: PASS \u2014 expected rejection detected\n\nExpected no_short FAIL; observed FAIL"
+  },
+  "glow": {
+    "statuses": "Electrical acceptance: NOT_ESTABLISHED\n\nOriginal aggregate V1.5: NOT_ESTABLISHED\n\nSource-aware profile: PASS",
+    "detail": "Electrical intent is unavailable\n\nNo electrical PASS without authoritative intent. Unknown is distinct from no-connect.\n\n{\n  \"stored_verdict\": \"NOT_ESTABLISHED\",\n  \"metric\": {\n    \"electrical_acceptance\": \"NOT_ESTABLISHED\",\n    \"original_aggregate\": \"NOT_ESTABLISHED\",\n    \"source_aware_profile\": \"PASS\",\n    \"unknown_assignments\": 80\n  },\n  \"source_ids\": [\n    \"80 revision-bound composite terminal identities\"\n  ]\n}\nOpen bound evidence snapshot \u2197"
+  },
+  "evidence_link_attribute": "evidence/4395ad464eac_result.json",
+  "page_errors": [],
+  "network_requests": [],
+  "native_url_loading": "NOT_RUN: HTTP localhost was blocked by administrator policy; offline DOM harness used, no bypass attempted"
+}
