@@ -48,3 +48,8 @@ The intended V1 implementation may use Python 3.12+ with Shapely and Gerbonara (
 **Codex alone** coordinates planning, implementation, Cursor delegation (if an actual authenticated channel exists), commits, and acceptance. Cursor is an independent *read-only reviewer* after a frozen commit. No global Codex/Cursor config changes, no touching C7/C8/LPA/Viewer lanes, and no unrelated worktrees. If Cursor is inaccessible, record `NOT_RUN/CHANNEL_UNAVAILABLE`; do not ask a human to transfer messages between the agents.
 
 The V1 stop line is independent geometric validation of *actual exported data*. Do not begin an autonomous KiCad editor, AI/GNN training, a PCB-to-Gerber reconstruction stack, or manufacturing sign-off.
+
+
+## Public asset qualification amendment
+
+The authorized V1.5 pass is complete with realistic validation **NOT_ESTABLISHED**. Selected GlowStitch and HALPI2 native boards export in the pinned CLI, while their geometry exceeds frozen V1 coverage. Official Ucamco examples reveal two aperture-block parser gaps. See `docs/ROADMAP.md` and `docs/V1_5_DECISION.md`; source revisions/hashes are in `contracts/public_sources.json`. Public checkouts are immutable local inputs in `external/sources/`, separate from synthetic `assets/`.

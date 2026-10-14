@@ -9,3 +9,8 @@ Ask Cursor to independently challenge: Gerber X2 file polarity (including F.Mask
 **If no direct channel exists**, set `cursor_review.status = NOT_RUN`, `reason = CHANNEL_UNAVAILABLE`; create a review packet under `out/` for a future automated channel and stop. Do **not** claim Cursor reviewed. Do not ask the user to copy comments back and forth. This must not block local deterministic validation work but blocks any assertion of independent Cursor review.
 
 Any future write delegation needs separate explicit permission, non-overlapping tasks and a branch/worktree *in this repository only*. Other Codex/Cursor research projects and lanes are out of scope.
+
+
+## Authorized V1.5 amendment — 2026-10-14
+
+The user authorized public reference acquisition and read-only realistic-design qualification after frozen V1. See `docs/ROADMAP.md` for the binding sequence, separate gates and stop line. Preserve V1 source assets, policy, implementation and acceptance result. External inputs belong in immutable `external/sources/`; derived evidence belongs in `out/v1_5/`. GlowStitch precedes HALPI2-HDMI-FPC and official Ucamco parser fixtures. Public compatibility does not establish electrical/manufacturing correctness or authorize V2/V3. Cursor review requires an actual authenticated channel; none has been verified.

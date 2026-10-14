@@ -8,3 +8,5 @@ work/
 *.lck
 *.kicad_prl
 *.bak
+
+external/sources/

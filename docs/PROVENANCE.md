@@ -14,3 +14,8 @@ There is **no real candidate KiCad plot in these assets**. For V1, Codex must pr
 The Mac-observed baseline headers identify `KiCad Pcbnew 10.99.0-unknown`, coordinate format X4.6/Y4.6, millimeters, and F.Mask negative image polarity. KiCad 10.99 is a development build; G1 should record exactly which version newly generated the fresh pair.
 
 The user's two PPTs and historical discussions are not re-distributed in this minimal handoff. The business context is summarized in `docs/CONTEXT.md`. No customer manufacturing data and no externally cloned PCB designs are included.
+
+
+## Authorized V1.5 amendment — 2026-10-14
+
+The user authorized public reference acquisition and read-only realistic-design qualification after frozen V1. See `docs/ROADMAP.md` for the binding sequence, separate gates and stop line. Preserve V1 source assets, policy, implementation and acceptance result. External inputs belong in immutable `external/sources/`; derived evidence belongs in `out/v1_5/`. GlowStitch precedes HALPI2-HDMI-FPC and official Ucamco parser fixtures. Public compatibility does not establish electrical/manufacturing correctness or authorize V2/V3. Cursor review requires an actual authenticated channel; none has been verified.

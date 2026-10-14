@@ -1,0 +1,469 @@
+{
+  "version": "1",
+  "acquisition_date": "2026-10-14",
+  "sources": {
+    "GlowStitch": {
+      "origin": "https://github.com/sjpiper145/GlowStitch.git",
+      "commit": "1c5d867ece6a5c38ac5ad7067cac352a5734655a",
+      "license_declaration": {
+        "status": "PASS_DECLARATION_RECORDED",
+        "evidence": [
+          {
+            "path": "README.md",
+            "sha256": "a79274dc11b02dac517693c00dd07adca7d2b44f27fc6d4d32c5f0052b1fedfb",
+            "declaration_lines": [
+              "Open Source Hardware \u2013 [CC BY-SA 4.0 Licence](https://creativecommons.org/licenses/by-sa/4.0/)                        "
+            ]
+          }
+        ]
+      },
+      "source_inventory": [
+        {
+          "path": "AAA Battery Holder Files.zip",
+          "sha256": "300b5ca36e1377aeaa82fefd8fce0187a54902269ad9557b2bd4bfd964ec2f16",
+          "bytes": 109182,
+          "kind": "other",
+          "members": [
+            {
+              "path": "AAA Battery Holder Back Render.jpg",
+              "bytes": 63054,
+              "sha256": "bd9c7bd7c159a6040ae98c82564c41903cfaf0ef44696f79b3ddd3c56a0e0302",
+              "kind": "other"
+            },
+            {
+              "path": "AAA Battery Holder Front Render.jpg",
+              "bytes": 45393,
+              "sha256": "87c8b7403f84b1ecebf41142d569ed2ffd9df326594d73749d4f08a406719454",
+              "kind": "other"
+            },
+            {
+              "path": "AAA BattHolder.kicad_pcb",
+              "bytes": 64027,
+              "sha256": "20e1b848dc857ca697c95312f7039fc26675de04bfb09dc1c0314695af3ea3c2",
+              "kind": "native_board"
+            }
+          ]
+        },
+        {
+          "path": "Coin Cell Battery Holder Files.zip",
+          "sha256": "b302b43e825958d814ad7d525c525e2df6d93a15390027d6daa25bbfd137b785",
+          "bytes": 114688,
+          "kind": "other",
+          "members": [
+            {
+              "path": "GlowStitch Coin Cell Holder Back Render.jpg",
+              "bytes": 58199,
+              "sha256": "a80d5f864cc4a139755a12fffbf46b07df63541f58595d024a96ecbea4c8585b",
+              "kind": "other"
+            },
+            {
+              "path": "GlowStitch Coin Cell Holder Front Render.jpg",
+              "bytes": 42631,
+              "sha256": "cec064a679765dccb067da5a31309ebca2a02eddcc261479d72e41345c43a54f",
+              "kind": "other"
+            },
+            {
+              "path": "GlowStitch Coin Cell Holder KiCAD Editable.kicad_pcb",
+              "bytes": 98171,
+              "sha256": "79727b45a50e1c952c1e4b0e5189c515db1a6ea190e59c4a79457a156884c65f",
+              "kind": "native_board"
+            }
+          ]
+        },
+        {
+          "path": "LED Ring Files.zip",
+          "sha256": "2b861b70e94966f875bbd55bc1f95420ed2a75d0e2597d53a1272e2920e865b3",
+          "bytes": 365004,
+          "kind": "other",
+          "members": [
+            {
+              "path": "Glowstitch LED Ring Back Render.jpg",
+              "bytes": 50019,
+              "sha256": "5e986d72dd054b9501103f2b68d0a5cd92267ba41c9ec0e12f40c48f5e93f2bd",
+              "kind": "other"
+            },
+            {
+              "path": "Glowstitch LED Ring Front Render.jpg",
+              "bytes": 80909,
+              "sha256": "8a7e337968fe9eb5cb0b3ff9a4a012318c6708a2e8844d48750dac5e28be4c38",
+              "kind": "other"
+            },
+            {
+              "path": "GlowStitch LED Ring KiCAD Editable File.kicad_pcb",
+              "bytes": 346597,
+              "sha256": "5f8d9f6cc6eed7d1d44d772fc7a97666a4b5d37b2887f7f956c9399b1ceb540c",
+              "kind": "native_board"
+            },
+            {
+              "path": "Glowstitch LED Ring Kicad Preview.jpg",
+              "bytes": 194767,
+              "sha256": "a2d074e15179032e8a9f7a96b2e78ace0866e771ee4f1f432c473794c0419e35",
+              "kind": "other"
+            }
+          ]
+        },
+        {
+          "path": "LED Strips Crown Headband Project.pdf",
+          "sha256": "ea67901be6ba9e4be9dc42db91a6ba9eb7c5510b4bbbbb41221e80b0cfef8ea8",
+          "bytes": 239127,
+          "kind": "other"
+        },
+        {
+          "path": "LED Strips Glow Bag Project.pdf",
+          "sha256": "674e6ca94809ac2e5dbcffe6f8a642e53f1dea701d7c37791552c3a054c01e92",
+          "bytes": 216177,
+          "kind": "other"
+        },
+        {
+          "path": "LED Strips Instructions Machine Sewing.pdf",
+          "sha256": "a826b9c0ab78f8ac704b6fc9d4cad47321f77dd602108164a9c932cfb79d7c7c",
+          "bytes": 190275,
+          "kind": "other"
+        },
+        {
+          "path": "LED Strips Instructions.pdf",
+          "sha256": "14d222fa258752715757acc3908a5c2b5c18a1729f576ca410007224cd39e378",
+          "bytes": 363638,
+          "kind": "other"
+        },
+        {
+          "path": "README.md",
+          "sha256": "a79274dc11b02dac517693c00dd07adca7d2b44f27fc6d4d32c5f0052b1fedfb",
+          "bytes": 8199,
+          "kind": "other"
+        },
+        {
+          "path": "x1 LED Strips Files.zip",
+          "sha256": "bbb69e712fd9f1c29c73e467ac7a05eed842b24bfff913ff114ab78bc988e785",
+          "bytes": 467211,
+          "kind": "other",
+          "members": [
+            {
+              "path": "x1 GlowStitch LED Panelised KiCAD Design File.kicad_pcb",
+              "bytes": 1340075,
+              "sha256": "af31c93973b169e072e45a0596b612c264f7b8e35a84a25c35261b125e8f013d",
+              "kind": "native_board"
+            },
+            {
+              "path": "x1 LED Strips Close Up.jpg",
+              "bytes": 110150,
+              "sha256": "83d373c25e6e46ceda79be4ee2cf1618a6a8a4ffb64e03a9c3dbdb26a658fb3f",
+              "kind": "other"
+            },
+            {
+              "path": "x1 LED Strips Panelised Back Render.jpg",
+              "bytes": 87924,
+              "sha256": "b060f5e7b916b49866fd41edb5e9c34d77334aed582bb7988911335200dfa7da",
+              "kind": "other"
+            },
+            {
+              "path": "x1 LED Strips Panelised Front Render.jpg",
+              "bytes": 205222,
+              "sha256": "e0eaca9a79ff269bac42e01a0624aa19f5aee69d84051120b524bafb4194cba2",
+              "kind": "other"
+            }
+          ]
+        },
+        {
+          "path": "x1 LED Strips w Resistor Files.zip",
+          "sha256": "700f271eb48f1787480249dcc52b5c535bdf4aca28084f5925516d95a3fa59a0",
+          "bytes": 653120,
+          "kind": "other",
+          "members": [
+            {
+              "path": "Flex Wearables x1 strips w Resistor.kicad_pcb",
+              "bytes": 2305477,
+              "sha256": "3cf990a1570aa9f896b1c94591d08f7bd873e64bbb2c37079f75675771d81232",
+              "kind": "native_board"
+            },
+            {
+              "path": "x1 LED Strips w Resistor Panelised Back Render.jpg",
+              "bytes": 96753,
+              "sha256": "804f1e19a0875d0e4420b5d9a1ad637c78912556dc60d32f107aa9fe9758e5c7",
+              "kind": "other"
+            },
+            {
+              "path": "x1 LED Strips w Resistor Panelised Front Render.jpg",
+              "bytes": 208033,
+              "sha256": "a2e8353ebc042189b3fb0007bbaf589a23e9e3d262749c195a8188a0bd7cb7af",
+              "kind": "other"
+            }
+          ]
+        },
+        {
+          "path": "x5 LED Strips Files.zip",
+          "sha256": "d050ce71541a3035b17edf21678a56163f8d32dc41649adf0b3c925f679bf1e1",
+          "bytes": 472263,
+          "kind": "other",
+          "members": [
+            {
+              "path": "x5 LED Strips close up.jpg",
+              "bytes": 148913,
+              "sha256": "057fb82a4b8ec4adb068e81ed7bd0a297bb4a854131ce5c1d6980ac667d6c023",
+              "kind": "other"
+            },
+            {
+              "path": "x5 LED Strips Panelised Back Render.jpg",
+              "bytes": 82847,
+              "sha256": "a9713007e52fef8f0f98f4881f5f0460b9d2a54f46926fbc3758396f07a60e2e",
+              "kind": "other"
+            },
+            {
+              "path": "x5 LED Strips Panelised Front Render.jpg",
+              "bytes": 190053,
+              "sha256": "5e71e5d588487c7fdd4e59070fcbe757c1873174689bbb8640947ca1cf9d71da",
+              "kind": "other"
+            },
+            {
+              "path": "x5 LED Strips Panelised KiCAD Design File.kicad_pcb",
+              "bytes": 1091982,
+              "sha256": "a757f06d089473b0891fb8a85dbd0836f20fdb439a4674f41acbf67c8f131b68",
+              "kind": "native_board"
+            }
+          ]
+        },
+        {
+          "path": "x5 LED Strips w Resistor Files.zip",
+          "sha256": "4c152560e8f926dd9d7c8778911a146e13659e848fff0cc1274d40af649594a3",
+          "bytes": 371015,
+          "kind": "other",
+          "members": [
+            {
+              "path": "Flex x5 Sheet w Resistor.kicad_pcb",
+              "bytes": 1148839,
+              "sha256": "9ca21567d81211df02874f263fea402345f2b4576b591b0c67d1d2e2a2f45cc8",
+              "kind": "native_board"
+            },
+            {
+              "path": "x5 LED Strips w Resistor Panelised Back Render.jpg",
+              "bytes": 79041,
+              "sha256": "f330c33d9f87535f44c68dce2fcda4790c28647fdf2309cf6309860547e8a9f5",
+              "kind": "other"
+            },
+            {
+              "path": "x5 LED Strips w Resistor Panelised Front Render.jpg",
+              "bytes": 192566,
+              "sha256": "694820c6e145c0a94fd60628263fd5b3c7bf02b27f07af102591c0e0b3321208",
+              "kind": "other"
+            }
+          ]
+        }
+      ],
+      "selection": {
+        "archive": "x1 LED Strips Files.zip",
+        "board": "x1 GlowStitch LED Panelised KiCAD Design File.kicad_pcb",
+        "source_board_sha256": "af31c93973b169e072e45a0596b612c264f7b8e35a84a25c35261b125e8f013d",
+        "reason": "Smallest simple LED-strip variant for first native compatibility probe"
+      }
+    },
+    "HALPI2-HDMI-FPC": {
+      "origin": "https://github.com/hatlabs/HALPI2-HDMI-FPC.git",
+      "commit": "3bef1d94520db0c866a79009a69102241ccd8521",
+      "license_declaration": {
+        "status": "PASS_DECLARATION_RECORDED",
+        "evidence": [
+          {
+            "path": "README.md",
+            "sha256": "b6af302f88d092620a242e59733f590afe73ec4277d918d6a71ad6d81595b4c6",
+            "declaration_lines": [
+              "## License",
+              "This project is licensed under **CERN Open Hardware Licence Version 2 - Strongly Reciprocal** (CERN-OHL-S v2).",
+              "To view a copy of this license, visit https://ohwr.org/cern_ohl_s_v2.pdf"
+            ]
+          }
+        ]
+      },
+      "source_inventory": [
+        {
+          "path": "CLAUDE.md",
+          "sha256": "d31b0e2b79f7e1b681928e20ca55ad5b1b616d395794dbc0a24769fbf8dbe969",
+          "bytes": 4659,
+          "kind": "other"
+        },
+        {
+          "path": "Connector_FPC_Gold_Finger.pretty/FPC_1x20_0.5mm.kicad_mod",
+          "sha256": "c2bbd2b147a58a32c15ba1e7ef8cdef780659e255282820f8ce53161057d9694",
+          "bytes": 5881,
+          "kind": "other"
+        },
+        {
+          "path": "Connector_FPC_Gold_Finger.pretty/GndPad_0.5x2.0mm.kicad_mod",
+          "sha256": "4c172cc5cd69db34c29b8df529c93ce4615eb347d720490badf3ad1c38bf1267",
+          "bytes": 1303,
+          "kind": "other"
+        },
+        {
+          "path": "HALPI2-HDMI-FPC.kicad_dru",
+          "sha256": "ec5c07b594db6f7c7878f81888b367f02f631ec1a1393e83b69f9078877489e7",
+          "bytes": 2536,
+          "kind": "design_rules"
+        },
+        {
+          "path": "HALPI2-HDMI-FPC.kicad_pcb",
+          "sha256": "1d2c4ff9504c84b8deda14e4b38ca4dfb2778852924842ca307ee465720425ba",
+          "bytes": 1707992,
+          "kind": "native_board"
+        },
+        {
+          "path": "HALPI2-HDMI-FPC.kicad_pro",
+          "sha256": "3676abbc108484b67c0d9b595d3637944f5d0b1053ee3c2509ebaceec57a277f",
+          "bytes": 16702,
+          "kind": "native_project"
+        },
+        {
+          "path": "HALPI2-HDMI-FPC.kicad_sch",
+          "sha256": "ec00eaf149e5ff05e0d27bec3e77b5c8a04441bef00eb3e260d7f38121386068",
+          "bytes": 211770,
+          "kind": "schematic"
+        },
+        {
+          "path": "README.md",
+          "sha256": "b6af302f88d092620a242e59733f590afe73ec4277d918d6a71ad6d81595b4c6",
+          "bytes": 5669,
+          "kind": "other"
+        },
+        {
+          "path": "fp-lib-table",
+          "sha256": "6906f264e4960b1dd72954622d260eed7f60aacab4a237e42502557d147aebb8",
+          "bytes": 161,
+          "kind": "other"
+        },
+        {
+          "path": "fpc-bottom.jpg",
+          "sha256": "c50bd356407d1f1cabf4ed65092dcdca8f9606d5f20bab8446fc04918c65a861",
+          "bytes": 39859,
+          "kind": "other"
+        },
+        {
+          "path": "fpc-top.jpg",
+          "sha256": "08bad1de29db16da5d43e2b6e60b0545c081041bb57898f7244267640a975eab",
+          "bytes": 47411,
+          "kind": "other"
+        },
+        {
+          "path": "prepare_assembly.sh",
+          "sha256": "05d69bf7cb3affe9ba796487a21092a6617e09559419257b1a149c02953cdc20",
+          "bytes": 1006,
+          "kind": "other"
+        }
+      ],
+      "selection": {
+        "archive": null,
+        "board": "HALPI2-HDMI-FPC.kicad_pcb",
+        "source_board_sha256": "1d2c4ff9504c84b8deda14e4b38ca4dfb2778852924842ca307ee465720425ba",
+        "reason": "Unpanelized native FPC board; custom rules and schematic retained in copied work area"
+      }
+    },
+    "Ucamco": {
+      "source_url": "https://www.ucamco.com/files/downloads/file_en/423/gerber-layer-format-test-files_en.zip",
+      "catalog_url": "https://www.ucamco.com/en/gerber/downloads",
+      "archive_sha256": "7e1e6bacdc24deb92fbf08940d37ccd26cff25fc9e5ca608b919d4d542d2698f",
+      "license_declaration": {
+        "status": "NOT_ESTABLISHED",
+        "reason": "No separate license file in downloaded archive; preserve copyright/readme statements without inferring redistribution rights."
+      },
+      "inventory": [
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/A_drill_file.gbr",
+          "bytes": 934,
+          "sha256": "00c0b5b5dcd6f8733a3a10f98bcca7feafd00cc21add722d9b74d65e501e1e3f"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/A_drill_file.png",
+          "bytes": 3940,
+          "sha256": "c46f3ac2193f8b8a8c2f7daa00c91b4e80525cdab6079c0b140997e033f080aa"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Block_with_different_orientations.gbr",
+          "bytes": 637,
+          "sha256": "192b7e2198e895bd17ad75b6bd163a5929d05f0a627287f942b98e7e2f61a7d0"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Block_with_different_orientations.png",
+          "bytes": 6603,
+          "sha256": "a705918eeb6456ba8ff50f57084c32d8553d898b42adfa24323210e9cf3e307c"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Nested_blocks.gbr",
+          "bytes": 1126,
+          "sha256": "b1ab58d8edd8189a9e69fbd4a57ab27d5bd06edde21a6141465c816731efea41"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Nested_blocks.png",
+          "bytes": 24218,
+          "sha256": "38bbc6a378dac7579876d9bf9cd0639dfd18554dd88151245484c31557c45d48"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Polarities_and_Apertures.gbr",
+          "bytes": 1218,
+          "sha256": "b4d51700e0e173632fe91b3d5ba40511631b33757d38e13b48f276b173ca4969"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Polarities_and_Apertures.png",
+          "bytes": 5934,
+          "sha256": "5424ecae6567cb29adadcaec14321d80de957d314fcb09e57d49ed21403afde5"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Readme.txt",
+          "bytes": 100,
+          "sha256": "3b737c81ac4e7de495cedc33fc12bdab5e0c6e9c01440e800b6c4a372d5063aa"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/sample_macro.gbr",
+          "bytes": 5363,
+          "sha256": "151368a4d9861a1acde840564906be7c7e34020809ec7c51f271b8e022efe51c"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/sample_macro.png",
+          "bytes": 25412,
+          "sha256": "6a3cc72f5ccf8d77e7824486bfa31f8fb29b61483a4e5d498eed3316d76b44ba"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/sample_macro_X1.gbr",
+          "bytes": 5154,
+          "sha256": "3e993f5f415ddc923d2289a7bd36fc226e01361fcdf8e6cc5eb045a31787cde5"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/SMD_prim_20.gbr",
+          "bytes": 1443,
+          "sha256": "8c8a5e37f1f9652bd0cb497238b24a41ab459fe96f8459183231b66868359eed"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/SMD_prim_20.png",
+          "bytes": 9331,
+          "sha256": "64a730aa4f4d7caf0ccff0c828b92bac6fbcb08604ba416815eaa6a6b987bdb7"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/SMD_prim_20_X1.gbr",
+          "bytes": 1232,
+          "sha256": "081ebbad99fd00edc512ee5a2aaac1396c83afb470c45989c65a53448958fedc"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/SMD_prim_21.gbr",
+          "bytes": 1424,
+          "sha256": "81651e4635976d8434d66597833abd31a929a454b7daf05ae49d3c0b6db434c6"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/SMD_prim_21.png",
+          "bytes": 9247,
+          "sha256": "52dc440773b128352c9b39f2a73f498e6e5cb3fbf4af9b0a7ea64dd659891e9c"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/SMD_prim_21_X1.gbr",
+          "bytes": 1213,
+          "sha256": "d3f4d6b8e41e6a2cea238dfd9892095927cd054d4953093e438c7f46af710802"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Two_square_boxes.gbr",
+          "bytes": 251,
+          "sha256": "72597187a35f695f4ef41742688f4e9abb21187702c3188568f2f34299c896ba"
+        },
+        {
+          "path": "2026_03_24_Gerber_Layer_Format_Test_Files/Two_square_boxes.png",
+          "bytes": 2539,
+          "sha256": "b6aa0c5de13912ef1696448596215b23a7e742f86f7d341b02fb3afa3ef9527b"
+        }
+      ]
+    }
+  }
+}

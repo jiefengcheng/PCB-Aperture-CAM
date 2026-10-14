@@ -50,3 +50,8 @@ Stop after G5. Do not implement or claim V2 automatic KiCad modification, LLM pl
 - Geometric touching at a single point is not a robust manufacturing joint. Assess contact area/neck width and report limitation on this simple coupon.
 - Preserve immutable byte hashes and geometric comparisons separately; timestamp changes don't indicate geometric changes.
 - Capture layer role, units, polarity, clipping, transform and unsupported constructs; don't infer factory rules.
+
+
+## Authorized V1.5 amendment — 2026-10-14
+
+The user authorized public reference acquisition and read-only realistic-design qualification after frozen V1. See `docs/ROADMAP.md` for the binding sequence, separate gates and stop line. Preserve V1 source assets, policy, implementation and acceptance result. External inputs belong in immutable `external/sources/`; derived evidence belongs in `out/v1_5/`. GlowStitch precedes HALPI2-HDMI-FPC and official Ucamco parser fixtures. Public compatibility does not establish electrical/manufacturing correctness or authorize V2/V3. Cursor review requires an actual authenticated channel; none has been verified.

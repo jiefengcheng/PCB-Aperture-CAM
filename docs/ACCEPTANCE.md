@@ -30,3 +30,8 @@ This is NOT a DFM, assembly, flex-coverlay, drilling, soldering, signal integrit
 - Negative 6: introduce unsupported gerber macro/mirroring/polarity handling (must become `NOT_ESTABLISHED`, not PASS).
 
 Prefer corruptions of exported Gerber made in `out/` or fixture-local temp directories so these tests exercise the parser and geometry logic, not a JSON-derived surrogate. `assets/starter/fixtures/reject_*` are additional synthetic expectations and cannot replace Gerber-level falsification.
+
+
+## Authorized V1.5 amendment — 2026-10-14
+
+The user authorized public reference acquisition and read-only realistic-design qualification after frozen V1. See `docs/ROADMAP.md` for the binding sequence, separate gates and stop line. Preserve V1 source assets, policy, implementation and acceptance result. External inputs belong in immutable `external/sources/`; derived evidence belongs in `out/v1_5/`. GlowStitch precedes HALPI2-HDMI-FPC and official Ucamco parser fixtures. Public compatibility does not establish electrical/manufacturing correctness or authorize V2/V3. Cursor review requires an actual authenticated channel; none has been verified.
