@@ -60,3 +60,8 @@ The separately authorized source-aware technical profile v1 passes its declared 
 ## V1.5 closure and bounded V2 execution — 2026-10-15
 
 The user closed V1.5 as bounded engineering qualification and explicitly granted standing authorization for the synthetic MovePadWithConnections slice plus limited read-only pcb_Z discovery. [V2_DECISION.md](V2_DECISION.md) records technical PASS: computed candidate, actual native export, frozen validation, rejection/rollback and 48 regressions. Original V1.5 aggregate remains NOT_ESTABLISHED; source-aware and HALPI2 case PASS preserved. No HALPI2 automatic edits, V3, full legacy merger or manufacturing approval. Slice complete.
+
+
+## Evidence-linked visual delivery — 2026-10-15
+
+[VISUAL_WORKBENCH.md](VISUAL_WORKBENCH.md) records the implemented local HTML/SVG case workbench for actual synthetic V2, HALPI2 open/bridge and GlowStitch information-boundary evidence. Shared comparison/delta, layers, roles, findings, provenance and recorded execution replay are delivered; 56 tests and 30 final-bundle UI combinations pass. Visual case delivery is now an additive normal-workflow requirement, not another strategic gate or authorization. Prior acceptance decisions remain unchanged.

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "reports": {
+    "v2": {
+      "path": "out/v2/run_20261014T164520_384804Z/result.json",
+      "sha256": "0e03355d2772f5baf78ffda27be962dc290caa7f78fa63e99208d5ea9cd70d3a"
+    },
+    "hal": {
+      "path": "out/halpi2_case/run_20261014T163123_842427Z/result.json",
+      "sha256": "66a7754d60ab64d53faca870cbdcf3d564164ec97688a56099b9cfbbe6a0a785"
+    },
+    "completion": {
+      "path": "out/v15_completion/run_20261014T154443_263864Z/final_report.json",
+      "sha256": "55a2d402af1b75b27e0aac6831e4f04203ced5f021bbead2853a24e4faf5af71"
+    },
+    "source_aware": {
+      "path": "out/source_aware_v1/run_20261014T161839_497721Z/result.json",
+      "sha256": "793c7fc1c43abf7f47720b93776bd5ca8174c683217c77216cc71fe0da7dd897"
+    }
+  },
+  "display_simplification_mm": 0.001,
+  "geometry_basis": "Actual validated Gerber composition; source terminal/operation annotations are separately labelled",
+  "units": "mm",
+  "display_transform": "Gerber (x,y) -> display (x,-y), KiCad Y down; same transform for both views; no best fitting"
+}

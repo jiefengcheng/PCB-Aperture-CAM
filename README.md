@@ -73,3 +73,8 @@ The adopted charter reconciliations and FC-1 were approved on 2026-10-14. [FC1_D
 ## Bounded automatic execution
 
 The authorized synthetic MovePadWithConnections V2 slice is complete. See [V2 decision](docs/V2_DECISION.md). Reproduce with `.venv/bin/python tools/v2_run.py`; the executor computes the candidate from the immutable before source and frozen policy, exports through KiCad, validates independently and only then publishes a local accepted bundle. Public-board automatic editing and manufacturing approval are outside this result.
+
+
+## Visual case workbench
+
+[Visual delivery and guided replay](docs/VISUAL_WORKBENCH.md) connects the synthetic aperture, HALPI2 electrical controls and GlowStitch information boundary to actual local geometry/evidence. Generate a self-contained HTML/SVG bundle with `.venv/bin/python tools/visual_report.py`. Output location is printed and recorded in out/visual/current.txt. No server, cloud upload, board editor or new acceptance decision is required.
