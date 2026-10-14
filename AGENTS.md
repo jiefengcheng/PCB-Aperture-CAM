@@ -18,3 +18,8 @@ Read `docs/CODEX_HANDOFF.md`, `docs/ACCEPTANCE.md`, `docs/CURSOR_PROTOCOL.md`, `
 ## Proposed strategic reference — documentation alignment 2026-10-14
 
 Use `docs/PROJECT_CHARTER.md` as the proposed long-term strategic reference, reconciled in `docs/CHARTER_INTEGRATION.md` and `docs/DECISIONS.md`. All operational rules above remain effective; strategic text grants no implementation, delegation, network or manufacturing authority. Frozen V1/V1.5 acceptance and evidence are preserved. The current authorization is documentation-only alignment and a local commit, followed by a stop for user approval. `docs/NEXT_GATE_PROPOSAL.md` is a proposal; do not begin V2/V3, additional parser implementation, or any new gate without explicit authorization.
+
+
+## Active gate authorization — 2026-10-14
+
+The user approved the charter reconciliations and FC-1 only after commit `1b1b843`. The aligned charter is now the adopted strategic reference. This supersedes the prior documentation-only stop and V1.5 stop solely for FC-1: one hash-bound non-nested Ucamco mathematical oracle, explicit negative controls, existing-parser coverage comparison and support decision. Allowed new work is the oracle/reference model, tests, evidence under `out/fc1/` and gate documentation. Do not implement or change Gerber parser support, dependency locks, V1/V1.5 contracts, MC-1, V2/V3, public downloads or partner contact. Preserve all existing operational rules and prior evidence; stop after the FC-1 decision. See `docs/FC1_DECISION.md`.

@@ -51,3 +51,8 @@ Realistic electrical or manufacturing acceptance additionally needs engineer-app
 Request independent read-only Cursor review only through a verified authenticated direct channel. Current state is NOT_RUN / CHANNEL_UNAVAILABLE. Do not ask a human to relay reviews or imply Cursor approval. Codex may finish an authorized local gate with that review limitation stated, but cannot assert independent review.
 
 **Requested user decision:** approve the reconciled proposed strategic reference and **FC-1 only**, choose MC-1 instead, or revise the scope. After this documentation commit, stop without executing any option.
+
+
+## FC-1 authorization and decision — 2026-10-14
+
+The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier proposal/approval-stop text is retained as history. [FC1_DECISION.md](FC1_DECISION.md) records oracle qualification PASS for one exact Ucamco source, with [FC1_ORACLE_DERIVATION.md](FC1_ORACLE_DERIVATION.md) defining the independent expectations and numerical limits. Extended parser support and realistic PCB validation remain NOT_ESTABLISHED; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. MC-1 and FC-2A are not authorized, and no V2/V3 begins. Stop at this gate.

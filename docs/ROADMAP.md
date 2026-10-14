@@ -35,3 +35,8 @@ A V1.5 exploration may close with a negative compatibility decision and explicit
 ## Charter alignment — 2026-10-14 (documentation only)
 
 [PROJECT_CHARTER.md](PROJECT_CHARTER.md) is the reconciled proposed strategic reference. [CHARTER_INTEGRATION.md](CHARTER_INTEGRATION.md) records the conflicts and proposed corrections; [CHARTER_EVIDENCE_AUDIT.md](CHARTER_EVIDENCE_AUDIT.md) checks retained evidence and records current verification limits. Frozen V1/V1.5 results, operational isolation and acceptance contracts remain unchanged. Strategic CH-G1–CH-G6 labels are separate from existing milestone gates. [NEXT_GATE_PROPOSAL.md](NEXT_GATE_PROPOSAL.md) awaits explicit user approval; no implementation follows from this pointer. Cursor governance review remains NOT_RUN / CHANNEL_UNAVAILABLE unless a direct authenticated channel is verified.
+
+
+## FC-1 authorization and decision — 2026-10-14
+
+The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier proposal/approval-stop text is retained as history. [FC1_DECISION.md](FC1_DECISION.md) records oracle qualification PASS for one exact Ucamco source, with [FC1_ORACLE_DERIVATION.md](FC1_ORACLE_DERIVATION.md) defining the independent expectations and numerical limits. Extended parser support and realistic PCB validation remain NOT_ESTABLISHED; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. MC-1 and FC-2A are not authorized, and no V2/V3 begins. Stop at this gate.

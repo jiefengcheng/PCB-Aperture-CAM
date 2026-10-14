@@ -1,0 +1,21 @@
+{
+  "id": "FC-1-independent-mathematical-ledger/1",
+  "provenance": "Hand-derived from the selected source command coordinates, not from Gerbonara or polygon output; see docs/FC1_ORACLE_DERIVATION.md.",
+  "base_area_mm2": 4.626687354634584,
+  "total_area_mm2": 16.841141970869886,
+  "base_bounds_mm": [-3.0, -1.5, 2.75, 1.5],
+  "placement_bounds_mm": [
+    [-3.0, -1.5, 2.75, 1.5],
+    [7.25, -1.5, 13.0, 1.5],
+    [-3.1650635094610964, 5.383974596215562, 2.183012701892219, 10.366025403784437],
+    [7.820101012677667, 6.482842712474619, 12.379898987322333, 10.379898987322333]
+  ],
+  "hole_centers_mm": [[-2.5,-1.0],[12.5,-1.0],[-2.6650635094610964,7.616025403784438],[10.848528137423857,9.979898987322333]],
+  "solid_centers_mm": [[-2.5,1.0],[12.5,1.0],[-1.6650635094610964,5.883974596215562],[11.979898987322333,8.848528137423857]],
+  "components_per_placement": 3,
+  "holes_per_placement": 1,
+  "scene_components": 12,
+  "scene_holes": 4,
+  "units": "mm",
+  "status_scope": "Expected result ledger for one FC-1 oracle, not a manufacturing policy or Gerber parser."
+}

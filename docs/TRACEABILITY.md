@@ -30,3 +30,8 @@ Historical before/after artwork is `observed` data. Edit sequences and reasons a
 - Verification limits: [CHARTER_EVIDENCE_AUDIT.md](CHARTER_EVIDENCE_AUDIT.md). No new geometry validation in this governance pass.
 - Future partner dependency: one permitted immutable original/final pair, exact rule and target passages, layer/drill/net intent, protected objects, engineer-confirmed goal and acceptance. Partner access/contact is not authorized by this document.
 - Future technical dependency: coverage and independent geometric oracle for relevant constructs before any bounded executor. See [NEXT_GATE_PROPOSAL.md](NEXT_GATE_PROPOSAL.md).
+
+
+## FC-1 authorization and decision — 2026-10-14
+
+The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier proposal/approval-stop text is retained as history. [FC1_DECISION.md](FC1_DECISION.md) records oracle qualification PASS for one exact Ucamco source, with [FC1_ORACLE_DERIVATION.md](FC1_ORACLE_DERIVATION.md) defining the independent expectations and numerical limits. Extended parser support and realistic PCB validation remain NOT_ESTABLISHED; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. MC-1 and FC-2A are not authorized, and no V2/V3 begins. Stop at this gate.

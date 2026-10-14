@@ -58,3 +58,8 @@ The authorized V1.5 pass is complete with realistic validation **NOT_ESTABLISHED
 ## Proposed long-term charter
 
 See [docs/PROJECT_CHARTER.md](docs/PROJECT_CHARTER.md) for the proposed strategic reference and [docs/CHARTER_INTEGRATION.md](docs/CHARTER_INTEGRATION.md) for reconciliation with frozen evidence and operational rules. [docs/NEXT_GATE_PROPOSAL.md](docs/NEXT_GATE_PROPOSAL.md) awaits user approval. This alignment authorizes no new implementation.
+
+
+## FC-1 oracle qualification
+
+The adopted charter reconciliations and FC-1 were approved on 2026-10-14. [FC1_DECISION.md](docs/FC1_DECISION.md) records one exact Ucamco mathematical-oracle qualification PASS. The original parser still rejects aperture blocks; realistic validation remains NOT_ESTABLISHED. No parser implementation, MC-1 or V2/V3 began.

@@ -16,3 +16,10 @@ Entries distinguish user authorization, recorded evidence and proposals. They do
 Evidence audit: [CHARTER_EVIDENCE_AUDIT.md](CHARTER_EVIDENCE_AUDIT.md). Requirements map: [TRACEABILITY.md](TRACEABILITY.md). Approval target: [NEXT_GATE_PROPOSAL.md](NEXT_GATE_PROPOSAL.md).
 
 User approval of a future gate must be recorded as a new entry with its exact scope, allowed mutations, acceptance obligations and stop condition. Do not rewrite an old entry to imply earlier authorization. The charter describes eventual product success, not an active implementation mandate.
+
+
+## Subsequent authorization and FC-1 closure
+
+- **D-009 / 2026-10-14 — user approval:** “Sure. go ahead” approves the preceding reconciliations and recommended FC-1 only. Charter version 1.0-alignment.1 is adopted as the strategic reference; operational isolation and frozen acceptance remain intact. Allowed mutations: new mathematical oracle/reference modules, tests/expected ledger, new `out/fc1/` evidence and documentation. No Gerber parser implementation, dependency change, MC-1, V2/V3, additional download or partner outreach. Stop after the oracle/support decision. Earlier proposal entries remain historical.
+- **D-010 / 2026-10-14 — Codex FC-1 decision:** one-file oracle qualified with analytic/polygon checks and explicit raster limits; seven geometry faults, two separately labeled synthetic scene probes and five fail-closed scope controls recorded. Parser and realistic validation remain NOT_ESTABLISHED. Fresh existing-parser failure preserved; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. See `FC1_DECISION.md` and `FC1_ORACLE_DERIVATION.md`.
+- **D-011 / 2026-10-14 — proposal only:** possible FC-2A non-nested block-composition route must first demonstrate maintained-parser viability and a bounded independent acceptance contract. No alternate parser evaluated/installed and no route implementation approved. Do not infer authorization from the FC-1 PASS.

@@ -37,3 +37,8 @@ Authorized public acquisition and initial read-only qualification completed. Nat
 ## Charter alignment — 2026-10-14
 
 Documentation-only alignment of the supplied proposed charter is prepared in `docs/PROJECT_CHARTER.md`, `CHARTER_INTEGRATION.md`, `TRACEABILITY.md`, `DECISIONS.md`, `CHARTER_EVIDENCE_AUDIT.md` and `NEXT_GATE_PROPOSAL.md`. Read-only custody/receipt checks support the historical bounded V1 PASS and V1.5 realistic NOT_ESTABLISHED; 70/70 assets and four current bootstrap tests pass. Historical full-suite logs were inspected, not rerun. Charter reconciliations and FC-1 (one independent aperture-block oracle and support decision) are proposed for approval. No parser, V2/V3, manufacturing-rule or acceptance changes. Cursor governance review NOT_RUN / CHANNEL_UNAVAILABLE. Stop after the documentation commit and request user approval.
+
+
+## FC-1 authorization and decision — 2026-10-14
+
+The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier proposal/approval-stop text is retained as history. [FC1_DECISION.md](FC1_DECISION.md) records oracle qualification PASS for one exact Ucamco source, with [FC1_ORACLE_DERIVATION.md](FC1_ORACLE_DERIVATION.md) defining the independent expectations and numerical limits. Extended parser support and realistic PCB validation remain NOT_ESTABLISHED; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. MC-1 and FC-2A are not authorized, and no V2/V3 begins. Stop at this gate.

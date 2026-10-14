@@ -2,7 +2,7 @@
 
 **Document ID:** PCB-CAM-CHARTER-001  
 **Version:** 1.0-alignment.1 — 2026-10-14 (based on supplied 1.0)  
-**Status:** Integrated as the proposed long-term strategic reference under the user's documentation-only instruction. Reconciliations are recorded for approval in [DECISIONS.md](DECISIONS.md); no implementation gate is authorized.  
+**Status:** Adopted as the long-term strategic reference by the user's approval on 2026-10-14; reconciliations accepted. [DECISIONS.md](DECISIONS.md) D-009 authorizes FC-1 only; each later gate still requires approval.  
 **Scope:** Long-lived project direction; not an authorization to implement a new milestone  
 **Implementation owner:** Codex (sole coordinator); Cursor (independent reviewer only when a verified direct channel exists); manufacturing specialists (process semantics and acceptance)
 
@@ -136,17 +136,17 @@ Individual checks use `PASS`, `FAIL`, `NOT_ESTABLISHED`, or `NOT_RUN`, with mach
 6. Stop for user approval before changing V1 acceptance semantics or beginning V2/V3.
 
 
-Strategic `CH-G1`–`CH-G6` labels distinguish these proposals from frozen V1 `G0`–`G5` and V1.5 `A0`–`A4`. The proposed next bounded slice is `FC-1` under `CH-G1`, described in [NEXT_GATE_PROPOSAL.md](NEXT_GATE_PROPOSAL.md); it is not approved.
+Strategic `CH-G1`–`CH-G6` labels distinguish these proposals from frozen V1 `G0`–`G5` and V1.5 `A0`–`A4`. The first bounded slice `FC-1` under `CH-G1` was approved by the user and is closed at [FC1_DECISION.md](FC1_DECISION.md). The earlier [NEXT_GATE_PROPOSAL.md](NEXT_GATE_PROPOSAL.md) remains historical; any subsequent FC-2A or MC-1 still requires separate approval.
 
 ## 10. Governance, isolation and authority boundaries
 
-- **This proposed charter:** mission, product boundary, engineering principles and strategic proposals. It does not grant execution permissions or override repository operations.
+- **This adopted charter:** mission, product boundary, engineering principles and strategic proposals. It does not grant execution permissions or override repository operations.
 - **`AGENTS.md` and direct user authorization:** operational isolation, coordinator ownership, allowed actions, delegation, network permissions and stop conditions remain effective. The short charter pointer adds strategic context without deleting any rule.
 - **Milestone acceptance documents and contracts:** concrete obligations and aggregation for the authorized gate. Frozen V1/V1.5 contracts and decisions remain unchanged; future evolution requires explicit versioned approval.
 - **Immutable fixtures and retained evidence:** factual authority for results. A narrative cannot turn unsupported, failed or unrun evidence into a pass.
 - **Decision log:** dated provenance of authorizations, reconciliations, unresolved conflicts and proposed gates. A logged proposal is not authorization.
 
-Report conflicts and obtain user direction before dependent implementation; do not silently override operational or evidence boundaries. Current reconciliations are visible proposals in [DECISIONS.md](DECISIONS.md); this documentation-only alignment creates no active implementation milestone.
+Report conflicts and obtain user direction before dependent implementation; do not silently override operational or evidence boundaries. Reconciliations are approved in [DECISIONS.md](DECISIONS.md) D-009. Only the separately approved FC-1 oracle gate may execute; the charter does not authorize later implementation.
 
 Never inspect or mutate other research repositories/worktrees, global agent configuration, or adjacent lanes. External downloads require provenance, licensing review and authorization. Never upload private customer data to public services without permission. No partner outreach, new acquisition, V2/V3 or additional parser work follows automatically from this charter.
 

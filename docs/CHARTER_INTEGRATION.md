@@ -32,3 +32,8 @@ These are clarification proposals, not retroactive changes to frozen results. No
 ## Preserved scope
 
 No source code, tests, dependency lock, native source fixture, Gerber, schema, acceptance criterion, manufacturing rule or frozen commit is changed. No KiCad invocation, public acquisition, parser rerun, full-suite rerun, remote push or partner contact is performed in this alignment. Historical full test logs are inspected; only documentation, custody and bootstrap checks are executed now. Cursor governance review remains NOT_RUN / CHANNEL_UNAVAILABLE; the packet is under `out/charter_adoption/`.
+
+
+## FC-1 authorization and decision — 2026-10-14
+
+The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier proposal/approval-stop text is retained as history. [FC1_DECISION.md](FC1_DECISION.md) records oracle qualification PASS for one exact Ucamco source, with [FC1_ORACLE_DERIVATION.md](FC1_ORACLE_DERIVATION.md) defining the independent expectations and numerical limits. Extended parser support and realistic PCB validation remain NOT_ESTABLISHED; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. MC-1 and FC-2A are not authorized, and no V2/V3 begins. Stop at this gate.
