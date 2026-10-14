@@ -66,11 +66,12 @@ def build_scene(manifest,out):
         return key
     def source_objects(board,roleplan=None):
         root=sexpdata.loads(Path(board).read_text());result=[]
+        net_names={str(n[1]):str(n[2]) for n in children(root,'net') if len(n)>2}
         if roleplan:
             for node in children(root,'segment'):
                 uid=str(one(node,'tstamp',one(node,'uuid',['']))[0]);a=one(node,'start');b=one(node,'end');width=one(node,'width')[0]
                 role='dependent' if uid in roleplan['dependents'] else 'protected'
-                result.append({'id':uid,'name':next((f'T{i+1}' for i,x in enumerate([*roleplan['dependents'],'0b757436-b9bf-53d1-bc3a-4f33f834f4ef','fedb7fa6-33ba-5854-a304-9e38f5c0df42']) if x==uid),uid),'role':role,'layer':'F.Cu','center':[(a[0]+b[0])/2,(a[1]+b[1])/2],'shape':geom(LineString([a,b]).buffer(width/2)),'basis':'Native-source expected segment annotation, not observed copper','net':str(one(node,'net')[0])})
+                result.append({'id':uid,'name':next((f'T{i+1}' for i,x in enumerate([*roleplan['dependents'],'0b757436-b9bf-53d1-bc3a-4f33f834f4ef','fedb7fa6-33ba-5854-a304-9e38f5c0df42']) if x==uid),uid),'role':role,'layer':'F.Cu','center':[(a[0]+b[0])/2,(a[1]+b[1])/2],'shape':geom(LineString([a,b]).buffer(width/2)),'basis':'Native-source expected segment annotation, not observed copper','net':net_names.get(str(one(node,'net')[0])) or None,'raw_net_code':str(one(node,'net')[0]),'assignment_basis':'Native-source net declaration; raw code retained separately'})
         return result
     def pairs_for_synthetic(report,objects,intent):
         check=next((x for x in report.get('checks',[]) if x['id']=='connectivity'),{});assigned=check.get('actual',{}).get('terminal_components',{})
