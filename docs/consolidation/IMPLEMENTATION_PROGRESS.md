@@ -1,4 +1,7 @@
-# Consolidation implementation checkpoint — incomplete
+Final bounded disposition: [CONSOLIDATION_DECISION.md](CONSOLIDATION_DECISION.md).
+The entries below preserve earlier incomplete checkpoints; they are not the final state.
+
+# Historical consolidation implementation checkpoints
 
 This is an execution checkpoint, not the consolidation decision. The eight
 acceptance outcomes in CODEX_CONSOLIDATION_HANDOFF.md remain authoritative.

@@ -1,0 +1,384 @@
+{
+  "status": "BOUNDED_CONSOLIDATION_ESTABLISHED_WITH_RECORDED_LIMITS",
+  "implementation_commit": "6396170aed607d3dab73b740849f51b46f9af384",
+  "aggregate": {
+    "path": "out/consolidation/demo_20261014T203427_875185Z/result.json",
+    "sha256": "e9013ef9222ba2f4c23c3f28fe8ada7fb160928f6ad929966adba24aed78ca87"
+  },
+  "pipeline": {
+    "path": "out/consolidation/pipeline_20261014T203542_446846Z/receipt.json",
+    "sha256": "7b33089eeac18f38b34a47d1b8523cdb772cd7b215d2b9bb887cd181d5ed3e74"
+  },
+  "execution": {
+    "path": "out/v2/catalog_20261014T203534_954553Z/result.json",
+    "sha256": "b08ed73abbcaa4b3d8de66a11b8bc8d4c27ecfc6254dadb3b2f7388cdfc9b1eb"
+  },
+  "visual": {
+    "path": "out/visual/run_20261014T203700_885147Z",
+    "scene_sha256": "e4fc6a676aa0a359f55da0ef0f4c3d339ff34aad3416b59294b7157f60b2218f",
+    "html_sha256": "f1271da9526b1e156bfb7df89713e4675c37dc9121c78c8b2e1d59bfb50be25d",
+    "build_receipt_sha256": "f173921c8f41f6238e4e14b446926d04e5d2d50791c0f08880f42ce291ad100a",
+    "verifier": {
+      "status": "PASS",
+      "scope": "retained snapshot bytes and embedded scene only; no live source or authorship claim",
+      "manifest_outputs": 133,
+      "errors": []
+    }
+  },
+  "benchmarks": {
+    "path": "out/consolidation/bench_20261014T203734_660667Z/result.json",
+    "sha256": "5d8f390633f8e56309490b8700a4335032b917eccbe472bc646841ca7f190191"
+  },
+  "coverage": [
+    {
+      "dataset": "synthetic_before",
+      "catalog_revision": "ba7a35aa7c0fa628919fac4f44c1024d180bc54d0a364206d004066eb6ded851",
+      "source_sha256": "65dbfc812ddfc25cd4e792e246cf4808cc69180420e6e7d03ddfda2b07057400",
+      "source_objects": 17,
+      "layer_instances": 17,
+      "geometry_available": 14,
+      "unsupported_reasons": {
+        "CONTAINER_ONLY: nested objects separately inventoried": 1,
+        "UNQUALIFIED_GEOMETRY_fp_text": 2
+      },
+      "queried_native_pads": 4,
+      "relations": 7,
+      "components": 2,
+      "queries": [
+        {
+          "title": "Ordered first five",
+          "status": "TRUNCATED"
+        },
+        {
+          "title": "Front copper pads",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "All retained native terminals",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Exact front-copper region",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Nearby copper within 2 mm \u00b7 read-only",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Component bbox area / width-height aspect",
+          "status": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "dataset": "legacy_scale",
+      "catalog_revision": "e41ce27de22274ca55be065b494c80bc336e4b4b911522e758f7be9c65d707cb",
+      "source_sha256": "9906955adf0a93869dbd2ae7e225b5bcc7c59327e501daad2aee30357298c359",
+      "source_objects": 26026,
+      "layer_instances": 25840,
+      "geometry_available": 23225,
+      "unsupported_reasons": {
+        "CONTAINER_ONLY: nested objects separately inventoried": 186,
+        "DEGENERATE_ARC": 163,
+        "NON_POSITIVE_STROKE": 2452
+      },
+      "queried_native_pads": 0,
+      "relations": 122486,
+      "components": 197,
+      "queries": [
+        {
+          "title": "Ordered first five",
+          "status": "TRUNCATED"
+        },
+        {
+          "title": "Front copper pads",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "All retained native terminals",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Exact front-copper region",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Nearby copper within 2 mm \u00b7 read-only",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Component bbox area / width-height aspect",
+          "status": "TRUNCATED"
+        },
+        {
+          "title": "Native group Group_55",
+          "status": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "dataset": "synthetic_candidate",
+      "catalog_revision": "45109c9fd11178451ecb8404b4fb6b901484c08d2ee070264acb378cce1c729c",
+      "source_sha256": "e09c7459d49ad7499c824ee2ea840189153593f2f9777207b150e602631e6ca9",
+      "source_objects": 17,
+      "layer_instances": 17,
+      "geometry_available": 14,
+      "unsupported_reasons": {
+        "CONTAINER_ONLY: nested objects separately inventoried": 1,
+        "UNQUALIFIED_GEOMETRY_fp_text": 2
+      },
+      "queried_native_pads": 4,
+      "relations": 8,
+      "components": 2,
+      "queries": [
+        {
+          "title": "Ordered first five",
+          "status": "TRUNCATED"
+        },
+        {
+          "title": "Front copper pads",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "All retained native terminals",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Exact front-copper region",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Nearby copper within 2 mm \u00b7 read-only",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Component bbox area / width-height aspect",
+          "status": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "dataset": "GlowStitch",
+      "catalog_revision": "5b7ff32597b7e392faf65fca8c9e49edbf24e95efe6e05e36e7926ff96d058e0",
+      "source_sha256": "af31c93973b169e072e45a0596b612c264f7b8e35a84a25c35261b125e8f013d",
+      "source_objects": 8571,
+      "layer_instances": 8729,
+      "geometry_available": 8082,
+      "unsupported_reasons": {
+        "CONTAINER_ONLY: nested objects separately inventoried": 122,
+        "UNQUALIFIED_GEOMETRY_fp_text": 284,
+        "UNQUALIFIED_GEOMETRY_gr_text": 81,
+        "UNQUALIFIED_GEOMETRY_host": 1,
+        "UNQUALIFIED_GEOMETRY_page": 1
+      },
+      "queried_native_pads": 80,
+      "relations": 308,
+      "components": 80,
+      "queries": [
+        {
+          "title": "Ordered first five",
+          "status": "TRUNCATED"
+        },
+        {
+          "title": "Front copper pads",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "All retained native terminals",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Exact front-copper region",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Nearby copper within 2 mm \u00b7 read-only",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Component bbox area / width-height aspect",
+          "status": "TRUNCATED"
+        }
+      ]
+    },
+    {
+      "dataset": "HALPI2-HDMI-FPC",
+      "catalog_revision": "2cfd242601a748bbde20d610a0896518e1288289623c442cd3a371226e39643c",
+      "source_sha256": "1d2c4ff9504c84b8deda14e4b38ca4dfb2778852924842ca307ee465720425ba",
+      "source_objects": 673,
+      "layer_instances": 929,
+      "geometry_available": 490,
+      "unsupported_reasons": {
+        "BACK_FOOTPRINT_TRANSFORM_NOT_QUALIFIED": 41,
+        "CONTAINER_ONLY: nested objects separately inventoried": 34,
+        "DECLARED_BOUNDARY_ONLY: effective copper requires stored filled_polygon": 74,
+        "NON_POSITIVE_STROKE": 10,
+        "UNQUALIFIED_GEOMETRY_dimension": 2,
+        "UNQUALIFIED_GEOMETRY_fp_text": 7,
+        "UNQUALIFIED_GEOMETRY_generated": 4,
+        "UNQUALIFIED_GEOMETRY_gr_text": 11
+      },
+      "queried_native_pads": 64,
+      "relations": 713,
+      "components": 36,
+      "queries": [
+        {
+          "title": "Ordered first five",
+          "status": "TRUNCATED"
+        },
+        {
+          "title": "Front copper pads",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "All retained native terminals",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Exact front-copper region",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Nearby copper within 2 mm \u00b7 read-only",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Component bbox area / width-height aspect",
+          "status": "TRUNCATED"
+        },
+        {
+          "title": "J22.1 native-source terminals \u00b7 intent is separate",
+          "status": "COMPLETE"
+        },
+        {
+          "title": "Native group ",
+          "status": "COMPLETE"
+        }
+      ]
+    }
+  ],
+  "native_comparisons": [
+    {
+      "path": "out/consolidation/shadow_20261014T203647_794940Z/result.json",
+      "sha256": "46a654fc6e8a63949526572200f5400cd64d0b899c175e05d75deeead5569ca7",
+      "dataset": "synthetic_before",
+      "layer": "F.Cu",
+      "identities": 9,
+      "proof_occurrences": 7,
+      "status": "PARITY_PASS"
+    },
+    {
+      "path": "out/consolidation/shadow_20261014T203648_638071Z/result.json",
+      "sha256": "251205b2b832869c00dce1eeef7fcaf18ac5b4ecb684c73563cbf3b3b7997765",
+      "dataset": "legacy_scale",
+      "layer": "F.Cu",
+      "identities": 23204,
+      "proof_occurrences": 122486,
+      "status": "PARITY_PASS"
+    },
+    {
+      "path": "out/consolidation/shadow_20261014T203656_151492Z/result.json",
+      "sha256": "eac550f3aaeb50bbe96e9f6bd8b689e6046d80f45245646765689f4af01020fe",
+      "dataset": "synthetic_candidate",
+      "layer": "F.Cu",
+      "identities": 9,
+      "proof_occurrences": 8,
+      "status": "PARITY_PASS"
+    },
+    {
+      "path": "out/consolidation/shadow_20261014T203656_319618Z/result.json",
+      "sha256": "a1bd0edbaf8dafd48f8754598c91d46780cd13af91cf5c0016d05e93cdd87e86",
+      "dataset": "GlowStitch",
+      "layer": "F.Cu",
+      "identities": 320,
+      "proof_occurrences": 308,
+      "status": "PARITY_PASS"
+    },
+    {
+      "path": "out/consolidation/shadow_20261014T203656_455881Z/result.json",
+      "sha256": "f8711c4df09893efba3cd08616790f39aabc587f687965d78b8a5ea11bb7d62f",
+      "dataset": "HALPI2-HDMI-FPC",
+      "layer": "B.Cu",
+      "identities": 250,
+      "proof_occurrences": 272,
+      "status": "PARITY_PASS"
+    },
+    {
+      "path": "out/consolidation/shadow_20261014T203656_563701Z/result.json",
+      "sha256": "dd013814cc823d8af268d99e0287987724dc41a6003b709748d6e91f195c8086",
+      "dataset": "HALPI2-HDMI-FPC",
+      "layer": "F.Cu",
+      "identities": 378,
+      "proof_occurrences": 441,
+      "status": "PARITY_PASS"
+    }
+  ],
+  "asset_files_verified": 70,
+  "historical_files_verified": 1268,
+  "frozen_commit_objects_verified": [
+    "36eab151a0bf00ea57eef09f1dc425c4b5603e50",
+    "cb0377cbdcdac25ee9b89c01aca6901b3ae48d0d",
+    "ca123237bb4ab9aa2b92e4e9e89e81f252729a0a",
+    "c0f997ca5cdf25734bdc8dfeb4f27a8dbcde6795",
+    "2e004b1",
+    "a5c5af7",
+    "500d070",
+    "5d91db9"
+  ],
+  "review": "NOT_RUN: CHANNEL_UNAVAILABLE",
+  "limits": "Mechanical snapshot/identity/custody checks only; browser and requirement audit remain separate.",
+  "browser_evidence": [
+    {
+      "path": "out/consolidation/final_acceptance/replay_controls.json",
+      "sha256": "c5c7fb04f5f342c2ad7ba6f23c3a92db188941105e57273bb6d8edf5099385cc"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/replay_resize.json",
+      "sha256": "120053abc90eac890d185f9687e2ce39b18ec5f2c7ea3b302d8775daa1b00ba9"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/replay_pan.json",
+      "sha256": "0676c6e3981801f15ee278ae97adb03d9878507b549234eb82a63455956d420c"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/case_modes.json",
+      "sha256": "a6d5e151948cb4f87c230cbd60b425e778a7b63ea095cd7c0a54bd042b194e65"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/finding_navigation.json",
+      "sha256": "8b23378b4865f0d88ef7425fcd136bec9620b3a1250e70adb81b3bcb93d25f1c"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/original_replay_red_control.json",
+      "sha256": "71fccf2827eb3909a73c22ee6d0696224ea7a6ab98ddc19f519a1a6611ba4e76"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/net_labels_6396170.json",
+      "sha256": "15cdf8d99e021e627dba83fbf12665d45cc7b1e8eda17292b0483861caf48e9e"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/pipeline_workloads_6396170.json",
+      "sha256": "3fb486fe079ea6d072aaf2d7877bed001760188da02b975a00b3e0391bad165b"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/legacy_group_6396170.json",
+      "sha256": "b73273606b845133c25b3623e5186d36afc9cf7dcf70102d58f26f077b0b4806"
+    },
+    {
+      "path": "out/consolidation/final_acceptance/findings_labels_benchmark_6396170.json",
+      "sha256": "de9c2035f884a117de82bba6044bf546af6c646bb2cdd53ac9dfba098c232b43"
+    }
+  ],
+  "regression_methods_passed": 110,
+  "case_state_mode_combinations": 30,
+  "replay_event_control_cycles": 82,
+  "responsive_checks_with_verified_dimensions": 18,
+  "synchronized_pointer_pan_checks": 9,
+  "sealing_receipt": "out/visual/run_20261014T203700_885147Z/consolidation_seal.json",
+  "review_packet": "out/consolidation/final_acceptance/review_packet.json",
+  "offline_and_frozen_source_scope": {
+    "path": "out/consolidation/final_acceptance/frozen_sources_and_offline_scope.json",
+    "sha256": "48f05aa27ffc58b46b161a53846acdec5749e66c74af5169565935d1c1cb9f1f"
+  }
+}

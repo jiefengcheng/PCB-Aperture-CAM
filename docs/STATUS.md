@@ -67,3 +67,16 @@ The user closed V1.5 as bounded engineering qualification and explicitly granted
 ## Evidence-linked visual delivery — 2026-10-15
 
 [VISUAL_WORKBENCH.md](VISUAL_WORKBENCH.md) records the implemented local HTML/SVG case workbench for actual synthetic V2, HALPI2 open/bridge and GlowStitch information-boundary evidence. Shared comparison/delta, layers, roles, findings, provenance and recorded execution replay are delivered; 56 tests and 30 final-bundle UI combinations pass. Visual case delivery is now an additive normal-workflow requirement, not another strategic gate or authorization. Prior acceptance decisions remain unchanged.
+
+
+## Bounded consolidation closeout — 2026-10-15
+
+See consolidation/CONSOLIDATION_DECISION.md, CONSOLIDATION_ACCEPTANCE_AUDIT.md
+and FINAL_EVIDENCE.json. Source/catalog/context → the same approved V2 operation
+→ independent exported validation → Processing/Cases/Storage replay is established
+in the recorded scope. Final clean source: 6396170; 110 tests, six native parity
+scopes, 70 assets and 1,268 preserved historical files. Native graph remains
+SHADOW_ONLY; custom C++ B/R-tree and general native reassembly remain explicit
+gaps. Original aggregate V1.5, GlowStitch electrical intent, Cursor review and
+manufacturing limitations retain their prior statuses. No next feature gate is
+started.

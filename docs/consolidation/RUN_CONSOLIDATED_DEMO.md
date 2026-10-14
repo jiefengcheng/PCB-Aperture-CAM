@@ -20,8 +20,10 @@ actual outputs; use those entries rather than guessing timestamps.
 `out/consolidation/current_visual.txt` names the latest generated bundle.
 The historical `out/visual/current.txt` pointer is preserved.
 
-Open the named bundle's `index.html` directly. It includes its scene and viewer
-code for offline inspection. Keep the entire directory when archiving it so
+The named bundle's `index.html` includes its scene and viewer code for offline
+inspection. The tested Codex in-app browser uses the existing localhost server;
+its URL security policy blocks file:// navigation. Direct-file launch in that
+browser is NOT_RUN, not a verified capability. Keep the entire directory when archiving it so
 finding pages and original evidence links remain available. Verify a bundle:
 
 ```bash
@@ -63,3 +65,9 @@ binary pointer supplies the default aggregate binary; `--native-binary` permits
 an explicit PCB-owned binary. The binary's build receipt, input hashes and
 materialization manifests remain inspectable. No shared-core changes or
 power-loss durability guarantee are implied.
+
+The completed checkpoint is identified in CONSOLIDATION_DECISION.md. New runs
+remain unsealed until their own review/closure receipt is retained. Do not copy
+a historical consolidation_seal.json into a regenerated bundle. The existing
+sealed bundle adds that receipt and a complete-context screenshot without
+rewriting its original generation receipt.
