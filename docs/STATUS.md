@@ -52,3 +52,8 @@ The adopted completion handoff (DECISIONS D-012) supersedes prior intermediate s
 ## Source-aware profile decision — 2026-10-15
 
 The separately authorized source-aware technical profile v1 passes its declared responsibilities; original V1.5 remains NOT_ESTABLISHED. See [SOURCE_AWARE_V1_DECISION.md](SOURCE_AWARE_V1_DECISION.md). No V2/V3 or pcb_Z authorization is inferred; bounded work stopped.
+
+
+## HALPI2 electrical evidence consolidation — 2026-10-15
+
+[HALPI2_ELECTRICAL_CASE.md](HALPI2_ELECTRICAL_CASE.md) records a PASS for the existing bounded native-intent same-layer case: 240 GND pairs, all 64 named terminals mapped/separation-checked, plus named-open and short controls. Original V1.5 remains NOT_ESTABLISHED and source-aware profile PASS remains preserved. No whole-board/cross-layer or manufacturing claim. Task complete; stopped.

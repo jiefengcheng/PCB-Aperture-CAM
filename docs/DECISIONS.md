@@ -33,3 +33,8 @@ User approval of a future gate must be recorded as a new entry with its exact sc
 ## D-014 — Source-aware technical profile v1, 2026-10-15
 
 User explicitly authorized a separate profile when the pinned GlowStitch source lacks authoritative intent. Direct source recheck confirms only unnamed net 0. Adopt contracts/source_aware_v1.json separately; actual result PASS with 37 regressions passing. Original completion matrix and aggregate NOT_ESTABLISHED remain unchanged. Legacy source IDs repeat: revision-bound composite identities are required. See SOURCE_AWARE_V1_DECISION.md for evidence, deferral and exact limits. Stop without V2/V3 or pcb_Z.
+
+
+## D-015 — HALPI2 bounded electrical case, 2026-10-15
+
+User authorized focused reuse/consolidation of HALPI2 evidence and only missing project-local controls. Adopt no new acceptance profile. The existing physical open control did not test a named net pair; added a native-bound J22.1 isolation control, preserving the pad and breaking precisely its 15 required GND pairs. Named case PASS: 120 source-justified GND pairs per layer, all 64 named pads mapped and separation-checked; existing bridge rejected. Explicit native-source reference class, no schematic parity claim. Original aggregate/GlowStitch NOT_ESTABLISHED and source-aware PASS unchanged. See HALPI2_ELECTRICAL_CASE.md. Stop without expanding scope.

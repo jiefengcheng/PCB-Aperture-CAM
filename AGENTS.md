@@ -33,3 +33,8 @@ The user supplied/adopted `docs/CODEX_V1_5_COMPLETION_HANDOFF.md` to complete th
 ## Source-aware decision authorization — 2026-10-15
 
 The user authorized the bounded source-aware profile described in docs/SOURCE_AWARE_V1_DECISION.md when existing pinned sources lack intent. This supersedes the preceding stop only for that separate profile, its tests and decision. Preserve the original aggregate V1.5 NOT_ESTABLISHED and all frozen evidence; no general parser development, acquisition, pcb_Z, V2/V3 or remote publication. The bounded decision is complete; stop.
+
+
+## HALPI2 consolidation authorization — 2026-10-15
+
+User authorized the focused case in docs/HALPI2_ELECTRICAL_CASE.md, superseding the prior stop only to reuse existing pinned HALPI2 electrical evidence and complete the missing named-open control. No new profile, GlowStitch investigation, parser expansion, acquisition, pcb_Z, V2/V3 or remote publication. Case completed; stop.

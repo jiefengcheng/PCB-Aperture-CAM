@@ -1,0 +1,2387 @@
+{
+  "case_id": "HALPI2-native-intent-same-layer-v1",
+  "source_commit": "3bef1d94520db0c866a79009a69102241ccd8521",
+  "source_board_sha256": "1d2c4ff9504c84b8deda14e4b38ca4dfb2778852924842ca307ee465720425ba",
+  "reference_class": "Native-source explicit named nets plus independently supplied native tracks/arcs/stored fills; not schematic agreement; shared GEOS kernel",
+  "baseline_report": "out/v15_completion/run_20261014T154443_263864Z/final_report.json",
+  "baseline_report_sha256": "55a2d402af1b75b27e0aac6831e4f04203ced5f021bbead2853a24e4faf5af71",
+  "terminals": [
+    {
+      "source_id": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+      "ref": "J22",
+      "pin": "1",
+      "center_mm": [
+        81.875,
+        -111.825
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+      "ref": "J3",
+      "pin": "1",
+      "center_mm": [
+        78.3,
+        -75.55
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+      "ref": "J13",
+      "pin": "1",
+      "center_mm": [
+        65.75,
+        -83.95
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+      "ref": "J18",
+      "pin": "1",
+      "center_mm": [
+        65.75,
+        -95.95
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+      "ref": "J6",
+      "pin": "1",
+      "center_mm": [
+        94.45,
+        -109.1
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+      "ref": "J14",
+      "pin": "1",
+      "center_mm": [
+        73.05,
+        -81.15
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+      "ref": "J26",
+      "pin": "1",
+      "center_mm": [
+        103.3,
+        -104.525
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+      "ref": "J25",
+      "pin": "1",
+      "center_mm": [
+        105.85,
+        -111.875
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "557db50e-db8a-40dc-b526-22078b27b71b:1",
+      "ref": "J17",
+      "pin": "1",
+      "center_mm": [
+        73.05,
+        -92.275
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1",
+      "ref": "J9",
+      "pin": "1",
+      "center_mm": [
+        77.0,
+        -68.275
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:1",
+      "ref": "J1",
+      "pin": "1",
+      "center_mm": [
+        116.268621,
+        -113.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.D2+",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:2",
+      "ref": "J1",
+      "pin": "2",
+      "center_mm": [
+        116.268621,
+        -112.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:3",
+      "ref": "J1",
+      "pin": "3",
+      "center_mm": [
+        116.268621,
+        -112.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.D2-",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:4",
+      "ref": "J1",
+      "pin": "4",
+      "center_mm": [
+        116.268621,
+        -111.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.D1+",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:5",
+      "ref": "J1",
+      "pin": "5",
+      "center_mm": [
+        116.268621,
+        -111.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:6",
+      "ref": "J1",
+      "pin": "6",
+      "center_mm": [
+        116.268621,
+        -110.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.D1-",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:7",
+      "ref": "J1",
+      "pin": "7",
+      "center_mm": [
+        116.268621,
+        -110.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.D0+",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:8",
+      "ref": "J1",
+      "pin": "8",
+      "center_mm": [
+        116.268621,
+        -109.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.D0-",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9",
+      "ref": "J1",
+      "pin": "9",
+      "center_mm": [
+        116.268621,
+        -109.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:10",
+      "ref": "J1",
+      "pin": "10",
+      "center_mm": [
+        116.268621,
+        -108.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.CLK+",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:11",
+      "ref": "J1",
+      "pin": "11",
+      "center_mm": [
+        116.268621,
+        -108.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.CLK-",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12",
+      "ref": "J1",
+      "pin": "12",
+      "center_mm": [
+        116.268621,
+        -107.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:13",
+      "ref": "J1",
+      "pin": "13",
+      "center_mm": [
+        116.268621,
+        -107.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.CEC",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:14",
+      "ref": "J1",
+      "pin": "14",
+      "center_mm": [
+        116.268621,
+        -106.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.SCL",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:15",
+      "ref": "J1",
+      "pin": "15",
+      "center_mm": [
+        116.268621,
+        -106.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/UTILITY",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:16",
+      "ref": "J1",
+      "pin": "16",
+      "center_mm": [
+        116.268621,
+        -105.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.SDA",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:17",
+      "ref": "J1",
+      "pin": "17",
+      "center_mm": [
+        116.268621,
+        -105.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/+5V_HDMI",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18",
+      "ref": "J1",
+      "pin": "18",
+      "center_mm": [
+        116.268621,
+        -104.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:19",
+      "ref": "J1",
+      "pin": "19",
+      "center_mm": [
+        116.268621,
+        -104.075002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "/HDMI.HPD",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20",
+      "ref": "J1",
+      "pin": "20",
+      "center_mm": [
+        116.268621,
+        -103.575002
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1",
+      "ref": "J21",
+      "pin": "1",
+      "center_mm": [
+        78.85,
+        -107.65
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1",
+      "ref": "J10",
+      "pin": "1",
+      "center_mm": [
+        67.075,
+        -74.55
+      ],
+      "layers": [
+        "F.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+      "ref": "J15",
+      "pin": "1",
+      "center_mm": [
+        73.5,
+        -88.6
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+      "ref": "J4",
+      "pin": "1",
+      "center_mm": [
+        98.55,
+        -112.575
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+      "ref": "J8",
+      "pin": "1",
+      "center_mm": [
+        79.575,
+        -76.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+      "ref": "J24",
+      "pin": "1",
+      "center_mm": [
+        107.475,
+        -104.1
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:1",
+      "ref": "J2",
+      "pin": "1",
+      "center_mm": [
+        85.8,
+        -67.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.D2+",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:2",
+      "ref": "J2",
+      "pin": "2",
+      "center_mm": [
+        85.8,
+        -67.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:3",
+      "ref": "J2",
+      "pin": "3",
+      "center_mm": [
+        85.8,
+        -68.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.D2-",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:4",
+      "ref": "J2",
+      "pin": "4",
+      "center_mm": [
+        85.8,
+        -68.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.D1+",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:5",
+      "ref": "J2",
+      "pin": "5",
+      "center_mm": [
+        85.8,
+        -69.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:6",
+      "ref": "J2",
+      "pin": "6",
+      "center_mm": [
+        85.8,
+        -69.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.D1-",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:7",
+      "ref": "J2",
+      "pin": "7",
+      "center_mm": [
+        85.8,
+        -70.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.D0+",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:8",
+      "ref": "J2",
+      "pin": "8",
+      "center_mm": [
+        85.8,
+        -70.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.D0-",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+      "ref": "J2",
+      "pin": "9",
+      "center_mm": [
+        85.8,
+        -71.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:10",
+      "ref": "J2",
+      "pin": "10",
+      "center_mm": [
+        85.8,
+        -71.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.CLK+",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:11",
+      "ref": "J2",
+      "pin": "11",
+      "center_mm": [
+        85.8,
+        -72.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.CLK-",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+      "ref": "J2",
+      "pin": "12",
+      "center_mm": [
+        85.8,
+        -72.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:13",
+      "ref": "J2",
+      "pin": "13",
+      "center_mm": [
+        85.8,
+        -73.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.CEC",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:14",
+      "ref": "J2",
+      "pin": "14",
+      "center_mm": [
+        85.8,
+        -73.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.SCL",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:15",
+      "ref": "J2",
+      "pin": "15",
+      "center_mm": [
+        85.8,
+        -74.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/UTILITY",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:16",
+      "ref": "J2",
+      "pin": "16",
+      "center_mm": [
+        85.8,
+        -74.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.SDA",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:17",
+      "ref": "J2",
+      "pin": "17",
+      "center_mm": [
+        85.8,
+        -75.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/+5V_HDMI",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+      "ref": "J2",
+      "pin": "18",
+      "center_mm": [
+        85.8,
+        -75.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:19",
+      "ref": "J2",
+      "pin": "19",
+      "center_mm": [
+        85.8,
+        -76.0
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "/HDMI.HPD",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+      "ref": "J2",
+      "pin": "20",
+      "center_mm": [
+        85.8,
+        -76.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "rect",
+      "size_mm": [
+        3,
+        0.3
+      ]
+    },
+    {
+      "source_id": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1",
+      "ref": "J7",
+      "pin": "1",
+      "center_mm": [
+        79.575,
+        -67.5
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1",
+      "ref": "J12",
+      "pin": "1",
+      "center_mm": [
+        69.975,
+        -70.975
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1",
+      "ref": "J11",
+      "pin": "1",
+      "center_mm": [
+        65.75,
+        -90.475
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1",
+      "ref": "J20",
+      "pin": "1",
+      "center_mm": [
+        75.825,
+        -104.1
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1",
+      "ref": "J5",
+      "pin": "1",
+      "center_mm": [
+        89.75,
+        -104.075
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "92326031-50c9-4a23-a486-93f4b6750d9b:1",
+      "ref": "J23",
+      "pin": "1",
+      "center_mm": [
+        109.75,
+        -112.575
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1",
+      "ref": "J16",
+      "pin": "1",
+      "center_mm": [
+        69.425,
+        -108.25
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    },
+    {
+      "source_id": "f76944e9-104b-446e-9696-5418523e671c:1",
+      "ref": "J19",
+      "pin": "1",
+      "center_mm": [
+        86.1,
+        -112.575
+      ],
+      "layers": [
+        "B.Cu"
+      ],
+      "net": "GND",
+      "kind": "roundrect",
+      "size_mm": [
+        2,
+        0.5
+      ]
+    }
+  ],
+  "required_pairs": {
+    "F.Cu": [
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "136f6d76-f042-4a69-9625-eee573ed7555:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "227f1ea9-758a-4c84-99be-50a2d06912c0:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "52b3e7e4-6653-414b-823f-9f955909ac68:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "557db50e-db8a-40dc-b526-22078b27b71b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "227f1ea9-758a-4c84-99be-50a2d06912c0:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "52b3e7e4-6653-414b-823f-9f955909ac68:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "557db50e-db8a-40dc-b526-22078b27b71b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "136f6d76-f042-4a69-9625-eee573ed7555:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "52b3e7e4-6653-414b-823f-9f955909ac68:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "557db50e-db8a-40dc-b526-22078b27b71b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "227f1ea9-758a-4c84-99be-50a2d06912c0:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "52b3e7e4-6653-414b-823f-9f955909ac68:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "557db50e-db8a-40dc-b526-22078b27b71b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2a290d4a-c226-4e6c-ba57-21fb058afeca:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "52b3e7e4-6653-414b-823f-9f955909ac68:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "557db50e-db8a-40dc-b526-22078b27b71b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "2f6b25bf-fa64-47c5-bd2a-5d7d39006902:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "52b3e7e4-6653-414b-823f-9f955909ac68:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "557db50e-db8a-40dc-b526-22078b27b71b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ced5790-31b3-4d3f-bb59-b42f37b06458:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "52b3e7e4-6653-414b-823f-9f955909ac68:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "557db50e-db8a-40dc-b526-22078b27b71b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "4b600d5b-3eb3-4ea9-8605-b98c24815034:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+        "b": "557db50e-db8a-40dc-b526-22078b27b71b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "52b3e7e4-6653-414b-823f-9f955909ac68:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "557db50e-db8a-40dc-b526-22078b27b71b:1",
+        "b": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "557db50e-db8a-40dc-b526-22078b27b71b:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "557db50e-db8a-40dc-b526-22078b27b71b:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "557db50e-db8a-40dc-b526-22078b27b71b:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "557db50e-db8a-40dc-b526-22078b27b71b:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "557db50e-db8a-40dc-b526-22078b27b71b:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "557db50e-db8a-40dc-b526-22078b27b71b:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "5d422fb4-f128-443f-bc8b-b47e56e53a0d:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:9",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:12",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18",
+        "b": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:18",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20",
+        "b": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "ceab8fea-cf9a-4550-aa00-b2434e5e8161:20",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "d2bd544e-4960-4c95-a07d-effac2fd1fe2:1",
+        "b": "fffcc7fc-38fd-4410-b1cf-5ffcb0741f43:1"
+      }
+    ],
+    "B.Cu": [
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "17de6404-e349-40da-84e6-fab31f32a35c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "0aa5bbc2-0e1c-43a9-b4bc-b28d1cdde31f:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "17de6404-e349-40da-84e6-fab31f32a35c:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37ac6155-99d8-41d8-aafc-b0a84b7ae890:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "37f85693-e42d-4c51-9d52-7f931cc17cf4:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:9",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:12",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:18",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+        "b": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3c9b867e-9e48-458d-b16f-8ab58e69cfe9:20",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1",
+        "b": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "3ea2533d-48e0-41c9-a73c-0ab441602d32:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1",
+        "b": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b28505e-560a-4d80-bbcc-4068ad4ca17c:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1",
+        "b": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "7b5e4815-3837-4722-a2c5-09fc224a97ae:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1",
+        "b": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "8411b282-a80f-4e0a-8c38-6f6ed29b662e:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1",
+        "b": "92326031-50c9-4a23-a486-93f4b6750d9b:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "89c67143-63ef-4dc1-b353-6b0b8629fc7f:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "92326031-50c9-4a23-a486-93f4b6750d9b:1",
+        "b": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "92326031-50c9-4a23-a486-93f4b6750d9b:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      },
+      {
+        "source_net": "GND",
+        "a": "b54d3bb3-14d0-4c1f-88a7-6222baa4be9a:1",
+        "b": "f76944e9-104b-446e-9696-5418523e671c:1"
+      }
+    ]
+  },
+  "required_no_short_scope": "All 64 named pads, 32 on each copper layer; no component may join different source-assigned nets",
+  "open_control": {
+    "layer": "F.Cu",
+    "terminal": "10380344-ed7c-45ba-80af-33b52ebad3ea:1",
+    "terminal_name": "J22.1",
+    "net": "GND",
+    "mutation": "Clear rectangular annulus around native pad bounds; preserve pad and nominal center; require loss of its 15 expected same-layer GND connections"
+  },
+  "bridge_control": "Reuse pinned front-copper new_bridge.gbr; independent_native_net_short must FAIL",
+  "excluded": [
+    "Schematic/PCB agreement",
+    "Cross-layer connectivity or plating",
+    "Unlabelled copper correctness",
+    "Factory/process approval"
+  ],
+  "required_layers": [
+    "F.Cu",
+    "B.Cu"
+  ]
+}
