@@ -2,7 +2,7 @@
 
 **Implemented: a working, read-only visual case bundle backed by actual local Gerber geometry and stored validator evidence.** This is an additive delivery surface, not a new acceptance profile, parser, editor or strategic gate.
 
-[Open interactive workbench](http://127.0.0.1:8765/run_20261014T171718_143371Z/index.html) while the optional loopback preview server is running. [Standalone HTML](..//Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/visual/run_20261014T171718_143371Z/index.html) opens directly in a Mac browser without any server, upload or CDN. [Static overview PNG](..//Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/visual/run_20261014T171718_143371Z/overview.png) and [canonical SVG overview](..//Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/visual/run_20261014T171718_143371Z/overview.svg) provide quick review.
+[Open interactive workbench](http://127.0.0.1:8765/run_20261014T171718_143371Z/index.html) while the optional loopback preview server is running. [Standalone HTML](/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/visual/run_20261014T171718_143371Z/index.html) opens directly in a Mac browser without any server, upload or CDN. [Static overview PNG](/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/visual/run_20261014T171718_143371Z/overview.png) and [canonical SVG overview](/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/visual/run_20261014T171718_143371Z/overview.svg) provide quick review.
 
 ## Reproduce the complete canonical bundle
 
