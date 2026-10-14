@@ -40,3 +40,8 @@ A V1.5 exploration may close with a negative compatibility decision and explicit
 ## FC-1 authorization and decision — 2026-10-14
 
 The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier proposal/approval-stop text is retained as history. [FC1_DECISION.md](FC1_DECISION.md) records oracle qualification PASS for one exact Ucamco source, with [FC1_ORACLE_DERIVATION.md](FC1_ORACLE_DERIVATION.md) defining the independent expectations and numerical limits. Extended parser support and realistic PCB validation remain NOT_ESTABLISHED; Cursor review NOT_RUN / CHANNEL_UNAVAILABLE. MC-1 and FC-2A are not authorized, and no V2/V3 begins. Stop at this gate.
+
+
+## Bounded V1.5 completion evidence — 2026-10-14
+
+The adopted completion handoff (DECISIONS D-012) supersedes prior intermediate stops for this task only. [V1_5_COMPLETION_DECISION.md](V1_5_COMPLETION_DECISION.md) records a working raw-Gerber geometry/preservation profile for both complete nine-layer selections and the qualified FC-1 example. Full required electrical acceptance remains NOT_ESTABLISHED because GlowStitch lacks qualified net intent. Historical V1/V1.5/FC-1 conclusions and contracts are unchanged; the new evidence extends them. Current authority is in AGENTS and DECISIONS; earlier FC-1-only text describes the earlier authorization. Cursor remains NOT_RUN / CHANNEL_UNAVAILABLE. No pcb_Z, V2/V3, manufacturing approval or remote publication.

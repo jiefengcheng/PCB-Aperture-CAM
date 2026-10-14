@@ -23,3 +23,8 @@ Use `docs/PROJECT_CHARTER.md` as the proposed long-term strategic reference, rec
 ## Active gate authorization — 2026-10-14
 
 The user approved the charter reconciliations and FC-1 only after commit `1b1b843`. The aligned charter is now the adopted strategic reference. This supersedes the prior documentation-only stop and V1.5 stop solely for FC-1: one hash-bound non-nested Ucamco mathematical oracle, explicit negative controls, existing-parser coverage comparison and support decision. Allowed new work is the oracle/reference model, tests, evidence under `out/fc1/` and gate documentation. Do not implement or change Gerber parser support, dependency locks, V1/V1.5 contracts, MC-1, V2/V3, public downloads or partner contact. Preserve all existing operational rules and prior evidence; stop after the FC-1 decision. See `docs/FC1_DECISION.md`.
+
+
+## Active V1.5 completion authorization — 2026-10-14
+
+The user supplied/adopted `docs/CODEX_V1_5_COMPLETION_HANDOFF.md` to complete the bounded real-Gerber validation path. Its parser/adapter/compositor, required references, tests, fresh native export and reporting work is authorized inside this checkout. Earlier proposal-only, stop-before-parser, stop-after-FC-1 and Cursor-availability stops are superseded for this task only; FC-2A is an internal checkpoint. Preserve all frozen source/acceptance/history and isolation rules. No V2/V3, pcb_Z access/integration, broad acquisition, global changes, service integration, remote writes/uploads or manufacturing approval. Continue until the frozen completion matrix is evidenced or a concrete unresolved blocker is reproduced.

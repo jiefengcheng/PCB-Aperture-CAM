@@ -40,3 +40,8 @@ The user authorized public reference acquisition and read-only realistic-design 
 ## Charter alignment — 2026-10-14 (documentation only)
 
 [PROJECT_CHARTER.md](PROJECT_CHARTER.md) is the reconciled proposed strategic reference. [CHARTER_INTEGRATION.md](CHARTER_INTEGRATION.md) records the conflicts and proposed corrections; [CHARTER_EVIDENCE_AUDIT.md](CHARTER_EVIDENCE_AUDIT.md) checks retained evidence and records current verification limits. Frozen V1/V1.5 results, operational isolation and acceptance contracts remain unchanged. Strategic CH-G1–CH-G6 labels are separate from existing milestone gates. [NEXT_GATE_PROPOSAL.md](NEXT_GATE_PROPOSAL.md) awaits explicit user approval; no implementation follows from this pointer. Cursor governance review remains NOT_RUN / CHANNEL_UNAVAILABLE unless a direct authenticated channel is verified.
+
+
+## Bounded V1.5 completion evidence — 2026-10-14
+
+The adopted completion handoff (DECISIONS D-012) supersedes prior intermediate stops for this task only. [V1_5_COMPLETION_DECISION.md](V1_5_COMPLETION_DECISION.md) records a working raw-Gerber geometry/preservation profile for both complete nine-layer selections and the qualified FC-1 example. Full required electrical acceptance remains NOT_ESTABLISHED because GlowStitch lacks qualified net intent. Historical V1/V1.5/FC-1 conclusions and contracts are unchanged; the new evidence extends them. Current authority is in AGENTS and DECISIONS; earlier FC-1-only text describes the earlier authorization. Cursor remains NOT_RUN / CHANNEL_UNAVAILABLE. No pcb_Z, V2/V3, manufacturing approval or remote publication.

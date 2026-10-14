@@ -1,0 +1,16 @@
+{
+  "revision": "2026.05",
+  "url": "https://www.ucamco.com/files/downloads/file_en/554/gerber-layer-format-specification-revision-2026-05_en.pdf",
+  "sha256": "ac9e9899f573d69e472b2112f1ae879c70f6cd13e17db41a1c885caf69961662",
+  "local_evidence": "out/v15_completion/gerber-specification-2026.05.pdf",
+  "sections": [
+    "4.9 aperture transformations",
+    "4.10 valid region contours",
+    "4.11 block apertures"
+  ],
+  "status": "First explicit format-reference pin for completion adapter; frozen V1/FC-1 contracts unchanged",
+  "dependencies_additive": {
+    "sexpdata": "1.0.2",
+    "pypdf": "6.1.1"
+  }
+}

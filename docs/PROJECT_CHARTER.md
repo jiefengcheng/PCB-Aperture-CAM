@@ -175,3 +175,8 @@ Track accepted repair rate on held-out jobs, scope violations, connectivity/clea
 ## 13. Definition of eventual product success
 
 On a representative, engineer-approved customer CAM job, the system can explain the required modification and source rule, identify direct/dependent/protected objects, propose a bounded operation, execute on an isolated copy, export complete manufacturing files, independently verify supported geometry/connectivity/process constraints, surface unknowns for human review, record acceptance or rejection, and demonstrate a measured improvement against the existing manual workflow. Broader autonomy is an optional later optimization, not the definition of success.
+
+
+## Bounded V1.5 completion evidence — 2026-10-14
+
+The adopted completion handoff (DECISIONS D-012) supersedes prior intermediate stops for this task only. [V1_5_COMPLETION_DECISION.md](V1_5_COMPLETION_DECISION.md) records a working raw-Gerber geometry/preservation profile for both complete nine-layer selections and the qualified FC-1 example. Full required electrical acceptance remains NOT_ESTABLISHED because GlowStitch lacks qualified net intent. Historical V1/V1.5/FC-1 conclusions and contracts are unchanged; the new evidence extends them. Current authority is in AGENTS and DECISIONS; earlier FC-1-only text describes the earlier authorization. Cursor remains NOT_RUN / CHANNEL_UNAVAILABLE. No pcb_Z, V2/V3, manufacturing approval or remote publication.

@@ -63,3 +63,8 @@ See [docs/PROJECT_CHARTER.md](docs/PROJECT_CHARTER.md) for the proposed strategi
 ## FC-1 oracle qualification
 
 The adopted charter reconciliations and FC-1 were approved on 2026-10-14. [FC1_DECISION.md](docs/FC1_DECISION.md) records one exact Ucamco mathematical-oracle qualification PASS. The original parser still rejects aperture blocks; realistic validation remains NOT_ESTABLISHED. No parser implementation, MC-1 or V2/V3 began.
+
+
+## Working V1.5 reader/compositor path
+
+[Completion decision](docs/V1_5_COMPLETION_DECISION.md): both declared nine-layer public-board geometry/preservation profiles pass, with raw FC-1 oracle agreement and source-anchored fault detection. Overall named electrical acceptance remains NOT_ESTABLISHED for GlowStitch because its net intent is absent. Reproduce with `.venv/bin/python -u -m src.completion_run`; new timestamped evidence is retained under `out/v15_completion/`. Frozen V1/FC-1 paths remain unchanged.
