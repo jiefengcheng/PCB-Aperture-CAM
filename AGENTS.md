@@ -28,3 +28,8 @@ The user approved the charter reconciliations and FC-1 only after commit `1b1b84
 ## Active V1.5 completion authorization — 2026-10-14
 
 The user supplied/adopted `docs/CODEX_V1_5_COMPLETION_HANDOFF.md` to complete the bounded real-Gerber validation path. Its parser/adapter/compositor, required references, tests, fresh native export and reporting work is authorized inside this checkout. Earlier proposal-only, stop-before-parser, stop-after-FC-1 and Cursor-availability stops are superseded for this task only; FC-2A is an internal checkpoint. Preserve all frozen source/acceptance/history and isolation rules. No V2/V3, pcb_Z access/integration, broad acquisition, global changes, service integration, remote writes/uploads or manufacturing approval. Continue until the frozen completion matrix is evidenced or a concrete unresolved blocker is reproduced.
+
+
+## Source-aware decision authorization — 2026-10-15
+
+The user authorized the bounded source-aware profile described in docs/SOURCE_AWARE_V1_DECISION.md when existing pinned sources lack intent. This supersedes the preceding stop only for that separate profile, its tests and decision. Preserve the original aggregate V1.5 NOT_ESTABLISHED and all frozen evidence; no general parser development, acquisition, pcb_Z, V2/V3 or remote publication. The bounded decision is complete; stop.

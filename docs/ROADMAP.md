@@ -45,3 +45,8 @@ The user approved the reconciliations and FC-1 only (DECISIONS D-009); earlier p
 ## Bounded V1.5 completion evidence — 2026-10-14
 
 The adopted completion handoff (DECISIONS D-012) supersedes prior intermediate stops for this task only. [V1_5_COMPLETION_DECISION.md](V1_5_COMPLETION_DECISION.md) records a working raw-Gerber geometry/preservation profile for both complete nine-layer selections and the qualified FC-1 example. Full required electrical acceptance remains NOT_ESTABLISHED because GlowStitch lacks qualified net intent. Historical V1/V1.5/FC-1 conclusions and contracts are unchanged; the new evidence extends them. Current authority is in AGENTS and DECISIONS; earlier FC-1-only text describes the earlier authorization. Cursor remains NOT_RUN / CHANNEL_UNAVAILABLE. No pcb_Z, V2/V3, manufacturing approval or remote publication.
+
+
+## Source-aware profile decision — 2026-10-15
+
+The separately authorized source-aware technical profile v1 passes its declared responsibilities; original V1.5 remains NOT_ESTABLISHED. See [SOURCE_AWARE_V1_DECISION.md](SOURCE_AWARE_V1_DECISION.md). No V2/V3 or pcb_Z authorization is inferred; bounded work stopped.

@@ -1,0 +1,56 @@
+{
+  "id": "v1.5-source-aware-technical-v1",
+  "baseline_commit": "c0f997ca5cdf25734bdc8dfeb4f27a8dbcde6795",
+  "baseline_report": "out/v15_completion/run_20261014T154443_263864Z/final_report.json",
+  "baseline_report_sha256": "55a2d402af1b75b27e0aac6831e4f04203ced5f021bbead2853a24e4faf5af71",
+  "layers": [
+    "F.Cu",
+    "B.Cu",
+    "F.Mask",
+    "B.Mask",
+    "Edge.Cuts",
+    "F.SilkS",
+    "B.SilkS",
+    "F.Paste",
+    "B.Paste"
+  ],
+  "faults": [
+    "moved_mask",
+    "protected_copper_changed",
+    "broken_connection",
+    "new_bridge",
+    "polarity_order",
+    "unknown_operation"
+  ],
+  "fixtures": {
+    "GlowStitch": {
+      "terminals": 80,
+      "electrical": "required_missing_intent_refusal"
+    },
+    "HALPI2-HDMI-FPC": {
+      "terminals": 64,
+      "electrical": "qualified_same_layer"
+    }
+  },
+  "required": [
+    "frozen V1 and FC1 regressions",
+    "actual raw FC1 oracle agreement",
+    "all declared layer replay and historical preservation",
+    "all native anchors",
+    "nominal exposure preservation",
+    "native physical continuity",
+    "all existing six fault controls per board",
+    "HAL qualified same-layer electrical checks",
+    "missing-intent electrical refusal",
+    "immutable source and historical integrity"
+  ],
+  "deferred_original_requirement": "GlowStitch R-INTENT: authoritative electrical connectivity and separation for all 80 pads",
+  "discharge_source": "Revision-bound qualified schematic, native named-net assignments, or authoritative terminal map; unknown/no-connect must be distinct.",
+  "tolerances": "Unchanged from original completion matrix",
+  "excluded": [
+    "full GlowStitch electrical correctness",
+    "whole-board/multilayer HAL correctness",
+    "factory approval",
+    "independent Cursor review"
+  ]
+}
