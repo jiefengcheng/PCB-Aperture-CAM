@@ -1,0 +1,11 @@
+{
+  "exported_gerber_validation": "NOT_RUN",
+  "external_source_downloads": "NOT_BUNDLED",
+  "internal_expectations": "PASS",
+  "internal_test_cases": 10,
+  "kicad_drc": "NOT_RUN",
+  "kicad_load": "NOT_RUN",
+  "manufacturing_validation": "NOT_ESTABLISHED",
+  "python": "3.13.5",
+  "shapely": "2.1.2"
+}

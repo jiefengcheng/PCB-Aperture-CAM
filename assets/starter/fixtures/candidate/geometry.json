@@ -1,0 +1,166 @@
+{
+  "apertures": [
+    {
+      "cx": 20.0,
+      "cy": 20.0,
+      "h": 1.4,
+      "id": "A1",
+      "layer": "F.Mask",
+      "role": "opening",
+      "w": 1.0
+    },
+    {
+      "cx": 20.0,
+      "cy": 26.0,
+      "h": 1.4,
+      "id": "A2",
+      "layer": "F.Mask",
+      "role": "opening",
+      "w": 1.0
+    },
+    {
+      "cx": 23.0,
+      "cy": 20.0,
+      "h": 1.4,
+      "id": "A3",
+      "layer": "F.Mask",
+      "role": "opening",
+      "w": 1.0
+    },
+    {
+      "cx": 23.0,
+      "cy": 26.0,
+      "h": 1.4,
+      "id": "A4",
+      "layer": "F.Mask",
+      "role": "opening",
+      "w": 1.0
+    }
+  ],
+  "coordinate_frame": "KiCad top view, +Y down, absolute board coordinates",
+  "objects": [
+    {
+      "cx": 20.05,
+      "cy": 20.0,
+      "h": 1.8,
+      "id": "P1",
+      "kind": "pad",
+      "layer": "F.Cu",
+      "net": "N1",
+      "w": 1.4
+    },
+    {
+      "cx": 20.0,
+      "cy": 26.0,
+      "h": 1.8,
+      "id": "P2",
+      "kind": "pad",
+      "layer": "F.Cu",
+      "net": "N1",
+      "w": 1.4
+    },
+    {
+      "cx": 23.0,
+      "cy": 20.0,
+      "h": 1.8,
+      "id": "P3",
+      "kind": "pad",
+      "layer": "F.Cu",
+      "net": "N2",
+      "w": 1.4
+    },
+    {
+      "cx": 23.0,
+      "cy": 26.0,
+      "h": 1.8,
+      "id": "P4",
+      "kind": "pad",
+      "layer": "F.Cu",
+      "net": "N2",
+      "w": 1.4
+    },
+    {
+      "end": [
+        20.05,
+        21.5
+      ],
+      "id": "T1",
+      "kind": "track",
+      "layer": "F.Cu",
+      "net": "N1",
+      "start": [
+        20.05,
+        20.0
+      ],
+      "width": 0.25
+    },
+    {
+      "end": [
+        20.0,
+        21.55
+      ],
+      "id": "T2",
+      "kind": "track",
+      "layer": "F.Cu",
+      "net": "N1",
+      "start": [
+        20.05,
+        21.5
+      ],
+      "width": 0.25
+    },
+    {
+      "end": [
+        20.0,
+        23.0
+      ],
+      "id": "T3",
+      "kind": "track",
+      "layer": "F.Cu",
+      "net": "N1",
+      "start": [
+        20.0,
+        21.55
+      ],
+      "width": 0.25
+    },
+    {
+      "end": [
+        20.0,
+        26.0
+      ],
+      "id": "T4",
+      "kind": "track",
+      "layer": "F.Cu",
+      "net": "N1",
+      "start": [
+        20.0,
+        23.0
+      ],
+      "width": 0.25
+    },
+    {
+      "end": [
+        23.0,
+        26.0
+      ],
+      "id": "T5",
+      "kind": "track",
+      "layer": "F.Cu",
+      "net": "N2",
+      "start": [
+        23.0,
+        20.0
+      ],
+      "width": 0.25
+    }
+  ],
+  "outline": [
+    17.0,
+    17.0,
+    26.0,
+    29.0
+  ],
+  "schema": "synthetic-aperture-coupon/1",
+  "units": "mm"
+}

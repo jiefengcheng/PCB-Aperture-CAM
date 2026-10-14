@@ -1,0 +1,19 @@
+{
+  "pairs": [
+    [
+      "P1",
+      "P2"
+    ],
+    [
+      "P3",
+      "P4"
+    ]
+  ],
+  "pin_net_intent": {
+    "P1": "N1",
+    "P2": "N1",
+    "P3": "N2",
+    "P4": "N2"
+  },
+  "source": "synthetic author-supplied intent; not inferred from copper"
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "cx": 20.0,
+    "cy": 20.0,
+    "h": 1.4,
+    "id": "A1",
+    "layer": "F.Mask",
+    "role": "opening",
+    "w": 1.0
+  },
+  {
+    "cx": 20.0,
+    "cy": 26.0,
+    "h": 1.4,
+    "id": "A2",
+    "layer": "F.Mask",
+    "role": "opening",
+    "w": 1.0
+  },
+  {
+    "cx": 23.0,
+    "cy": 20.0,
+    "h": 1.4,
+    "id": "A3",
+    "layer": "F.Mask",
+    "role": "opening",
+    "w": 1.0
+  },
+  {
+    "cx": 23.0,
+    "cy": 26.0,
+    "h": 1.4,
+    "id": "A4",
+    "layer": "F.Mask",
+    "role": "opening",
+    "w": 1.0
+  }
+]

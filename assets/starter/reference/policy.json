@@ -1,0 +1,57 @@
+{
+  "allowed_copper_change_rectangle": [
+    18.8,
+    18.8,
+    21.2,
+    23.2
+  ],
+  "allowed_pad_size_mm": [
+    1.4,
+    1.8
+  ],
+  "aperture_role": "opening",
+  "export_geometry_tolerance_mm": 0.001,
+  "id": "invented-demo-policy/1",
+  "limitations": [
+    "One front copper layer; axis-aligned rectangular pads and openings",
+    "No holes, zones, arcs, paste, components, bend, impedance or thermal constraints",
+    "JSON tests do not establish correctness of a KiCad or Gerber export"
+  ],
+  "maximum_nominal_center_error_xy_mm": 0.05,
+  "maximum_pad_move_mm": 0.5,
+  "minimum_copper_clearance_mm": 0.2,
+  "minimum_overlap_mm": 0.1,
+  "minimum_trace_width_mm": 0.2,
+  "mode": "copper_covers_aperture",
+  "pin_net_intent": {
+    "P1": "N1",
+    "P2": "N1",
+    "P3": "N2",
+    "P4": "N2"
+  },
+  "registration_uncertainty_xy_mm": 0.05,
+  "required_center_offset_xy_mm": [
+    0.0,
+    0.0
+  ],
+  "required_pairs": [
+    [
+      "P1",
+      "P2"
+    ],
+    [
+      "P3",
+      "P4"
+    ]
+  ],
+  "status": "SYNTHETIC_NOT_FACTORY_APPROVED",
+  "target_aperture": "A1",
+  "target_pad": "P1",
+  "units": "mm",
+  "write_ids": [
+    "P1",
+    "T1",
+    "T2",
+    "T3"
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aperture-constrained CAM V1 validation",
+  "type": "object",
+  "required": [
+    "report_version",
+    "inputs",
+    "policy_sha256",
+    "tool_versions",
+    "coordinate_transform",
+    "checks",
+    "overall",
+    "coverage",
+    "limitations",
+    "cursor_review"
+  ],
+  "properties": {
+    "report_version": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "object",
+      "required": [
+        "before",
+        "candidate"
+      ],
+      "properties": {
+        "before": {
+          "type": "object"
+        },
+        "candidate": {
+          "type": "object"
+        }
+      }
+    },
+    "policy_sha256": {
+      "type": "string"
+    },
+    "tool_versions": {
+      "type": "object"
+    },
+    "coordinate_transform": {
+      "type": "object"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "mandatory",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "NOT_ESTABLISHED",
+              "NOT_RUN"
+            ]
+          },
+          "mandatory": {
+            "type": "boolean"
+          },
+          "actual": {},
+          "expected": {},
+          "tolerance": {},
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "overall": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "NOT_ESTABLISHED"
+      ]
+    },
+    "coverage": {
+      "type": "object"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cursor_review": {
+      "type": "object"
+    }
+  }
+}

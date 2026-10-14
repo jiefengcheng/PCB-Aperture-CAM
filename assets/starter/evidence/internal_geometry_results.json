@@ -1,0 +1,349 @@
+{
+  "before": {
+    "checks": {
+      "aperture_layer_unchanged": true,
+      "board_outline_unchanged": true,
+      "copper_delta_inside_scope": true,
+      "different_net_clearance": true,
+      "maximum_motion": true,
+      "net_and_layer_identity_preserved": true,
+      "no_different_net_physical_merge": true,
+      "no_foreign_copper_exposure_at_target": true,
+      "nominal_center_registration": false,
+      "nominal_overlap": false,
+      "object_set_unchanged": true,
+      "pad_size_preserved": true,
+      "required_connectivity": true,
+      "required_exposure": false,
+      "robust_overlap": false,
+      "trace_widths": true,
+      "unrelated_objects_unchanged": true
+    },
+    "metrics": {
+      "aperture_area_mm2": 1.3999999999999986,
+      "minimum_different_net_clearance_mm": 1.25,
+      "pad_center_mm": [
+        20.35,
+        20.0
+      ],
+      "pad_displacement_mm": [
+        0.0,
+        0.0
+      ],
+      "target_exposed_copper_area_mm2": 1.1899999999999957
+    },
+    "not_established": [
+      "KiCad load and DRC",
+      "KiCad-exported Gerber geometry",
+      "Schematic parity",
+      "Fabricator acceptance",
+      "Physical registration or electrical performance"
+    ],
+    "status": "REJECT"
+  },
+  "candidate": {
+    "checks": {
+      "aperture_layer_unchanged": true,
+      "board_outline_unchanged": true,
+      "copper_delta_inside_scope": true,
+      "different_net_clearance": true,
+      "maximum_motion": true,
+      "net_and_layer_identity_preserved": true,
+      "no_different_net_physical_merge": true,
+      "no_foreign_copper_exposure_at_target": true,
+      "nominal_center_registration": true,
+      "nominal_overlap": true,
+      "object_set_unchanged": true,
+      "pad_size_preserved": true,
+      "required_connectivity": true,
+      "required_exposure": true,
+      "robust_overlap": true,
+      "trace_widths": true,
+      "unrelated_objects_unchanged": true
+    },
+    "metrics": {
+      "aperture_area_mm2": 1.3999999999999986,
+      "minimum_different_net_clearance_mm": 1.5500000000000007,
+      "pad_center_mm": [
+        20.05,
+        20.0
+      ],
+      "pad_displacement_mm": [
+        -0.3000000000000007,
+        0.0
+      ],
+      "target_exposed_copper_area_mm2": 1.3999999999999986
+    },
+    "not_established": [
+      "KiCad load and DRC",
+      "KiCad-exported Gerber geometry",
+      "Schematic parity",
+      "Fabricator acceptance",
+      "Physical registration or electrical performance"
+    ],
+    "status": "PASS_INTERNAL_GEOMETRY"
+  },
+  "infeasible_fixed_pad": {
+    "reason": "Fixed pad cannot cover robust opening; resizing is not authorized",
+    "status": "NO_FEASIBLE_RECTANGULAR_TRANSLATION"
+  },
+  "needs_review_role": {
+    "checks": {
+      "known_aperture_role": false
+    },
+    "reason": "Aperture polarity/role is unresolved.",
+    "status": "NEEDS_REVIEW"
+  },
+  "reject_connection_cut": {
+    "checks": {
+      "aperture_layer_unchanged": true,
+      "board_outline_unchanged": true,
+      "copper_delta_inside_scope": true,
+      "different_net_clearance": true,
+      "maximum_motion": true,
+      "net_and_layer_identity_preserved": false,
+      "no_different_net_physical_merge": true,
+      "no_foreign_copper_exposure_at_target": true,
+      "nominal_center_registration": true,
+      "nominal_overlap": true,
+      "object_set_unchanged": false,
+      "pad_size_preserved": true,
+      "required_connectivity": false,
+      "required_exposure": true,
+      "robust_overlap": true,
+      "trace_widths": true,
+      "unrelated_objects_unchanged": true
+    },
+    "metrics": {
+      "aperture_area_mm2": 1.3999999999999986,
+      "minimum_different_net_clearance_mm": 1.5500000000000007,
+      "pad_center_mm": [
+        20.05,
+        20.0
+      ],
+      "pad_displacement_mm": [
+        -0.3000000000000007,
+        0.0
+      ],
+      "target_exposed_copper_area_mm2": 1.3999999999999986
+    },
+    "not_established": [
+      "KiCad load and DRC",
+      "KiCad-exported Gerber geometry",
+      "Schematic parity",
+      "Fabricator acceptance",
+      "Physical registration or electrical performance"
+    ],
+    "status": "REJECT"
+  },
+  "reject_mask_moved": {
+    "checks": {
+      "aperture_layer_unchanged": false,
+      "board_outline_unchanged": true,
+      "copper_delta_inside_scope": true,
+      "different_net_clearance": true,
+      "maximum_motion": true,
+      "net_and_layer_identity_preserved": true,
+      "no_different_net_physical_merge": true,
+      "no_foreign_copper_exposure_at_target": true,
+      "nominal_center_registration": true,
+      "nominal_overlap": true,
+      "object_set_unchanged": true,
+      "pad_size_preserved": true,
+      "required_connectivity": true,
+      "required_exposure": true,
+      "robust_overlap": true,
+      "trace_widths": true,
+      "unrelated_objects_unchanged": true
+    },
+    "metrics": {
+      "aperture_area_mm2": 1.3999999999999986,
+      "minimum_different_net_clearance_mm": 1.5500000000000007,
+      "pad_center_mm": [
+        20.05,
+        20.0
+      ],
+      "pad_displacement_mm": [
+        -0.3000000000000007,
+        0.0
+      ],
+      "target_exposed_copper_area_mm2": 1.3999999999999986
+    },
+    "not_established": [
+      "KiCad load and DRC",
+      "KiCad-exported Gerber geometry",
+      "Schematic parity",
+      "Fabricator acceptance",
+      "Physical registration or electrical performance"
+    ],
+    "status": "REJECT"
+  },
+  "reject_nominal_only": {
+    "checks": {
+      "aperture_layer_unchanged": true,
+      "board_outline_unchanged": true,
+      "copper_delta_inside_scope": true,
+      "different_net_clearance": true,
+      "maximum_motion": true,
+      "net_and_layer_identity_preserved": true,
+      "no_different_net_physical_merge": true,
+      "no_foreign_copper_exposure_at_target": true,
+      "nominal_center_registration": false,
+      "nominal_overlap": true,
+      "object_set_unchanged": true,
+      "pad_size_preserved": true,
+      "required_connectivity": true,
+      "required_exposure": true,
+      "robust_overlap": false,
+      "trace_widths": true,
+      "unrelated_objects_unchanged": true
+    },
+    "metrics": {
+      "aperture_area_mm2": 1.3999999999999986,
+      "minimum_different_net_clearance_mm": 1.5200000000000031,
+      "pad_center_mm": [
+        20.08,
+        20.0
+      ],
+      "pad_displacement_mm": [
+        -0.2700000000000031,
+        0.0
+      ],
+      "target_exposed_copper_area_mm2": 1.3999999999999986
+    },
+    "not_established": [
+      "KiCad load and DRC",
+      "KiCad-exported Gerber geometry",
+      "Schematic parity",
+      "Fabricator acceptance",
+      "Physical registration or electrical performance"
+    ],
+    "status": "REJECT"
+  },
+  "reject_scope": {
+    "checks": {
+      "aperture_layer_unchanged": true,
+      "board_outline_unchanged": true,
+      "copper_delta_inside_scope": false,
+      "different_net_clearance": true,
+      "maximum_motion": true,
+      "net_and_layer_identity_preserved": true,
+      "no_different_net_physical_merge": true,
+      "no_foreign_copper_exposure_at_target": true,
+      "nominal_center_registration": true,
+      "nominal_overlap": true,
+      "object_set_unchanged": true,
+      "pad_size_preserved": true,
+      "required_connectivity": true,
+      "required_exposure": true,
+      "robust_overlap": true,
+      "trace_widths": true,
+      "unrelated_objects_unchanged": false
+    },
+    "metrics": {
+      "aperture_area_mm2": 1.3999999999999986,
+      "minimum_different_net_clearance_mm": 1.6000000000000014,
+      "pad_center_mm": [
+        20.05,
+        20.0
+      ],
+      "pad_displacement_mm": [
+        -0.3000000000000007,
+        0.0
+      ],
+      "target_exposed_copper_area_mm2": 1.3999999999999986
+    },
+    "not_established": [
+      "KiCad load and DRC",
+      "KiCad-exported Gerber geometry",
+      "Schematic parity",
+      "Fabricator acceptance",
+      "Physical registration or electrical performance"
+    ],
+    "status": "REJECT"
+  },
+  "reject_short": {
+    "checks": {
+      "aperture_layer_unchanged": true,
+      "board_outline_unchanged": true,
+      "copper_delta_inside_scope": false,
+      "different_net_clearance": false,
+      "maximum_motion": true,
+      "net_and_layer_identity_preserved": true,
+      "no_different_net_physical_merge": false,
+      "no_foreign_copper_exposure_at_target": true,
+      "nominal_center_registration": true,
+      "nominal_overlap": true,
+      "object_set_unchanged": false,
+      "pad_size_preserved": true,
+      "required_connectivity": true,
+      "required_exposure": true,
+      "robust_overlap": true,
+      "trace_widths": true,
+      "unrelated_objects_unchanged": true
+    },
+    "metrics": {
+      "aperture_area_mm2": 1.3999999999999986,
+      "minimum_different_net_clearance_mm": 0.0,
+      "pad_center_mm": [
+        20.05,
+        20.0
+      ],
+      "pad_displacement_mm": [
+        -0.3000000000000007,
+        0.0
+      ],
+      "target_exposed_copper_area_mm2": 1.3999999999999986
+    },
+    "not_established": [
+      "KiCad load and DRC",
+      "KiCad-exported Gerber geometry",
+      "Schematic parity",
+      "Fabricator acceptance",
+      "Physical registration or electrical performance"
+    ],
+    "status": "REJECT"
+  },
+  "reject_trace_width": {
+    "checks": {
+      "aperture_layer_unchanged": true,
+      "board_outline_unchanged": true,
+      "copper_delta_inside_scope": true,
+      "different_net_clearance": true,
+      "maximum_motion": true,
+      "net_and_layer_identity_preserved": true,
+      "no_different_net_physical_merge": true,
+      "no_foreign_copper_exposure_at_target": true,
+      "nominal_center_registration": true,
+      "nominal_overlap": true,
+      "object_set_unchanged": true,
+      "pad_size_preserved": true,
+      "required_connectivity": true,
+      "required_exposure": true,
+      "robust_overlap": true,
+      "trace_widths": false,
+      "unrelated_objects_unchanged": true
+    },
+    "metrics": {
+      "aperture_area_mm2": 1.3999999999999986,
+      "minimum_different_net_clearance_mm": 1.5500000000000007,
+      "pad_center_mm": [
+        20.05,
+        20.0
+      ],
+      "pad_displacement_mm": [
+        -0.3000000000000007,
+        0.0
+      ],
+      "target_exposed_copper_area_mm2": 1.3999999999999986
+    },
+    "not_established": [
+      "KiCad load and DRC",
+      "KiCad-exported Gerber geometry",
+      "Schematic parity",
+      "Fabricator acceptance",
+      "Physical registration or electrical performance"
+    ],
+    "status": "REJECT"
+  }
+}

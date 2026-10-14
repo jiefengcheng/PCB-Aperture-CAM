@@ -1,0 +1,15 @@
+# Repository-scoped instructions for Codex
+
+You are implementing **PCB Aperture CAM V1**, a newly isolated project. This file is authoritative for every agent acting within this checkout.
+
+1. Operate **only** under this checkout; do not inspect, open, reset, commit, or modify any adjacent repository, user research project, C7/C8, LPA/Viewer lane, iPhone lane, NAS mirror, or global Codex/Cursor configuration. No cross-project coupling.
+2. Codex is the **sole coordinator, author, integrator and decision owner**. Cursor (if available through a genuine authenticated agent/tool channel to Codex) receives a frozen read-only review packet on this checkout; Cursor must never take over integration. If no direct channel, mark independent review `NOT_RUN: CHANNEL_UNAVAILABLE` and stop without pretending it happened or asking the user to relay messages.
+3. `assets/` is **immutable**. Verify manifest hashes before every baseline run. All builds, candidate exports, negative mutations and reports go under `out/` or the separate source code `src/` + `tests/`. Do not edit or regenerate source fixtures in place.
+4. Baseline is **generated candidate P1 center X=20.05 mm**, with before X=20.35 mm, aperture X=20.00 mm. Treat `assets/starter/fixtures/candidate` as the authoritative target. `assets/observed_before/` contains only an independently plotted before export. **No KiCad-exported candidate is supplied**. Before a claim about actual KiCad candidate Gerber, execute native export from source and record its tool/version/commands.
+5. Do not confuse (a) synthetic JSON internal checker results, (b) generated reference Gerbers, (c) user-observed before Gerbers, or (d) freshly KiCad-plotted candidate Gerbers. Report their different evidentiary roles and limitations.
+6. V1 only: use a maintained Gerber parser and an explicit, tolerance-bounded geometry kernel to validate mask stability, exposure/registration, geometry of copper, connectivity vs independent net intent, clearance and change scope. Unsupported semantics, units or polarity cannot be silent passes. `PASS`, `FAIL`, `NOT_ESTABLISHED` and `NOT_RUN` must be distinct.
+7. Keep scripts and tests deterministic; pin tested versions, retain source hashes, record tool versions and execution evidence. Tests must include deliberate corrupted Gerber cases that fail for the correct reason. Native DRC is supplementary, not final acceptance; manufacturing/DFM approval remains outside this experiment.
+8. No GitHub remote write, upload, plugin installation, external account access, network data exposure, or other cross-service action without explicit authorization. Install *project-local* Python dependencies only if required by the current milestone. Do not clone third-party PCB designs for V1.
+9. Stop after the V1 decision and report precisely what was and was not established. The user must explicitly authorize V2 automatic editing or V3 AI planning.
+
+Read `docs/CODEX_HANDOFF.md`, `docs/ACCEPTANCE.md`, `docs/CURSOR_PROTOCOL.md`, `docs/PROVENANCE.md` and `docs/STATUS.md` before changing code.

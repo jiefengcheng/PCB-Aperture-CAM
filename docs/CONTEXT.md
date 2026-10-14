@@ -1,0 +1,3 @@
+# Why this project exists (non-authoritative high-level context)
+
+This work explores a manufacturing-CAM scenario where supplied Gerber artwork needs controlled copper edits in conjunction with solder-mask/coverlay openings, preserved physical connections and manufacturing clearances. A prior proposal describes geometric grouping and SQLite storage; it does not automatically establish a fully functioning repair loop. The near-term task is narrower: independently **verify** one exact synthetic pad+trace adjustment relative to an immutable aperture in actual Gerber outputs. Do not build document agents or infer unpublished factory constraints in V1.

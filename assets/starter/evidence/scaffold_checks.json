@@ -1,0 +1,7 @@
+{
+  "generated_native_sexpr_balanced": true,
+  "object_identifiers_unique": true,
+  "before_candidate_reference_mask_bytes_identical": true,
+  "independent_kicad_parser_test": "NOT_RUN",
+  "independent_gerber_parser_test": "NOT_RUN"
+}
