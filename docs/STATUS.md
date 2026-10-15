@@ -90,3 +90,8 @@ started.
 ## Client delivery maintenance — 2026-10-15
 
 [CLIENT_ISSUES.md](CLIENT_ISSUES.md) records resolved verifier/build/provenance issues and remaining limits. Historical client receipts now verify through explicit legacy handling; new bundles use the common receipt envelope. Replay generation rejects stale operation evidence and omits recordings/obsolete reviews from copied operation artifacts. Strict asset inventory still reports extra `assets/.DS_Store`; no clean current full-suite claim or expanded CAM scope.
+
+
+## User-directed metadata cleanup — 2026-10-15
+
+The user explicitly requested removal of `assets/.DS_Store`. Removed only that untracked macOS metadata file; all 70 frozen asset hashes and strict inventory now pass. Fresh full suite: **114 tests PASS**. Logs: `out/client_consolidation/20261015_metadata_cleanup/`. This resolves the inventory/full-suite blocker above without changing PCB inputs or historical receipts.

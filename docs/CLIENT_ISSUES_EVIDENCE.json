@@ -26,5 +26,15 @@
   "original_video_unchanged": true,
   "focused_tests": "18 PASS",
   "test_log_sha256": "1be6f9ecae9d5c4d615cda795e3740f13a0b3daf02c42f0a103348b5c4a42759",
-  "visual_geometry_and_stored_state_checks_unchanged": true
+  "visual_geometry_and_stored_state_checks_unchanged": true,
+  "metadata_cleanup_followup": {
+    "removed": "assets/.DS_Store",
+    "authorization": "Explicit user instruction",
+    "strict_asset_inventory": "PASS: 70 frozen assets",
+    "full_suite": "PASS: 114 tests",
+    "logs": {
+      "out/client_consolidation/20261015_metadata_cleanup/assets.log": "1127a3d3dca828ff57a89be2ef9f6d837ba3cce39b571b47e3862737a4e2892d",
+      "out/client_consolidation/20261015_metadata_cleanup/full_tests.log": "f9414880fd54c45d5d5598d052f1663bd63e9c68c04dbfcdeab609011433bf2a"
+    }
+  }
 }

@@ -58,3 +58,8 @@ The user accepted the one-region client plan, authorized full implementation/rev
 ## D-019 — Consolidate discovered delivery issues, 2026-10-15
 
 The user clarified “no new step but to consolidate discovered/left issues.” Authorize project-local maintenance of existing delivery: explicit receipt compatibility and fail-closed validation, common future bundle receipts, accurate dirty-state provenance, exclusion of recordings/obsolete review notes, and source/candidate/control hash admission before replay generation. Add corruption regressions and retain exact fresh receipts. Preserve immutable assets including the extra `.DS_Store`, all old bundles/video/frozen decisions and existing engineering limits. Track unresolved items in CLIENT_ISSUES.md. No new operation, parser support, implementation stage or publication.
+
+
+## D-020 — Explicit metadata removal, 2026-10-15
+
+The user explicitly instructed removal of the extra `.DS_Store`, superseding preservation solely for `assets/.DS_Store`. Removed only that file; all 70 frozen assets pass strict inventory and 114 full-suite tests pass. Preserve historical failure receipts and other isolation/immutability rules. No new stage or remote action.

@@ -38,3 +38,8 @@ The user requested consolidation after accepting the implementation and replay d
 ## Subsequent issue consolidation — 2026-10-15
 
 [CLIENT_ISSUES.md](CLIENT_ISSUES.md) tracks maintenance after this historical closeout. The generic-receipt incompatibility is now fixed with explicit legacy support, while future bundles use the common receipt format. Builder provenance, output copying and operation-input integrity are tightened. The original bundle/video receipts remain unchanged; strict asset inventory and engineering coverage limits remain explicit.
+
+
+## Inventory blocker resolved — 2026-10-15
+
+Following explicit user instruction, removed only `assets/.DS_Store`. Strict inventory now passes all 70 frozen assets, and a fresh full-suite run passes 114 tests. Earlier incomplete-suite statements remain historical; evidence is retained under `out/client_consolidation/20261015_metadata_cleanup/`. Engineering and independent-review limits are unchanged.
