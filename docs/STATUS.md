@@ -80,3 +80,8 @@ SHADOW_ONLY; custom C++ B/R-tree and general native reassembly remain explicit
 gaps. Original aggregate V1.5, GlowStitch electrical intent, Cursor review and
 manufacturing limitations retain their prior statuses. No next feature gate is
 started.
+
+
+## Client Gerber demonstration consolidated — 2026-10-15
+
+[CLIENT_OPERATION_DECISION.md](CLIENT_OPERATION_DECISION.md) records the bounded real-data result, nine-step walkthrough and 2:17 narrated replay. Nine local checks pass; open/bridge/admission controls reject and preserve accepted output. All 42 client source hashes, 70 expected asset hashes and 66 visual snapshots verify. Strict asset inventory still fails on preserved `assets/.DS_Store`; no clean current full-suite result is claimed. The custom bundle receipt is checked by an additive audit, not the generic verifier. [CLIENT_OPERATION_EVIDENCE.json](CLIENT_OPERATION_EVIDENCE.json) freezes receipt hashes. Historical decisions remain unchanged; no new stage or publication begins.

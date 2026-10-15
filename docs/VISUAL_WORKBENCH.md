@@ -61,3 +61,8 @@ Detailed browser observations: `/Users/geoffcheng/Projects/client/PCB/aperture_a
 AGENTS.md now requires an applicable visual case bundle with each meaningful engineering checkpoint: principal positive case, relevant failure, exact evidence/identity, scoped decision and remaining unknowns. Extend this same scene/viewer path for later authorized work rather than starting another frontend project or approval gate.
 
 The viewer consumes the already recorded pcb_Z source-group and operation plan from V2; its adapter does not inspect/import pcb_Z. The existing V2 regression tests still exercise their previously authorized read-only helper adapter; no new legacy qualification, merger or SQLite work occurred. No new V2/V3 execution, parser support, dataset acquisition, other research lane, global configuration or remote publication occurred. Cursor stays NOT_RUN: CHANNEL_UNAVAILABLE. Manufacturing remains NOT_ESTABLISHED. Original V1.5 aggregate and all prior scoped results remain unchanged.
+
+
+## Current client delivery — 2026-10-15
+
+The earlier workbench described above remains historical. The current client bundle is `out/visual/client_20261015T053027_782777Z`, selected by `out/client_demo/current.txt`. It adds a nine-step project walkthrough over real client inspection and one bounded operation, alongside the existing coupon/public cases. The exact delivery, video, review status and verification limits are consolidated in [CLIENT_OPERATION_DECISION.md](CLIENT_OPERATION_DECISION.md); use [CLIENT_DATA_DEMO.md](CLIENT_DATA_DEMO.md) to run and present it.

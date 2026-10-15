@@ -1,0 +1,35 @@
+{
+  "status": "PASS_FOR_DELIVERY_HASH_AND_RECEIPT_CONSISTENCY",
+  "scope": "Read-only custody/receipt audit; no new geometry execution or full-suite claim",
+  "operation_run": "out/client_operation/run_20261015T050705_750904Z",
+  "visual_bundle": "out/visual/client_20261015T053027_782777Z",
+  "client_source_files_verified": 42,
+  "frozen_asset_hashes_verified": 70,
+  "extra_asset_inventory_files": [
+    "assets/.DS_Store"
+  ],
+  "strict_asset_inventory_status": "FAIL",
+  "visual_snapshot_hashes_verified": 66,
+  "embedded_scene_matches_retained_scene": true,
+  "generated_bundle_source_hashes_match_checkout": true,
+  "accepted_checks": 9,
+  "control_failures": {
+    "open": [
+      "connection"
+    ],
+    "bridge": [
+      "protected_objects",
+      "separation"
+    ]
+  },
+  "video_sha256": "2a011a2a7b4147dce96475cfbda567db768d8461421c61a614666f3572322979",
+  "recording_manifest_sha256": "32fbcee973901f08b8f19764dea8cf0ec6e6a5558a2a9c618681ae9a4558a1b3",
+  "ui_review_sha256": "6e9e1ee32164ceac79f3ad07294870b06b0a1880d2a66294100a66bc8538b603",
+  "operation_result_sha256": "ff7778b43b7d11c7e67afe6b7a248939e22faee50e08e51aa32fb7c19529248b",
+  "build_receipt_sha256": "6ba6d3f9f055ba17cc8aec1b351f4f77da37be5ec734525b6a2de41435364a7a",
+  "independent_cursor_review": "NOT_RUN: CHANNEL_UNAVAILABLE",
+  "manufacturing": "NOT_ESTABLISHED",
+  "known_verification_limit": "Generic verify_visual_bundle.py requires status/outputs fields absent from this custom build receipt. This additive audit validates its actual format without rewriting historical receipts.",
+  "audit_path": "out/client_consolidation/20261015_closeout/audit.json",
+  "audit_sha256": "5e2c68d279e2fcabb176ec5994a9ffbb153ce22bf909940793ab216b59d84ef0"
+}
