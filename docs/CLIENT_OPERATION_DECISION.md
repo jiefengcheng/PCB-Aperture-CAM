@@ -33,3 +33,8 @@ The top copper's 304 zero-width interpolation warnings keep that view display-on
 ## Closeout boundary
 
 The user requested consolidation after accepting the implementation and replay delivery. Commit only project-local source and documentation; keep client artwork, generated outputs and recordings local and Git-ignored. No remote upload or new implementation stage follows from this closeout. Frozen decisions and historical evidence remain intact.
+
+
+## Subsequent issue consolidation — 2026-10-15
+
+[CLIENT_ISSUES.md](CLIENT_ISSUES.md) tracks maintenance after this historical closeout. The generic-receipt incompatibility is now fixed with explicit legacy support, while future bundles use the common receipt format. Builder provenance, output copying and operation-input integrity are tightened. The original bundle/video receipts remain unchanged; strict asset inventory and engineering coverage limits remain explicit.

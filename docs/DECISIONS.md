@@ -53,3 +53,8 @@ User supplied/adopted the visual handoff and requested a working evidence-linked
 ## D-018 — Client Gerber operation and consolidated delivery, 2026-10-15
 
 The user accepted the one-region client plan, authorized full implementation/review/video, and then requested consolidation. Close the bounded bottom-copper R140.1 demonstration with actual candidate export/reparse, nine local PASS checks, expected open/bridge/admission rejections, accepted-artifact preservation and evidence-linked replay. The +0.35 mm challenge is artificial; accepted bytes equal the already-aligned source. Consolidate source, runbook, decision and hash register in a local commit. Retain client data/generated artifacts outside Git. Preserve the asset-inventory/full-suite and custom-receipt-verifier limitations explicitly. Cursor review NOT_RUN: CHANNEL_UNAVAILABLE; no manufacturing/whole-board claim, remote publication or new stage. See CLIENT_OPERATION_DECISION.md.
+
+
+## D-019 — Consolidate discovered delivery issues, 2026-10-15
+
+The user clarified “no new step but to consolidate discovered/left issues.” Authorize project-local maintenance of existing delivery: explicit receipt compatibility and fail-closed validation, common future bundle receipts, accurate dirty-state provenance, exclusion of recordings/obsolete review notes, and source/candidate/control hash admission before replay generation. Add corruption regressions and retain exact fresh receipts. Preserve immutable assets including the extra `.DS_Store`, all old bundles/video/frozen decisions and existing engineering limits. Track unresolved items in CLIENT_ISSUES.md. No new operation, parser support, implementation stage or publication.

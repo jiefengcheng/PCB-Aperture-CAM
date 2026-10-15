@@ -45,3 +45,29 @@ class BundleVerifierTests(unittest.TestCase):
             r=json.loads((p/'build_receipt.json').read_text());r['embedded_transport']='gzip-base64'
             r['html_sha256']=hashlib.sha256((p/'index.html').read_bytes()).hexdigest();r['outputs']['index.html']=r['html_sha256'];(p/'build_receipt.json').write_text(json.dumps(r))
             self.assertEqual(verify(p)['status'],'PASS')
+
+    def test_historical_client_receipt_verifies_bytes_without_inventing_generation(self):
+        with temporary_directory() as d:
+            p=Path(d);self.fixture(p)
+            client=p/'evidence/client';(client/'operation').mkdir(parents=True)
+            (client/'receipt.json').write_text('{}');(client/'operation/result.json').write_text('{}')
+            r=json.loads((p/'build_receipt.json').read_text())
+            r.pop('status');r.pop('outputs')
+            r.update(scope='Client Gerber inspection plus bounded local operation replay',source_unchanged=True,
+                     client_receipt_sha256=hashlib.sha256(b'{}').hexdigest(),operation_result_sha256=hashlib.sha256(b'{}').hexdigest())
+            (p/'build_receipt.json').write_text(json.dumps(r))
+            result=verify(p)
+            self.assertEqual(result['status'],'PASS')
+            self.assertEqual(result['generation_status'],'NOT_RECORDED')
+            self.assertEqual(result['receipt_format'],'legacy-client')
+            (client/'operation/result.json').write_text('{"changed":true}')
+            self.assertIn('HASH_MISMATCH',{e['error'] for e in verify(p)['errors']})
+
+    def test_incomplete_or_unknown_receipt_fails_without_crashing(self):
+        with temporary_directory() as d:
+            p=Path(d);self.fixture(p)
+            r=json.loads((p/'build_receipt.json').read_text());r.pop('outputs')
+            (p/'build_receipt.json').write_text(json.dumps(r))
+            self.assertEqual(verify(p)['status'],'FAIL')
+            r.pop('html_sha256');(p/'build_receipt.json').write_text(json.dumps(r))
+            self.assertEqual(verify(p)['errors'][0]['error'],'INVALID_RECEIPT')

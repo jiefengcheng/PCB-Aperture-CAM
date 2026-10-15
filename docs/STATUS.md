@@ -85,3 +85,8 @@ started.
 ## Client Gerber demonstration consolidated — 2026-10-15
 
 [CLIENT_OPERATION_DECISION.md](CLIENT_OPERATION_DECISION.md) records the bounded real-data result, nine-step walkthrough and 2:17 narrated replay. Nine local checks pass; open/bridge/admission controls reject and preserve accepted output. All 42 client source hashes, 70 expected asset hashes and 66 visual snapshots verify. Strict asset inventory still fails on preserved `assets/.DS_Store`; no clean current full-suite result is claimed. The custom bundle receipt is checked by an additive audit, not the generic verifier. [CLIENT_OPERATION_EVIDENCE.json](CLIENT_OPERATION_EVIDENCE.json) freezes receipt hashes. Historical decisions remain unchanged; no new stage or publication begins.
+
+
+## Client delivery maintenance — 2026-10-15
+
+[CLIENT_ISSUES.md](CLIENT_ISSUES.md) records resolved verifier/build/provenance issues and remaining limits. Historical client receipts now verify through explicit legacy handling; new bundles use the common receipt envelope. Replay generation rejects stale operation evidence and omits recordings/obsolete reviews from copied operation artifacts. Strict asset inventory still reports extra `assets/.DS_Store`; no clean current full-suite claim or expanded CAM scope.

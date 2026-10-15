@@ -2,7 +2,7 @@
 
 **Current delivery: a bounded client-Gerber operation, nine-step workbench walkthrough, and narrated replay.**
 
-Start with [Client demonstration](docs/CLIENT_DATA_DEMO.md) and [consolidated decision](docs/CLIENT_OPERATION_DECISION.md). The source artwork is already aligned; a labeled controlled offset exercises automatic candidate generation, local validation and rejection/rollback. See the decision for the incomplete full-suite check and receipt-format limitation. Client data, evidence and video remain local under ignored directories. Cursor review is NOT_RUN; manufacturing approval is NOT_ESTABLISHED.
+Start with [Client demonstration](docs/CLIENT_DATA_DEMO.md) and [consolidated decision](docs/CLIENT_OPERATION_DECISION.md). The source artwork is already aligned; a labeled controlled offset exercises automatic candidate generation, local validation and rejection/rollback. See the decision for the remaining strict asset-inventory limitation; [delivery issues](docs/CLIENT_ISSUES.md) records maintenance fixes. Client data, evidence and video remain local under ignored directories. Cursor review is NOT_RUN; manufacturing approval is NOT_ESTABLISHED.
 
 The original V1 handoff below is retained as historical bootstrap context.
 

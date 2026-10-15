@@ -1,0 +1,30 @@
+{
+  "fresh_bundle": "out/visual/client_20261015T074543_446151Z",
+  "fresh_build_receipt_sha256": "82ed852b4c1f0191ac008d6ab25e14a8ef4a18e2ef85588d94cee311efa2424b",
+  "fresh_verification": {
+    "status": "PASS",
+    "scope": "retained snapshot bytes and embedded scene only; no live source or authorship claim",
+    "manifest_outputs": 169,
+    "receipt_format": "common",
+    "generation_status": "PASS",
+    "errors": []
+  },
+  "old_bundle_verification": {
+    "status": "PASS",
+    "scope": "retained snapshot bytes and embedded scene only; no live source or authorship claim",
+    "manifest_outputs": 4,
+    "receipt_format": "legacy-client",
+    "generation_status": "NOT_RECORDED",
+    "errors": []
+  },
+  "excluded_recordings_and_obsolete_review": true,
+  "source_hashes_match_checkout": true,
+  "expected_asset_hashes_verified": 70,
+  "strict_asset_inventory_extras": [
+    "assets/.DS_Store"
+  ],
+  "original_video_unchanged": true,
+  "focused_tests": "18 PASS",
+  "test_log_sha256": "1be6f9ecae9d5c4d615cda795e3740f13a0b3daf02c42f0a103348b5c4a42759",
+  "visual_geometry_and_stored_state_checks_unchanged": true
+}

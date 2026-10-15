@@ -1,4 +1,4 @@
-"""Local client Gerber inspection using the existing workbench; no edit/acceptance."""
+"""Client Gerber inspection and recorded bounded-operation replay; no live edits."""
 from pathlib import Path
 import base64, collections, datetime, gzip, hashlib, json, shutil, subprocess, sys, time, warnings
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -11,6 +11,30 @@ from src.visual_scene import ROOT, svg_path, bounds, sha
 from tools.visual_report import embed_scene
 
 
+def verify_operation_evidence(source, operation_run, result, contract):
+    """Refuse stale or altered operation evidence before composing a replay."""
+    def bound(path, expected):
+        if not path.is_file() or sha(path)!=expected:
+            raise RuntimeError(f'Operation evidence hash mismatch: {path.name}')
+    if result.get('status')!='PASS':
+        raise RuntimeError('Operation result is not PASS')
+    bound(operation_run/'contract.json',result['contract_sha256'])
+    current={str(p.relative_to(source)):sha(p) for p in source.rglob('*') if p.is_file()}
+    if current!=result['source_sha256']:
+        raise RuntimeError('Client sources differ from recorded operation')
+    bound(source/'vme-wren-Bottom Layer.gbr',contract['source_sha256'])
+    bound(source/'vme-wren-Bottom Solder.gbr',contract['mask_sha256'])
+    bound(operation_run/'controlled_before.gbr',contract['input_sha256'])
+    bound(operation_run/'accepted/candidate.gbr',result['positive']['candidate_sha256'])
+    if json.loads((operation_run/'accepted/validation.json').read_text())!=result['positive']:
+        raise RuntimeError('Accepted validation differs from recorded operation')
+    for name,control in result['controls'].items():
+        if name not in ('open','bridge'):
+            raise RuntimeError('Unknown operation control')
+        bound(operation_run/name/'candidate.gbr',control['candidate_sha256'])
+        bound(operation_run/name/'validation.json',control['report_sha256'])
+
+
 def main():
     source = ROOT/'external/sources/12_copper_layers_pcb_gbr'
     base = Path((ROOT/'out/consolidation/current_visual.txt').read_text().strip())
@@ -21,8 +45,7 @@ def main():
     operation_run=Path((ROOT/'out/client_operation/current.txt').read_text().strip())
     operation_result=json.loads((operation_run/'result.json').read_text())
     operation_contract=json.loads((operation_run/'contract.json').read_text())
-    if operation_result.get('status')!='PASS' or sha(operation_run/'contract.json')!=operation_result['contract_sha256']:
-        raise RuntimeError('Latest client operation lacks a hash-bound PASS result')
+    verify_operation_evidence(source,operation_run,operation_result,operation_contract)
     # Retain all existing relative evidence links without changing the prior bundle.
     for p in base.iterdir():
         if p.is_dir(): shutil.copytree(p,run/p.name)
@@ -58,7 +81,7 @@ def main():
         scene['geometry'][key]={'path':svg_path(display),'bounds':bounds(display,0),'basis':'Observed client Gerber; Y flipped for display; inspection only'}
         return key
     keys={layer:register(g) for layer,g in geometries.items()}
-    operation_copy=evdir/'operation'; shutil.copytree(operation_run,operation_copy)
+    operation_copy=evdir/'operation'; shutil.copytree(operation_run,operation_copy,ignore=shutil.ignore_patterns('recording','local_review.json'))
     operation_report='evidence/client/operation/result.json'
     def region_for(path):return read_region(path,operation_contract['allowed_region_mm'])
     opfiles={'input':operation_run/'controlled_before.gbr','source':source/'vme-wren-Bottom Layer.gbr','accepted':operation_run/'accepted/candidate.gbr','open':operation_run/'open/candidate.gbr','bridge':operation_run/'bridge/candidate.gbr'}
@@ -128,7 +151,7 @@ def main():
     scene['cases'][0:0]=[opcase,case]
     scene['provenance'].append({'path':str(source.relative_to(ROOT)),'snapshot':'evidence/client/receipt.json','sha256':sha(evdir/'receipt.json')})
     sources=['tools/client_visual_demo.py','tools/client_operation_run.py','src/client_gerber.py','src/client_operation.py','src/client_validation.py','src/gerber_image.py','web/workbench.js','web/workbench.html','web/replay_model.js','web/pipeline_views.js','web/backend_model.js']
-    scene['build']={'code_commit':case['code_commit'],'working_tree_dirty':True,'source_sha256':{p:sha(ROOT/p) for p in sources},'base_scene_sha256':sha(base/'scene.json')}
+    scene['build']={'code_commit':case['code_commit'],'working_tree_dirty':bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True).strip()),'source_sha256':{p:sha(ROOT/p) for p in sources},'base_scene_sha256':sha(base/'scene.json')}
     raw=embed_scene(scene);digest=hashlib.sha256(raw.encode()).hexdigest();encoded=raw;transport='plain-json'
     if len(raw.encode())>32*1024*1024:
         transport='gzip-base64';encoded=base64.b64encode(gzip.compress(raw.encode(),mtime=0)).decode()
@@ -144,7 +167,7 @@ def main():
         attrs=f'fill="{color}"' if layer=='B.Cu' else f'fill="none" stroke="{color}" stroke-width=".025"'
         svg+=f'<path d="{scene["geometry"][s["layers"][layer]]["path"]}" fill-rule="evenodd" {attrs}/>'
     (run/'client_overview.svg').write_text(svg+'</svg>')
-    (run/'build_receipt.json').write_text(json.dumps({'scope':receipt['scope'],'scene_sha256':digest,'scene_bytes':len(raw.encode()),'html_sha256':sha(run/'index.html'),'html_bytes':len(page.encode()),'embedded_transport':transport,'source_unchanged':True,'client_receipt_sha256':sha(evdir/'receipt.json'),'operation_result_sha256':sha(operation_run/'result.json'),'source_sha256':scene['build']['source_sha256']},indent=2)+'\n')
+    (run/'build_receipt.json').write_text(json.dumps({'schema':'visual-bundle-receipt-v1','status':'PASS','outputs':{str(p.relative_to(run)):sha(p) for p in sorted(run.rglob('*')) if p.is_file() and p!=run/'build_receipt.json'},'scope':receipt['scope'],'scene_sha256':digest,'scene_bytes':len(raw.encode()),'html_sha256':sha(run/'index.html'),'html_bytes':len(page.encode()),'embedded_transport':transport,'source_unchanged':True,'client_receipt_sha256':sha(evdir/'receipt.json'),'operation_result_sha256':sha(operation_run/'result.json'),'source_sha256':scene['build']['source_sha256']},indent=2)+'\n')
     (ROOT/'out/client_demo/current.txt').write_text(str(run)+'\n')
     print(run,flush=True)
 
