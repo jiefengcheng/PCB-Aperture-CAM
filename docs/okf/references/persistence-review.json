@@ -1,0 +1,80 @@
+{
+  "status": "PASS_CURRENT_PERSISTENCE_PRESENTATION",
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-a3b9f59c22d049b0b5771216f0914cad",
+  "url": "http://127.0.0.1:8768/run-a3b9f59c22d049b0b5771216f0914cad/index.html#dataset=client%3Avme-wren%3A20261016%3Av1",
+  "client_layers": [
+    {
+      "layer": "Preserved inputs",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "layer": "File registration",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "layer": "Review materialization",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "layer": "Board-record materialization",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "layer": "Reopened board queries",
+      "status": "NOT_IMPLEMENTED_FOR_THIS_CLIENT"
+    }
+  ],
+  "intake_raw_files": 44,
+  "new_seal_bound_metadata_snapshots": {
+    "checksums": {
+      "path": "dataset/vme-wren_20261016_v1/SHA256SUMS",
+      "sha256": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e",
+      "snapshot": "intake/SHA256SUMS"
+    },
+    "entry": {
+      "path": "dataset/vme-wren_20261016_v1/index.md",
+      "sha256": "0a8538183593c14728e5677374986912b386f9764c69e6d884fe649586b5935e",
+      "snapshot": "intake/index.md"
+    },
+    "manifest": {
+      "path": "dataset/vme-wren_20261016_v1/metadata/manifest.json",
+      "sha256": "bb48313b4b875b9a1e2b94d8512e7d2c967d96f20c59dcac9245f92c95aab07a",
+      "snapshot": "intake/metadata/manifest.json"
+    }
+  },
+  "prior_scene_unchanged_except_intake_projection": true,
+  "registry_unchanged": true,
+  "focused_python_tests": {
+    "status": "PASS",
+    "count": 27,
+    "log": "out/ingestion/persistence_review/tests.log"
+  },
+  "javascript": {
+    "status": "PASS",
+    "checks": [
+      "Pure source/native panes; differences confined to delta",
+      "Receipt-driven changed comparison/drill values; no cross-dataset leakage",
+      "Generation review metadata without a fabricated channel status",
+      "Technical records collapsed and only one comparison drawn",
+      "Story navigation exposes limits and rejects missing operation geometry",
+      "Direct dataset links open the requested review",
+      "Persistence first: five statuses and three artifact inspectors; no cross-dataset leakage"
+    ]
+  },
+  "publication": {
+    "status": "PASS",
+    "schema": "pcb-ingestion-publication-v2",
+    "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+    "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-a3b9f59c22d049b0b5771216f0914cad",
+    "outputs_verified": 354,
+    "datasets_verified": 5,
+    "comparisons_verified": 3
+  },
+  "http_artifact_links_verified": 6,
+  "browser_report": "out/ingestion/persistence_review/browser.json",
+  "source_snapshot": "out/ingestion/persistence_review/source_snapshot.json",
+  "screenshot": "out/ingestion/persistence_review/persistence.jpg",
+  "independent_review": "NOT_RUN_FOR_THIS_CHANGE",
+  "common_catalogue": "DEFERRED",
+  "engineering_outcomes": "HISTORICAL_REPLAY_NOT_RERUN"
+}

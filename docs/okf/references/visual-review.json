@@ -1,0 +1,52 @@
+{
+  "status": "PASS_PRESENTATION_CHECKS",
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-537fcf6bf5354a42aca788cd0b70a30e",
+  "previous_run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28",
+  "scene_and_registry_byte_identical": true,
+  "python_tests": {
+    "status": "PASS",
+    "count": 25,
+    "command": ".venv/bin/python -m unittest tests.test_ingestion_registry tests.test_client_replay_integrity tests.test_visual_bundle_verifier -v"
+  },
+  "javascript_checks": {
+    "status": "PASS",
+    "checks": [
+      "Pure source/native panes; differences confined to delta",
+      "Receipt-driven changed comparison/drill values; no cross-dataset leakage",
+      "Generation review metadata without a fabricated channel status",
+      "Technical records collapsed and only one comparison drawn",
+      "Story navigation exposes limits and rejects missing operation geometry",
+      "Direct dataset links open the requested review"
+    ]
+  },
+  "browser_report": "out/ingestion/visual_review/browser.json",
+  "final_browser_report": {
+    "run": "run-537fcf6bf5354a42aca788cd0b70a30e",
+    "directDatasetLink": "PASS",
+    "openControl": "Stored result: FAIL. Failed checks: Connection.",
+    "bridgeControl": "Stored result: FAIL. Failed checks: Protected Objects, Separation.",
+    "generatedResult": "Stored result: PASS. The generated candidate restores the supplied original copper bytes."
+  },
+  "bound_http_links_checked": 4,
+  "independent_review": "NOT_RUN_FOR_THIS_PRESENTATION_CHANGE",
+  "engineering_outcomes": "REPLAY_NOT_RERUN",
+  "common_catalogue": "DEFERRED",
+  "screenshots": {
+    "operation": "out/ingestion/visual_review/operation.jpg",
+    "comparison": "out/ingestion/visual_review/comparison-complete.jpg"
+  },
+  "sources": [
+    {
+      "path": "web/workbench.html",
+      "sha256": "d1b27db245f7ba695910c678eaed4a323cc5cc5fa97e0b89836b8b8def07c3e9"
+    },
+    {
+      "path": "web/ingestion_views.js",
+      "sha256": "f26e5e0e307167a30899c21cc9ad046e8121e9a0f48f9e65c8ac7b701434f5b4"
+    },
+    {
+      "path": "tests/js/ingestion_views.test.cjs",
+      "sha256": "1cac25cfba55b875e3036e2d7c9e4a844426d1ffdfdafb709b53c57fa423776e"
+    }
+  ]
+}

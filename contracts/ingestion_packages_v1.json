@@ -1,0 +1,249 @@
+{
+  "schema": "pcb-ingestion-package-profiles-v1",
+  "scope": "Restore already-qualified project-local sealed packages; no native extraction or new engineering acceptance",
+  "packages": [
+    {
+      "package_root": "dataset/vme-wren_20261016_v1",
+      "seal": {
+        "path": "dataset/vme-wren_20261016_v1/SHA256SUMS",
+        "sha256": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e"
+      },
+      "dataset": {
+        "id": "client:vme-wren:20261016:v1",
+        "label": "Client VME-WREN",
+        "sources": [
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/archive/testDemo.zip",
+            "sha256": "054b8b366dfb3482265f627b7300e84c96639ca70a2bf5c3d4dd2f217442bdac"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/layerfunction.txt",
+            "sha256": "0363b713718e3ff614ada17d7c6ec7a42d4acfa8be0e04285a13f0d1e0a634f3"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-B_Adhesive.gbr",
+            "sha256": "6e91506b1d8a1bd05acb79caa6fab353cfc1e3b31e17b105eb34efd7aaa73102"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-B_Courtyard.gbr",
+            "sha256": "44cfde4c5e32930c611af4e72837ec1cfd102f8b58e88cf5715dc48681cb9538"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Assembly.gbr",
+            "sha256": "e80442c0ddfcd56a43deff857ab034e0dc0a3553bdf375981594003d7064010c"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Layer.gbr",
+            "sha256": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Overlay.gbr",
+            "sha256": "35de98ded807f76f80895895dbf78dee454a202f598fe57c45f00755295d0039"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Paste.gbr",
+            "sha256": "27d5d3930d54899d333278e414cb34499fd6ea9885dd07c26b69fb7c21bedf44"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Solder.gbr",
+            "sha256": "b56067941920c4663ee0c3c5d78e48399ec71ab1c956ba7f87efb910fbab49e4"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Corners.gbr",
+            "sha256": "c126c7f0434cb5845334f61cf4c2713eddcc330981ebc9c3b4784eb4ffeda4ef"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Edge_Cuts.gbr",
+            "sha256": "93e62dc56faccfdd029ec942e67cf7d887206eefc29e5232843954b9e5bdd285"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-F_Adhesive.gbr",
+            "sha256": "13c354dd929131edc885b98004aef69e3a9c20179d2e14e39a639acd9fc8d476"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-F_Courtyard.gbr",
+            "sha256": "0e312c2cee9ce25ba2ed06096dc44a01aa38a686ce4b6ff04400adff4556fc89"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L10.gbr",
+            "sha256": "205e3604dba8ab91b15cc40c57f68f68562779ad2ddf9b00ae9129a1aed43eb0"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L11GND.gbr",
+            "sha256": "61e40eb6c5549adcfba2a4de58e0f819d93abeb1cd7e47c47203eedf48ad90b5"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L2GND.gbr",
+            "sha256": "e4cd3162654d0e46c4833e3e78a9a9a9b52fba21bdcb8243eeeab158eef6974b"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L3.gbr",
+            "sha256": "bbead68a8a85188079497ce0d99489a41566d56f6bba7e8c4f3bc89c1103194b"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L4GND.gbr",
+            "sha256": "86a757625a1f05a3b5b31e1910a83b08e6dcd133336014eeeab8509bcbcb1e55"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L5.gbr",
+            "sha256": "8ce6cda40dd96e49b7a2c4215b006a06f5e95f7180705c74b379af55ff03f4eb"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L6PWR.gbr",
+            "sha256": "76d9ccec6ea3311982b6c101e9686667387d18b3bbe01d3fdc877063d42504c5"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L7PWR.gbr",
+            "sha256": "88cd727d28ba076b5a4324c9a51164e4c3f55241ebe67fce5ec7e29cdb557acf"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L8.gbr",
+            "sha256": "0685f3ffef94aa2ca2da37f617b4c951a7da5093f06751bbc9fc9c08d32ff5f4"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L9GND.gbr",
+            "sha256": "b9b53e365d00a41cd8ae7310de4a1681a120bd35894dd5b4ff1b6a36565cf997"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Margin.gbr",
+            "sha256": "35413dc008e4cdc462f16ee8b1da771ede719fd5ea4a4312767f8e1c5364d5e4"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 1.gbr",
+            "sha256": "77dca42ca7bfdd163e9ad67be7c59778cc2e151d13b53c351f1039f3a503c625"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 13.gbr",
+            "sha256": "4bad6543451124bfa4535faa077e36de315e3e344b0a3fb2a495f3c6ca265ca3"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 2.gbr",
+            "sha256": "9032cabd3932f7e5a3a2a9183ed613869e6675a3bfc480f14f46aa7a8c859682"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 3.gbr",
+            "sha256": "f62d1f68fe437bbb6c240b35f22dbd23c32cb97f2abecc95f908b3f7c22b99df"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 4.gbr",
+            "sha256": "1072fab846f8d579b1d7266263e441076fe59d2bb616fef78fc06d08db309939"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 7.gbr",
+            "sha256": "3724ef50aa6351c1a95f77cd8eff26df23dacc994c3b561e906565b70cbe1dab"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 9.gbr",
+            "sha256": "2ff2de1d3251ef42aa1f4cc258f1afce059aeca885d4f0e8e74d3c7a82f1e864"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-NPTH.drl",
+            "sha256": "31f88ece39490852102f273d76f0cea887595b0cc709545ce5d984297ba3c46e"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Notvisible.gbr",
+            "sha256": "416eeb64c442a719ed1237f508708186df686f30bdfc0e92de73c8ce72dd2f10"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-PTH.drl",
+            "sha256": "08338df97df42141170ccb79bc9d8b9283429987380a5d44e0f1373f7b09e789"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Title Block.gbr",
+            "sha256": "6ed7c539d8f0adf08692d816b23b8a896798b1270e14c9233723acdd24af7097"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top 3D Body.gbr",
+            "sha256": "d102c9af7cf7fb83a4677b53cd3303e80c270d5f0f508fb4f8f608a93086f254"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Assembly.gbr",
+            "sha256": "54acd563f03731331b1bf576584ae788950a672c345b418f37f3c65190e59b36"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Layer.gbr",
+            "sha256": "529cc30f362b83ac1566fae01c5369c4a974f9a9cf52e1db692edf40df6dd04c"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Overlay.gbr",
+            "sha256": "0f74c0ebdcde1f87e9544032b4e90dd6e20381c2865c24b5932cc687035c17f4"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Paste.gbr",
+            "sha256": "f303106cc477fc81d19f5d9420633ba26da2395fff48c8020e8b24f25b702c48"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Solder.gbr",
+            "sha256": "52277fd5a76f670fafacef3c5668ced7968ec92c5c0f4fb17e9b53608b283c02"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-User_Comments.gbr",
+            "sha256": "98b777021cd3e7a8b83eec967857ffa8300b54a84b4c57f50c450e3658a14e1e"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-User_Eco1.gbr",
+            "sha256": "014c665aa21cd4fb2febebdebf15142d1c810a669a1a25f22d4078abb583c25d"
+          },
+          {
+            "path": "dataset/vme-wren_20261016_v1/raw/kicad/vme-wren.kicad_pcb",
+            "sha256": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d"
+          },
+          {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/gerbers/vme-wren-Bottom Layer.gbr",
+            "sha256": "a0b4ef6cc31a3896d65169f29aa5c74a6f9d4332cd4c32f94723233117df588c"
+          },
+          {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/gerbers/vme-wren-Bottom Solder.gbr",
+            "sha256": "93df0dd90515b9d3392a88ec0871f0c9d1a3772f6979ab29b0b575a46178ffa9"
+          },
+          {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/gerbers/vme-wren-Edge_Cuts.gbr",
+            "sha256": "450ea565be1146b326184fdd2de2f8a8a304afe351012058304c2b40a1c8c49b"
+          },
+          {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/gerbers/vme-wren-L2GND.gbr",
+            "sha256": "b971d57ac91dd3382f283031cb9fd7b084c445f52b81b7ed0a55e5a933d080a8"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/operation_region_comparison.json",
+            "sha256": "25af97739c733644904c2624201349a8e1b4f8c5f92266f1f911d362bdd851fe"
+          },
+          {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/l2gnd_discrepancy.json",
+            "sha256": "8ed94191a82a6265c8e1137681f4b475808389ea12221c81e66763b0072965f3"
+          },
+          {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/drill_comparison.json",
+            "sha256": "076d000b003f2a98cb23b6d66ff1917f381f1931e19a4b80c87b9e27920ed3a3"
+          },
+          {
+            "path": "out/client_operation/run_20261015T050705_750904Z/result.json",
+            "sha256": "ff7778b43b7d11c7e67afe6b7a248939e22faee50e08e51aa32fb7c19529248b"
+          }
+        ],
+        "case_id": "clientop",
+        "qualification": "Partial local match with confirmed L2GND divergence; whole-board equivalence NOT_ESTABLISHED",
+        "intent": "Reported automatic Gerber-to-KiCad conversion; tool/recipe/intermediates/schematic/netlist unknown. Shared origin is not independent intent.",
+        "presentation": {
+          "profile": "client-correspondence-v1",
+          "receipts": {
+            "local": {
+              "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/operation_region_comparison.json",
+              "sha256": "25af97739c733644904c2624201349a8e1b4f8c5f92266f1f911d362bdd851fe"
+            },
+            "discrepancy": {
+              "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/l2gnd_discrepancy.json",
+              "sha256": "8ed94191a82a6265c8e1137681f4b475808389ea12221c81e66763b0072965f3"
+            },
+            "drills": {
+              "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/drill_comparison.json",
+              "sha256": "076d000b003f2a98cb23b6d66ff1917f381f1931e19a4b80c87b9e27920ed3a3"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

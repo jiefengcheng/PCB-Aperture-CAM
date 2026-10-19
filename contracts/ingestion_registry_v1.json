@@ -1,0 +1,1365 @@
+{
+  "schema": "pcb-ingestion-registration-v1",
+  "meaning": "Dataset registration only; common object catalogue deferred",
+  "datasets": [
+    {
+      "id": "synthetic:coupon:v1",
+      "label": "Synthetic coupon",
+      "sources": [
+        {
+          "path": "assets/starter/.gitignore",
+          "sha256": "9c08d82a846c111706a64ffbecfaeed436fece890aa4a3bcfba5aeb5b478f6ba"
+        },
+        {
+          "path": "assets/starter/LICENSE",
+          "sha256": "c958a51d2cc8794f0f95bcee3ac62fa4f1ff658e93028c535028ce7ed3cb02eb"
+        },
+        {
+          "path": "assets/starter/README.md",
+          "sha256": "c905b7bbd145e962563b3032310d10f37cf5b698f15bb8dcdc5540a584935202"
+        },
+        {
+          "path": "assets/starter/docs/EXPORT_VALIDATION.md",
+          "sha256": "10e39124d625048db0344fbd61c123b8f59ce3c2112fd8c1b96df8658ec5083b"
+        },
+        {
+          "path": "assets/starter/docs/KICAD_PLAYBOOK.md",
+          "sha256": "fa0761ce5ef686a3909fcb651989ee71ed5945628b2741c85e63f9c0ef78a778"
+        },
+        {
+          "path": "assets/starter/docs/PUBLIC_ASSETS.md",
+          "sha256": "7bb544350e0e448c29ef9971c3b26a4f323bb914261a32eca3a0b3562d3f6fc2"
+        },
+        {
+          "path": "assets/starter/evidence/execution_status.json",
+          "sha256": "46bf8971acb2ed39a66b5599662a287c31538b334f009ab52daf8153a9ffff60"
+        },
+        {
+          "path": "assets/starter/evidence/fixture_sha256.json",
+          "sha256": "6516f8f9461f82880e080b970f49652eac7792cdca300367c241ec98e866bb88"
+        },
+        {
+          "path": "assets/starter/evidence/internal_geometry_results.json",
+          "sha256": "9429caeaeb3a2b47299a5bbfa5c250c02ad79d9dc9f1b867b014d3f987d521e8"
+        },
+        {
+          "path": "assets/starter/evidence/repair_attempt.json",
+          "sha256": "3a0f87057c9e3795b2530d50427e094258c6f4be38a8887bcb04339e7cfae034"
+        },
+        {
+          "path": "assets/starter/evidence/scaffold_checks.json",
+          "sha256": "0ec8a6ad5e1aefc59bd7be7619be911743859783c3ae2ba3b42a56346d006bc5"
+        },
+        {
+          "path": "assets/starter/fixtures/before/geometry.json",
+          "sha256": "4126799163f77f625885bdc925c11c16ebf77840e349faeb0849c016d3484ac2"
+        },
+        {
+          "path": "assets/starter/fixtures/before/kicad/coupon.kicad_dru",
+          "sha256": "af9f8802c71153763fe2c8dcf41bae0f8c97d534787e5bf69b5a22b9e4e8259d"
+        },
+        {
+          "path": "assets/starter/fixtures/before/kicad/coupon.kicad_pcb",
+          "sha256": "65dbfc812ddfc25cd4e792e246cf4808cc69180420e6e7d03ddfda2b07057400"
+        },
+        {
+          "path": "assets/starter/fixtures/before/kicad/coupon.kicad_pro",
+          "sha256": "8657aee77390dce990dd464de628ea6f612b7fef9d8a2dbe917092d6b3790d79"
+        },
+        {
+          "path": "assets/starter/fixtures/before/reference_gerbers/reference-F_Cu.gbr",
+          "sha256": "fb7122e48e0d153b50c23ac7f8abd18024d66a89a109cdfe7ef7e19f9469fc32"
+        },
+        {
+          "path": "assets/starter/fixtures/before/reference_gerbers/reference-F_Mask.gbr",
+          "sha256": "f3f538ca6aae97ab962349e242dea70aea68364ae9c10d8c35d798ca77f0e31f"
+        },
+        {
+          "path": "assets/starter/fixtures/candidate/geometry.json",
+          "sha256": "e48c66be2186c83ad95c24d3d3e45571a69dd59629637b00f705c478945acd4a"
+        },
+        {
+          "path": "assets/starter/fixtures/candidate/kicad/coupon.kicad_dru",
+          "sha256": "af9f8802c71153763fe2c8dcf41bae0f8c97d534787e5bf69b5a22b9e4e8259d"
+        },
+        {
+          "path": "assets/starter/fixtures/candidate/kicad/coupon.kicad_pcb",
+          "sha256": "e09c7459d49ad7499c824ee2ea840189153593f2f9777207b150e602631e6ca9"
+        },
+        {
+          "path": "assets/starter/fixtures/candidate/kicad/coupon.kicad_pro",
+          "sha256": "8657aee77390dce990dd464de628ea6f612b7fef9d8a2dbe917092d6b3790d79"
+        },
+        {
+          "path": "assets/starter/fixtures/candidate/reference_gerbers/reference-F_Cu.gbr",
+          "sha256": "c0984464bea7e48ac7883dde8f79697dde260e6f5cb01dbfeadcc26fffea37e7"
+        },
+        {
+          "path": "assets/starter/fixtures/candidate/reference_gerbers/reference-F_Mask.gbr",
+          "sha256": "f3f538ca6aae97ab962349e242dea70aea68364ae9c10d8c35d798ca77f0e31f"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_connection_cut/geometry.json",
+          "sha256": "46374940d7f3798dba585f5d13b4194e3bbab252c3d5b7c29a36138f334c3cbb"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_connection_cut/kicad/coupon.kicad_dru",
+          "sha256": "af9f8802c71153763fe2c8dcf41bae0f8c97d534787e5bf69b5a22b9e4e8259d"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_connection_cut/kicad/coupon.kicad_pcb",
+          "sha256": "95fbda6433c38efb6cd89837b6c032d39d6c6b7fef2c278cfa8d87ac486bd7b8"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_connection_cut/kicad/coupon.kicad_pro",
+          "sha256": "8657aee77390dce990dd464de628ea6f612b7fef9d8a2dbe917092d6b3790d79"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_connection_cut/reference_gerbers/reference-F_Cu.gbr",
+          "sha256": "f8cdc31ce6fedd8992f1039d6cf7a5bc16cefe7af70487d4e841aef1e0290282"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_connection_cut/reference_gerbers/reference-F_Mask.gbr",
+          "sha256": "f3f538ca6aae97ab962349e242dea70aea68364ae9c10d8c35d798ca77f0e31f"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_mask_moved/geometry.json",
+          "sha256": "1d9fed7a40f852428bd963ea5b002b9892ce15aa6326247e3db1f2145019b23b"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_mask_moved/kicad/coupon.kicad_dru",
+          "sha256": "af9f8802c71153763fe2c8dcf41bae0f8c97d534787e5bf69b5a22b9e4e8259d"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_mask_moved/kicad/coupon.kicad_pcb",
+          "sha256": "8d3720c34aecb5fd72cf959f1169c2033c480f6fb1de3f302ef8971f8cc16c38"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_mask_moved/kicad/coupon.kicad_pro",
+          "sha256": "8657aee77390dce990dd464de628ea6f612b7fef9d8a2dbe917092d6b3790d79"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_mask_moved/reference_gerbers/reference-F_Cu.gbr",
+          "sha256": "c0984464bea7e48ac7883dde8f79697dde260e6f5cb01dbfeadcc26fffea37e7"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_mask_moved/reference_gerbers/reference-F_Mask.gbr",
+          "sha256": "2ec5d7f16ab669db71b3473acc5bf6f4a7e0bd147f3ca1e3de6560afd5d075a7"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_nominal_only/geometry.json",
+          "sha256": "304e62fa0a2142f92e6a707ac0bbe9a95cca41853aec5955f1385b953ad78cd2"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_nominal_only/kicad/coupon.kicad_dru",
+          "sha256": "af9f8802c71153763fe2c8dcf41bae0f8c97d534787e5bf69b5a22b9e4e8259d"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_nominal_only/kicad/coupon.kicad_pcb",
+          "sha256": "9ba2d3411fd3230e54d983ef5ce210d1ce515f3dec9dee4d4000a33809dded3e"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_nominal_only/kicad/coupon.kicad_pro",
+          "sha256": "8657aee77390dce990dd464de628ea6f612b7fef9d8a2dbe917092d6b3790d79"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_nominal_only/reference_gerbers/reference-F_Cu.gbr",
+          "sha256": "a149b5f41b974fd91c237ddb5e79d5f0d5813eea9d7807b3fe1dce2c54802a48"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_nominal_only/reference_gerbers/reference-F_Mask.gbr",
+          "sha256": "f3f538ca6aae97ab962349e242dea70aea68364ae9c10d8c35d798ca77f0e31f"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_scope/geometry.json",
+          "sha256": "2ed4987fbb8e1e1fbde84a1ccb3bc9552e03ef2ef59491c15bbd1ab25697a526"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_scope/kicad/coupon.kicad_dru",
+          "sha256": "af9f8802c71153763fe2c8dcf41bae0f8c97d534787e5bf69b5a22b9e4e8259d"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_scope/kicad/coupon.kicad_pcb",
+          "sha256": "30f4e7ee1134a0535af7f2a2675d60ff453ad976bb66e9c6ac1938b0e28c2b1a"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_scope/kicad/coupon.kicad_pro",
+          "sha256": "8657aee77390dce990dd464de628ea6f612b7fef9d8a2dbe917092d6b3790d79"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_scope/reference_gerbers/reference-F_Cu.gbr",
+          "sha256": "8fad45f65d5212326a124a2d0d9a0c9a5f028fa97feea2b245ea192554d4d449"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_scope/reference_gerbers/reference-F_Mask.gbr",
+          "sha256": "f3f538ca6aae97ab962349e242dea70aea68364ae9c10d8c35d798ca77f0e31f"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_short/geometry.json",
+          "sha256": "56b7b8b973287ad41b45438696a33753e9a4c8b711ab57ca45dc0115b5092a6d"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_short/kicad/coupon.kicad_dru",
+          "sha256": "af9f8802c71153763fe2c8dcf41bae0f8c97d534787e5bf69b5a22b9e4e8259d"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_short/kicad/coupon.kicad_pcb",
+          "sha256": "5a3cc1bd6dd5a1b6aab0485641f6948a4be683edc1661afb591c15cac438dbe8"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_short/kicad/coupon.kicad_pro",
+          "sha256": "8657aee77390dce990dd464de628ea6f612b7fef9d8a2dbe917092d6b3790d79"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_short/reference_gerbers/reference-F_Cu.gbr",
+          "sha256": "de3f1d8f40b41aa5d352abe24ef7562149fbfde190ece4e0ae95bd0a11bf5e63"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_short/reference_gerbers/reference-F_Mask.gbr",
+          "sha256": "f3f538ca6aae97ab962349e242dea70aea68364ae9c10d8c35d798ca77f0e31f"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_trace_width/geometry.json",
+          "sha256": "f284668200f77f0e318b0fd41ecf03507a8ce26f029e99dc7aa399f2cca37f76"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_trace_width/kicad/coupon.kicad_dru",
+          "sha256": "af9f8802c71153763fe2c8dcf41bae0f8c97d534787e5bf69b5a22b9e4e8259d"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_trace_width/kicad/coupon.kicad_pcb",
+          "sha256": "a3ec6734e3c3b8752c5cb7389d2736e1652830a0e7940cda9308c5b919775e99"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_trace_width/kicad/coupon.kicad_pro",
+          "sha256": "8657aee77390dce990dd464de628ea6f612b7fef9d8a2dbe917092d6b3790d79"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_trace_width/reference_gerbers/reference-F_Cu.gbr",
+          "sha256": "bae883d13dfaaf403d491d874769b2e15917705c1c4c860d01b3efd64a3e0afb"
+        },
+        {
+          "path": "assets/starter/fixtures/reject_trace_width/reference_gerbers/reference-F_Mask.gbr",
+          "sha256": "f3f538ca6aae97ab962349e242dea70aea68364ae9c10d8c35d798ca77f0e31f"
+        },
+        {
+          "path": "assets/starter/reference/fixed_apertures.json",
+          "sha256": "0bc2f419f96afda1767b44ebf118b39ebb8614b9c9696b5e2f686a4d328d2144"
+        },
+        {
+          "path": "assets/starter/reference/intended_connections.json",
+          "sha256": "48c471ae59237200398bf815605030a9e07bb0625c54db3409b90a254a39ec59"
+        },
+        {
+          "path": "assets/starter/reference/policy.json",
+          "sha256": "81fbfb66ea4264f3b890a9a11ec06ac12bcb0f5dbe3e077323928d835ac79ba6"
+        },
+        {
+          "path": "assets/starter/requirements.txt",
+          "sha256": "a9da53f34af90c2cc5b9ee96f0ef865935582d869aba11fb0eeb105cb01d6e63"
+        },
+        {
+          "path": "assets/starter/scripts/demo.py",
+          "sha256": "4007d62642a3c3c79adb70cb51b523582732ff252812309d03ec7838f5bd6ff0"
+        },
+        {
+          "path": "assets/starter/scripts/export_kicad.py",
+          "sha256": "9abc746ed6c55e6e643121b344e7a1bd4b4315b66a0a667b7d424b6b93c60046"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/v2/run_20261014T164520_384804Z/result.json",
+          "sha256": "0e03355d2772f5baf78ffda27be962dc290caa7f78fa63e99208d5ea9cd70d3a"
+        },
+        {
+          "path": "docs/V2_DECISION.md",
+          "sha256": "cb1c96e420ff9ecb3b9ca13eb4d31a1428e555b03523c621dcf7932e2b303083"
+        }
+      ],
+      "case_id": "synthetic",
+      "qualification": "Frozen synthetic V1/V2 bounded technical PASS",
+      "intent": "Independent synthetic policy and terminal intent; not factory rules"
+    },
+    {
+      "id": "public:GlowStitch",
+      "label": "GlowStitch",
+      "sources": [
+        {
+          "path": "external/sources/GlowStitch/AAA Battery Holder Files.zip",
+          "sha256": "300b5ca36e1377aeaa82fefd8fce0187a54902269ad9557b2bd4bfd964ec2f16"
+        },
+        {
+          "path": "external/sources/GlowStitch/Coin Cell Battery Holder Files.zip",
+          "sha256": "b302b43e825958d814ad7d525c525e2df6d93a15390027d6daa25bbfd137b785"
+        },
+        {
+          "path": "external/sources/GlowStitch/LED Ring Files.zip",
+          "sha256": "2b861b70e94966f875bbd55bc1f95420ed2a75d0e2597d53a1272e2920e865b3"
+        },
+        {
+          "path": "external/sources/GlowStitch/LED Strips Crown Headband Project.pdf",
+          "sha256": "ea67901be6ba9e4be9dc42db91a6ba9eb7c5510b4bbbbb41221e80b0cfef8ea8"
+        },
+        {
+          "path": "external/sources/GlowStitch/LED Strips Glow Bag Project.pdf",
+          "sha256": "674e6ca94809ac2e5dbcffe6f8a642e53f1dea701d7c37791552c3a054c01e92"
+        },
+        {
+          "path": "external/sources/GlowStitch/LED Strips Instructions Machine Sewing.pdf",
+          "sha256": "a826b9c0ab78f8ac704b6fc9d4cad47321f77dd602108164a9c932cfb79d7c7c"
+        },
+        {
+          "path": "external/sources/GlowStitch/LED Strips Instructions.pdf",
+          "sha256": "14d222fa258752715757acc3908a5c2b5c18a1729f576ca410007224cd39e378"
+        },
+        {
+          "path": "external/sources/GlowStitch/README.md",
+          "sha256": "a79274dc11b02dac517693c00dd07adca7d2b44f27fc6d4d32c5f0052b1fedfb"
+        },
+        {
+          "path": "external/sources/GlowStitch/x1 LED Strips Files.zip",
+          "sha256": "bbb69e712fd9f1c29c73e467ac7a05eed842b24bfff913ff114ab78bc988e785"
+        },
+        {
+          "path": "external/sources/GlowStitch/x1 LED Strips w Resistor Files.zip",
+          "sha256": "700f271eb48f1787480249dcc52b5c535bdf4aca28084f5925516d95a3fa59a0"
+        },
+        {
+          "path": "external/sources/GlowStitch/x5 LED Strips Files.zip",
+          "sha256": "d050ce71541a3035b17edf21678a56163f8d32dc41649adf0b3c925f679bf1e1"
+        },
+        {
+          "path": "external/sources/GlowStitch/x5 LED Strips w Resistor Files.zip",
+          "sha256": "4c152560e8f926dd9d7c8778911a146e13659e848fff0cc1274d40af649594a3"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/v15_completion/run_20261014T154443_263864Z/final_report.json",
+          "sha256": "55a2d402af1b75b27e0aac6831e4f04203ced5f021bbead2853a24e4faf5af71"
+        },
+        {
+          "path": "out/source_aware_v1/run_20261014T161839_497721Z/result.json",
+          "sha256": "793c7fc1c43abf7f47720b93776bd5ca8174c683217c77216cc71fe0da7dd897"
+        }
+      ],
+      "case_id": "glowstitch",
+      "qualification": "Original aggregate V1.5 NOT_ESTABLISHED; bounded geometry/preservation profile only",
+      "intent": "80 pads with unknown electrical assignment"
+    },
+    {
+      "id": "public:HALPI2-HDMI-FPC",
+      "label": "HALPI2-HDMI-FPC",
+      "sources": [
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/CLAUDE.md",
+          "sha256": "d31b0e2b79f7e1b681928e20ca55ad5b1b616d395794dbc0a24769fbf8dbe969"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/Connector_FPC_Gold_Finger.pretty/FPC_1x20_0.5mm.kicad_mod",
+          "sha256": "c2bbd2b147a58a32c15ba1e7ef8cdef780659e255282820f8ce53161057d9694"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/Connector_FPC_Gold_Finger.pretty/GndPad_0.5x2.0mm.kicad_mod",
+          "sha256": "4c172cc5cd69db34c29b8df529c93ce4615eb347d720490badf3ad1c38bf1267"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/HALPI2-HDMI-FPC.kicad_dru",
+          "sha256": "ec5c07b594db6f7c7878f81888b367f02f631ec1a1393e83b69f9078877489e7"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/HALPI2-HDMI-FPC.kicad_pcb",
+          "sha256": "1d2c4ff9504c84b8deda14e4b38ca4dfb2778852924842ca307ee465720425ba"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/HALPI2-HDMI-FPC.kicad_pro",
+          "sha256": "3676abbc108484b67c0d9b595d3637944f5d0b1053ee3c2509ebaceec57a277f"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/HALPI2-HDMI-FPC.kicad_sch",
+          "sha256": "ec00eaf149e5ff05e0d27bec3e77b5c8a04441bef00eb3e260d7f38121386068"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/README.md",
+          "sha256": "b6af302f88d092620a242e59733f590afe73ec4277d918d6a71ad6d81595b4c6"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/fp-lib-table",
+          "sha256": "6906f264e4960b1dd72954622d260eed7f60aacab4a237e42502557d147aebb8"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/fpc-bottom.jpg",
+          "sha256": "c50bd356407d1f1cabf4ed65092dcdca8f9606d5f20bab8446fc04918c65a861"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/fpc-top.jpg",
+          "sha256": "08bad1de29db16da5d43e2b6e60b0545c081041bb57898f7244267640a975eab"
+        },
+        {
+          "path": "external/sources/HALPI2-HDMI-FPC/prepare_assembly.sh",
+          "sha256": "05d69bf7cb3affe9ba796487a21092a6617e09559419257b1a149c02953cdc20"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/v15_completion/run_20261014T154443_263864Z/final_report.json",
+          "sha256": "55a2d402af1b75b27e0aac6831e4f04203ced5f021bbead2853a24e4faf5af71"
+        },
+        {
+          "path": "out/halpi2_case/run_20261014T163123_842427Z/result.json",
+          "sha256": "66a7754d60ab64d53faca870cbdcf3d564164ec97688a56099b9cfbbe6a0a785"
+        }
+      ],
+      "case_id": "halpi2",
+      "qualification": "Bounded same-layer named electrical case PASS; no whole-board acceptance",
+      "intent": "Native-source assignments; schematic parity NOT_ESTABLISHED"
+    },
+    {
+      "id": "reference:ucamco",
+      "label": "Ucamco parser examples",
+      "sources": [
+        {
+          "path": "external/sources/Ucamco/gerber-layer-format-test-files_en.zip",
+          "sha256": "7e1e6bacdc24deb92fbf08940d37ccd26cff25fc9e5ca608b919d4d542d2698f"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/v1_5/Ucamco/compatibility.json",
+          "sha256": "f546fbf4673e8a31b30bf954ee6417b23134eff3aafac00a691364ee99fbf10b"
+        },
+        {
+          "path": "docs/FC1_DECISION.md",
+          "sha256": "8429d438ca12ab8420a9bf17e7a057686b54c97d04dd135b848d40d30f7bb9ff"
+        }
+      ],
+      "case_id": null,
+      "qualification": "Parser compatibility and bounded mathematical oracle; no board acceptance",
+      "intent": "Electrical intent not applicable to parser examples"
+    },
+    {
+      "id": "client:vme-wren:20261016:v1",
+      "label": "Client VME-WREN",
+      "sources": [
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/archive/testDemo.zip",
+          "sha256": "054b8b366dfb3482265f627b7300e84c96639ca70a2bf5c3d4dd2f217442bdac"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/layerfunction.txt",
+          "sha256": "0363b713718e3ff614ada17d7c6ec7a42d4acfa8be0e04285a13f0d1e0a634f3"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-B_Adhesive.gbr",
+          "sha256": "6e91506b1d8a1bd05acb79caa6fab353cfc1e3b31e17b105eb34efd7aaa73102"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-B_Courtyard.gbr",
+          "sha256": "44cfde4c5e32930c611af4e72837ec1cfd102f8b58e88cf5715dc48681cb9538"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Assembly.gbr",
+          "sha256": "e80442c0ddfcd56a43deff857ab034e0dc0a3553bdf375981594003d7064010c"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Layer.gbr",
+          "sha256": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Overlay.gbr",
+          "sha256": "35de98ded807f76f80895895dbf78dee454a202f598fe57c45f00755295d0039"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Paste.gbr",
+          "sha256": "27d5d3930d54899d333278e414cb34499fd6ea9885dd07c26b69fb7c21bedf44"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Solder.gbr",
+          "sha256": "b56067941920c4663ee0c3c5d78e48399ec71ab1c956ba7f87efb910fbab49e4"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Corners.gbr",
+          "sha256": "c126c7f0434cb5845334f61cf4c2713eddcc330981ebc9c3b4784eb4ffeda4ef"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Edge_Cuts.gbr",
+          "sha256": "93e62dc56faccfdd029ec942e67cf7d887206eefc29e5232843954b9e5bdd285"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-F_Adhesive.gbr",
+          "sha256": "13c354dd929131edc885b98004aef69e3a9c20179d2e14e39a639acd9fc8d476"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-F_Courtyard.gbr",
+          "sha256": "0e312c2cee9ce25ba2ed06096dc44a01aa38a686ce4b6ff04400adff4556fc89"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L10.gbr",
+          "sha256": "205e3604dba8ab91b15cc40c57f68f68562779ad2ddf9b00ae9129a1aed43eb0"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L11GND.gbr",
+          "sha256": "61e40eb6c5549adcfba2a4de58e0f819d93abeb1cd7e47c47203eedf48ad90b5"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L2GND.gbr",
+          "sha256": "e4cd3162654d0e46c4833e3e78a9a9a9b52fba21bdcb8243eeeab158eef6974b"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L3.gbr",
+          "sha256": "bbead68a8a85188079497ce0d99489a41566d56f6bba7e8c4f3bc89c1103194b"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L4GND.gbr",
+          "sha256": "86a757625a1f05a3b5b31e1910a83b08e6dcd133336014eeeab8509bcbcb1e55"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L5.gbr",
+          "sha256": "8ce6cda40dd96e49b7a2c4215b006a06f5e95f7180705c74b379af55ff03f4eb"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L6PWR.gbr",
+          "sha256": "76d9ccec6ea3311982b6c101e9686667387d18b3bbe01d3fdc877063d42504c5"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L7PWR.gbr",
+          "sha256": "88cd727d28ba076b5a4324c9a51164e4c3f55241ebe67fce5ec7e29cdb557acf"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L8.gbr",
+          "sha256": "0685f3ffef94aa2ca2da37f617b4c951a7da5093f06751bbc9fc9c08d32ff5f4"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-L9GND.gbr",
+          "sha256": "b9b53e365d00a41cd8ae7310de4a1681a120bd35894dd5b4ff1b6a36565cf997"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Margin.gbr",
+          "sha256": "35413dc008e4cdc462f16ee8b1da771ede719fd5ea4a4312767f8e1c5364d5e4"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 1.gbr",
+          "sha256": "77dca42ca7bfdd163e9ad67be7c59778cc2e151d13b53c351f1039f3a503c625"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 13.gbr",
+          "sha256": "4bad6543451124bfa4535faa077e36de315e3e344b0a3fb2a495f3c6ca265ca3"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 2.gbr",
+          "sha256": "9032cabd3932f7e5a3a2a9183ed613869e6675a3bfc480f14f46aa7a8c859682"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 3.gbr",
+          "sha256": "f62d1f68fe437bbb6c240b35f22dbd23c32cb97f2abecc95f908b3f7c22b99df"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 4.gbr",
+          "sha256": "1072fab846f8d579b1d7266263e441076fe59d2bb616fef78fc06d08db309939"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 7.gbr",
+          "sha256": "3724ef50aa6351c1a95f77cd8eff26df23dacc994c3b561e906565b70cbe1dab"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Mechanical 9.gbr",
+          "sha256": "2ff2de1d3251ef42aa1f4cc258f1afce059aeca885d4f0e8e74d3c7a82f1e864"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-NPTH.drl",
+          "sha256": "31f88ece39490852102f273d76f0cea887595b0cc709545ce5d984297ba3c46e"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Notvisible.gbr",
+          "sha256": "416eeb64c442a719ed1237f508708186df686f30bdfc0e92de73c8ce72dd2f10"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-PTH.drl",
+          "sha256": "08338df97df42141170ccb79bc9d8b9283429987380a5d44e0f1373f7b09e789"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Title Block.gbr",
+          "sha256": "6ed7c539d8f0adf08692d816b23b8a896798b1270e14c9233723acdd24af7097"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top 3D Body.gbr",
+          "sha256": "d102c9af7cf7fb83a4677b53cd3303e80c270d5f0f508fb4f8f608a93086f254"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Assembly.gbr",
+          "sha256": "54acd563f03731331b1bf576584ae788950a672c345b418f37f3c65190e59b36"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Layer.gbr",
+          "sha256": "529cc30f362b83ac1566fae01c5369c4a974f9a9cf52e1db692edf40df6dd04c"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Overlay.gbr",
+          "sha256": "0f74c0ebdcde1f87e9544032b4e90dd6e20381c2865c24b5932cc687035c17f4"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Paste.gbr",
+          "sha256": "f303106cc477fc81d19f5d9420633ba26da2395fff48c8020e8b24f25b702c48"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Top Solder.gbr",
+          "sha256": "52277fd5a76f670fafacef3c5668ced7968ec92c5c0f4fb17e9b53608b283c02"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-User_Comments.gbr",
+          "sha256": "98b777021cd3e7a8b83eec967857ffa8300b54a84b4c57f50c450e3658a14e1e"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-User_Eco1.gbr",
+          "sha256": "014c665aa21cd4fb2febebdebf15142d1c810a669a1a25f22d4078abb583c25d"
+        },
+        {
+          "path": "dataset/vme-wren_20261016_v1/raw/kicad/vme-wren.kicad_pcb",
+          "sha256": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d"
+        },
+        {
+          "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/gerbers/vme-wren-Bottom Layer.gbr",
+          "sha256": "a0b4ef6cc31a3896d65169f29aa5c74a6f9d4332cd4c32f94723233117df588c"
+        },
+        {
+          "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/gerbers/vme-wren-Bottom Solder.gbr",
+          "sha256": "93df0dd90515b9d3392a88ec0871f0c9d1a3772f6979ab29b0b575a46178ffa9"
+        },
+        {
+          "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/gerbers/vme-wren-Edge_Cuts.gbr",
+          "sha256": "450ea565be1146b326184fdd2de2f8a8a304afe351012058304c2b40a1c8c49b"
+        },
+        {
+          "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/gerbers/vme-wren-L2GND.gbr",
+          "sha256": "b971d57ac91dd3382f283031cb9fd7b084c445f52b81b7ed0a55e5a933d080a8"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/operation_region_comparison.json",
+          "sha256": "25af97739c733644904c2624201349a8e1b4f8c5f92266f1f911d362bdd851fe"
+        },
+        {
+          "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/l2gnd_discrepancy.json",
+          "sha256": "8ed94191a82a6265c8e1137681f4b475808389ea12221c81e66763b0072965f3"
+        },
+        {
+          "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/drill_comparison.json",
+          "sha256": "076d000b003f2a98cb23b6d66ff1917f381f1931e19a4b80c87b9e27920ed3a3"
+        },
+        {
+          "path": "out/client_operation/run_20261015T050705_750904Z/result.json",
+          "sha256": "ff7778b43b7d11c7e67afe6b7a248939e22faee50e08e51aa32fb7c19529248b"
+        }
+      ],
+      "case_id": "clientop",
+      "qualification": "Partial local match with confirmed L2GND divergence; whole-board equivalence NOT_ESTABLISHED",
+      "intent": "Reported automatic Gerber-to-KiCad conversion; tool/recipe/intermediates/schematic/netlist unknown. Shared origin is not independent intent.",
+      "presentation": {
+        "profile": "client-correspondence-v1",
+        "receipts": {
+          "local": {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/operation_region_comparison.json",
+            "sha256": "25af97739c733644904c2624201349a8e1b4f8c5f92266f1f911d362bdd851fe"
+          },
+          "discrepancy": {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/l2gnd_discrepancy.json",
+            "sha256": "8ed94191a82a6265c8e1137681f4b475808389ea12221c81e66763b0072965f3"
+          },
+          "drills": {
+            "path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/drill_comparison.json",
+            "sha256": "076d000b003f2a98cb23b6d66ff1917f381f1931e19a4b80c87b9e27920ed3a3"
+          }
+        }
+      }
+    }
+  ],
+  "replay_bundle": "out/visual/client_20261015T074543_446151Z",
+  "replay_bindings": [
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/build_receipt.json",
+      "sha256": "82ed852b4c1f0191ac008d6ab25e14a8ef4a18e2ef85588d94cee311efa2424b"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/client_overview.svg",
+      "sha256": "972177ffa5247bb2f139fea2c9ee6fca6ff46e469515700e5ff88e522bca816e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/consolidation_context_complete.jpg",
+      "sha256": "19c4da0f7cbb84c1628860171e9fbf4c25fe333f494db32af098cfb0cdcb4db3"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/consolidation_workbench.jpg",
+      "sha256": "fa4e955789b673eb4d8b84aa4b3a452b1ee590bb71440e104d66d3cdc8a89175"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/01b1ae719540_coupon-F_Cu.gbr",
+      "sha256": "56d9cf0b46c0d835321b5eaecaa028e6be2dce75d3871eeec25fae07ec0b55ed"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/01f823a4bb17_coupon-F_Cu.gbr",
+      "sha256": "3215350ab5347682ffd636c93bdd923a04cda3a1def43e2f4d3e0c82066a7c6d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/05c9de5e8389_coupon-Edge_Cuts.gbr",
+      "sha256": "f8270c5bd3190f730f35b78dd1d4eed5d6c80b2c3eb6ad864b97236e29eef70c"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/07a4acc88011_x1 GlowStitch LED Panelised KiCAD Design File-F_Cu.gbr",
+      "sha256": "3d1493b6091a265fed101299f6aaad1bf7a1a66b5f525cba548e79469851af9b"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/085dbcb4a93d_coupon-F_Cu.gbr",
+      "sha256": "c3b258b1a230c60f9341d5439734f79761ad6378353a802aa25044c2435266ca"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/0d82f49d3231_operation.json",
+      "sha256": "25a8233de9cf3d44ce0840e7278961d66e123d3d2a9363e625806d258eb253d4"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/0e7c43279bf8_x1 GlowStitch LED Panelised KiCAD Design File-F_Paste.gbr",
+      "sha256": "20d32dd554b90c481613415de6e4a327edaae8afbde3b36f5de296a63243df35"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/0f209b9a70d3_x1 GlowStitch LED Panelised KiCAD Design File-B_Paste.gbr",
+      "sha256": "04b403b7ab6338db381841d87278cf1e94eb302302a53003ef79f363524ef472"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/125dc5ca47f0_HALPI2-HDMI-FPC-Edge_Cuts.gbr",
+      "sha256": "a9bf2a8adce519fd16415713597ecc60d306841d85df5bf0a1c3bbc616a0fc83"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/1743c481114b_HALPI2-HDMI-FPC-B_Paste.gbr",
+      "sha256": "9ddae1f0d4e059ee11480473bcc993b3e34c85cf61a0488806edee114d2bfc04"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/1d2c4ff9504c84b8deda14e4b38ca4dfb2778852924842ca307ee465720425ba.kicad_pcb",
+      "sha256": "1d2c4ff9504c84b8deda14e4b38ca4dfb2778852924842ca307ee465720425ba"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/31290d02ea5a_coupon-Edge_Cuts.gbr",
+      "sha256": "9bf8a6998a147a999d59b9d3df6e884a794b3ee2e98902464b446758cb6a0adb"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/31b9b30ee31f_HALPI2-HDMI-FPC-B_Cu.gbr",
+      "sha256": "1593d7d79794c13636d17dd4dc0fa3e7d8d31e081ba0666c51b2969488770cd1"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/34cce53f078c_HALPI2-HDMI-FPC-F_Cu.gbr",
+      "sha256": "4f4da6b97dbc2adee298791311e2c1b5393095a60a494a08ecaadedd7672855d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/373ddc19c9a3_HALPI2-HDMI-FPC-B_Silkscreen.gbr",
+      "sha256": "f222ab2e43eb9f9db04b9011632a89e7b03abb796246ff618543a798e0572cfe"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/3e0490698660_HALPI2-HDMI-FPC-F_Mask.gbr",
+      "sha256": "b0800fe7f113851d8fbe5da7fc514085206515802ec3bd7c06aceee94bcd9d73"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/4395ad464eac_result.json",
+      "sha256": "793c7fc1c43abf7f47720b93776bd5ca8174c683217c77216cc71fe0da7dd897"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/4963bed628b2_x1 GlowStitch LED Panelised KiCAD Design File-F_SilkS.gbr",
+      "sha256": "efa0315419263e2d0e41fed3d29cc7343f4b92151dbb49185ba6df1aa33ec7fb"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/4ae484d1d0b1_coupon-F_Mask.gbr",
+      "sha256": "66f51ad6321facd84ab1411054ad0b0962fd899cde558e6b0322b63c87878f7d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/4b5ad209558f_new_bridge.gbr",
+      "sha256": "72ad1fdaf72ec19b90cbfd4a2356da03ba9a52c61428c359ca39102285c2fad7"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/5066763701b6_coupon-F_Mask.gbr",
+      "sha256": "b3c6a4559bcdc6752aa45bc4bd43b182a1968973d4c49c01c2be1774d19efab8"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/53aca5a427c4_coupon-F_Cu.gbr",
+      "sha256": "0fcdebc1295f43d66fae00cf75fa33cc0d02b2f2028035f06b0c2eddfe290060"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/5aa9134caf35_coupon-F_Cu.gbr",
+      "sha256": "ac4e6191d0b86f67b8c372eae1e84cf7f96ab8e2a1aa63ad7eccc4f7e98b3d8a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/626441d18a58_validation.json",
+      "sha256": "a927bdb37cf38111ccd349ed1359cf44ae6f055b74d627ac32443dc690da2cd0"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/64979023f417_x1 GlowStitch LED Panelised KiCAD Design File-F_Mask.gbr",
+      "sha256": "78b3f01ae0c41304936fd60f1fb11ee52dd8e21934e47f3eb1bf362348b40996"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/65dbfc812ddfc25cd4e792e246cf4808cc69180420e6e7d03ddfda2b07057400.kicad_pcb",
+      "sha256": "65dbfc812ddfc25cd4e792e246cf4808cc69180420e6e7d03ddfda2b07057400"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/6ea37d18264d_x1 GlowStitch LED Panelised KiCAD Design File-B_SilkS.gbr",
+      "sha256": "73df618bfd85437691d53e90f1ce9a15b0d3f00a531e7299de435aa55f435bd1"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/7744203e6ebb_HALPI2-HDMI-FPC-B_Mask.gbr",
+      "sha256": "e5198333a250bc580d24eaaf5b31e38d45682d42e66c68fb1463b57001573b19"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/796382596f7a_J22_1_GND_isolated.gbr",
+      "sha256": "b836d289bdd7b2d226fe2acdf9edfa4849306a7a04726fe8b57296ce35a572a8"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/79a60808efd3_x1 GlowStitch LED Panelised KiCAD Design File-B_Cu.gbr",
+      "sha256": "ee44c426b7a3afc7af5b67341c84c2fa97f4b7009f320e6f9f538bd4cc4abd54"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/8026b42805d6_coupon-F_Mask.gbr",
+      "sha256": "66f51ad6321facd84ab1411054ad0b0962fd899cde558e6b0322b63c87878f7d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/871ebcdb2c58_halpi2_electrical_case_v1.json",
+      "sha256": "141338fd165f9b48f24a11373405aad7356988c0dce7095c812d3351c7a64102"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/95811f235590_result.json",
+      "sha256": "66a7754d60ab64d53faca870cbdcf3d564164ec97688a56099b9cfbbe6a0a785"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/9906955adf0a93869dbd2ae7e225b5bcc7c59327e501daad2aee30357298c359.kicad_pcb",
+      "sha256": "9906955adf0a93869dbd2ae7e225b5bcc7c59327e501daad2aee30357298c359"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/9b45b3889b22_coupon-Edge_Cuts.gbr",
+      "sha256": "f8270c5bd3190f730f35b78dd1d4eed5d6c80b2c3eb6ad864b97236e29eef70c"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/9e7942b4f0cc_negative_controls.json",
+      "sha256": "45906d6be92f5492b36143963a21888c6d867f3eba6f5d0b2755c67955ba5937"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/a4b3e7e10695_coupon-F_Mask.gbr",
+      "sha256": "188f697167532e6cc651c99c5a0d6444e9d7ee1bc68a8df1181ff2a50cfae007"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/abd3e5d24fee_x1 GlowStitch LED Panelised KiCAD Design File-Edge_Cuts.gbr",
+      "sha256": "2b1ec35e85493f0c16a4bb07917c2acebdbfec220f0a7bc451e711521746395a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/ad98bebbbb24_coupon-Edge_Cuts.gbr",
+      "sha256": "f8270c5bd3190f730f35b78dd1d4eed5d6c80b2c3eb6ad864b97236e29eef70c"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/af31c93973b169e072e45a0596b612c264f7b8e35a84a25c35261b125e8f013d.kicad_pcb",
+      "sha256": "af31c93973b169e072e45a0596b612c264f7b8e35a84a25c35261b125e8f013d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/b2d2d96f263b_policy.json",
+      "sha256": "81fbfb66ea4264f3b890a9a11ec06ac12bcb0f5dbe3e077323928d835ac79ba6"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/b4b1a59d1d81_coupon-Edge_Cuts.gbr",
+      "sha256": "05506ea3c0429dd16ac7cd417aea7b7b8d701af7013bffbeac20059ed7971b2b"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/bc81bfe4af6d_HALPI2-HDMI-FPC-F_Silkscreen.gbr",
+      "sha256": "c0ec424a10e7ada78f9128d3b47cb512141564ffe6749dbf75f5658f40912cc6"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/c44938a59392_coupon-Edge_Cuts.gbr",
+      "sha256": "f8270c5bd3190f730f35b78dd1d4eed5d6c80b2c3eb6ad864b97236e29eef70c"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/c52b10f2fdde_x1 GlowStitch LED Panelised KiCAD Design File-B_Mask.gbr",
+      "sha256": "b2ff3bd8f85557c4c5b4e955c6e2bf1b04dd8b0a632116084601a8d3d56d8c79"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/c5823829c9f8_HALPI2-HDMI-FPC-F_Paste.gbr",
+      "sha256": "d48617d89731207c2f7ddd3494bf54d59485b0fbf11d3325d1735b6217912254"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/c71e191e048a_final_report.json",
+      "sha256": "55a2d402af1b75b27e0aac6831e4f04203ced5f021bbead2853a24e4faf5af71"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/cb6404c15ad5_intended_connections.json",
+      "sha256": "48c471ae59237200398bf815605030a9e07bb0625c54db3409b90a254a39ec59"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/cfffe443fb68_coupon-F_Mask.gbr",
+      "sha256": "66f51ad6321facd84ab1411054ad0b0962fd899cde558e6b0322b63c87878f7d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/B.Cu.wkb",
+      "sha256": "e616b64ec4dda5c7aeef8d07975dd41d674850cbabf0ab0d6f390db2fc7e6db2"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/B.Mask.wkb",
+      "sha256": "b83039cd836350d15b0641f67f66278a38a48b3a7508beee133b22c7bccd3c29"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/Edge.Cuts.wkb",
+      "sha256": "f70f2feb859110e72173aa2778e85c73d2e2b6d3ab81b89d4bc540c1f9a43e53"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/F.Cu.wkb",
+      "sha256": "eb54ca8dabf7f9e7204c21209f11f5a9781c1daa0850bf91ab0f39afc31a88a5"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/F.Mask.wkb",
+      "sha256": "acfc0291eb0bab524a668577fa3ca62d48fe97b5fcadf117ebd6c2c35d6c3375"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/accepted/candidate.gbr",
+      "sha256": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/accepted/copper.wkb",
+      "sha256": "b76cbe07c7d8a9bed21d529b1cda9f993276f62b972365bf4b3c7c959ae89283"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/accepted/mask.gbr",
+      "sha256": "b56067941920c4663ee0c3c5d78e48399ec71ab1c956ba7f87efb910fbab49e4"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/accepted/operation.json",
+      "sha256": "a3d383d323dbadf54df77aef52cd49efb8dece17175a3b7cd5210ec6af4875e4"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/accepted/validation.json",
+      "sha256": "8075be1d703a0a56eec03962902d933d6954e0b7679f47cb321e8595329625ce"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/before_measurement.json",
+      "sha256": "4eece863fa28828cb7f1e16f50eed6d9aebd8fdbfe50d2b338f6e7cfae192b21"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/before_region.wkb",
+      "sha256": "eac592c7dd67ff088e47dce6aacc5a8e63cfb55823ac5c439f0d375b8549cf12"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/bridge/candidate.gbr",
+      "sha256": "fd3d70a6f83250797062eafef41b6a924a9ec1f864b7df9b69ed3dcc8fa443b5"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/bridge/copper.wkb",
+      "sha256": "46b19667e6f3937082950ad58732838a8454a1e333c6bce9657cd279eb375781"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/bridge/execution.json",
+      "sha256": "cfee32fb6d28f01d673fa5b5559f657bb46236cc19e540a0ba247207e37c0e8a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/bridge/validation.json",
+      "sha256": "4590d450e5001351aaa151ceab28328c2727dcfc468ddd36d98005783b5f4ce7"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/contract.json",
+      "sha256": "0f1d1cbf3e7e96bdf59ca112572b4a7e9d8e66198cbda0f8ceb4f2e48ea20df9"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/controlled_before.gbr",
+      "sha256": "5d75d5755b7a3a693e02abd1ce70391769b8a5a52a9673b0216b3697de6db47e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/copper.wkb",
+      "sha256": "eac592c7dd67ff088e47dce6aacc5a8e63cfb55823ac5c439f0d375b8549cf12"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/execution.json",
+      "sha256": "95936d47ac5d54fdd9149a5acf88578a163b7691f8be37d4a024d2ad14e8676a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/fixed_mask.gbr",
+      "sha256": "b56067941920c4663ee0c3c5d78e48399ec71ab1c956ba7f87efb910fbab49e4"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/mask_region.wkb",
+      "sha256": "7f396e59bc755b9a494eec93edc8d097fa58d05873e564828cd28877f917da7d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/open/candidate.gbr",
+      "sha256": "2dce71c7561d321d8ed2a09c5b44cb93effea9912e220971e37737c3f1f94331"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/open/copper.wkb",
+      "sha256": "35ea7b6b7579f9709262aca5262cda2bc4d1d518e7f42521b93ecb65b9bbf360"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/open/execution.json",
+      "sha256": "cfee32fb6d28f01d673fa5b5559f657bb46236cc19e540a0ba247207e37c0e8a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/open/validation.json",
+      "sha256": "455fd97f924a6f53144dc0312f7bbfb814811c75aafe7f9ca11942602da680c8"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/original_measurement.json",
+      "sha256": "7a1cf38cfcbefbd7956d3b5da3a06d8e95e175bde18c6a2ef55dd0511a3bd8b8"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/original_region.wkb",
+      "sha256": "b76cbe07c7d8a9bed21d529b1cda9f993276f62b972365bf4b3c7c959ae89283"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/outline.gbr",
+      "sha256": "93e62dc56faccfdd029ec942e67cf7d887206eefc29e5232843954b9e5bdd285"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/result.json",
+      "sha256": "ff7778b43b7d11c7e67afe6b7a248939e22faee50e08e51aa32fb7c19529248b"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/operation/rollback.json",
+      "sha256": "07c71da9908a4d05c0efa75bfae26474c192c6149aa69714e3245295c04557bb"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/client/receipt.json",
+      "sha256": "d3f40b08559a219d59c32d88fa8dd9d8ce3ad13ddb9f5c87aed4f2a3da8cf0bc"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/ddea5d2e5be9_coupon-F_Mask.gbr",
+      "sha256": "9bdf5c98ce3f4f258710695c3a83036b2561d8698fbb674bf6c93cd1702a6a18"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/e09c7459d49ad7499c824ee2ea840189153593f2f9777207b150e602631e6ca9.kicad_pcb",
+      "sha256": "e09c7459d49ad7499c824ee2ea840189153593f2f9777207b150e602631e6ca9"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/eaa474f461d1_result.json",
+      "sha256": "b08ed73abbcaa4b3d8de66a11b8bc8d4c27ecfc6254dadb3b2f7388cdfc9b1eb"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/f0c646f3f11f_coupon-F_Cu.gbr",
+      "sha256": "0fcdebc1295f43d66fae00cf75fa33cc0d02b2f2028035f06b0c2eddfe290060"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/native_251205b2b832869c00dc.json",
+      "sha256": "251205b2b832869c00dce1eeef7fcaf18ac5b4ecb684c73563cbf3b3b7997765"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/native_46a654fc6e8a63949526.json",
+      "sha256": "46a654fc6e8a63949526572200f5400cd64d0b899c175e05d75deeead5569ca7"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/native_a1bd0edbaf8dafd48f87.json",
+      "sha256": "a1bd0edbaf8dafd48f8754598c91d46780cd13af91cf5c0016d05e93cdd87e86"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/native_dd013814cc823d8af268.json",
+      "sha256": "dd013814cc823d8af268d99e0287987724dc41a6003b709748d6e91f195c8086"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/native_eac550f3aaeb50bbe96e.json",
+      "sha256": "eac550f3aaeb50bbe96e9f6bd8b689e6046d80f45245646765689f4af01020fe"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/native_f8711c4df09893efba3c.json",
+      "sha256": "f8711c4df09893efba3cd08616790f39aabc587f687965d78b8a5ea11bb7d62f"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/pipeline_2b6d007be161263bb78d.json",
+      "sha256": "2b6d007be161263bb78d99e6b39f6ce1c7baa5c24507d5a3a226084298339868"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/pipeline_4cc123741c5f3e61de32.json",
+      "sha256": "4cc123741c5f3e61de3277d19153a6ca5894c06d3d0c66e4446956cbd3ded639"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/pipeline_788e0edd08b6e37f7120.json",
+      "sha256": "788e0edd08b6e37f712022323b4ac309034cfbecc01a9961521b9a31e44f2e30"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/pipeline_88da74e7a00a66d60bd5.json",
+      "sha256": "88da74e7a00a66d60bd55f08967fe90d15b8c3cdba34bcec56928262c82a682e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/pipeline_cee7ec8309117047cb9b.json",
+      "sha256": "cee7ec8309117047cb9b9c919c4b937887fce294d79341c1b1330cd587ffdbed"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/evidence/prior_consolidation_seal.json",
+      "sha256": "b3d6945b711e25c4572e5c0b9bcf68b16ea3fe1f492fa58a21db9a45c8b823a0"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/index.html",
+      "sha256": "67ebd93895597698ae485c7e113d7c255b50cea0a62f58f6f3c99a0419d18359"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/overview.svg",
+      "sha256": "076fe0d069644c722433391c10f363b29e0a3029e4a19a256b3969a53f245724"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/glowstitch_preserved_electrical.html",
+      "sha256": "aa75b66b6451867a1c0919d95170ae45a69b5843eca007eb8ff370fc61db1147"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/glowstitch_preserved_geometry.html",
+      "sha256": "b19dcd80fc5a72865ce99d738867afe05db442d0d125dcf3925e0376a721c41e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_bridge_anchors.html",
+      "sha256": "d95a16c056110b25c1293f17d6f4387e0aec2af6f0c27269f31d976fbbf44810"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_bridge_connections.html",
+      "sha256": "0c004bbe6ff9ec6c76d84f810b4e1f09a643eb72943e41b73f89cdf34bf7d9e0"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_bridge_no_short.html",
+      "sha256": "4fb3a835201bc19591efb91671764f9f8c8433870395853b819e9893a42a1277"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_open_anchors.html",
+      "sha256": "cc3a1659dcb0332398214f16acca8c632a1ea7a985b013a479a896672cdb83dc"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_open_connections.html",
+      "sha256": "41918511e93e5b706887b7bb4d91d5e4e3e7de3fec293e152e0f186d410ff21d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_open_no_short.html",
+      "sha256": "bc50690d118d510fa533c35e450fdde7699100a936d69a146c570a45657d2a5a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_positive_anchors.html",
+      "sha256": "d95a16c056110b25c1293f17d6f4387e0aec2af6f0c27269f31d976fbbf44810"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_positive_connections.html",
+      "sha256": "ba3a8958ed898a424b8cdc8bae7333bd1a45009b5af0acd93832d191b5824929"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/halpi2_positive_no_short.html",
+      "sha256": "59f5920240bc8cc861bffd8ad95243be4a7fa8e005693168bfef344e39b9bc1d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_center_registration.html",
+      "sha256": "b6c8f192652136f46bf163a52a3249cbe1a63664b904014fd6fd5adbcdf96321"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_clearance.html",
+      "sha256": "669be1f68c0284154ee6a050f003c0511fb18b4846d5fbcca50acb94145464c3"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_connectivity.html",
+      "sha256": "7ca913832500dcb4e6c669555d6a1e044f590a8fe4087ac485ebe37a3c15d54c"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_copper_assignment.html",
+      "sha256": "20cea2b952ca17d03bd6ca6f24b4860644f537f9c5649ed75978301e7f3ace52"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_coverage.html",
+      "sha256": "68307beb23c71d21873b85164af45924fb18be3e3708cec37b1a8141936bf20c"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_exposure.html",
+      "sha256": "5896cbb7a6aebfc9182776ff750a361ffcecec82f3b1f862ebace4a732b1d35d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_fixed_reference.html",
+      "sha256": "6d2e8a161064b2734e9134bc96b813c87d62ae1b5b64847ec6fbbc064780ca21"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_no_short.html",
+      "sha256": "da3d2586332f6d9424ee951e60072670be5638580e5b69c56cb2f12c541fa1b3"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_scope.html",
+      "sha256": "e2d6fe167d5640b7a4d365e7018b454303e480ccf6e8038b11d288469fc23520"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_target_geometry.html",
+      "sha256": "93ccdea9dd31316c39ba4029e326045426b53f42a63643a827822422418b2531"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_bridge_trace_width.html",
+      "sha256": "4dbaa90797a06bd2943f99ed0d0089ada4490f3e82ee2841512a6dab6013d8c4"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_center_registration.html",
+      "sha256": "55f3f93c1fdf385cf2a1d1976c44c92e9e2f5a3d493244308c9e72e740c10489"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_clearance.html",
+      "sha256": "17b9b08fc14793f281fa7ec7777e9408e3381561d38f4734a0feea905792039c"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_connectivity.html",
+      "sha256": "dad6d31908237522641e1a7791b3a0cd375edf1cd83395f00307bc968b5b8bc8"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_copper_assignment.html",
+      "sha256": "fdbb354ff28265a32d6a86767f4cb6e0b6e1592e256e84fe0d5f23d9ff05ffaa"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_coverage.html",
+      "sha256": "7726711f2475206184589df6591a80d69e49d0836846d290fc398f36c935c1db"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_exposure.html",
+      "sha256": "1de81c107eafc580254fe15cd802894782911624a03cdb95725047781647473f"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_fixed_reference.html",
+      "sha256": "8ac8f7654bcb43f151b1582c1dd2111e89d646c5df78ac15c37eec0fd5b6670a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_no_short.html",
+      "sha256": "46733cb897750ead3d8f91014ee696fc44faa04cff351e73577fd440e05fb0b3"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_scope.html",
+      "sha256": "86128c4939ba258907929a1f57a275a245aa1a234e517c44f751f663d2ab626a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_target_geometry.html",
+      "sha256": "5bfae278a5fdec27341b3f08865a2972c61cacc2ecee588a99183d33e3e68cf2"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_computed_trace_width.html",
+      "sha256": "d2ca5b591220f4456cbf4a1acb13df5228362aee4dd59ddcd79201d365f998a4"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_center_registration.html",
+      "sha256": "714246ff382163767e834a260fb3ef24967f66a7ba2c4a31122ef22f871a22b7"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_clearance.html",
+      "sha256": "0574680f9ab83009420533e139481324c14ee41bf22f4864bbbbf7dcc983c864"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_connectivity.html",
+      "sha256": "85d503eac6522fbb9f4b9d31eef1f494a3b6dcc8a2dd39fd587d6e314ccb18ce"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_copper_assignment.html",
+      "sha256": "bc9a5a97af350d351a760f3d59c5361bc16cda575c341153c8a14725304e180d"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_coverage.html",
+      "sha256": "ec206e74e7fd1aaa0bd142f90f9390fa8c710dc7175575f2565c207c549c8b9e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_exposure.html",
+      "sha256": "f7599996792be08e13268292acd1cd56e5ae76d445387e4eba61a4df2269b230"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_fixed_reference.html",
+      "sha256": "0a5edf06b2beaf74ad6fdafaa37aadd76caa5f18b7094fce725092f5a97eac9e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_no_short.html",
+      "sha256": "8aae9df91983a4ffd81d374c53db394f3a7f47197878db60fc7c6ff2343f8fcd"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_scope.html",
+      "sha256": "94bca33ec5cab245df961202b352b78784dbe31fdeb161c373f1d50ce4b7b206"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_target_geometry.html",
+      "sha256": "2e3dde3b0f6ae8767e96159ac58d9f85faa8543fa29732f973081be7a535efae"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_disconnected_n1_trace_width.html",
+      "sha256": "e4d0406d0224b869ad6215832c4d39572d6f44e89e7ba87fd1ea1454d54f9376"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_center_registration.html",
+      "sha256": "c7581d0b279f294637a4faaa8411edeb29f506357956d045c9864345a4af9385"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_clearance.html",
+      "sha256": "ef2915ae1dd83c81d15a0630e12df9b1bebe8899f0bb6fe69cc349d8fbca9015"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_connectivity.html",
+      "sha256": "544d0bff5db357c6636dcd1a665c9f9246a7b051e934ac9f01482e497b7d834a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_copper_assignment.html",
+      "sha256": "31eb3b0b1b6dee1946c7c4c07692a7d6744f72030e7db2ba01f1f4292151fee0"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_coverage.html",
+      "sha256": "d0d65f0ab610e66ce621a2f8f08f31c8ee657df64b83413318ab7a74baa0fc6c"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_exposure.html",
+      "sha256": "dbfe2bc0dfede8c905b39fa3db5b413ce35ed7b73edbefab09a0f3a77be34dca"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_fixed_reference.html",
+      "sha256": "a42f9ddad106aed6bb0b00cf4e330fcd3cf1f60fbfced780f6dc34d958877eef"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_no_short.html",
+      "sha256": "f4b1ed58b23de043a5e652c2d633e699136c98db375adf815c527f616b75ade1"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_scope.html",
+      "sha256": "d576638cc8538def43b14d623212f1a8a871159d156149d1518f0201110540de"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_target_geometry.html",
+      "sha256": "32ed70958e395e9aa48c5184b20fd16851c6e10853bffec9e8bf568ff6571597"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_protected_p3_trace_width.html",
+      "sha256": "848f735d0152e5f3e1180ab4ee2ddf24149089b8f662682c5ac1ab786edfbc7e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_center_registration.html",
+      "sha256": "665cac61e824182a7a5570ae108669bfe1e35d84d5a53fda12945e2ec69ed7d2"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_clearance.html",
+      "sha256": "960ecbf067f9638a5712361fe8a086c7560b04bf150248405dec1a5323ab33a9"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_connectivity.html",
+      "sha256": "ba2e417f49eb51ee22c5e75befee77201acea11c8eef9e14f58a4e7bed5656f4"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_copper_assignment.html",
+      "sha256": "46deeb8bb1991455809771bf92705cc5fc4b840327c1d15cc40835ae8b005a4e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_coverage.html",
+      "sha256": "db1f48802a2ba1a4bcd1d94baffc2d0f08a138532155ac2b5e445a574bb0b289"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_exposure.html",
+      "sha256": "c2ee09d9edf2ce4542a5e4ed2f6c689c8ed369f3ea289f3290524f3daeefc60f"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_fixed_reference.html",
+      "sha256": "8d8d18ea428aa604c19ee798bd9cfd446b81e623fe9e1764110c4506b2181424"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_no_short.html",
+      "sha256": "81d32ad04b09c4ae0f4f5eb0af2d9ea2e8c3a7c1800749831d97cc513eba758a"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_scope.html",
+      "sha256": "a00a42b5404bbc40b3e27d44c875cf9bf4e55ebf8113640f44d7b031e5d3f30e"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_target_geometry.html",
+      "sha256": "c0344f7ddbb1a8ff3b35349e55f8c02b4b4370ee117ed47bcb651f11e53c2664"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/records/synthetic_shifted_aperture_trace_width.html",
+      "sha256": "ee418dcd6ee7a6b94463840b7cdf7127d87fdcab9ea99a72c57b4050bbdc39ae"
+    },
+    {
+      "path": "out/visual/client_20261015T074543_446151Z/scene.json",
+      "sha256": "fff114abe4c026d0f2a69516b66aaab118c07e201cd85051b67b5613d2b572b7"
+    }
+  ],
+  "dataset_seal": {
+    "path": "dataset/vme-wren_20261016_v1/SHA256SUMS",
+    "sha256": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e"
+  }
+}

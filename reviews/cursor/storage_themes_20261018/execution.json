@@ -1,0 +1,25 @@
+{
+  "channel": "authenticated cursor-agent CLI",
+  "mode": "read-only plan+sandbox",
+  "argv": [
+    "cursor-agent",
+    "--print",
+    "--resume",
+    "15f893f5-b7c2-4f04-9e91-d5231e61804b",
+    "--mode",
+    "plan",
+    "--sandbox",
+    "enabled",
+    "--trust",
+    "--auto-review",
+    "--output-format",
+    "stream-json",
+    "--workspace",
+    "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+    "Continue the authenticated independent read-only review of this checkout. Codex is sole coordinator/author/integrator. Read AGENTS.md and docs/CURSOR_PROTOCOL.md; no edits, installations, adjacent/global access, POST requests, other services/agents or tests that write files. No broad new engineering acceptance claim. This review is a bounded presentation/read-only selection extension of the already qualified R140 engine.\n\nRead out/common_catalogue/themes_20261018/review_packet/packet.json and check its source_snapshot.json BEFORE and AFTER review with PYTHONDONTWRITEBYTECODE=1. Retained source bytes are also in packet/source/. The completed publication is out/ingestion/directory_intake/workbench/run-89e0672dff474f33bb58fe5d26bb8a0c. The underlying dataset revision and reopened result remain unchanged from your last qualified audit.\n\nChanges: four interactive themes in web/catalogue_themes.js; source-derived SQLite/index/blob inventories in src/catalogue_scene.py; versioned opt-in projection that keeps old publications verifiable; selectable diagnostic manifest preview; read-only local attachment route in tools/ingestion_server.py using src/catalogue_selection.py and RevisionCatalog.select. The actual in-app browser downloaded a mask-only server manifest with three objects (native pad, Gerber opening, parent), no writes, and incomplete membership in the original two-member contact group. It is saved in verification/browser_download_mask.json. Source cases, old pipelines and core reopened result compare equal. Documentation: docs/catalogue/STORAGE_THEMES.md.\n\nIndependently run READ-ONLY:\nenv PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify out/ingestion/directory_intake/workbench/run-89e0672dff474f33bb58fe5d26bb8a0c\nenv PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify out/ingestion/directory_intake/workbench/run-c4d6a556faa24afc8142c23f3943d5ad\nUse read-only Python to compare scene cases/pipeline/core result, independently check actual DB tables/indexes/payload counts against scene.common_context.themes, and call diagnostic_selection on the copied store for all four roles, mask-only, trace-only, pad+mask, unknown role and stale revision. Expect counts 8/3/2/4, empty write IDs, retained dependencies, filtered original contact/proximity/group witnesses with no new connectivity claim. Do not run the full unit suite because it writes fixtures; inspect its 161-PASS log and new tests. You may GET the local download URL if sandbox permits; do not POST or mutate the registry. If local HTTP is unavailable, state that and use the saved browser download plus direct read-only function checks.\n\nChallenge UI truth: native versus Gerber/mask identities, ownership/contact/proximity/opening association, SQL zero relations versus CAS sidecars, on-disk SQL indexes versus rebuilt in-memory spatial index, schema/version downgrade behavior, automatic dependency retention and source-bound manifest export, source integrity, incomplete/unknown cases, preservation of old inspectors. The preview is browser-composed replay; Download on the local server performs a real read-only catalogue selection. Manifests reference saved payloads and are not standalone KiCad/manufacturing outputs. Report actionable findings with severity/file/line/reproduction, exact commands/results and snapshot identity. Return QUALIFIED_IN_DECLARED_SCOPE only when no blocking finding remains; otherwise UNQUALIFIED. Do not edit anything."
+  ],
+  "cwd": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+  "started_at": "2026-10-17T17:36:11.111630+00:00",
+  "returncode": 0,
+  "finished_at": "2026-10-17T17:38:34.587502+00:00"
+}

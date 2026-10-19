@@ -24,15 +24,21 @@ class RevisionCatalog:
     SCHEMA='pcb-catalog/1'
     QUERY_CONTRACT='pcb-catalog-query/2'
     MAX_MANIFEST_BYTES=256*1024*1024
-    MAX_PAYLOAD_BYTES=64*1024*1024
+    MAX_PAYLOAD_BYTES=128*1024*1024
     CACHE_REVISIONS=2
-    def __init__(self,root):
+    def __init__(self,root,*,read_only=False):
         self._validated_cache={}
-        self.root=Path(root);self.root.mkdir(parents=True,exist_ok=True)
-        self.payloads=self.root/'payloads';self.payloads.mkdir(exist_ok=True)
-        self.db=sqlite3.connect(self.root/'catalog.sqlite')
+        self.read_only=read_only
+        self.root=Path(root)
+        self.payloads=self.root/'payloads'
+        if read_only:
+            self.db=sqlite3.connect((self.root/'catalog.sqlite').resolve().as_uri()+'?mode=ro',uri=True)
+        else:
+            self.root.mkdir(parents=True,exist_ok=True);self.payloads.mkdir(exist_ok=True)
+            self.db=sqlite3.connect(self.root/'catalog.sqlite')
         self.db.row_factory=sqlite3.Row
         self.db.execute('PRAGMA foreign_keys=ON')
+        if read_only:return
         self.db.executescript('''
         CREATE TABLE IF NOT EXISTS revisions(
           revision TEXT PRIMARY KEY, source_hash TEXT NOT NULL,
@@ -60,6 +66,7 @@ class RevisionCatalog:
     def __exit__(self,*args):self.close()
 
     def put_payload(self,payload):
+        if self.read_only:raise CatalogError('READ_ONLY_CATALOGUE')
         if len(payload)>self.MAX_PAYLOAD_BYTES:raise CatalogError('PAYLOAD_BUDGET_EXCEEDED')
         key=digest(payload);path=self.payloads/key
         if path.exists():
@@ -81,6 +88,7 @@ class RevisionCatalog:
         return payload
 
     def import_revision(self,source,objects,relations,config,*,publish_as=None,fail_after=None):
+        if self.read_only:raise CatalogError('READ_ONLY_CATALOGUE')
         if len(objects)>100000 or len(relations)>1000000:raise CatalogError('REVISION_RECORD_BUDGET_EXCEEDED')
         source_hash=self.put_payload(source)
         objects=sorted(objects,key=lambda r:r['id']);relations=sorted(relations,key=lambda r:r['occurrence'])

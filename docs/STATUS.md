@@ -1,5 +1,7 @@
 # V1 decision — 2026-10-14
 
+Current additive delivery (2026-10-18): the bounded R140 common catalogue and preliminary **Discovery / Grouping / Storage & indexes / Selective export** visualization are implemented. The local-server diagnostic download resolves selected records read-only, retaining parents and qualification/relationship evidence. See [STORAGE_THEMES_COMPLETION.md](catalogue/STORAGE_THEMES_COMPLETION.md). This does not alter any frozen V1/V1.5/V2 decision below.
+
 Technical validation: **PASS for the frozen synthetic V1 coupon and qualified Gerber subset**. Independent Cursor review: **NOT_RUN / CHANNEL_UNAVAILABLE**. Manufacturing acceptance: **NOT_ESTABLISHED / OUT_OF_SCOPE**. Stop at V1; no V2 editing or V3 planning implemented.
 
 - G0 PASS: all 70 immutable assets verified before exports and validation. Native footprint origin `(20,20)` plus P1 local X `0.35` / `0.05` confirms source X `20.35` / `20.05`; independently parsed native Gerber flashes confirm the same positions. Policy remains hash-frozen.

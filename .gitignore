@@ -10,3 +10,6 @@ work/
 *.bak
 
 external/sources/
+
+# Local client datasets: raw inputs, provenance and offline verification bundles.
+/dataset/

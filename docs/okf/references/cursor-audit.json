@@ -1,0 +1,41 @@
+{
+  "schema": "pcb-cursor-audit-addendum-v1",
+  "status": "REVIEW_COMPLETED",
+  "verdict": "QUALIFIED_IN_DECLARED_SCOPE",
+  "reviewed_at": "2026-10-17T03:08:37.798945+08:00",
+  "reviewer": "Authenticated Cursor Agent CLI 2026.10.14-941492e",
+  "session_id": "31cfc920-1a35-4ad5-9c85-b553b4199935",
+  "reviewed_head": "19ff47204d429b93fdac21d3b1a94ed3462b3629",
+  "reviewed_run": "out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36",
+  "packet_hash": "9bebe92391b94bb84462168030ccaf914ffce86ce3764b8d206cdcf6c1d4af4d",
+  "scope": "Independent static review of R1-R4 plus non-mutating runtime verification and retained invalid controls",
+  "independently_verified": {
+    "packet_hashes": 14,
+    "published_outputs": 351,
+    "datasets": 5,
+    "comparisons": 3,
+    "empty_failed": "REJECTED exit 1",
+    "empty_unknown": "REJECTED exit 1"
+  },
+  "not_run": [
+    "Live browser inspection by Cursor",
+    "Python and JS suite reruns by Cursor",
+    "Adversarial mutation tests by Cursor"
+  ],
+  "advisory": "Future builds should avoid hardcoding current Cursor channel availability. Frozen generation-time status retained unchanged; this addendum records current review.",
+  "custody": {
+    "packet_files_unchanged": 14,
+    "changed": []
+  },
+  "source_audit_verdict": "COMPLETION_NOT_ESTABLISHED due Ask-mode shell restriction, resolved by independently executed non-mutating checks in Plan mode",
+  "reports": {
+    "source_audit.md": "b3e214487e3c12d4ac030f77fc080f4493918f221b1b32a37c62056985bf1fb7",
+    "runtime_audit.md": "ea24ad0a6eeff71063e6675464d6355c8c1f9eb35b4cd348d7b24adaa99e68fc",
+    "independent_commands.json": "c72e0ddcef993365acd3604548186fa25fc6881b85cfadb355835832446e1f88"
+  },
+  "limitations": [
+    "No manufacturing/electrical or historical engineering re-execution acceptance",
+    "No independent live UI acceptance",
+    "Common catalogue remains deferred"
+  ]
+}

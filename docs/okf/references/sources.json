@@ -1,0 +1,484 @@
+{
+  "schema": "pcb-cam-runbook-source-bindings-v1",
+  "base_git_commit": "19ff47204d429b93fdac21d3b1a94ed3462b3629",
+  "captured_at": "2026-10-17T17:39:50.646404+00:00",
+  "verification_meaning": "Current source/evidence applicability; frozen earlier captures retained under out/common_catalogue/verification_20261018_post_review/okf_before_reconciliation. No independent engineering acceptance follows.",
+  "sources": [
+    {
+      "project_path": "docs/CLIENT_DATA_DEMO.md",
+      "sha256": "0eae6f8e2baf0bb0eec61190b13037c37bc718fa0ab39f7f022c04390588af74",
+      "bytes": 9956,
+      "role": "source-document",
+      "snapshot": "references/source_text/docs--CLIENT_DATA_DEMO.txt"
+    },
+    {
+      "project_path": "docs/CLIENT_OPERATION_DECISION.md",
+      "sha256": "48d4e33bd3a38825fb8b5c981d51e62843e1620bc61b755873078dc90436f6b0",
+      "bytes": 5413,
+      "role": "source-document",
+      "snapshot": "references/source_text/docs--CLIENT_OPERATION_DECISION.txt"
+    },
+    {
+      "project_path": "docs/VISUAL_WORKBENCH.md",
+      "sha256": "ad79a039e3d9283244c95e5719f08fc0f8e363a943fb573a7f855b06d6424e51",
+      "bytes": 11097,
+      "role": "source-document",
+      "snapshot": "references/source_text/docs--VISUAL_WORKBENCH.txt"
+    },
+    {
+      "project_path": "docs/consolidation/RUN_CONSOLIDATED_DEMO.md",
+      "sha256": "51992e10def74587c61e6a91a59a94a2ea3b7bd541fe1e9719fecf9127ba5934",
+      "bytes": 3652,
+      "role": "source-document",
+      "snapshot": "references/source_text/docs--consolidation--RUN_CONSOLIDATED_DEMO.txt"
+    },
+    {
+      "project_path": "docs/consolidation/CONSOLIDATION_DECISION.md",
+      "sha256": "0342bfb3f4d42c33dbe54da04bed39711ba6ffaf6945fa259424893b3bbdb243",
+      "bytes": 7086,
+      "role": "source-document",
+      "snapshot": "references/source_text/docs--consolidation--CONSOLIDATION_DECISION.txt"
+    },
+    {
+      "project_path": "docs/consolidation/IMPLEMENTED_DATA_CONTRACT.md",
+      "sha256": "32f184165b440e80d0fadb15fecca3700f897a9f4c0873882681ece4504355c1",
+      "bytes": 4225,
+      "role": "source-document",
+      "snapshot": "references/source_text/docs--consolidation--IMPLEMENTED_DATA_CONTRACT.txt"
+    },
+    {
+      "project_path": "docs/V2_DECISION.md",
+      "sha256": "cb1c96e420ff9ecb3b9ca13eb4d31a1428e555b03523c621dcf7932e2b303083",
+      "bytes": 8894,
+      "role": "source-document",
+      "snapshot": "references/source_text/docs--V2_DECISION.txt"
+    },
+    {
+      "project_path": "tools/preflight.py",
+      "sha256": "5f4e180161ccb617003a16cfd3868996b1fe1fd404aeffb2ca484d557e426163",
+      "bytes": 4067,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/export_native.py",
+      "sha256": "0f642cffc3f850c3e5607e92559fe6d29f50da10455a5f444a1731dc5fec0db6",
+      "bytes": 3465,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/client_operation_run.py",
+      "sha256": "3de9e5ba229abe295642437abcea7d2bfaf261c43efc45165fde0ad356c676a7",
+      "bytes": 8754,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/client_visual_demo.py",
+      "sha256": "c895667d155a65f7456f86b39c991339fc5c50157e0510048a32cb24831ff0ac",
+      "bytes": 19924,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/visual_report.py",
+      "sha256": "2e7e11ab07e5be18ff4db884b124fee162ff478d6e587c9c63585d669b099974",
+      "bytes": 6348,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/verify_visual_bundle.py",
+      "sha256": "6ef7a6cf7ae52c572501d9cee350c0e9e91b5d2b7dff32f109f2e606e026ef30",
+      "bytes": 4556,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/consolidation_pipeline.py",
+      "sha256": "eed6a4cb36a5bbd5072833d94641c61a070893a9786b0c03919ed38e5481d08e",
+      "bytes": 12817,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/consolidation_demo.py",
+      "sha256": "ef375edd8487333617bb91da25ea0fc79cf9d2d69b860a9c3f27917150ed298a",
+      "bytes": 6777,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/catalog_v2_run.py",
+      "sha256": "36e7e027e8cf2f762adabfba6b4554ae6c4da834d7ed80e2681c4dbb06775861",
+      "bytes": 10669,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/native_shadow_compare.py",
+      "sha256": "7243f79d9bc0d8262dbf6df3efac7ae9773c890292e3f5784ff368267af130bb",
+      "bytes": 4588,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/client_gerber.py",
+      "sha256": "a4b7f3615ea076a2114c61f6da105eceb382741c40148abd08ddadb56edf5109",
+      "bytes": 5011,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/client_operation.py",
+      "sha256": "6fdd14e16d4e47f5486a73c35849d14e3ed40df75ddc851ee6e5ec06a42ccfc1",
+      "bytes": 2226,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/client_validation.py",
+      "sha256": "14314e689403e1653c64455cab2b81b6a5e7ffa6e8a8b17e4518720df939b2e9",
+      "bytes": 5720,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/native_inventory.py",
+      "sha256": "4655773b8072de279a00103855fe0ff5f6ae335447a7940b9dd9928f7e71e64c",
+      "bytes": 13664,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/revision_catalog.py",
+      "sha256": "f2dc9dbd891577b86682a04978e969d28ae500aa5c971c092b6ac62c536c2350",
+      "bytes": 17560,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/spatial_context.py",
+      "sha256": "ff20ed96292ef6bd83c64c52b6a4ca7d83d4026ba60c59ed2ae032912e6c7d66",
+      "bytes": 6015,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "web/workbench.js",
+      "sha256": "4f956c09e5ad916f5f0dc5e7dadbaa7de46e8fd6cf5334f53786e6a49dbd45f3",
+      "bytes": 28467,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "requirements.lock.txt",
+      "sha256": "54a8c5873d4d4a809dd2d3dc74ad2bc39f4de21c1a877078cd2f1331523b54d1",
+      "bytes": 407,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "contracts/asset_manifest.sha256",
+      "sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c",
+      "bytes": 8653,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "contracts/visual_inputs_v1.json",
+      "sha256": "ee2e2ee28a2335351ca6666cec02885a06a720970ea1fc5676bc3948ed78b4a3",
+      "bytes": 1057,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "contracts/v2_move_pad.json",
+      "sha256": "57000f4cd9c6270bd4e39c0d52a0672af682122a3de1f5b70755201a158e1256",
+      "bytes": 2703,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/ingestion_registry.py",
+      "sha256": "fae4dc2feaf6ab24e37e932f99ba24401a6b0ba4363ee97fa42d14561c957bf4",
+      "bytes": 9090,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/ingestion_visuals.py",
+      "sha256": "562e9330a5f054ea944b1af21f3f2ba5c826c7790a5cfb992746414418597ad4",
+      "bytes": 3743,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "tools/ingestion.py",
+      "sha256": "5ebe4c1c4f88973f5aeb34e8f517ce2a653f999f64d78e74e26df827286c0daf",
+      "bytes": 3068,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "web/ingestion_views.js",
+      "sha256": "22019e99b67b1d37993c65d074d8cf1cd8510366f3229ba99bdb2a601b64656b",
+      "bytes": 36367,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "contracts/ingestion_registry_v1.json",
+      "sha256": "f2777e0f7b3cecdbce024e5daf55b44c8a66e81e1d8617a8e052052cfc5558c5",
+      "bytes": 65512,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/ingestion_verification.py",
+      "sha256": "a643910d499e5d263c0732412c329bb989a31fd75b397778913ae89bb7366e25",
+      "bytes": 8044,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/ingestion_files.py",
+      "sha256": "1255c88de08b7df6e0a2e33bdbe2416ad6328367556ca8b86f9ab16747179433",
+      "bytes": 960,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "src/ingestion_contracts.py",
+      "sha256": "c07fcf91ccbceb002c77baa1230762b898d969a414082a6d6fe365f0c991c1bb",
+      "bytes": 4729,
+      "role": "implementation-or-contract"
+    },
+    {
+      "project_path": "web/workbench.html",
+      "role": "implementation-or-contract",
+      "sha256": "6dc5f31bf30b0570b9f2f561235e1fb53b588fb484033127a744b78c52b5b2aa",
+      "bytes": 19408
+    },
+    {
+      "project_path": "tests/js/ingestion_views.test.cjs",
+      "role": "implementation-or-contract",
+      "sha256": "6c88b0a66ed496ef5624a038ffe605b74c9e0b8897ec5162a22a56d2ba08ae1a",
+      "bytes": 12533
+    },
+    {
+      "project_path": "web/pipeline_views.js",
+      "role": "implementation-or-contract",
+      "sha256": "90bef721b54453bca6a5dfdba943d60a2b71904f5318c2223996a3512f1743fd",
+      "bytes": 17312
+    },
+    {
+      "project_path": "tests/js/pipeline_navigation.test.cjs",
+      "role": "implementation-or-contract",
+      "sha256": "48e92087f523a3e94e35abc359641e654d25089708a415eea6947c585936cc77",
+      "bytes": 3626
+    },
+    {
+      "project_path": "src/directory_intake.py",
+      "role": "implementation-or-contract",
+      "sha256": "888b083822537492079b825cccc96c32f8427ef579772939d9877ae586c2786a",
+      "bytes": 6121
+    },
+    {
+      "project_path": "tools/ingestion_server.py",
+      "role": "implementation-or-contract",
+      "sha256": "e54c85ddd6ae66e6bd2bdd867933edcc985eeb74e8811b7eb9e2314038482459",
+      "bytes": 6758
+    },
+    {
+      "project_path": "web/directory_intake.js",
+      "role": "implementation-or-contract",
+      "sha256": "55d9142e97928652cc872006b38529e9de6a521c6d4d47db44282b20e42379e9",
+      "bytes": 3313
+    },
+    {
+      "project_path": "contracts/ingestion_packages_v1.json",
+      "role": "implementation-or-contract",
+      "sha256": "10100913878006181f7b60c67ff7c51117b1fb1a0863380f5d02536c3811571b",
+      "bytes": 12243
+    },
+    {
+      "project_path": "tests/test_directory_intake.py",
+      "role": "implementation-or-contract",
+      "sha256": "20b5d40c1838225effed61048bd57f952574fb7045916526af957337e69953ca",
+      "bytes": 8025
+    },
+    {
+      "project_path": "tests/js/directory_intake.test.cjs",
+      "role": "implementation-or-contract",
+      "sha256": "b537529e6871bb5bd602c5113514a8871b49618e50cb071f5360fc9be5487299",
+      "bytes": 3230
+    },
+    {
+      "project_path": "tests/test_ingestion_registry.py",
+      "role": "implementation-or-contract",
+      "sha256": "1592afc1588e548c0cb7e2f9f553c85df1529db6bf7810a33fcc36566f96e9bf",
+      "bytes": 18152
+    },
+    {
+      "project_path": "tests/test_revision_catalog.py",
+      "role": "definition-or-implementation",
+      "sha256": "9a5ef4ff3c7e9bed83ffe84c894f04aece889a3869ce5ffe52f5d8f21bfa0eec",
+      "bytes": 6824
+    },
+    {
+      "project_path": "docs/catalogue/MINIMUM_SLICE.md",
+      "role": "definition-or-implementation",
+      "sha256": "82cf48dce90e7e8c2da23bf364205a0084e4df590e074709a6eb85f760259a0b",
+      "bytes": 20243,
+      "snapshot": "references/source_text/docs--catalogue--MINIMUM_SLICE.txt"
+    },
+    {
+      "project_path": "docs/catalogue/r140_context_observed.json",
+      "role": "definition-or-implementation",
+      "sha256": "57b39e46f485cad148ef139ad1604329073f9e4fd4663be988733ea1deb5982b",
+      "bytes": 6225
+    },
+    {
+      "project_path": "contracts/common_catalogue_slice_v0_1.json",
+      "role": "definition-or-implementation",
+      "sha256": "8eabe6347f0257c4409d343f8eb15c587533e7783c42844b06a07c415ca976ca",
+      "bytes": 9357
+    },
+    {
+      "project_path": "docs/DECISIONS.md",
+      "role": "definition-or-implementation",
+      "sha256": "8894ef63e1c6479d4f76b759241301477c3fb1c491ee2828b5867e39e8a6bc64",
+      "bytes": 14011
+    },
+    {
+      "project_path": "docs/catalogue/DELIVERY.md",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "snapshot": "references/source_text/docs--catalogue--DELIVERY.txt",
+      "sha256": "639b7b37a77bddc0689e6efd1e95c8086c8de4f1b86943ff641178219a6a15d2",
+      "bytes": 6461
+    },
+    {
+      "project_path": "contracts/common_catalogue_r140_v1.json",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "d3eef00f0b553c0591851b0b193fff2d3b5d399eed6d82c810bb7632ba148bf1",
+      "bytes": 756
+    },
+    {
+      "project_path": "src/common_catalogue.py",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "e5d529c811c93bd4762012fdfe4bf1d21ffa5edaacf3158071ad870d529d5d4f",
+      "bytes": 16619
+    },
+    {
+      "project_path": "src/catalogue_build.py",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "10de9b60dd26274d002c8148012451330a55a3e597982777c2251552f252e3e5",
+      "bytes": 9242
+    },
+    {
+      "project_path": "src/catalogue_qualifications.py",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "2e9f95a50858ef71f14acbb81f6e69d053133293ddfc21efc9607e10597d4c71",
+      "bytes": 6813
+    },
+    {
+      "project_path": "src/catalogue_native.py",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "b10530ff8c2614732f0f28db5e615cca2c0afb8de296236b86c65bd2a398b2db",
+      "bytes": 6693
+    },
+    {
+      "project_path": "src/catalogue_gerber.py",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "af94283f8be079fa683e1000fe65508de7e308bcc1b51e8401017ff307c14c45",
+      "bytes": 5790
+    },
+    {
+      "project_path": "src/catalogue_scene.py",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "d758c055bf1d234e2ed344b400a028064941fdc6c91ba4a91ac281297d9788e6",
+      "bytes": 6264
+    },
+    {
+      "project_path": "tools/common_catalogue.py",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "441b1b2e1acfcf027800df759a5e22f3125ea03794bfdd6c90c520a490414f21",
+      "bytes": 4330
+    },
+    {
+      "project_path": "web/catalogue_views.js",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "36a83d0c42eb972f883f551406700ce3479ffd088fad504d2f4cc1ff4bd2b036",
+      "bytes": 7541
+    },
+    {
+      "project_path": "tests/test_common_catalogue.py",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "20e19868e7ab9f16072c94d327cf77f474efb9327dd99aca9741f80cdcc67323",
+      "bytes": 17125
+    },
+    {
+      "project_path": "tests/js/catalogue_views.test.cjs",
+      "role": "bounded-catalogue-implementation-or-evidence",
+      "sha256": "6fec5b6c1e906fc3c924492e3b8b60788298f289aa32a428fd3a034f9bbd5087",
+      "bytes": 2912
+    },
+    {
+      "project_path": "docs/catalogue/COMPLETION_AUDIT.md",
+      "role": "bounded-catalogue-completion-and-review",
+      "snapshot": "references/source_text/docs--catalogue--COMPLETION_AUDIT.txt",
+      "sha256": "b7bc3ac81d4a68770eb1436c9d04e1e88c2fc901eb2212b5ff63cc9c8bb129f6",
+      "bytes": 5265
+    },
+    {
+      "project_path": "docs/catalogue/COMPLETION.json",
+      "role": "bounded-catalogue-completion-and-review",
+      "sha256": "18e6d6ccaeec61cafefe84464f6173d50a318089c601bb87875f67dc0bbf53c5",
+      "bytes": 1417
+    },
+    {
+      "project_path": "reviews/cursor/common_catalogue_20261018_final/audit.md",
+      "role": "bounded-catalogue-completion-and-review",
+      "snapshot": "references/common-catalogue-cursor.txt",
+      "sha256": "e99e82d9671baac6280660ebdb76f5388f75121ac16781782e68e165a7dd1bf5",
+      "bytes": 3494
+    },
+    {
+      "project_path": "src/catalogue_selection.py",
+      "role": "storage-themes-implementation-or-evidence",
+      "sha256": "cfada2f2b4392b5a3b6236df85a17d417095ea259b8f5f418fddace5ac462ba3",
+      "bytes": 3444
+    },
+    {
+      "project_path": "web/catalogue_themes.js",
+      "role": "storage-themes-implementation-or-evidence",
+      "sha256": "a5fbd8063f2635cbba9d14acf637fd059cb3df4889ea2133d93d5bdf80063136",
+      "bytes": 14817
+    },
+    {
+      "project_path": "tests/test_catalogue_themes.py",
+      "role": "storage-themes-implementation-or-evidence",
+      "sha256": "6bbf77a383358b721e5efa52bada1ad19b5185ae4d85d606f1caa88620263fef",
+      "bytes": 3230
+    },
+    {
+      "project_path": "tests/test_catalogue_selection.py",
+      "role": "storage-themes-implementation-or-evidence",
+      "sha256": "4ea00495873e65ede6ae3655d6a1df4bb56666d56a65b9b86db527cafbb90ff0",
+      "bytes": 3844
+    },
+    {
+      "project_path": "tests/js/catalogue_themes.test.cjs",
+      "role": "storage-themes-implementation-or-evidence",
+      "sha256": "961401ac5cd6ee4d76ec92533191c07f0a0c156fde64dd26aa83df41d34e5940",
+      "bytes": 5353
+    },
+    {
+      "project_path": "docs/catalogue/STORAGE_THEMES.md",
+      "role": "storage-themes-implementation-or-evidence",
+      "snapshot": "references/source_text/docs--catalogue--STORAGE_THEMES.txt",
+      "sha256": "ba7eb4699cd14dc90b82deea8fbf3de0bb9a10ed8a8efcb1187a19f0eefef8c6",
+      "bytes": 3111
+    },
+    {
+      "project_path": "docs/catalogue/STORAGE_THEMES_COMPLETION.md",
+      "role": "storage-themes-implementation-or-evidence",
+      "snapshot": "references/source_text/docs--catalogue--STORAGE_THEMES_COMPLETION.txt",
+      "sha256": "a29ee9320a7fd6d90b996f2ed4a599c7276fe5cd3b166e2a02ba6c149ede2638",
+      "bytes": 2877
+    },
+    {
+      "project_path": "out/common_catalogue/themes_20261018/completion.json",
+      "role": "storage-themes-implementation-or-evidence",
+      "snapshot": "references/storage-themes.json",
+      "sha256": "900152e833839089c23492d2794bcb2aa0239bfdafa1f4e238835b293c3ccb9c",
+      "bytes": 1273
+    },
+    {
+      "project_path": "reviews/cursor/storage_themes_20261018/audit.md",
+      "role": "storage-themes-implementation-or-evidence",
+      "snapshot": "references/storage-themes-cursor.txt",
+      "sha256": "b2c8adf6b4235e293729f176a9582f4230416baffdcc148a5ea128dc24cd5822",
+      "bytes": 4235
+    }
+  ],
+  "dataset": {
+    "project_path": "dataset/vme-wren_20261016_v1",
+    "sha256sums_sha256": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e"
+  },
+  "updated_at": "2026-10-18T00:43:13.322129+08:00"
+}

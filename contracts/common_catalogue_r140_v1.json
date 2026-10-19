@@ -1,0 +1,15 @@
+{
+  "schema": "pcb-common-context-profile/1",
+  "dataset_id": "client:vme-wren:20261016:v1",
+  "component": "R140",
+  "pins": ["1", "2"],
+  "trace_uuid": "380ef8d4-0d79-4725-9f15-c2be4b752ca0",
+  "roles": ["R140.1", "connected_trace", "R140.2", "mask_opening"],
+  "region_mm": [115.8, 230.45, 118.1, 231.8],
+  "coordinate_frame": "millimetres; X right; Y down",
+  "gerber_to_board": [1, -1],
+  "match_tolerance_mm": 0.001,
+  "nearby_distance_mm": 0.5,
+  "coverage": "R140 footprint, two rectangular B.Cu pads, one B.Cu segment and three corresponding copper features plus one B.Mask opening. No complete nearby-board inventory.",
+  "export": "read-only diagnostic context; original source artifacts retained; no standalone KiCad or manufacturing output"
+}

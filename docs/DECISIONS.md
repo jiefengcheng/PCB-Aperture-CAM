@@ -63,3 +63,16 @@ The user clarified “no new step but to consolidate discovered/left issues.” 
 ## D-020 — Explicit metadata removal, 2026-10-15
 
 The user explicitly instructed removal of the extra `.DS_Store`, superseding preservation solely for `assets/.DS_Store`. Removed only that file; all 70 frozen assets pass strict inventory and 114 full-suite tests pass. Preserve historical failure receipts and other isolation/immutability rules. No new stage or remote action.
+
+
+## D-021 — Minimum common catalogue definition and bounded payload adjustment, 2026-10-18
+
+The user opened the previously deferred common-catalogue definition step and requested review of discovery, grouping, structured storage and selective export, scoped to existing Storage & indexes capabilities and a future R140.1/trace/R140.2/mask retrieval. Define source/revision identities, minimum fields, cross-source correspondence and retained qualification without requiring a full catalogue taxonomy. The follow-up explicitly supports raising the existing payload ceiling to 128 MiB; this bounded change is implemented and the real 72,514,570-byte native source admits/readbacks. No chunked backend is introduced. Definition and reuse evidence are in docs/catalogue/MINIMUM_SLICE.md and contracts/common_catalogue_slice_v0_1.json. The client materialization, new correspondence layer and fresh-process retrieval/export acceptance remain implementation work, not results of this definition review. Preserve frozen decisions, original sources and project isolation.
+
+## D-022 — Complete the bounded catalogue with Cursor audit, 2026-10-18
+
+The active user goal requests completion of Step 2 with Cursor audition. This authorizes the minimum R140 slice defined in D-021: bounded native/Gerber records, immutable per-artifact and dataset revisions, retained qualifications, four-role fresh-process retrieval, diagnostic selection export and Storage & indexes presentation. Reuse the existing catalogue, locators, selection and spatial infrastructure. Original assets, sealed client inputs, earlier receipts and all V1/V1.5/V2 acceptance boundaries remain unchanged. No general PCB parser expansion, whole-board reconstruction, repair operation, independent net-intent or manufacturing claim follows. Authenticated Cursor CLI is the read-only reviewer; Codex retains authorship/integration. Implementation/reproduction is in docs/catalogue/DELIVERY.md; actual review findings, corrections and final completion checks belong in docs/catalogue/COMPLETION_AUDIT.md.
+
+## D-023 — Preliminary infrastructure themes, 2026-10-18
+
+The user requested remaining steps and a preliminary visualization of discovery, grouping, structured storage and selective export in Storage & indexes. The existing R140 store/retrieval is reused. The new presentation derives disk/index facts from that store and adds a read-only diagnostic subset download with dependency retention; it does not expand extraction, repair or manufacturing scope. All four themes and the actual browser attachment are verified, with 161 Python tests, five JS suites and an independent Cursor QUALIFIED_IN_DECLARED_SCOPE verdict. See docs/catalogue/STORAGE_THEMES_COMPLETION.md for the exact publication, evidence and remaining limits.

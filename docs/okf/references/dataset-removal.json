@@ -1,0 +1,175 @@
+{
+  "status": "PASS_PERSISTENT_ROW_REMOVAL",
+  "generated_at": "2026-10-17T23:48:32.164414+08:00",
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/directory_intake/workbench/run-1d93f1e9a96f4f1aa5921ec6c5f536e6",
+  "url": "http://127.0.0.1:8769/run-1d93f1e9a96f4f1aa5921ec6c5f536e6/index.html#dataset=client%3Avme-wren%3A20261016%3Av1",
+  "semantics": "Remove selected registry row only; keep immutable inputs, evidence, profiles and prior runs",
+  "production_rows_untouched": "Five rows remain available; removal UI test used isolated output and port 8770",
+  "browser_execution": {
+    "before": {
+      "url": "http://127.0.0.1:8770/run-247e37896e37466583de925c9688cd68/index.html#dataset=client%3Avme-wren%3A20261016%3Av1",
+      "datasets": [
+        "Synthetic coupon",
+        "GlowStitch",
+        "HALPI2-HDMI-FPC",
+        "Ucamco parser examples",
+        "Client VME-WREN"
+      ]
+    },
+    "after": {
+      "url": "http://127.0.0.1:8770/run-a3dff84913cc430f94a53167e84ec2e8/index.html#dataset=synthetic%3Acoupon%3Av1",
+      "datasets": [
+        "Synthetic coupon",
+        "GlowStitch",
+        "HALPI2-HDMI-FPC",
+        "Ucamco parser examples"
+      ]
+    },
+    "reloaded": [
+      "Synthetic coupon",
+      "GlowStitch",
+      "HALPI2-HDMI-FPC",
+      "Ucamco parser examples"
+    ],
+    "restored": {
+      "url": "http://127.0.0.1:8770/run-24171f0671094c3791d4add795a3819a/index.html#dataset=client%3Avme-wren%3A20261016%3Av1",
+      "datasets": [
+        "Synthetic coupon",
+        "GlowStitch",
+        "HALPI2-HDMI-FPC",
+        "Ucamco parser examples",
+        "Client VME-WREN"
+      ],
+      "selected": "client:vme-wren:20261016:v1"
+    }
+  },
+  "reconstructed_projections_identical": true,
+  "restoration_verification": {
+    "status": "PASS",
+    "schema": "pcb-ingestion-publication-v2",
+    "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+    "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/dataset_removal/test_workbench/run-24171f0671094c3791d4add795a3819a",
+    "outputs_verified": 354,
+    "datasets_verified": 5,
+    "comparisons_verified": 3
+  },
+  "verification": {
+    "status": "PASS",
+    "publications": {
+      "delivery": {
+        "status": "PASS",
+        "schema": "pcb-ingestion-publication-v2",
+        "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+        "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/directory_intake/workbench/run-1d93f1e9a96f4f1aa5921ec6c5f536e6",
+        "outputs_verified": 354,
+        "datasets_verified": 5,
+        "comparisons_verified": 3
+      },
+      "removed_test": {
+        "status": "PASS",
+        "schema": "pcb-ingestion-publication-v2",
+        "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+        "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/dataset_removal/test_workbench/run-a3dff84913cc430f94a53167e84ec2e8",
+        "outputs_verified": 347,
+        "datasets_verified": 4,
+        "comparisons_verified": 0
+      },
+      "preserved_history": {
+        "status": "PASS",
+        "schema": "pcb-ingestion-publication-v2",
+        "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+        "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/dataset_removal/test_workbench/run-247e37896e37466583de925c9688cd68",
+        "outputs_verified": 354,
+        "datasets_verified": 5,
+        "comparisons_verified": 3
+      }
+    },
+    "delivery_matches_current_implementation": true,
+    "historical_engineering_projections_unchanged": true,
+    "canonical_recipe_unchanged": true,
+    "removed_test_registry": {
+      "action": "REMOVE_DATASET",
+      "dataset_id": "client:vme-wren:20261016:v1",
+      "inputs_and_history": "RETAINED"
+    }
+  },
+  "package_integrity_after_removal": {
+    "schema": "pcb-cam-dataset-verification-v1",
+    "status": "PASS",
+    "scope": "byte integrity, strict inventory, OKF emitted-profile structure/links, archive equality and historical source bindings; no new geometry/electrical validation",
+    "dataset_id": "client:vme-wren:20261016:v1",
+    "dataset_version": "1.0.0",
+    "root": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/dataset/vme-wren_20261016_v1",
+    "files_verified": 70,
+    "source_files": 44,
+    "okf_concepts": 7,
+    "sha256sums_sha256": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e",
+    "manifest_sha256": "bb48313b4b875b9a1e2b94d8512e7d2c967d96f20c59dcac9245f92c95aab07a",
+    "external_seal_checked": true,
+    "global_geometry_equivalence": "NOT_ESTABLISHED",
+    "verifier_version": "1.0.0",
+    "python": "3.14.5",
+    "verified_at": "2026-10-17T15:47:01.902172+00:00"
+  },
+  "negative_http": {
+    "http_status": 400,
+    "body": {
+      "status": "FAIL",
+      "error": "Selected dataset is not registered"
+    },
+    "previous_entry_unchanged": true
+  },
+  "python": {
+    "status": "PASS",
+    "tests": 28,
+    "log": "out/ingestion/dataset_removal/python_checks.txt"
+  },
+  "javascript": {
+    "ingestion_views.test.cjs": {
+      "status": "PASS",
+      "checks": [
+        "Pure source/native panes; differences confined to delta",
+        "Receipt-driven changed comparison/drill values; no cross-dataset leakage",
+        "Generation review metadata without a fabricated channel status",
+        "Technical records collapsed and only one comparison drawn",
+        "Input qualification retains unknowns without a duplicated correction visualization",
+        "Direct dataset links open the requested review",
+        "Persistence first: five statuses and three artifact inspectors; no cross-dataset leakage",
+        "Two primary tabs; qualification loads once; forward/back reveals the new context",
+        "Sparse datasets share the layout without inherited client findings or zero measurements",
+        "Native revisions bind by exact source hash, never label alone",
+        "Recorded query samples do not imply linked reopen proof",
+        "Top navigation order and default dataset landing",
+        "Input stage receipts retain actual states and exact source binding; unavailable receipts stay explicit"
+      ]
+    },
+    "pipeline_navigation.test.cjs": {
+      "status": "PASS",
+      "checks": [
+        "Processing removed; Storage precedes Cases",
+        "Storage opens on persistence, preserving all non-input stages including unknown future stages",
+        "Unlinked historical native revisions retain input-stage receipts",
+        "Receipt selection retains original states, counts and details",
+        "Saved query examples and Cases navigation remain accessible"
+      ]
+    },
+    "directory_intake.test.cjs": {
+      "status": "PASS",
+      "checks": [
+        "Plus opens a directory picker",
+        "Selected file bytes are hashed and only relative identities sent to loopback",
+        "Successful restoration opens its new publication",
+        "Failure and cancellation retain the previous page",
+        "Minus sends only the selected identity and handles failed publication",
+        "Minus is disabled with no selected row"
+      ]
+    }
+  },
+  "default_rebuild_policy": "Load current saved registry unless --registry is explicitly supplied",
+  "zero_rows": "Valid empty registration, explicit empty UI, disabled minus; tested separately from failed/empty publication receipts",
+  "source_snapshot": "out/ingestion/dataset_removal/source_snapshot.json",
+  "screenshot": "out/ingestion/dataset_removal/controls.jpg",
+  "independent_review": "NOT_RUN_FOR_THIS_PRESENTATION_FEATURE",
+  "common_catalogue": "DEFERRED",
+  "engineering_results": "HISTORICAL_REPLAY_NOT_RERUN"
+}

@@ -20,6 +20,10 @@ def region_query(catalog,revision,bounds_mm,layer,*,limit=1000,work_limit=100000
         if str(record.get('unsupported_reason','')).startswith('CONTAINER_ONLY'):
             container_exclusions+=1;continue
         key=record.get('geometry_sha256');bounds=record.get('bounds_mm')
+        if layer not in record.get('geometry_layers',record.get('layers',[])):
+            omissions['LAYER_GEOMETRY_UNAVAILABLE']+=1
+            if len(omission_sample)<20:omission_sample.append(record['id'])
+            continue
         if not key or bounds is None:
             omissions[record.get('unsupported_reason') or 'GEOMETRY_UNAVAILABLE']+=1
             if len(omission_sample)<20:omission_sample.append(record['id'])

@@ -1,0 +1,170 @@
+{
+  "schema": "pcb-common-catalogue-observed-context/0.1",
+  "status": "OBSERVED_EXAMPLE_NOT_A_RETRIEVAL_RECEIPT",
+  "dataset_id": "client:vme-wren:20261016:v1",
+  "dataset_revision": null,
+  "materialization_status": "NOT_IMPLEMENTED",
+  "frame": {
+    "units": "mm",
+    "x": "right",
+    "y": "down",
+    "gerber_transform": [
+      1,
+      -1
+    ],
+    "registration_offset_mm": [
+      0,
+      0
+    ]
+  },
+  "roles": [
+    {
+      "role": "R140.1",
+      "native_object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:18699156:18699392",
+      "native_uuid": "6d70837f-2559-4ddc-9cf3-9c9ba4e52774",
+      "native_relation_role": "pad",
+      "gerber_object_id": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa:bytes:52852:52877",
+      "gerber_source_path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Layer.gbr",
+      "gerber_source_sha256": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa",
+      "parser_ordinal": 638,
+      "original_gerber_attributes": {
+        ".P": [
+          "R140",
+          "1",
+          "1"
+        ],
+        ".N": [
+          "/io_drivers_fp/bank0/EN7"
+        ]
+      },
+      "position_mm": [
+        117.211125,
+        230.997175
+      ],
+      "endpoints_mm": null,
+      "bounds_mm": [
+        116.92112499999999,
+        230.687175,
+        117.501125,
+        231.307175
+      ],
+      "geometry_basis": "OBSERVED_GERBER_FEATURE_NORMALIZED_TO_BOARD_FRAME",
+      "native_geometry_status": "UNSUPPORTED_BACKSIDE_PROFILE",
+      "match_status": "NOT_ESTABLISHED",
+      "artifact_revision": null,
+      "reason": "Object-level correspondence and client persisted materialization are not implemented by the definition review"
+    },
+    {
+      "role": "connected_trace",
+      "native_object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:29785934:29786128",
+      "native_uuid": "380ef8d4-0d79-4725-9f15-c2be4b752ca0",
+      "native_relation_role": "segment",
+      "gerber_object_id": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa:bytes:436693:436718",
+      "gerber_source_path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Layer.gbr",
+      "gerber_source_sha256": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa",
+      "parser_ordinal": 8905,
+      "original_gerber_attributes": {
+        ".N": [
+          "/io_drivers_fp/bank0/EN7"
+        ]
+      },
+      "position_mm": null,
+      "endpoints_mm": [
+        [
+          117.211125,
+          230.997175
+        ],
+        [
+          117.211125,
+          231.667175
+        ]
+      ],
+      "bounds_mm": [
+        117.111125,
+        230.897175,
+        117.31112499999999,
+        231.76717499999998
+      ],
+      "geometry_basis": "OBSERVED_GERBER_FEATURE_NORMALIZED_TO_BOARD_FRAME",
+      "native_geometry_status": "EXISTING_LINE_PROFILE",
+      "match_status": "NOT_ESTABLISHED",
+      "artifact_revision": null,
+      "reason": "Object-level correspondence and client persisted materialization are not implemented by the definition review"
+    },
+    {
+      "role": "R140.2",
+      "native_object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:18699396:18699611",
+      "native_uuid": "bfec81ff-5cd3-4f92-a38f-32a99442e746",
+      "native_relation_role": "pad",
+      "gerber_object_id": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa:bytes:52911:52936",
+      "gerber_source_path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Layer.gbr",
+      "gerber_source_sha256": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa",
+      "parser_ordinal": 639,
+      "original_gerber_attributes": {
+        ".P": [
+          "R140",
+          "2",
+          "2"
+        ],
+        ".N": [
+          "P3V3"
+        ]
+      },
+      "position_mm": [
+        116.271125,
+        230.997175
+      ],
+      "endpoints_mm": null,
+      "bounds_mm": [
+        115.98112499999999,
+        230.687175,
+        116.561125,
+        231.307175
+      ],
+      "geometry_basis": "OBSERVED_GERBER_FEATURE_NORMALIZED_TO_BOARD_FRAME",
+      "native_geometry_status": "UNSUPPORTED_BACKSIDE_PROFILE",
+      "match_status": "NOT_ESTABLISHED",
+      "artifact_revision": null,
+      "reason": "Object-level correspondence and client persisted materialization are not implemented by the definition review"
+    },
+    {
+      "role": "mask_opening",
+      "native_object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:18699156:18699392",
+      "native_uuid": "6d70837f-2559-4ddc-9cf3-9c9ba4e52774",
+      "native_relation_role": "pad B.Mask membership",
+      "gerber_object_id": "b56067941920c4663ee0c3c5d78e48399ec71ab1c956ba7f87efb910fbab49e4:bytes:18941:18966",
+      "gerber_source_path": "dataset/vme-wren_20261016_v1/raw/gerber/vme-wren-Bottom Solder.gbr",
+      "gerber_source_sha256": "b56067941920c4663ee0c3c5d78e48399ec71ab1c956ba7f87efb910fbab49e4",
+      "parser_ordinal": 542,
+      "original_gerber_attributes": {
+        ".C": [
+          "R140"
+        ]
+      },
+      "position_mm": [
+        117.211125,
+        230.997175
+      ],
+      "endpoints_mm": null,
+      "bounds_mm": [
+        116.92112499999999,
+        230.687175,
+        117.501125,
+        231.307175
+      ],
+      "geometry_basis": "OBSERVED_GERBER_FEATURE_NORMALIZED_TO_BOARD_FRAME",
+      "native_geometry_status": "UNSUPPORTED_BACKSIDE_PROFILE",
+      "match_status": "NOT_ESTABLISHED",
+      "artifact_revision": null,
+      "reason": "Object-level correspondence and client persisted materialization are not implemented by the definition review"
+    }
+  ],
+  "native_parent_dependency": {
+    "object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:18685704:18699826",
+    "reference": "R140",
+    "native_uuid": "02f4c449-44ea-45ff-84e7-c9ad88b0a728"
+  },
+  "evidence": "out/common_catalogue/definition_review/observations.json",
+  "existing_qualification": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/operation_region_comparison.json",
+  "existing_qualification_scope": "B.Cu/B.Mask ROI aggregates; not individual native-to-Gerber links"
+}

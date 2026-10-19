@@ -1,0 +1,256 @@
+{
+  "schema": "pcb-common-catalogue-slice-definition/0.1",
+  "status": "DEFINED_FOR_REVIEW_NOT_MATERIALIZED",
+  "definition_date": "2026-10-18",
+  "case_id": "client-r140-context/1",
+  "dataset_id": "client:vme-wren:20261016:v1",
+  "purpose": "Reuse the existing source/revision catalogue for one durable, qualification-aware four-role context; preserve current Storage & indexes capabilities",
+  "implemented_adjustment": {
+    "payload_limit_bytes": 134217728,
+    "write_and_read_guard": "RevisionCatalog.MAX_PAYLOAD_BYTES",
+    "actual_client_source_bytes": 72514570,
+    "actual_source_admission_readback": "ADMITTED_AND_READ_BACK"
+  },
+  "identity": {
+    "source_revision": "sha256(complete original artifact bytes)",
+    "object_id": "<source_sha256>:bytes:<start>:<end>",
+    "artifact_revision": "Existing RevisionCatalog immutable manifest hash",
+    "dataset_revision": "sha256(canonical dataset manifest with artifact revisions, profiles, correspondence and qualification hashes)",
+    "lookup_aliases": [
+      "native UUID scoped to source revision",
+      "reference + pin scoped to native artifact revision",
+      "parser ordinal scoped to source/parser profile"
+    ],
+    "no_identity_inference": [
+      "path or dataset label",
+      "UUID globally across revisions",
+      "net name equality across representations"
+    ]
+  },
+  "record_families": {
+    "objects": {
+      "fields": [
+        "object_id",
+        "source_revision",
+        "artifact_revision",
+        "source_span",
+        "representation",
+        "kind",
+        "parent_id",
+        "reference",
+        "pin",
+        "native_id",
+        "net_name",
+        "net_code",
+        "net_basis",
+        "layers",
+        "layer_role",
+        "position_mm",
+        "endpoints_mm",
+        "bounds_mm",
+        "geometry_sha256",
+        "geometry_basis",
+        "coverage",
+        "state_dependencies",
+        "qualification_refs",
+        "match_refs"
+      ],
+      "nullable_with_reason": [
+        "position_mm",
+        "endpoints_mm",
+        "bounds_mm",
+        "geometry_sha256",
+        "net_name",
+        "net_code",
+        "native_id"
+      ]
+    },
+    "correspondences": {
+      "fields": [
+        "left artifact revision + occurrence",
+        "right artifact revision + occurrence",
+        "relation_type",
+        "predicate",
+        "status",
+        "cardinality",
+        "source hashes",
+        "transform",
+        "profile/kernel versions",
+        "tolerances",
+        "measurements",
+        "evidence_refs"
+      ],
+      "types": [
+        "geometry_equivalent",
+        "opening_for",
+        "scoped_association"
+      ],
+      "status": [
+        "VERIFIED_IN_SCOPE",
+        "MISMATCH",
+        "AMBIGUOUS",
+        "NOT_ESTABLISHED",
+        "NOT_RUN"
+      ]
+    },
+    "qualifications": {
+      "fields": [
+        "qualification_id",
+        "artifact/source revision",
+        "object/region/artifact scope",
+        "parser/profile versions",
+        "original report hash",
+        "exact JSON pointer or source location",
+        "code/message",
+        "severity",
+        "geometry availability",
+        "predicate/tolerances/measurements",
+        "status"
+      ],
+      "warning_policy": "Persist strict parse failure/unsupported evidence without generating qualified geometry; do not silence CompletionParser warnings"
+    }
+  },
+  "storage": {
+    "reuse": [
+      "src/source_locators.py",
+      "src/native_inventory.py",
+      "src/revision_catalog.py",
+      "src/catalog_selection.py",
+      "src/spatial_context.py"
+    ],
+    "artifact_revisions": "One revision per original native/B.Cu/B.Mask source; original hashes and bytes remain authoritative",
+    "cross_artifact_links": "Immutable hash-bound JSON sidecars pinned by a dataset manifest; do not bypass same-revision SQL foreign keys",
+    "source_budget_bytes": 134217728,
+    "object_scope": "4 native occurrences (R140 footprint, 2 pads, 1 segment) and 4 Gerber feature occurrences (2 copper flashes, 1 line, 1 mask flash)",
+    "declared_layers": [
+      "B.Cu",
+      "B.Mask"
+    ],
+    "outside_slice": "Preserve raw artifacts and explicit coverage exclusions; do not imply full-board object coverage",
+    "native_graph": "DB0 remains SHADOW_ONLY"
+  },
+  "grouping": {
+    "footprint_ownership": "Native parent/child occurrences; R140 has two pads",
+    "physical_group": "Same-layer qualified contact, bounded extraction universe; R140.1 plus connected trace",
+    "nearby_context": "R140.2 remains separate despite common footprint ownership",
+    "native_pcb_group": "Optional declared group; no fabricated group required",
+    "opening_association": "Unique B.Mask feature association, distinct from copper contact",
+    "writable_ids": []
+  },
+  "retrieval_case": {
+    "request": {
+      "dataset_revision": "explicit persisted revision required",
+      "reference": "R140",
+      "pin": "1",
+      "layer": "B.Cu",
+      "board_region_mm": [
+        115.8,
+        230.45,
+        118.1,
+        231.8
+      ]
+    },
+    "roles": [
+      {
+        "role": "R140.1",
+        "native_object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:18699156:18699392",
+        "gerber_object_id": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa:bytes:52852:52877",
+        "parser_ordinal": 638
+      },
+      {
+        "role": "connected_trace",
+        "native_object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:29785934:29786128",
+        "gerber_object_id": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa:bytes:436693:436718",
+        "parser_ordinal": 8905
+      },
+      {
+        "role": "R140.2",
+        "native_object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:18699396:18699611",
+        "gerber_object_id": "78c8c756a68a3dd08f6a7e801a82beceb1188aa234cdb6c679b6b98ae10640fa:bytes:52911:52936",
+        "parser_ordinal": 639
+      },
+      {
+        "role": "mask_opening",
+        "native_object_id": "f3d5d3e60f2a7fae25d9d1b1741335c8765409405833e32a0948a83c984b1b6d:bytes:18699156:18699392",
+        "gerber_object_id": "b56067941920c4663ee0c3c5d78e48399ec71ab1c956ba7f87efb910fbab49e4:bytes:18941:18966",
+        "parser_ordinal": 542
+      }
+    ],
+    "fresh_process_proof": [
+      "writer exits after publication",
+      "reader_pid differs from writer_pid",
+      "reader loads persisted catalogue and hashed manifests, not a historical scene or extractor cache",
+      "all 4 roles, parent dependency, qualification and link states returned",
+      "exact original byte ranges recoverable",
+      "deterministic selection digest survives reopen and diagnostic export"
+    ],
+    "separate_verdicts": [
+      "storage/retrieval completeness",
+      "per-link correspondence status",
+      "engineering acceptance remains independently scoped"
+    ],
+    "positive_match_profile": {
+      "position_tolerance_mm": 0.001,
+      "hausdorff_tolerance_mm": 0.001,
+      "composition_error_budget": "must be retained and bounded by the profile",
+      "symmetric_difference_area": "measured and retained; area alone cannot qualify a match",
+      "cardinality": "unique in declared source/scope; ambiguity stays explicit"
+    },
+    "required_predicates": [
+      "R140.1 native/copper match",
+      "same-layer physical contact between R140.1 and its trace",
+      "R140.2 nearby and not in that physical group",
+      "unique opening_for R140.1 with actual B.Mask geometry"
+    ],
+    "controls": [
+      "changed CAS bytes",
+      "mixed stale artifact revision",
+      "duplicate pad alias",
+      "missing trace",
+      "same net without contact",
+      "neighbor incorrectly merged",
+      "ambiguous opening",
+      "wrong/reflected coordinate transform",
+      "truncated/missing role",
+      "missing warning or mismatch record",
+      "failed publication retains prior revision",
+      "returned-record caller mutation"
+    ],
+    "unresolved_findings_must_remain_ingestible": [
+      "L2GND region mismatch",
+      "top copper parser warning/unsupported scope"
+    ],
+    "current_status": "NOT_RUN_FOR_CLIENT_PERSISTED_CATALOGUE"
+  },
+  "selective_export": {
+    "mode": "diagnostic context bundle",
+    "contains": [
+      "selected roles",
+      "parent dependencies",
+      "source references and exact excerpts",
+      "geometry hashes",
+      "relation and match witnesses",
+      "qualifications",
+      "coverage",
+      "query receipt and digest"
+    ],
+    "reopen_check": "Same role identities and digest",
+    "native_board_reassembly": "NOT_IMPLEMENTED"
+  },
+  "storage_tab_narrative": [
+    "Find records",
+    "Inspect relationships/groups",
+    "Reopen the stored revision",
+    "Export selected context"
+  ],
+  "remaining_implementation": [
+    "bounded native extraction with named-net preservation and qualified R140 back-side pose",
+    "Gerber feature state/source provenance",
+    "dataset manifest and qualification/correspondence sidecars",
+    "fresh-process retrieval and diagnostic export case",
+    "existing Storage & indexes integration"
+  ],
+  "source_review": "docs/catalogue/MINIMUM_SLICE.md",
+  "observed_example": "docs/catalogue/r140_context_observed.json",
+  "observational_evidence": "out/common_catalogue/definition_review/observations.json"
+}

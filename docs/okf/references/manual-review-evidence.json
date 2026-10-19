@@ -1,0 +1,90 @@
+{
+  "schema": "pcb-manual-review-evidence-v1",
+  "prepared_at": "2026-10-17T20:09:55.621310+08:00",
+  "checkout": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+  "reviewed_run": "out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36",
+  "dataset_seal": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e",
+  "meaning": "Discovery and integrity bindings for manual review; no new engineering acceptance",
+  "files": [
+    {
+      "project_path": "out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36/receipt.json",
+      "sha256": "fe2c5e83150527fe57e942a11e50e0bfe1eeb41b3783626f126b756e5548232b",
+      "bytes": 49477
+    },
+    {
+      "project_path": "contracts/ingestion_registry_v1.json",
+      "sha256": "f2777e0f7b3cecdbce024e5daf55b44c8a66e81e1d8617a8e052052cfc5558c5",
+      "bytes": 65512
+    },
+    {
+      "project_path": "docs/okf/ingestion/baseline.md",
+      "sha256": "71d83796c732689b8e5907a5091d2affa05b9927a0cde736bb574022253c5d89",
+      "bytes": 9026
+    },
+    {
+      "project_path": "out/review/ingestion_assessment_20261016T184844_296975Z/assessment.json",
+      "sha256": "a3504f2617f48900675aed833f2bbfd627a09fdff4483e5f8e327f427492c731",
+      "bytes": 7400
+    },
+    {
+      "project_path": "out/ingestion/remediation/completion_audit_v2.json",
+      "sha256": "e4dbe82df176dc91d90ae44f59e3077f04c837e39e17158faaaec443e32c7383",
+      "bytes": 10627
+    },
+    {
+      "project_path": "reviews/cursor/cursor_audit_20261016T190255_934077Z/runtime_audit.md",
+      "sha256": "ea24ad0a6eeff71063e6675464d6355c8c1f9eb35b4cd348d7b24adaa99e68fc",
+      "bytes": 4367
+    },
+    {
+      "project_path": "reviews/cursor/cursor_audit_20261016T190255_934077Z/summary.json",
+      "sha256": "7b5fce5c54555ab6f3f9f4b75d9c3082d8bc18786b28a79019d5af90a5c84ad9",
+      "bytes": 1905
+    },
+    {
+      "project_path": "out/ingestion/remediation/regressions.log",
+      "sha256": "20ed77447e6a93fb6ec7058f79212b7d48b68141f01a60214e54cbc7d109dcbf",
+      "bytes": 3312
+    },
+    {
+      "project_path": "out/ingestion/remediation/ui_contract_tests.json",
+      "sha256": "da51732f9cbef7bad359a8b29af4dfd5f401c210c015e9d563fcaa9abe7c79ee",
+      "bytes": 184
+    },
+    {
+      "project_path": "out/ingestion/remediation/actual_cli_publication_failure.json",
+      "sha256": "542a9a3106eb821bb3a6aee65a1f06e8bc9b8bff9826bffd8aaa141b16c8c9d1",
+      "bytes": 167
+    },
+    {
+      "project_path": "out/ingestion/remediation/browser_and_link_assertions.json",
+      "sha256": "bfc3e520d78df98a661efd2ed8f216c631d8cdb0ce8b2c4bbbdf25a01d88bd72",
+      "bytes": 2214
+    },
+    {
+      "project_path": "out/ingestion/remediation/preservation.json",
+      "sha256": "3c7620732390b9698e905ed281b2266cb05a42f59f2a5fd53ce6f6f8bdcba267",
+      "bytes": 345
+    },
+    {
+      "project_path": "out/ingestion/remediation/l2_visual_evidence.png",
+      "sha256": "9290ccce3a2f73f1f71ccc0bb4da1e2a72d2048388172f88e42c2a5508878058",
+      "bytes": 90786
+    },
+    {
+      "project_path": "out/client_operation/run_20261015T050705_750904Z/result.json",
+      "sha256": "ff7778b43b7d11c7e67afe6b7a248939e22faee50e08e51aa32fb7c19529248b",
+      "bytes": 10956
+    },
+    {
+      "project_path": "out/consolidation/pipeline_20261014T203542_446846Z/receipt.json",
+      "sha256": "7b33089eeac18f38b34a47d1b8523cdb772cd7b215d2b9bb887cd181d5ed3e74",
+      "bytes": 4847175
+    },
+    {
+      "project_path": "dataset/vme-wren_20261016_v1/SHA256SUMS",
+      "sha256": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e",
+      "bytes": 6739
+    }
+  ]
+}

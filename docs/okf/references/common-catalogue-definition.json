@@ -1,0 +1,69 @@
+{
+  "status": "DEFINITION_READY_PAYLOAD_LIMIT_IMPLEMENTED",
+  "client_date": "2026-10-18",
+  "scope": "Define and review the minimum common catalogue; implement only the follow-up requested payload ceiling",
+  "definition": "docs/catalogue/MINIMUM_SLICE.md",
+  "contract": "contracts/common_catalogue_slice_v0_1.json",
+  "observed_example": "docs/catalogue/r140_context_observed.json",
+  "minimum_roles": [
+    "R140.1",
+    "connected_trace",
+    "R140.2",
+    "mask_opening"
+  ],
+  "native_occurrences": 4,
+  "gerber_occurrences": 4,
+  "capacity": {
+    "payload_limit_bytes": 134217728,
+    "actual_source_bytes": 72514570,
+    "status": "ADMITTED_AND_READ_BACK",
+    "scope": "CAS payload admission/readback only; no client objects imported"
+  },
+  "retained_prechange_rejection": "out/common_catalogue/definition_review/before_limit_change/observations.json",
+  "observational_probe": "out/common_catalogue/definition_review/probe.py",
+  "observations": "out/common_catalogue/definition_review/observations.json",
+  "source_occurrence_checks": "PASS: original bytes and source hashes",
+  "source_snapshot": "out/common_catalogue/definition_review/source_snapshot.json",
+  "tests": {
+    "status": "PASS",
+    "count": 33,
+    "log": "out/common_catalogue/definition_review/infrastructure_tests.txt",
+    "scope": "Existing locators/inventory/catalogue/selection/spatial behavior plus payload size boundary; not client retrieval acceptance"
+  },
+  "assets": {
+    "status": "PASS",
+    "assets_verified": 70,
+    "scope": "custody only"
+  },
+  "dataset_custody": {
+    "schema": "pcb-cam-dataset-verification-v1",
+    "status": "PASS",
+    "scope": "byte integrity, strict inventory, OKF emitted-profile structure/links, archive equality and historical source bindings; no new geometry/electrical validation",
+    "dataset_id": "client:vme-wren:20261016:v1",
+    "dataset_version": "1.0.0",
+    "root": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/dataset/vme-wren_20261016_v1",
+    "files_verified": 70,
+    "source_files": 44,
+    "okf_concepts": 7,
+    "sha256sums_sha256": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e",
+    "manifest_sha256": "bb48313b4b875b9a1e2b94d8512e7d2c967d96f20c59dcac9245f92c95aab07a",
+    "external_seal_checked": true,
+    "global_geometry_equivalence": "NOT_ESTABLISHED",
+    "verifier_version": "1.0.0",
+    "python": "3.14.5",
+    "verified_at": "2026-10-17T16:43:13.255850+00:00"
+  },
+  "remaining_gaps": [
+    "qualified R140 back-side pad pose",
+    "named-net preservation without numeric code",
+    "cross-artifact correspondence/qualification sidecars",
+    "bounded feature provenance adapter",
+    "fresh-process four-role retrieval and diagnostic export",
+    "Storage & indexes result integration"
+  ],
+  "catalogue_materialization": "NOT_IMPLEMENTED_FOR_CLIENT",
+  "client_retrieval_acceptance": "NOT_RUN",
+  "current_object_match_states": "NOT_ESTABLISHED; historical ROI equality is retained separately",
+  "workbench_changes": "NONE",
+  "independent_review": "NOT_RUN_FOR_THIS_DEFINITION"
+}

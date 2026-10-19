@@ -1,0 +1,50 @@
+{
+  "status": "PASS_COMPACT_INPUT_FINDINGS_PRESENTATION",
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-b1487f81a54d45399ba3a26cdc1dd6ac",
+  "url": "http://127.0.0.1:8768/run-b1487f81a54d45399ba3a26cdc1dd6ac/index.html#dataset=client%3Avme-wren%3A20261016%3Av1",
+  "tabs": [
+    "Stored on disk",
+    "Input findings"
+  ],
+  "contents": [
+    "Selected-region matches and L2GND mismatch",
+    "Drill correspondence",
+    "Qualification and unresolved input questions"
+  ],
+  "correction_replay": "Cases only; duplicate ingestion renderer removed",
+  "accepted_persistence_renderer_unchanged": true,
+  "cases_renderer_unchanged": true,
+  "scene_and_registry_byte_identical_to_accepted_persistence_run": true,
+  "previous_accepted_persistence_run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-a3b9f59c22d049b0b5771216f0914cad",
+  "javascript": {
+    "status": "PASS",
+    "checks": [
+      "Pure source/native panes; differences confined to delta",
+      "Receipt-driven changed comparison/drill values; no cross-dataset leakage",
+      "Generation review metadata without a fabricated channel status",
+      "Technical records collapsed and only one comparison drawn",
+      "Input qualification retains unknowns without a duplicated correction visualization",
+      "Direct dataset links open the requested review",
+      "Persistence first: five statuses and three artifact inspectors; no cross-dataset leakage",
+      "Two primary tabs; qualification loads once; forward/back reveals the new context"
+    ]
+  },
+  "publication": {
+    "status": "PASS",
+    "schema": "pcb-ingestion-publication-v2",
+    "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+    "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-b1487f81a54d45399ba3a26cdc1dd6ac",
+    "outputs_verified": 354,
+    "datasets_verified": 5,
+    "comparisons_verified": 3
+  },
+  "browser_report": "out/ingestion/narrative_review/browser.json",
+  "source_snapshot": "out/ingestion/narrative_review/source_snapshot.json",
+  "artifact_links_checked": 2,
+  "navigation_context_visible_both_directions": true,
+  "screenshot": "out/ingestion/narrative_review/findings.jpg",
+  "python_suite": "NOT_RERUN: no Python changes in this presentation revision",
+  "engineering_results": "HISTORICAL_REPLAY_NOT_RERUN",
+  "common_catalogue": "DEFERRED",
+  "independent_review": "NOT_RUN_FOR_THIS_CHANGE"
+}

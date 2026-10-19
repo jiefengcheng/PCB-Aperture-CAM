@@ -1,0 +1,48 @@
+{
+  "schema": "pcb-ingestion-maintenance-summary-v1",
+  "status": "VERIFIED_IN_DECLARED_SCOPE",
+  "prepared_at": "2026-10-17T20:21:03.953346+08:00",
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28",
+  "changes": [
+    "Separate shared file/contract helpers; no circular publisher/verifier import",
+    "Smaller publication/verification/UI functions",
+    "Neutral structured generation review status; later addenda separate",
+    "Reject immutable publication targets",
+    "Capture/recheck implementation sources; clean failed redirect writes"
+  ],
+  "python_tests": 25,
+  "javascript_checks": 3,
+  "author_browser_check": "All five datasets, case return, generation review label; twelve bound HTTP links",
+  "cursor_review": {
+    "status": "REVIEW_COMPLETED",
+    "verdict": "QUALIFIED_IN_DECLARED_SCOPE",
+    "findings": "No actionable regressions found",
+    "session_id": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+    "packet_files_verified": 19,
+    "snapshot_sources_verified": 18,
+    "implementation_sources_verified": 16,
+    "report": "reviews/cursor/cursor_20261017T121732_876800Z/audit.md",
+    "report_sha256": "b0a59159cbe0fe7cfc2b5b98f0c493e2c634be82ca3163e2198e10570d43bcbb",
+    "independent_ui_and_test_reruns": "NOT_RUN"
+  },
+  "evidence": {
+    "out/ingestion/maintenance/tests.log": "bf10531c115b770ef9934693ee09f51757ce438b9169c579a2cbcf31f7e0a687",
+    "out/ingestion/maintenance/js_checks.json": "0f830ede6f2e5ae3ec836dd2243f0894978ea91df659d9b47066e4a1a7aaf5f8",
+    "out/ingestion/maintenance/publication.json": "fe036a91f598185b24f53091ea4a1de36371da6677569536b18ada1f02a0da4d",
+    "out/ingestion/maintenance/preservation.json": "51b0f35f06845b8f05905028578d95f8ed5f7d14f0a9926622ebdc228f70e37f",
+    "out/ingestion/maintenance/immutable_destination_control.json": "83b24e10fb133d14c13fb937dd281c98e32ef352ec125f7d03f7a3f1b8315208",
+    "out/ingestion/maintenance/browser.json": "4bf340c2a1c58c59f4ccd7f223fde1013aa23e9b2c82df396ac666401754c8c9",
+    "out/ingestion/maintenance/links.json": "13da831637e0db753a208d28ae3d82769b154a1dc507c7483e4a73cdeb86eae4",
+    "out/ingestion/maintenance/intake.json": "35dd98437c28e132d43df56748a95a1e3a9fe60d42846baa4b2abb163c976970",
+    "out/ingestion/maintenance/source_snapshot.json": "bce2789b1a0f4cdf8c6768aeb9d1c672572e79ba1bb930ef7ea0d52a533d10e9",
+    "out/ingestion/maintenance/prior_snapshot_recovery.json": "bdec9e47266a6b11b06696656084df46d4b280a3b47dd1c4a41c44382b76dd94",
+    "out/ingestion/maintenance/generation_review.png": "d8fecffd8745705ff917ca5dca478adfb6231e27d9acdb37ba3922edf0089e3f",
+    "reviews/cursor/cursor_20261017T121732_876800Z/audit.md": "b0a59159cbe0fe7cfc2b5b98f0c493e2c634be82ca3163e2198e10570d43bcbb"
+  },
+  "limits": [
+    "No common catalogue design/implementation",
+    "No new CAM repair execution or manufacturing acceptance",
+    "Single-writer rename publication is not full crash/power-loss durability",
+    "Frozen previous publications and audit history retained"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "pcb-cursor-maintenance-packet-v1",
+  "head": "19ff47204d429b93fdac21d3b1a94ed3462b3629",
+  "working_tree_dirty": true,
+  "reviewed_run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28",
+  "files": {
+    "src/ingestion_files.py": "1255c88de08b7df6e0a2e33bdbe2416ad6328367556ca8b86f9ab16747179433",
+    "src/ingestion_contracts.py": "6d752d0fe7790f9b47ea0b54d5686472c922016aadd53f0100acb4afc4a01fd4",
+    "src/ingestion_registry.py": "9a500cdf7342c3ea786b783e3d84c36615cd5d55c18fd9f4f100ff11d95cc3f8",
+    "src/ingestion_verification.py": "704e7c8c64941dc08775ccabb714f376bcfef2cadcca3b508dc5b17d4e21211f",
+    "src/ingestion_visuals.py": "562e9330a5f054ea944b1af21f3f2ba5c826c7790a5cfb992746414418597ad4",
+    "src/client_gerber.py": "a4b7f3615ea076a2114c61f6da105eceb382741c40148abd08ddadb56edf5109",
+    "src/gerber_image.py": "97f5e87ffd367a6f539ab5a9b6ede7b8895432a8188ef456b8de17ec6aae72ff",
+    "src/visual_scene.py": "ff4f40153328668ad768365d7f2965a6e7260fd48d77053aaea2df110e21f765",
+    "tools/visual_report.py": "2e7e11ab07e5be18ff4db884b124fee162ff478d6e587c9c63585d669b099974",
+    "tools/ingestion.py": "935c7cafa494af00ad46a32b7522061ab324ec3be11d00f9f22c855fea4d23e0",
+    "web/workbench.html": "1f759b2fad90b9aa2c2c2c4e13e1a7edb637204a56ef7719c85e4e5bffd7161f",
+    "web/replay_model.js": "a493b39a75de983cd7351efc14243004338a1f81e39db643cfce8b2216aaac67",
+    "web/backend_model.js": "c39f342242c9c2a29b92ce98c169051202d9b7f825f6b6a267fd07080efa2751",
+    "web/pipeline_views.js": "323a414bfa7646bf80a7672e39c8592009f78c0b8274d52af13200154754b33e",
+    "web/ingestion_views.js": "23709b39ada707e0c272f9da77e19825921112873dcf547a91b31e66e1c207fd",
+    "web/workbench.js": "4f956c09e5ad916f5f0dc5e7dadbaa7de46e8fd6cf5334f53786e6a49dbd45f3",
+    "tests/test_ingestion_registry.py": "9b238c465a0bd568d69f40855d098a2a80046b749952881b95dd970568666821",
+    "tests/js/ingestion_views.test.cjs": "88457e02e0181f21d98126f39268aff4f5a912925a7783b781b9e22ac9bb2100",
+    "out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28/receipt.json": "9931f246f747fa529b5efd49683a44d4af92774aaa6eb81d73c1fce1cdd1479d"
+  },
+  "source_snapshot": "out/ingestion/maintenance/source_snapshot",
+  "prior_reviewed_run": "out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36"
+}

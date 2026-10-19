@@ -1,0 +1,46 @@
+{
+  "schema": "pcb-cam-runbook-experiment-references-v1",
+  "meaning": "historical evidence locations observed during runbook curation; new runs must produce new receipts",
+  "records": [
+    {
+      "project_path": "out/client_operation/run_20261015T050705_750904Z/result.json",
+      "sha256": "ff7778b43b7d11c7e67afe6b7a248939e22faee50e08e51aa32fb7c19529248b",
+      "bytes": 10956
+    },
+    {
+      "project_path": "out/client_operation/run_20261015T050705_750904Z/rollback.json",
+      "sha256": "07c71da9908a4d05c0efa75bfae26474c192c6149aa69714e3245295c04557bb",
+      "bytes": 469
+    },
+    {
+      "project_path": "out/visual/client_20261015T074543_446151Z/build_receipt.json",
+      "sha256": "82ed852b4c1f0191ac008d6ab25e14a8ef4a18e2ef85588d94cee311efa2424b",
+      "bytes": 22217
+    },
+    {
+      "project_path": "out/consolidation/demo_20261014T203427_875185Z/result.json",
+      "sha256": "e9013ef9222ba2f4c23c3f28fe8ada7fb160928f6ad929966adba24aed78ca87",
+      "bytes": 21437
+    },
+    {
+      "project_path": "out/visual/run_20261014T203700_885147Z/consolidation_seal.json",
+      "sha256": "b3d6945b711e25c4572e5c0b9bcf68b16ea3fe1f492fa58a21db9a45c8b823a0",
+      "bytes": 2466
+    },
+    {
+      "project_path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/operation_region_comparison.json",
+      "sha256": "25af97739c733644904c2624201349a8e1b4f8c5f92266f1f911d362bdd851fe",
+      "bytes": 2926
+    },
+    {
+      "project_path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/l2gnd_discrepancy.json",
+      "sha256": "8ed94191a82a6265c8e1137681f4b475808389ea12221c81e66763b0072965f3",
+      "bytes": 3685
+    },
+    {
+      "project_path": "out/dataset_registration/verification.json",
+      "sha256": "4e2fed4168c35f7bc76918807247c10b6e64476bde4fbaf9cc5f4ff0dd09f6c3",
+      "bytes": 891
+    }
+  ]
+}

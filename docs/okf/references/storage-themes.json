@@ -1,0 +1,30 @@
+{
+  "schema": "pcb-storage-themes-completion/1",
+  "status": "COMPLETE_PRELIMINARY_VISUALIZATION",
+  "themes": [
+    "Discovery",
+    "Grouping",
+    "Storage & indexes",
+    "Selective export"
+  ],
+  "scope": "Existing bounded R140 catalogue and read-only diagnostic selection; no new board extraction or repair",
+  "publication": "out/ingestion/directory_intake/workbench/run-89e0672dff474f33bb58fe5d26bb8a0c",
+  "receipt_sha256": "0333c93474a7d3c42ee98387f98d389f472f712d9c80568442f46981ba00b314",
+  "dataset_revision": "687c863c124fd6b3f00c8a1db95b680c84bd03dd2d14481b759da63ed12a0ab5",
+  "python_tests_passed": 161,
+  "javascript_suites_passed": 5,
+  "snapshot_files_unchanged": 54,
+  "cursor": {
+    "status": "QUALIFIED_IN_DECLARED_SCOPE",
+    "report": "reviews/cursor/storage_themes_20261018/audit.md",
+    "sha256": "b2c8adf6b4235e293729f176a9582f4230416baffdcc148a5ea128dc24cd5822"
+  },
+  "browser_download": {
+    "path": "out/common_catalogue/themes_20261018/verification/browser_download_mask.json",
+    "sha256": "295f51a6a994a2b56392f6bbddfca8290da9da3ab2cc88141d17a0578d90aa5f",
+    "object_count": 3,
+    "mode": "SERVER_SELECTION_FROM_VERIFIED_CATALOGUE"
+  },
+  "core_result_and_cases": "UNCHANGED",
+  "recorded_at": "2026-10-17T17:39:17.688480+00:00"
+}

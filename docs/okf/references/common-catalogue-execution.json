@@ -1,0 +1,28 @@
+{
+  "status": "COMPLETE_IN_DECLARED_SCOPE",
+  "scope": "Bounded R140 source context, retained qualifications, persistence, fresh-process retrieval and diagnostic export",
+  "delivery": "docs/catalogue/DELIVERY.md",
+  "profile": "contracts/common_catalogue_r140_v1.json",
+  "acceptance": "out/common_catalogue/execution_20261018_f/acceptance.json",
+  "dataset_revision": "687c863c124fd6b3f00c8a1db95b680c84bd03dd2d14481b759da63ed12a0ab5",
+  "result_sha256": "93da1f185dbe5c98bc959bf65f34347b75c7ba44c993d2a14395f5c0aa6f6d50",
+  "stored_source_occurrences": 8,
+  "returned_roles": [
+    "R140.1",
+    "connected_trace",
+    "R140.2",
+    "mask_opening"
+  ],
+  "writer_pid": 92019,
+  "reader_pid": 92042,
+  "export_reader_pid": 92048,
+  "tests": "out/common_catalogue/verification_20261018_final/python_tests.log",
+  "python_tests_passed": 155,
+  "initial_cursor_audit": "reviews/cursor/common_catalogue_20261018/audit.md",
+  "followup_cursor_audit": "reviews/cursor/common_catalogue_20261018_final/audit.md",
+  "whole_board_engineering_acceptance": "NOT_ESTABLISHED",
+  "publication": "out/ingestion/directory_intake/workbench/run-c4d6a556faa24afc8142c23f3943d5ad",
+  "report_artifact_revisions": 2,
+  "final_audit_sha256": "e99e82d9671baac6280660ebdb76f5388f75121ac16781782e68e165a7dd1bf5",
+  "completion_record": "docs/catalogue/COMPLETION.json"
+}

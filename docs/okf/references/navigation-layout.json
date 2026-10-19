@@ -1,0 +1,88 @@
+{
+  "status": "PASS_WORKBENCH_NAVIGATION",
+  "generated_at": "2026-10-17T23:19:19.596659+08:00",
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-5d3b880f82504308b5150350977c9011",
+  "url": "http://127.0.0.1:8768/run-5d3b880f82504308b5150350977c9011/index.html#dataset=client%3Avme-wren%3A20261016%3Av1",
+  "navigation": [
+    "Datasets / Ingestion",
+    "Storage & indexes",
+    "Cases"
+  ],
+  "default_view": "Datasets / Ingestion",
+  "removed_top_level_view": "Processing",
+  "stage_placement": {
+    "Datasets / Ingestion": [
+      "source_custody",
+      "inventory"
+    ],
+    "Storage & indexes": [
+      "spatial_index",
+      "exact_relationships",
+      "persistence",
+      "catalog_queries",
+      "operation_context"
+    ],
+    "unlinked_native_revisions": "Custody/extraction receipts retained in a collapsed Storage & indexes disclosure",
+    "Cases": "Existing operation/correction/control replays remain separate"
+  },
+  "browser": {
+    "datasets_checked": 5,
+    "native_revisions_checked": 5,
+    "storage_stage_receipts_checked": 21,
+    "case_to_storage_link": "PASS_ON_SOURCE_BOUND_ORIGINAL",
+    "report": "out/ingestion/navigation_layout/browser.json"
+  },
+  "javascript": {
+    "ingestion_views.test.cjs": {
+      "status": "PASS",
+      "checks": [
+        "Pure source/native panes; differences confined to delta",
+        "Receipt-driven changed comparison/drill values; no cross-dataset leakage",
+        "Generation review metadata without a fabricated channel status",
+        "Technical records collapsed and only one comparison drawn",
+        "Input qualification retains unknowns without a duplicated correction visualization",
+        "Direct dataset links open the requested review",
+        "Persistence first: five statuses and three artifact inspectors; no cross-dataset leakage",
+        "Two primary tabs; qualification loads once; forward/back reveals the new context",
+        "Sparse datasets share the layout without inherited client findings or zero measurements",
+        "Native revisions bind by exact source hash, never label alone",
+        "Recorded query samples do not imply linked reopen proof",
+        "Top navigation order and default dataset landing",
+        "Input stage receipts retain actual states and exact source binding; unavailable receipts stay explicit"
+      ]
+    },
+    "pipeline_navigation.test.cjs": {
+      "status": "PASS",
+      "checks": [
+        "Processing removed; Storage precedes Cases",
+        "Storage opens on persistence, preserving all non-input stages including unknown future stages",
+        "Unlinked historical native revisions retain input-stage receipts",
+        "Receipt selection retains original states, counts and details",
+        "Saved query examples and Cases navigation remain accessible"
+      ]
+    }
+  },
+  "publication": {
+    "status": "PASS",
+    "schema": "pcb-ingestion-publication-v2",
+    "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+    "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-5d3b880f82504308b5150350977c9011",
+    "outputs_verified": 354,
+    "datasets_verified": 5,
+    "comparisons_verified": 3
+  },
+  "data_byte_identical_to_previous": {
+    "scene.json": true,
+    "registry.json": true
+  },
+  "previous_run": "out/ingestion/workbench/run-da1f1ccc173746298803f64824e42ccd",
+  "source_snapshot": "out/ingestion/navigation_layout/source_snapshot.json",
+  "screenshots": [
+    "out/ingestion/navigation_layout/navigation.jpg",
+    "out/ingestion/navigation_layout/navigation-top.jpg"
+  ],
+  "python_suite": "NOT_RERUN: JavaScript presentation/navigation change only",
+  "engineering_results": "HISTORICAL_REPLAY_NOT_RERUN",
+  "independent_review": "NOT_RUN_FOR_THIS_PRESENTATION_CHANGE",
+  "common_object_catalogue": "DEFERRED"
+}

@@ -1,0 +1,23 @@
+{
+  "channel": "authenticated cursor-agent CLI",
+  "mode": "read-only plan + enabled sandbox",
+  "started_at": "2026-10-17T16:56:05.226065+00:00",
+  "argv": [
+    "cursor-agent",
+    "--print",
+    "--mode",
+    "plan",
+    "--sandbox",
+    "enabled",
+    "--trust",
+    "--auto-review",
+    "--output-format",
+    "stream-json",
+    "--workspace",
+    "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+    "Audit the frozen bounded R140 common-catalogue delivery in this checkout, independently and READ ONLY. You are Cursor reviewer; Codex is sole author/integrator. Do not modify any files, install anything, inspect adjacent projects/global config, invoke other services/agents or publish anything. Do not run tests that write temporary files. Read AGENTS.md and docs/CURSOR_PROTOCOL.md. All current implementation files are hash-bound by out/common_catalogue/review_packet_20261018/source_snapshot.json. Verify that snapshot before and after your review with read-only Python, PYTHONDONTWRITEBYTECODE=1.\n\nReview docs/catalogue/DELIVERY.md, out/common_catalogue/review_packet_20261018/packet.json and the source files in its snapshot. Focus on correctness, false passes, exact original source bindings, named/numeric nets, bounded backside geometry, Gerber state provenance and final-image polarity, dataset/artifact identity, qualification preservation, complete fresh-process retrieval, physical contact vs names/proximity/ownership, diagnostic export, fail-closed publication and receipt-derived UI. Existing public/synthetic inspectors and +/\u2212 must remain usable. Do not infer general engineering/manufacturing acceptance.\n\nIndependently execute these READ-ONLY commands in this checkout:\nenv PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/common_catalogue.py retrieve --bundle out/common_catalogue/execution_20261018_d/selection --revision ad413456a164715527a3b089950d145ce3032dc8cdffaf38908ffad7e923b131\nenv PYTHONDONTWRITEBYTECODE=1 .venv/bin/python out/common_catalogue/verification_20261018/audit_controls.py\nIf the latest workbench publication contains common_context in its registry, independently verify it via tools/ingestion.py --verify PATH (read only). Use its stable entry out/ingestion/directory_intake/workbench/index.html to discover the run. Publication may still be in progress at review start; explicitly state if UI runtime verification was unavailable. Do not browse/write or regenerate outputs. Inspect the production UI source and tests regardless.\n\nChallenge the failure controls in tests/test_common_catalogue.py and frozen controls. Look for actionable counterexamples missed by them, especially coherent-but-wrong manifest/role/qualification projection, ambiguous objects and tolerance mistakes. Report findings with severity, file:line, reproduction and impact. Explicitly list commands actually run and their results, source-snapshot status, reviewed dataset revision and important remaining limits. Finish with QUALIFIED_IN_DECLARED_SCOPE only if no blocking finding remains; otherwise UNQUALIFIED. Do not invent review independence from prior Cursor runs; this is a new review. Do not edit anything."
+  ],
+  "cwd": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+  "returncode": 0,
+  "finished_at": "2026-10-17T16:59:13.486700+00:00"
+}

@@ -1,0 +1,141 @@
+{
+  "status": "PASS_QUALIFIED_DIRECTORY_RESTORATION",
+  "scope": "Restore the known sealed VME-WREN package from checkout/dataset; arbitrary raw-directory ingestion and client object catalogue not implemented",
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/directory_intake/workbench/run-6b1a05214e194b64965556caf3cb5b93",
+  "url": "http://127.0.0.1:8769/run-6b1a05214e194b64965556caf3cb5b93/index.html#dataset=client%3Avme-wren%3A20261016%3Av1",
+  "stable_url": "http://127.0.0.1:8769/index.html",
+  "baseline": {
+    "url": "http://127.0.0.1:8769/run-04f3e40b032447b89c27c9ab200438cb/index.html",
+    "datasets": [
+      "Synthetic coupon",
+      "GlowStitch",
+      "HALPI2-HDMI-FPC",
+      "Ucamco parser examples"
+    ]
+  },
+  "browser_report": "out/ingestion/directory_intake/browser.json",
+  "actual_directory_picker": "PASS: plus -> directory chooser -> selected actual VME-WREN package",
+  "restored_registration_persists_on_reload": true,
+  "verification": {
+    "status": "PASS",
+    "selected_files_verified": 71,
+    "registered_raw_inputs": 44,
+    "representation_counts": {
+      "kicad_boards": 1,
+      "gerbers": 39,
+      "drills": 2
+    },
+    "recorded_cases_pipeline_and_dataset_projections_identical": true,
+    "canonical_registry_unchanged": true,
+    "durable_current_registry_reload": "PASS",
+    "directory_intake": {
+      "mode": "RESTORE_QUALIFIED_PACKAGE",
+      "dataset_id": "client:vme-wren:20261016:v1",
+      "package_root": "dataset/vme-wren_20261016_v1",
+      "files_verified": 71,
+      "inventory_sha256": "b9b679f78d55b10f11d2f5b757dcd4f14b64fff3805f50a3d33872875c6279ce",
+      "profile": {
+        "path": "contracts/ingestion_packages_v1.json",
+        "sha256": "10100913878006181f7b60c67ff7c51117b1fb1a0863380f5d02536c3811571b"
+      },
+      "selected_bytes_checked": true,
+      "scope": "Preserved files, registration and recorded review; no native extraction or new CAM execution"
+    }
+  },
+  "publication": {
+    "status": "PASS",
+    "schema": "pcb-ingestion-publication-v2",
+    "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+    "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/directory_intake/workbench/run-6b1a05214e194b64965556caf3cb5b93",
+    "outputs_verified": 354,
+    "datasets_verified": 5,
+    "comparisons_verified": 3
+  },
+  "negative_controls": {
+    "status": "PASS",
+    "controls": [
+      {
+        "control": "changed_selected_bytes",
+        "http_status": 400,
+        "result": {
+          "status": "FAIL",
+          "error": "Selected directory bytes differ from the qualified project package"
+        },
+        "previous_entry_unchanged": true
+      },
+      {
+        "control": "unknown_directory",
+        "http_status": 400,
+        "result": {
+          "status": "FAIL",
+          "error": "No qualified restoration profile for this project directory"
+        },
+        "previous_entry_unchanged": true
+      },
+      {
+        "control": "foreign_origin",
+        "http_status": 403,
+        "result": {
+          "status": "FAIL",
+          "error": "Same-origin loopback request required"
+        },
+        "previous_entry_unchanged": true
+      }
+    ]
+  },
+  "python_tests": {
+    "status": "PASS",
+    "tests": 24,
+    "log": "out/ingestion/directory_intake/python_checks.txt"
+  },
+  "javascript": {
+    "ingestion_views.test.cjs": {
+      "status": "PASS",
+      "checks": [
+        "Pure source/native panes; differences confined to delta",
+        "Receipt-driven changed comparison/drill values; no cross-dataset leakage",
+        "Generation review metadata without a fabricated channel status",
+        "Technical records collapsed and only one comparison drawn",
+        "Input qualification retains unknowns without a duplicated correction visualization",
+        "Direct dataset links open the requested review",
+        "Persistence first: five statuses and three artifact inspectors; no cross-dataset leakage",
+        "Two primary tabs; qualification loads once; forward/back reveals the new context",
+        "Sparse datasets share the layout without inherited client findings or zero measurements",
+        "Native revisions bind by exact source hash, never label alone",
+        "Recorded query samples do not imply linked reopen proof",
+        "Top navigation order and default dataset landing",
+        "Input stage receipts retain actual states and exact source binding; unavailable receipts stay explicit"
+      ]
+    },
+    "pipeline_navigation.test.cjs": {
+      "status": "PASS",
+      "checks": [
+        "Processing removed; Storage precedes Cases",
+        "Storage opens on persistence, preserving all non-input stages including unknown future stages",
+        "Unlinked historical native revisions retain input-stage receipts",
+        "Receipt selection retains original states, counts and details",
+        "Saved query examples and Cases navigation remain accessible"
+      ]
+    },
+    "directory_intake.test.cjs": {
+      "status": "PASS",
+      "checks": [
+        "Plus opens a directory picker",
+        "Selected file bytes are hashed and only relative identities sent to loopback",
+        "Successful restoration opens its new publication",
+        "Failure and cancellation retain the previous page"
+      ]
+    }
+  },
+  "source_snapshot": "out/ingestion/directory_intake/source_snapshot.json",
+  "source_matches_publication": true,
+  "preserved_inputs_and_historical_engineering": "UNCHANGED; actual displayed datasets, Cases and native pipeline projections match preceding five-dataset publication",
+  "missing_data_policy": "Unfamiliar directory, changed selected/disk bytes or unavailable bound evidence reject without replacing current entry",
+  "native_client_objects": "NOT_IMPLEMENTED",
+  "common_catalogue": "DEFERRED",
+  "independent_review": "NOT_RUN_FOR_THIS_FEATURE",
+  "screenshots": [
+    "out/ingestion/directory_intake/selector.jpg",
+    "out/ingestion/directory_intake/restored.jpg"
+  ]
+}

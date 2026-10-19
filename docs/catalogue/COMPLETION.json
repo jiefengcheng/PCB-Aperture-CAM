@@ -1,0 +1,29 @@
+{
+  "schema": "pcb-common-catalogue-completion/1",
+  "status": "COMPLETE_IN_DECLARED_SCOPE",
+  "dataset_revision": "687c863c124fd6b3f00c8a1db95b680c84bd03dd2d14481b759da63ed12a0ab5",
+  "result_sha256": "93da1f185dbe5c98bc959bf65f34347b75c7ba44c993d2a14395f5c0aa6f6d50",
+  "scope": "Minimum R140 native/Gerber context, durable qualification, fresh-process retrieval and diagnostic export",
+  "python_tests": 155,
+  "frozen_control_outcomes": 17,
+  "source_snapshot": {
+    "path": "out/common_catalogue/review_packet_20261018_final/source_snapshot.json",
+    "sha256": "264e2a8c6e2849cfc00a0668abe438cb27b997a2198c8e681df0322b03257847",
+    "files": 52
+  },
+  "publication": {
+    "path": "out/ingestion/directory_intake/workbench/run-c4d6a556faa24afc8142c23f3943d5ad/receipt.json",
+    "sha256": "95d0a9ab27e1b79ee4ddf5bccae4b5225a95c05faadf8eb712d9f67093362cb6",
+    "outputs": 378,
+    "datasets": 5
+  },
+  "cursor": {
+    "status": "QUALIFIED_IN_DECLARED_SCOPE",
+    "report": "reviews/cursor/common_catalogue_20261018_final/audit.md",
+    "sha256": "e99e82d9671baac6280660ebdb76f5388f75121ac16781782e68e165a7dd1bf5",
+    "channel": "Authenticated cursor-agent CLI; read-only plan+sandbox",
+    "actionable_remaining_findings": 0
+  },
+  "engineering_scope": "No whole-board equivalence, independent net intent, general reassembly or manufacturing acceptance",
+  "recorded_at": "2026-10-17T17:12:40.586999+00:00"
+}

@@ -1,0 +1,26 @@
+{
+  "channel": "authenticated cursor-agent CLI",
+  "resumed_session": "15f893f5-b7c2-4f04-9e91-d5231e61804b",
+  "mode": "read-only plan + sandbox",
+  "started_at": "2026-10-17T17:09:46.648732+00:00",
+  "argv": [
+    "cursor-agent",
+    "--print",
+    "--resume",
+    "15f893f5-b7c2-4f04-9e91-d5231e61804b",
+    "--mode",
+    "plan",
+    "--sandbox",
+    "enabled",
+    "--trust",
+    "--auto-review",
+    "--output-format",
+    "stream-json",
+    "--workspace",
+    "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+    "Continue your independent READ-ONLY audit. Codex remains sole author/integrator. Same checkout only; no edits, installs, adjacent/global access, other agents/services or tests that write files. Preserve all protocol restrictions from the prior review.\n\nThe final publication is now COMPLETE, not in progress: out/ingestion/directory_intake/workbench/run-c4d6a556faa24afc8142c23f3943d5ad. It pins execution_20261018_f, dataset revision 687c863c124fd6b3f00c8a1db95b680c84bd03dd2d14481b759da63ed12a0ab5, digest 93da1f185dbe5c98bc959bf65f34347b75c7ba44c993d2a14395f5c0aa6f6d50. The stable entry now redirects to this exact run. The earlier provisional runs remain unqualified and are preserved, not rewritten. Your stale-entry finding was valid at the time you checked during the rebuild; audit this completed publication before final closure.\n\nReview out/common_catalogue/review_packet_20261018_final/packet.json and hash-check source_snapshot.json there BEFORE and AFTER review (PYTHONDONTWRITEBYTECODE=1). The frozen source bytes are also retained under that packet/source/. Changes since your second review: retained L2 and top-warning reports now each have an immutable source-artifact revision/config. L2 original report path/hash is checked against its report artifact; TOP retained execution hash must equal the report artifact source hash, and exact message line agrees with source span. Report configs bind original input artifact revisions. A qualification can no longer provide its own replacement path/report hash. Reopen still performs no native/Gerber extraction. Thirteen semantic mutation subcases plus a separate coherent repeated-trigger/report rebinding test pass. Full Python suite is 155 PASS. UI geometry scope is unchanged. See src/catalogue_qualifications.py, src/catalogue_build.py, tests/test_common_catalogue.py and docs/catalogue/DELIVERY.md.\n\nIndependently run these read-only commands:\nenv PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/common_catalogue.py verify --bundle out/common_catalogue/execution_20261018_f/selection --revision 687c863c124fd6b3f00c8a1db95b680c84bd03dd2d14481b759da63ed12a0ab5\nenv PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/common_catalogue.py retrieve --bundle out/common_catalogue/execution_20261018_f/selection --revision 687c863c124fd6b3f00c8a1db95b680c84bd03dd2d14481b759da63ed12a0ab5\nenv PYTHONDONTWRITEBYTECODE=1 .venv/bin/python out/common_catalogue/verification_20261018_final/audit_controls.py\nenv PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify out/ingestion/directory_intake/workbench/run-c4d6a556faa24afc8142c23f3943d5ad\n\nRechallenge your own L2 path and TOP identical-occurrence probes against the new report artifact bindings; do not only count passed tests. The prepared docs/catalogue/COMPLETION_AUDIT.md remains pending your actual verdict. Report any actionable remaining findings with severity/file/line/reproduction. Explicitly mark each previous finding resolved or unresolved, exact commands/results, snapshot integrity, actual dataset revision and publication reviewed. Retain bounded-slice/no-independent-intent/no-manufacturing/no-live-browser-SQL limits. Return QUALIFIED_IN_DECLARED_SCOPE only if no blocking finding remains, otherwise UNQUALIFIED. Do not edit anything."
+  ],
+  "cwd": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+  "returncode": 0,
+  "finished_at": "2026-10-17T17:11:24.514643+00:00"
+}

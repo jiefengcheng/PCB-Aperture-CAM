@@ -1,0 +1,24 @@
+{
+  "status": "EXITED",
+  "pid": 92914,
+  "started_at": "2026-10-16T19:07:05.898349+00:00",
+  "argv_without_prompt": [
+    "cursor-agent",
+    "--print",
+    "--mode",
+    "plan",
+    "--sandbox",
+    "enabled",
+    "--trust",
+    "--auto-review",
+    "--resume",
+    "31cfc920-1a35-4ad5-9c85-b553b4199935",
+    "--output-format",
+    "stream-json",
+    "--workspace",
+    "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+  ],
+  "prompt_file": "followup_request.md",
+  "returncode": 0,
+  "finished_at": "2026-10-16T19:08:04.064489+00:00"
+}

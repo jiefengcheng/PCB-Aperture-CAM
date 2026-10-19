@@ -1,0 +1,178 @@
+"""Offline publication consistency, required artifacts and evidence bindings.
+Unsigned local receipts do not prove authenticity or engineering acceptance.
+"""
+import base64
+import copy
+import gzip
+import hashlib
+import json
+import re
+from html.parser import HTMLParser
+from pathlib import Path
+from .ingestion_files import local, verify
+from .ingestion_contracts import (
+    PUBLICATION_SCHEMA, digest_registry, intake_projection, require, validate_registry,
+    verify_generation_review,
+)
+
+
+
+class SceneHTML(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.scenes = []
+        self.digests = []
+        self.active = False
+        self.parts = []
+        self.encoding = None
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'meta' and attrs.get('name') == 'scene-sha256':
+            self.digests.append(attrs.get('content'))
+        if tag == 'script' and attrs.get('id') == 'scene-data':
+            self.active = True
+            self.parts = []
+            self.encoding = attrs.get('data-encoding')
+
+    def handle_data(self, data):
+        if self.active:
+            self.parts.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == 'script' and self.active:
+            self.scenes.append((''.join(self.parts), self.encoding))
+            self.active = False
+
+
+def _verify_outputs(bundle, receipt):
+    require(receipt.get('schema') == PUBLICATION_SCHEMA,
+            'Unsupported/missing publication schema; legacy v1 is unqualified')
+    require(receipt.get('status') == 'PASS', 'Publication status must be PASS')
+    outputs = receipt.get('outputs')
+    require(isinstance(outputs, dict) and outputs, 'Missing/empty publication outputs')
+    require({'index.html', 'scene.json', 'registry.json'}.issubset(outputs),
+            'Missing required workbench output bindings')
+    for path, digest in outputs.items():
+        require(isinstance(path, str) and not Path(path).is_absolute()
+                and '..' not in Path(path).parts, 'Invalid output path')
+        require(isinstance(digest, str) and re.fullmatch('[0-9a-f]{64}', digest),
+                'Invalid output hash')
+    inventory = {
+        str(path.relative_to(bundle)) for path in bundle.rglob('*')
+        if path.is_file() and path != bundle / 'receipt.json'
+    }
+    require(inventory == set(outputs), 'Publication output inventory mismatch')
+    verify(bundle, [{'path': path, 'sha256': digest} for path, digest in outputs.items()])
+    return outputs
+
+
+def _read_embedded_scene(bundle):
+    raw = (bundle / 'scene.json').read_text()
+    html = SceneHTML()
+    html.feed((bundle / 'index.html').read_text())
+    require(len(html.scenes) == 1 and len(html.digests) == 1,
+            'Missing/ambiguous embedded scene')
+    embedded, encoding = html.scenes[0]
+    if encoding == 'gzip-base64':
+        embedded = gzip.decompress(base64.b64decode(embedded, validate=True)).decode()
+    else:
+        require(encoding is None, 'Unsupported embedded scene encoding')
+    require(embedded == raw, 'Embedded scene differs from scene.json')
+    require(hashlib.sha256(raw.encode()).hexdigest() == html.digests[0],
+            'Embedded scene checksum mismatch')
+    scene = json.loads(raw)
+    require(scene.get('integrity') == 'VERIFIED_AT_GENERATION', 'Scene is not verified')
+    return scene
+
+
+def _verify_dataset(bundle, registered, displayed, outputs):
+    from .ingestion_visuals import comparison_specs, receipt_records
+
+    stripped = copy.deepcopy(displayed)
+    presentation = stripped.pop('qualification_data', None)
+    require(isinstance(presentation, dict), 'Missing dataset qualification projection')
+    snapshots = {}
+    for ref in stripped.get('evidence', []):
+        snapshot = ref.pop('snapshot', None)
+        require(isinstance(snapshot, str) and outputs.get(snapshot) == ref['sha256'],
+                'Missing/unbound evidence snapshot')
+        snapshots[(ref['path'], ref['sha256'])] = snapshot
+    require(stripped == registered, 'Displayed dataset differs from registered dataset')
+
+    def read_snapshot(ref):
+        path = local(bundle, snapshots[(ref['path'], ref['sha256'])])
+        return json.loads(path.read_text())
+
+    records = receipt_records(registered, read_snapshot)
+    require(presentation.get('records') == records,
+            'Displayed measurements differ from bound receipts')
+    specs = comparison_specs(registered, records)
+    comparisons = presentation.get('comparisons')
+    require(isinstance(comparisons, list) and len(comparisons) == len(specs),
+            'Missing/unexpected comparison views')
+    for spec, view in zip(specs, comparisons):
+        require(all(view.get(key) == value for key, value in spec.items()),
+                'Comparison input/receipt binding mismatch')
+        require(all(isinstance(view.get(key), str) for key in
+                    ('source_path', 'native_path', 'source_only_path', 'native_only_path')),
+                'Missing comparison geometry')
+    return [{'dataset_id': registered['id'], **spec} for spec in specs]
+
+
+def _verify_ingestion(bundle, config, scene, receipt, outputs):
+    ingestion = scene.get('ingestion', {})
+    require(ingestion.get('schema') == config['schema']
+            and ingestion.get('mode') == 'REPLAY', 'Missing/invalid ingestion scene')
+    require(ingestion.get('registry_sha256') == receipt['registry_sha256'],
+            'Scene registry binding mismatch')
+    require(ingestion.get('common_object_catalogue') == 'DEFERRED',
+            'Unexpected catalogue authority')
+    verify_generation_review(receipt, ingestion)
+    if 'intake' in ingestion:
+        from pathlib import PurePosixPath
+        package = PurePosixPath(config['dataset_seal']['path']).parent
+        def read_intake(path):
+            snapshot = 'intake/' + str(PurePosixPath(path).relative_to(package))
+            require(snapshot in outputs, 'Missing intake metadata snapshot')
+            return local(bundle, snapshot).read_bytes()
+        expected = intake_projection(config, read_intake)
+        require(expected is not None and ingestion['intake'] == expected,
+                'Displayed intake differs from sealed metadata')
+    shown = ingestion.get('datasets')
+    require(isinstance(shown, list) and len(shown) == len(config['datasets']),
+            'Dataset scene/registry mismatch')
+    render_inputs = []
+    for registered, displayed in zip(config['datasets'], shown):
+        render_inputs.extend(_verify_dataset(bundle, registered, displayed, outputs))
+    require(receipt.get('render_inputs') == render_inputs,
+            'Publication render-input binding mismatch')
+    return len(shown), len(render_inputs)
+
+
+def verify_publication(bundle):
+    bundle = Path(bundle).resolve()
+    receipt = json.loads((bundle / 'receipt.json').read_text())
+    require(isinstance(receipt, dict), 'Publication receipt must be an object')
+    outputs = _verify_outputs(bundle, receipt)
+    scene = _read_embedded_scene(bundle)
+    config = json.loads((bundle / 'registry.json').read_text())
+    validate_registry(config)
+    require(digest_registry(config) == receipt.get('registry_sha256'),
+            'Publication registry binding mismatch')
+    dataset_count, comparison_count = _verify_ingestion(bundle, config, scene, receipt, outputs)
+    from .catalogue_scene import verify_projection
+    verify_projection(bundle,config,scene)
+    require(isinstance(receipt.get('implementation'), dict) and receipt['implementation'],
+            'Missing implementation hashes')
+    return {
+        'status': 'PASS',
+        'schema': PUBLICATION_SCHEMA,
+        'scope': ('Required files, exact inventory, embedded scene, registry, receipt-derived '
+                  'measurements and evidence/render-input bindings; no engineering acceptance '
+                  'or authorship claim'),
+        'run': str(bundle),
+        'outputs_verified': len(outputs),
+        'datasets_verified': dataset_count,
+        'comparisons_verified': comparison_count,
+    }

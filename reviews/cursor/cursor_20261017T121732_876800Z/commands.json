@@ -1,0 +1,828 @@
+[
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json, hashlib\nfrom pathlib import Path\nroot = Path('/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff')\npacket = root / 'out/ingestion/maintenance/cursor_20261017T121732_876800Z/packet.json'\ndata = json.loads(packet.read_text())\nfiles = data['files']\n\nmismatches=[]\nmissing=[]\nfor rel, expected in files.items():\n    p = root / rel\n    if not p.is_file():\n        missing.append(rel)\n        continue\n    digest = hashlib.sha256(p.read_bytes()).hexdigest()\n    if digest != expected:\n        mismatches.append((rel, expected, digest))\n\nprint(json.dumps({\n  'packet': str(packet),\n  'files_total': len(files),\n  'missing': missing,\n  'mismatches': [\n    {'path': r, 'expected': e, 'actual': a} for r,e,a in mismatches\n  ],\n  'status': 'PASS' if not missing and not mismatches else 'FAIL'\n}, indent=2))\nPY",
+      "workingDirectory": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+      "timeout": 30000,
+      "toolCallId": "call_4iMWDtpjpmnBe5qsbhTc3rGK\nfc_054666937c55dbcc016ad3678ffa5087d1bf198cfc8e6b9173",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": true,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [],
+            "fullText": ".venv/bin/python"
+          }
+        ],
+        "hasRedirects": true,
+        "hasCommandSubstitution": false,
+        "allRedirectsAreDevNull": false,
+        "redirects": [
+          {
+            "operator": "",
+            "destinationFds": [],
+            "targetNodeType": "heredoc_redirect"
+          }
+        ]
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "recompute packet hashes",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "success": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json, hashlib\nfrom pathlib import Path\nroot = Path('/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff')\npacket = root / 'out/ingestion/maintenance/cursor_20261017T121732_876800Z/packet.json'\ndata = json.loads(packet.read_text())\nfiles = data['files']\n\nmismatches=[]\nmissing=[]\nfor rel, expected in files.items():\n    p = root / rel\n    if not p.is_file():\n        missing.append(rel)\n        continue\n    digest = hashlib.sha256(p.read_bytes()).hexdigest()\n    if digest != expected:\n        mismatches.append((rel, expected, digest))\n\nprint(json.dumps({\n  'packet': str(packet),\n  'files_total': len(files),\n  'missing': missing,\n  'mismatches': [\n    {'path': r, 'expected': e, 'actual': a} for r,e,a in mismatches\n  ],\n  'status': 'PASS' if not missing and not mismatches else 'FAIL'\n}, indent=2))\nPY",
+        "workingDirectory": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+        "exitCode": 0,
+        "signal": "",
+        "stdout": "{\n  \"packet\": \"/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/maintenance/cursor_20261017T121732_876800Z/packet.json\",\n  \"files_total\": 19,\n  \"missing\": [],\n  \"mismatches\": [],\n  \"status\": \"PASS\"\n}\n",
+        "stderr": "",
+        "executionTime": 372,
+        "interleavedOutput": "{\n  \"packet\": \"/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/maintenance/cursor_20261017T121732_876800Z/packet.json\",\n  \"files_total\": 19,\n  \"missing\": [],\n  \"mismatches\": [],\n  \"status\": \"PASS\"\n}\n",
+        "localExecutionTimeMs": 182
+      },
+      "isBackground": false
+    },
+    "description": "recompute packet hashes"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_5XdKSeb6r4cvAWjU28TXHqlO\nfc_054666937c55dbcc016ad36794a62c87d1942a9210ccf856bd",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": false,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [
+              {
+                "type": "word",
+                "value": "tools/ingestion.py"
+              },
+              {
+                "type": "word",
+                "value": "--verify"
+              },
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28"
+              }
+            ],
+            "fullText": ".venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28"
+          }
+        ],
+        "hasRedirects": false,
+        "hasCommandSubstitution": false,
+        "redirects": []
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "verify new reviewed run",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "success": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28",
+        "workingDirectory": "",
+        "exitCode": 0,
+        "signal": "",
+        "stdout": "{\"status\": \"PASS\", \"schema\": \"pcb-ingestion-publication-v2\", \"scope\": \"Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim\", \"run\": \"/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28\", \"outputs_verified\": 351, \"datasets_verified\": 5, \"comparisons_verified\": 3}\n",
+        "stderr": "",
+        "executionTime": 1158,
+        "interleavedOutput": "{\"status\": \"PASS\", \"schema\": \"pcb-ingestion-publication-v2\", \"scope\": \"Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim\", \"run\": \"/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28\", \"outputs_verified\": 351, \"datasets_verified\": 5, \"comparisons_verified\": 3}\n",
+        "localExecutionTimeMs": 982
+      },
+      "isBackground": false
+    },
+    "description": "verify new reviewed run"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_cpPdULdtmbNSJXkL4p5erTpz\nfc_054666937c55dbcc016ad367979ac087d1816980162ce9ac05",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": false,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [
+              {
+                "type": "word",
+                "value": "tools/ingestion.py"
+              },
+              {
+                "type": "word",
+                "value": "--verify"
+              },
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36"
+              }
+            ],
+            "fullText": ".venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36"
+          }
+        ],
+        "hasRedirects": false,
+        "hasCommandSubstitution": false,
+        "redirects": []
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "verify prior reviewed run",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "success": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36",
+        "workingDirectory": "",
+        "exitCode": 0,
+        "signal": "",
+        "stdout": "{\"status\": \"PASS\", \"schema\": \"pcb-ingestion-publication-v2\", \"scope\": \"Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim\", \"run\": \"/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36\", \"outputs_verified\": 351, \"datasets_verified\": 5, \"comparisons_verified\": 3}\n",
+        "stderr": "",
+        "executionTime": 1167,
+        "interleavedOutput": "{\"status\": \"PASS\", \"schema\": \"pcb-ingestion-publication-v2\", \"scope\": \"Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim\", \"run\": \"/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36\", \"outputs_verified\": 351, \"datasets_verified\": 5, \"comparisons_verified\": 3}\n",
+        "localExecutionTimeMs": 995
+      },
+      "isBackground": false
+    },
+    "description": "verify prior reviewed run"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/review/ingestion_assessment_20261016T184844_296975Z/empty_failed",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_OZe2haZdBjwDFBi1vETjksn9\nfc_054666937c55dbcc016ad3679b824487d1980898142c56799d",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": false,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [
+              {
+                "type": "word",
+                "value": "tools/ingestion.py"
+              },
+              {
+                "type": "word",
+                "value": "--verify"
+              },
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/review/ingestion_assessment_20261016T184844_296975Z/empty_failed"
+              }
+            ],
+            "fullText": ".venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/review/ingestion_assessment_20261016T184844_296975Z/empty_failed"
+          }
+        ],
+        "hasRedirects": false,
+        "hasCommandSubstitution": false,
+        "redirects": []
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "verify empty_failed control",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "failure": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/review/ingestion_assessment_20261016T184844_296975Z/empty_failed",
+        "workingDirectory": "",
+        "exitCode": 1,
+        "signal": "",
+        "stdout": "{\"status\": \"FAIL\", \"error\": \"Unsupported/missing publication schema; legacy v1 is unqualified\"}\n",
+        "stderr": "",
+        "executionTime": 335,
+        "interleavedOutput": "{\"status\": \"FAIL\", \"error\": \"Unsupported/missing publication schema; legacy v1 is unqualified\"}\n",
+        "aborted": false,
+        "localExecutionTimeMs": 179
+      },
+      "isBackground": false
+    },
+    "description": "verify empty_failed control"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/review/ingestion_assessment_20261016T184844_296975Z/empty_unknown",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_tPpbVXL2joPl7nRK136nBnBq\nfc_054666937c55dbcc016ad3679d955c87d18c906b81f13cfb03",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": false,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [
+              {
+                "type": "word",
+                "value": "tools/ingestion.py"
+              },
+              {
+                "type": "word",
+                "value": "--verify"
+              },
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/review/ingestion_assessment_20261016T184844_296975Z/empty_unknown"
+              }
+            ],
+            "fullText": ".venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/review/ingestion_assessment_20261016T184844_296975Z/empty_unknown"
+          }
+        ],
+        "hasRedirects": false,
+        "hasCommandSubstitution": false,
+        "redirects": []
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "verify empty_unknown control",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "failure": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/ingestion.py --verify /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/review/ingestion_assessment_20261016T184844_296975Z/empty_unknown",
+        "workingDirectory": "",
+        "exitCode": 1,
+        "signal": "",
+        "stdout": "{\"status\": \"FAIL\", \"error\": \"Unsupported/missing publication schema; legacy v1 is unqualified\"}\n",
+        "stderr": "",
+        "executionTime": 397,
+        "interleavedOutput": "{\"status\": \"FAIL\", \"error\": \"Unsupported/missing publication schema; legacy v1 is unqualified\"}\n",
+        "aborted": false,
+        "localExecutionTimeMs": 176
+      },
+      "isBackground": false
+    },
+    "description": "verify empty_unknown control"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json, hashlib\nfrom pathlib import Path\nroot = Path('.')\nnew_run = root/'out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28'\nold_run = root/'out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36'\n\nnew_scene = json.loads((new_run/'scene.json').read_text())\nold_scene = json.loads((old_run/'scene.json').read_text())\nnew_receipt = json.loads((new_run/'receipt.json').read_text())\nold_receipt = json.loads((old_run/'receipt.json').read_text())\n\nsections = ['cases','geometry','pipeline']\nsection_equal = {k: new_scene.get(k) == old_scene.get(k) for k in sections}\n\n# Compare ingestion datasets ignoring generation review metadata field.\ndef strip_ingestion(scene):\n    data = json.loads(json.dumps(scene.get('ingestion', {})))\n    data.pop('cursor_review', None)\n    return data\n\ningestion_equal_ignoring_review = strip_ingestion(new_scene) == strip_ingestion(old_scene)\n\ningestion_exact_equal = new_scene.get('ingestion') == old_scene.get('ingestion')\n\n# receipt render inputs + outputs count\nrender_inputs_equal = new_receipt.get('render_inputs') == old_receipt.get('render_inputs')\noutputs_equal = new_receipt.get('outputs') == old_receipt.get('outputs')\n\nsummary = {\n    'scene_sections_equal': section_equal,\n    'ingestion_exact_equal': ingestion_exact_equal,\n    'ingestion_equal_ignoring_review': ingestion_equal_ignoring_review,\n    'new_scene_review': new_scene.get('ingestion',{}).get('cursor_review'),\n    'old_scene_review': old_scene.get('ingestion',{}).get('cursor_review'),\n    'new_receipt_review': new_receipt.get('cursor_review'),\n    'old_receipt_review': old_receipt.get('cursor_review'),\n    'new_scene_review_matches_receipt': new_scene.get('ingestion',{}).get('cursor_review') == new_receipt.get('cursor_review'),\n    'old_scene_review_matches_receipt': old_scene.get('ingestion',{}).get('cursor_review') == old_receipt.get('cursor_review'),\n    'render_inputs_equal': render_inputs_equal,\n    'outputs_equal': outputs_equal,\n    'new_outputs_count': len(new_receipt.get('outputs', {})),\n    'old_outputs_count': len(old_receipt.get('outputs', {})),\n}\nprint(json.dumps(summary, indent=2))\nPY",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_agsNMy0nu0tYhPxRzjPiiH2L\nfc_054666937c55dbcc016ad367a29fc487d18e9ba72ed671ec17",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": true,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [],
+            "fullText": ".venv/bin/python"
+          }
+        ],
+        "hasRedirects": true,
+        "hasCommandSubstitution": false,
+        "allRedirectsAreDevNull": false,
+        "redirects": [
+          {
+            "operator": "",
+            "destinationFds": [],
+            "targetNodeType": "heredoc_redirect"
+          }
+        ]
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "compare new and prior scene receipt structures",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "success": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json, hashlib\nfrom pathlib import Path\nroot = Path('.')\nnew_run = root/'out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28'\nold_run = root/'out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36'\n\nnew_scene = json.loads((new_run/'scene.json').read_text())\nold_scene = json.loads((old_run/'scene.json').read_text())\nnew_receipt = json.loads((new_run/'receipt.json').read_text())\nold_receipt = json.loads((old_run/'receipt.json').read_text())\n\nsections = ['cases','geometry','pipeline']\nsection_equal = {k: new_scene.get(k) == old_scene.get(k) for k in sections}\n\n# Compare ingestion datasets ignoring generation review metadata field.\ndef strip_ingestion(scene):\n    data = json.loads(json.dumps(scene.get('ingestion', {})))\n    data.pop('cursor_review', None)\n    return data\n\ningestion_equal_ignoring_review = strip_ingestion(new_scene) == strip_ingestion(old_scene)\n\ningestion_exact_equal = new_scene.get('ingestion') == old_scene.get('ingestion')\n\n# receipt render inputs + outputs count\nrender_inputs_equal = new_receipt.get('render_inputs') == old_receipt.get('render_inputs')\noutputs_equal = new_receipt.get('outputs') == old_receipt.get('outputs')\n\nsummary = {\n    'scene_sections_equal': section_equal,\n    'ingestion_exact_equal': ingestion_exact_equal,\n    'ingestion_equal_ignoring_review': ingestion_equal_ignoring_review,\n    'new_scene_review': new_scene.get('ingestion',{}).get('cursor_review'),\n    'old_scene_review': old_scene.get('ingestion',{}).get('cursor_review'),\n    'new_receipt_review': new_receipt.get('cursor_review'),\n    'old_receipt_review': old_receipt.get('cursor_review'),\n    'new_scene_review_matches_receipt': new_scene.get('ingestion',{}).get('cursor_review') == new_receipt.get('cursor_review'),\n    'old_scene_review_matches_receipt': old_scene.get('ingestion',{}).get('cursor_review') == old_receipt.get('cursor_review'),\n    'render_inputs_equal': render_inputs_equal,\n    'outputs_equal': outputs_equal,\n    'new_outputs_count': len(new_receipt.get('outputs', {})),\n    'old_outputs_count': len(old_receipt.get('outputs', {})),\n}\nprint(json.dumps(summary, indent=2))\nPY",
+        "workingDirectory": "",
+        "exitCode": 0,
+        "signal": "",
+        "stdout": "{\n  \"scene_sections_equal\": {\n    \"cases\": true,\n    \"geometry\": true,\n    \"pipeline\": true\n  },\n  \"ingestion_exact_equal\": false,\n  \"ingestion_equal_ignoring_review\": true,\n  \"new_scene_review\": {\n    \"reason\": \"NO_REVIEW_ATTACHED_TO_THIS_PUBLICATION\",\n    \"scope\": \"AT_GENERATION\",\n    \"status\": \"NOT_RUN\"\n  },\n  \"old_scene_review\": null,\n  \"new_receipt_review\": {\n    \"status\": \"NOT_RUN\",\n    \"reason\": \"NO_REVIEW_ATTACHED_TO_THIS_PUBLICATION\",\n    \"scope\": \"AT_GENERATION\"\n  },\n  \"old_receipt_review\": \"NOT_RUN: CHANNEL_UNAVAILABLE\",\n  \"new_scene_review_matches_receipt\": true,\n  \"old_scene_review_matches_receipt\": false,\n  \"render_inputs_equal\": true,\n  \"outputs_equal\": false,\n  \"new_outputs_count\": 351,\n  \"old_outputs_count\": 351\n}\n",
+        "stderr": "",
+        "executionTime": 1110,
+        "interleavedOutput": "{\n  \"scene_sections_equal\": {\n    \"cases\": true,\n    \"geometry\": true,\n    \"pipeline\": true\n  },\n  \"ingestion_exact_equal\": false,\n  \"ingestion_equal_ignoring_review\": true,\n  \"new_scene_review\": {\n    \"reason\": \"NO_REVIEW_ATTACHED_TO_THIS_PUBLICATION\",\n    \"scope\": \"AT_GENERATION\",\n    \"status\": \"NOT_RUN\"\n  },\n  \"old_scene_review\": null,\n  \"new_receipt_review\": {\n    \"status\": \"NOT_RUN\",\n    \"reason\": \"NO_REVIEW_ATTACHED_TO_THIS_PUBLICATION\",\n    \"scope\": \"AT_GENERATION\"\n  },\n  \"old_receipt_review\": \"NOT_RUN: CHANNEL_UNAVAILABLE\",\n  \"new_scene_review_matches_receipt\": true,\n  \"old_scene_review_matches_receipt\": false,\n  \"render_inputs_equal\": true,\n  \"outputs_equal\": false,\n  \"new_outputs_count\": 351,\n  \"old_outputs_count\": 351\n}\n",
+        "localExecutionTimeMs": 830
+      },
+      "isBackground": false
+    },
+    "description": "compare new and prior scene receipt structures"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nfor run in ['run-397f4c7683d24d44ae43537e5ad8dd28','run-05888c57424f4db48bd9821fc8324b36']:\n    scene = json.loads((Path('out/ingestion/workbench')/run/'scene.json').read_text())\n    receipt = json.loads((Path('out/ingestion/workbench')/run/'receipt.json').read_text())\n    print(run)\n    print(' top_review=', scene.get('review'))\n    print(' top_manufacturing=', scene.get('manufacturing'))\n    print(' ingestion_cursor_review=', scene.get('ingestion',{}).get('cursor_review','<absent>'))\n    print(' receipt_cursor_review=', receipt.get('cursor_review','<absent>'))\nPY",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_r2HOyMGxEmO2UzA9ymKH8l2j\nfc_054666937c55dbcc016ad367b310dc87d1b971516a16a0f88a",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": true,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [],
+            "fullText": ".venv/bin/python"
+          }
+        ],
+        "hasRedirects": true,
+        "hasCommandSubstitution": false,
+        "allRedirectsAreDevNull": false,
+        "redirects": [
+          {
+            "operator": "",
+            "destinationFds": [],
+            "targetNodeType": "heredoc_redirect"
+          }
+        ]
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "print review fields from scenes and receipts",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "success": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nfor run in ['run-397f4c7683d24d44ae43537e5ad8dd28','run-05888c57424f4db48bd9821fc8324b36']:\n    scene = json.loads((Path('out/ingestion/workbench')/run/'scene.json').read_text())\n    receipt = json.loads((Path('out/ingestion/workbench')/run/'receipt.json').read_text())\n    print(run)\n    print(' top_review=', scene.get('review'))\n    print(' top_manufacturing=', scene.get('manufacturing'))\n    print(' ingestion_cursor_review=', scene.get('ingestion',{}).get('cursor_review','<absent>'))\n    print(' receipt_cursor_review=', receipt.get('cursor_review','<absent>'))\nPY",
+        "workingDirectory": "",
+        "exitCode": 0,
+        "signal": "",
+        "stdout": "run-397f4c7683d24d44ae43537e5ad8dd28\n top_review= NOT_RUN: CHANNEL_UNAVAILABLE\n top_manufacturing= NOT_ESTABLISHED\n ingestion_cursor_review= {'reason': 'NO_REVIEW_ATTACHED_TO_THIS_PUBLICATION', 'scope': 'AT_GENERATION', 'status': 'NOT_RUN'}\n receipt_cursor_review= {'status': 'NOT_RUN', 'reason': 'NO_REVIEW_ATTACHED_TO_THIS_PUBLICATION', 'scope': 'AT_GENERATION'}\nrun-05888c57424f4db48bd9821fc8324b36\n top_review= NOT_RUN: CHANNEL_UNAVAILABLE\n top_manufacturing= NOT_ESTABLISHED\n ingestion_cursor_review= <absent>\n receipt_cursor_review= NOT_RUN: CHANNEL_UNAVAILABLE\n",
+        "stderr": "",
+        "executionTime": 636,
+        "interleavedOutput": "run-397f4c7683d24d44ae43537e5ad8dd28\n top_review= NOT_RUN: CHANNEL_UNAVAILABLE\n top_manufacturing= NOT_ESTABLISHED\n ingestion_cursor_review= {'reason': 'NO_REVIEW_ATTACHED_TO_THIS_PUBLICATION', 'scope': 'AT_GENERATION', 'status': 'NOT_RUN'}\n receipt_cursor_review= {'status': 'NOT_RUN', 'reason': 'NO_REVIEW_ATTACHED_TO_THIS_PUBLICATION', 'scope': 'AT_GENERATION'}\nrun-05888c57424f4db48bd9821fc8324b36\n top_review= NOT_RUN: CHANNEL_UNAVAILABLE\n top_manufacturing= NOT_ESTABLISHED\n ingestion_cursor_review= <absent>\n receipt_cursor_review= NOT_RUN: CHANNEL_UNAVAILABLE\n",
+        "localExecutionTimeMs": 474
+      },
+      "isBackground": false
+    },
+    "description": "print review fields from scenes and receipts"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json, hashlib\nfrom pathlib import Path\nroot = Path('.')\npacket = json.loads((root/'out/ingestion/maintenance/cursor_20261017T121732_876800Z/packet.json').read_text())\nsnapshot_root = root/packet['source_snapshot']\nresults=[]\nmissing=[]\nfor rel, expected in packet['files'].items():\n    if not rel.startswith(('src/','tools/','web/','tests/')):\n        continue\n    src = root/rel\n    snap = snapshot_root/rel\n    if not snap.is_file():\n        missing.append(rel)\n        continue\n    h_src = hashlib.sha256(src.read_bytes()).hexdigest()\n    h_snap = hashlib.sha256(snap.read_bytes()).hexdigest()\n    results.append((rel,h_src==h_snap,h_src, h_snap))\n\nprint(json.dumps({\n    'checked': len(results),\n    'missing_in_snapshot': missing,\n    'all_match': all(ok for _,ok,_,_ in results) and not missing\n}, indent=2))\nPY",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_p7vis5YHEZVNeTKnOuS9z40u\nfc_054666937c55dbcc016ad367b835a087d1aa5a143ffa0958fe",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": true,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [],
+            "fullText": ".venv/bin/python"
+          }
+        ],
+        "hasRedirects": true,
+        "hasCommandSubstitution": false,
+        "allRedirectsAreDevNull": false,
+        "redirects": [
+          {
+            "operator": "",
+            "destinationFds": [],
+            "targetNodeType": "heredoc_redirect"
+          }
+        ]
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "compare source snapshot files to workspace",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "success": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json, hashlib\nfrom pathlib import Path\nroot = Path('.')\npacket = json.loads((root/'out/ingestion/maintenance/cursor_20261017T121732_876800Z/packet.json').read_text())\nsnapshot_root = root/packet['source_snapshot']\nresults=[]\nmissing=[]\nfor rel, expected in packet['files'].items():\n    if not rel.startswith(('src/','tools/','web/','tests/')):\n        continue\n    src = root/rel\n    snap = snapshot_root/rel\n    if not snap.is_file():\n        missing.append(rel)\n        continue\n    h_src = hashlib.sha256(src.read_bytes()).hexdigest()\n    h_snap = hashlib.sha256(snap.read_bytes()).hexdigest()\n    results.append((rel,h_src==h_snap,h_src, h_snap))\n\nprint(json.dumps({\n    'checked': len(results),\n    'missing_in_snapshot': missing,\n    'all_match': all(ok for _,ok,_,_ in results) and not missing\n}, indent=2))\nPY",
+        "workingDirectory": "",
+        "exitCode": 0,
+        "signal": "",
+        "stdout": "{\n  \"checked\": 18,\n  \"missing_in_snapshot\": [],\n  \"all_match\": true\n}\n",
+        "stderr": "",
+        "executionTime": 1675,
+        "interleavedOutput": "{\n  \"checked\": 18,\n  \"missing_in_snapshot\": [],\n  \"all_match\": true\n}\n",
+        "localExecutionTimeMs": 109
+      },
+      "isBackground": false
+    },
+    "description": "compare source snapshot files to workspace"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nroot=Path('.')\nreceipt=json.loads((root/'out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28/receipt.json').read_text())\npacket=json.loads((root/'out/ingestion/maintenance/cursor_20261017T121732_876800Z/packet.json').read_text())\nimpl=receipt.get('implementation',{})\npacket_files=packet['files']\ncommon={k:v for k,v in packet_files.items() if k in impl}\nmismatch=[k for k,v in common.items() if impl[k]!=v]\nprint(json.dumps({\n    'implementation_entries': len(impl),\n    'packet_overlap_entries': len(common),\n    'mismatches_with_packet': mismatch,\n    'all_overlap_match': len(mismatch)==0\n}, indent=2))\nPY",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_nnOUwAiQsZYeqtnltDp6wQhb\nfc_054666937c55dbcc016ad367bf80b487d18da241b32ba1ed35",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": true,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [],
+            "fullText": ".venv/bin/python"
+          }
+        ],
+        "hasRedirects": true,
+        "hasCommandSubstitution": false,
+        "allRedirectsAreDevNull": false,
+        "redirects": [
+          {
+            "operator": "",
+            "destinationFds": [],
+            "targetNodeType": "heredoc_redirect"
+          }
+        ]
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "compare receipt implementation hashes with packet",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "success": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nroot=Path('.')\nreceipt=json.loads((root/'out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28/receipt.json').read_text())\npacket=json.loads((root/'out/ingestion/maintenance/cursor_20261017T121732_876800Z/packet.json').read_text())\nimpl=receipt.get('implementation',{})\npacket_files=packet['files']\ncommon={k:v for k,v in packet_files.items() if k in impl}\nmismatch=[k for k,v in common.items() if impl[k]!=v]\nprint(json.dumps({\n    'implementation_entries': len(impl),\n    'packet_overlap_entries': len(common),\n    'mismatches_with_packet': mismatch,\n    'all_overlap_match': len(mismatch)==0\n}, indent=2))\nPY",
+        "workingDirectory": "",
+        "exitCode": 0,
+        "signal": "",
+        "stdout": "{\n  \"implementation_entries\": 16,\n  \"packet_overlap_entries\": 16,\n  \"mismatches_with_packet\": [],\n  \"all_overlap_match\": true\n}\n",
+        "stderr": "",
+        "executionTime": 505,
+        "interleavedOutput": "{\n  \"implementation_entries\": 16,\n  \"packet_overlap_entries\": 16,\n  \"mismatches_with_packet\": [],\n  \"all_overlap_match\": true\n}\n",
+        "localExecutionTimeMs": 109
+      },
+      "isBackground": false
+    },
+    "description": "compare receipt implementation hashes with packet"
+  },
+  {
+    "args": {
+      "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nnew_scene=json.loads((Path('out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28/scene.json')).read_text())\nold_scene=json.loads((Path('out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36/scene.json')).read_text())\nnew_datasets=new_scene['ingestion']['datasets']\nold_datasets=old_scene['ingestion']['datasets']\n# old scene has no ingestion cursor_review but does have datasets\npairs=[]\nfor n,o in zip(new_datasets, old_datasets):\n    same_q = n.get('qualification_data') == o.get('qualification_data')\n    same_sources = n.get('sources') == o.get('sources')\n    same_evidence_core = [ {k:v for k,v in e.items() if k!='snapshot'} for e in n.get('evidence',[]) ] == [ {k:v for k,v in e.items() if k!='snapshot'} for e in o.get('evidence',[]) ]\n    same_snapshots = [e.get('snapshot') for e in n.get('evidence',[])] == [e.get('snapshot') for e in o.get('evidence',[])]\n    pairs.append({'id':n['id'],'qualification_data_equal':same_q,'sources_equal':same_sources,'evidence_bindings_equal':same_evidence_core,'evidence_snapshots_equal':same_snapshots})\nprint(json.dumps({'dataset_count':len(new_datasets),'per_dataset':pairs,'all_qualification_equal':all(p['qualification_data_equal'] for p in pairs)}, indent=2))\nPY",
+      "workingDirectory": "",
+      "timeout": 30000,
+      "toolCallId": "call_St49XyIxplGZXXljmsf1c92J\nfc_054666937c55dbcc016ad367cfe40c87d1927cf7f83914b71d",
+      "simpleCommands": [
+        "cd",
+        ".venv/bin/python"
+      ],
+      "hasInputRedirect": true,
+      "hasOutputRedirect": false,
+      "parsingResult": {
+        "parsingFailed": false,
+        "executableCommands": [
+          {
+            "name": "cd",
+            "args": [
+              {
+                "type": "word",
+                "value": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+              }
+            ],
+            "fullText": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+          },
+          {
+            "name": ".venv/bin/python",
+            "args": [],
+            "fullText": ".venv/bin/python"
+          }
+        ],
+        "hasRedirects": true,
+        "hasCommandSubstitution": false,
+        "allRedirectsAreDevNull": false,
+        "redirects": [
+          {
+            "operator": "",
+            "destinationFds": [],
+            "targetNodeType": "heredoc_redirect"
+          }
+        ]
+      },
+      "requestedSandboxPolicy": {
+        "type": "TYPE_WORKSPACE_READWRITE",
+        "networkAccess": false,
+        "additionalReadwritePaths": [
+          "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff"
+        ],
+        "additionalReadonlyPaths": [],
+        "enableSharedBuildCache": true,
+        "readBoundary": "READ_BOUNDARY_MODE_UNSPECIFIED",
+        "additionalReadPaths": []
+      },
+      "fileOutputThresholdBytes": "40000",
+      "isBackground": false,
+      "skipApproval": false,
+      "timeoutBehavior": "TIMEOUT_BEHAVIOR_BACKGROUND",
+      "hardTimeout": 86400000,
+      "description": "compare ingestion dataset projections old vs new",
+      "closeStdin": true,
+      "conversationId": "974e161c-9988-4aa0-9f44-0e9ebfa9249d",
+      "adminCommandDenylist": [],
+      "requestId": "f8833a6d-b17c-4b36-a435-12a239c6aff0"
+    },
+    "result": {
+      "success": {
+        "command": "cd /Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff && PYTHONDONTWRITEBYTECODE=1 .venv/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nnew_scene=json.loads((Path('out/ingestion/workbench/run-397f4c7683d24d44ae43537e5ad8dd28/scene.json')).read_text())\nold_scene=json.loads((Path('out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36/scene.json')).read_text())\nnew_datasets=new_scene['ingestion']['datasets']\nold_datasets=old_scene['ingestion']['datasets']\n# old scene has no ingestion cursor_review but does have datasets\npairs=[]\nfor n,o in zip(new_datasets, old_datasets):\n    same_q = n.get('qualification_data') == o.get('qualification_data')\n    same_sources = n.get('sources') == o.get('sources')\n    same_evidence_core = [ {k:v for k,v in e.items() if k!='snapshot'} for e in n.get('evidence',[]) ] == [ {k:v for k,v in e.items() if k!='snapshot'} for e in o.get('evidence',[]) ]\n    same_snapshots = [e.get('snapshot') for e in n.get('evidence',[])] == [e.get('snapshot') for e in o.get('evidence',[])]\n    pairs.append({'id':n['id'],'qualification_data_equal':same_q,'sources_equal':same_sources,'evidence_bindings_equal':same_evidence_core,'evidence_snapshots_equal':same_snapshots})\nprint(json.dumps({'dataset_count':len(new_datasets),'per_dataset':pairs,'all_qualification_equal':all(p['qualification_data_equal'] for p in pairs)}, indent=2))\nPY",
+        "workingDirectory": "",
+        "exitCode": 0,
+        "signal": "",
+        "stdout": "{\n  \"dataset_count\": 5,\n  \"per_dataset\": [\n    {\n      \"id\": \"synthetic:coupon:v1\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    },\n    {\n      \"id\": \"public:GlowStitch\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    },\n    {\n      \"id\": \"public:HALPI2-HDMI-FPC\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    },\n    {\n      \"id\": \"reference:ucamco\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    },\n    {\n      \"id\": \"client:vme-wren:20261016:v1\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    }\n  ],\n  \"all_qualification_equal\": true\n}\n",
+        "stderr": "",
+        "executionTime": 918,
+        "interleavedOutput": "{\n  \"dataset_count\": 5,\n  \"per_dataset\": [\n    {\n      \"id\": \"synthetic:coupon:v1\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    },\n    {\n      \"id\": \"public:GlowStitch\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    },\n    {\n      \"id\": \"public:HALPI2-HDMI-FPC\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    },\n    {\n      \"id\": \"reference:ucamco\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    },\n    {\n      \"id\": \"client:vme-wren:20261016:v1\",\n      \"qualification_data_equal\": true,\n      \"sources_equal\": true,\n      \"evidence_bindings_equal\": true,\n      \"evidence_snapshots_equal\": true\n    }\n  ],\n  \"all_qualification_equal\": true\n}\n",
+        "localExecutionTimeMs": 670
+      },
+      "isBackground": false
+    },
+    "description": "compare ingestion dataset projections old vs new"
+  }
+]

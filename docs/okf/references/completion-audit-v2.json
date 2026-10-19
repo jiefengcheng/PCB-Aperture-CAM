@@ -1,0 +1,254 @@
+{
+  "schema": "pcb-ingestion-remediation-audit-v2",
+  "status": "CORRECTED_DELIVERY_LOCALLY_VERIFIED",
+  "reviewed_at": "2026-10-17T03:00:44.874737+08:00",
+  "supersedes_completion_claim_for": "out/ingestion/workbench/run-7d3e42070aee4089b2e4c5d10a553c82",
+  "triggering_review": {
+    "path": "out/review/ingestion_assessment_20261016T184844_296975Z/assessment.json",
+    "sha256": "a3504f2617f48900675aed833f2bbfd627a09fdff4483e5f8e327f427492c731"
+  },
+  "original_audit_preserved": {
+    "path": "out/ingestion/completion_audit.json",
+    "sha256": "33767bbe5c87cf9d81eec1c1abfd6dc68834a566eb836249bafcba9d0036f6d2"
+  },
+  "run": "out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36",
+  "publication_receipt": {
+    "path": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36/receipt.json",
+    "sha256": "fe2c5e83150527fe57e942a11e50e0bfe1eeb41b3783626f126b756e5548232b"
+  },
+  "review_type": "Local Codex remediation checks; no independent Cursor review",
+  "cursor_review": "NOT_RUN: CHANNEL_UNAVAILABLE",
+  "findings": [
+    {
+      "id": "R1",
+      "status": "CORRECTED_AND_LOCALLY_VERIFIED",
+      "change": "Verifier rejects failed/unknown/empty receipts; requires core files, exact inventory, embedded scene, registry and evidence/metric bindings",
+      "implementation": [
+        {
+          "path": "src/ingestion_verification.py",
+          "sha256": "306760bf3448614883adf691bb655ca99e92fd3c65c2055b933e70bad94826f9"
+        },
+        {
+          "path": "tools/ingestion.py",
+          "sha256": "8a8bee68442b92bc18664ea5a7b3d2514190d6f82676e4604cb9acc356366b7b"
+        },
+        {
+          "path": "tests/test_ingestion_registry.py",
+          "sha256": "dd6d871659d054620a3d2719553cdd17020fb954d34e82e54dcaf6d3cda77a2e"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/ingestion/remediation/reproduced_controls_after.json",
+          "sha256": "a434e5ab7bc46a899425ff61a0d46191b3c867ac7ff6caa7617d6479a32eae94"
+        },
+        {
+          "path": "out/ingestion/remediation/publication_check.json",
+          "sha256": "4df5a10a969d1562461fdb9c22762bd1d5661678e2b0fe8324d7c641e799c346"
+        },
+        {
+          "path": "out/ingestion/remediation/regressions.log",
+          "sha256": "20ed77447e6a93fb6ec7058f79212b7d48b68141f01a60214e54cbc7d109dcbf"
+        },
+        {
+          "path": "out/ingestion/remediation/actual_cli_publication_failure.json",
+          "sha256": "542a9a3106eb821bb3a6aee65a1f06e8bc9b8bff9826bffd8aaa141b16c8c9d1"
+        }
+      ]
+    },
+    {
+      "id": "R2",
+      "status": "CORRECTED_AND_LOCALLY_VERIFIED",
+      "change": "Display inputs resolved to registered sealed copies by receipt hashes; all six inputs verified before/after composition and recorded per view",
+      "implementation": [
+        {
+          "path": "src/ingestion_visuals.py",
+          "sha256": "1add49520e0facdb2bc0ae90e03c8ca0a970e9b19107dea50ec6de7195fac8cd"
+        },
+        {
+          "path": "contracts/ingestion_registry_v1.json",
+          "sha256": "f2777e0f7b3cecdbce024e5daf55b44c8a66e81e1d8617a8e052052cfc5558c5"
+        },
+        {
+          "path": "tests/test_ingestion_registry.py",
+          "sha256": "dd6d871659d054620a3d2719553cdd17020fb954d34e82e54dcaf6d3cda77a2e"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/ingestion/remediation/ingestion_tests.log",
+          "sha256": "8fd21f22ae7158544d333bdbef66143284aeac34c26ff7ffb19d700e0233dc5e"
+        },
+        {
+          "path": "out/ingestion/remediation/publication_check.json",
+          "sha256": "4df5a10a969d1562461fdb9c22762bd1d5661678e2b0fe8324d7c641e799c346"
+        }
+      ]
+    },
+    {
+      "id": "R3",
+      "status": "CORRECTED_AND_LOCALLY_VERIFIED",
+      "change": "Source/native panes contain only their own geometry; separate delta pane contains source/native-only paths",
+      "implementation": [
+        {
+          "path": "web/ingestion_views.js",
+          "sha256": "8a82ade1b5a26abe909f81b76e6c49c5685b5b2669c92dc128a43381d60cb590"
+        },
+        {
+          "path": "tests/js/ingestion_views.test.cjs",
+          "sha256": "b8ff4c075541251b24412ed671db78063d91a3ae181cd57f7de1f4bc167af93a"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/ingestion/remediation/ui_contract_tests.json",
+          "sha256": "da51732f9cbef7bad359a8b29af4dfd5f401c210c015e9d563fcaa9abe7c79ee"
+        },
+        {
+          "path": "out/ingestion/remediation/browser_panes.json",
+          "sha256": "8840b14d5df28e5bda15782c5e1effaf06856fa674c8e65fca7d1282731ba0e8"
+        },
+        {
+          "path": "out/ingestion/remediation/l2_visual_evidence.png",
+          "sha256": "9290ccce3a2f73f1f71ccc0bb4da1e2a72d2048388172f88e42c2a5508878058"
+        }
+      ]
+    },
+    {
+      "id": "R4",
+      "status": "CORRECTED_AND_LOCALLY_VERIFIED",
+      "change": "Per-dataset receipt-derived measurements and evidence links; changed values propagate and absent qualification stays unavailable",
+      "implementation": [
+        {
+          "path": "src/ingestion_visuals.py",
+          "sha256": "1add49520e0facdb2bc0ae90e03c8ca0a970e9b19107dea50ec6de7195fac8cd"
+        },
+        {
+          "path": "web/ingestion_views.js",
+          "sha256": "8a82ade1b5a26abe909f81b76e6c49c5685b5b2669c92dc128a43381d60cb590"
+        },
+        {
+          "path": "tests/test_ingestion_registry.py",
+          "sha256": "dd6d871659d054620a3d2719553cdd17020fb954d34e82e54dcaf6d3cda77a2e"
+        },
+        {
+          "path": "tests/js/ingestion_views.test.cjs",
+          "sha256": "b8ff4c075541251b24412ed671db78063d91a3ae181cd57f7de1f4bc167af93a"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "out/ingestion/remediation/ingestion_tests.log",
+          "sha256": "8fd21f22ae7158544d333bdbef66143284aeac34c26ff7ffb19d700e0233dc5e"
+        },
+        {
+          "path": "out/ingestion/remediation/ui_contract_tests.json",
+          "sha256": "da51732f9cbef7bad359a8b29af4dfd5f401c210c015e9d563fcaa9abe7c79ee"
+        },
+        {
+          "path": "out/ingestion/remediation/browser_and_link_assertions.json",
+          "sha256": "bfc3e520d78df98a661efd2ed8f216c631d8cdb0ce8b2c4bbbdf25a01d88bd72"
+        }
+      ]
+    }
+  ],
+  "completion_matrix": [
+    {
+      "requirement": 1,
+      "status": "SUPPORTED",
+      "evidence": "Reported conversion provenance and unknown independent intent retained in baseline and registry"
+    },
+    {
+      "requirement": 2,
+      "status": "SUPPORTED_WITH_RECORDED_LIMITS",
+      "evidence": "Historical partial match/discrepancy/drill receipts projected by hash; no whole-board claim"
+    },
+    {
+      "requirement": 3,
+      "status": "SUPPORTED",
+      "evidence": "Existing coordinate/layer conventions and content identities retained"
+    },
+    {
+      "requirement": 4,
+      "status": "SUPPORTED_WITH_RECORDED_LIMITS",
+      "evidence": "Reference/shadow boundaries retained; actual CLI failure preserves publication; no power-loss claim"
+    },
+    {
+      "requirement": 5,
+      "status": "SUPPORTED",
+      "evidence": "OKF baseline/additive remediation record outside unchanged sealed dataset"
+    },
+    {
+      "requirement": 6,
+      "status": "SUPPORTED_IN_REGISTRATION_SCOPE",
+      "evidence": "New full v2 publication verified; actual CLI rejects original false-positive controls and coherently rehashed corruption controls"
+    },
+    {
+      "requirement": 7,
+      "status": "SUPPORTED_IN_REPLAY_SCOPE",
+      "evidence": "Browser source/native/delta inspected; source inputs bound; receipt values and twelve HTTP evidence links checked"
+    },
+    {
+      "requirement": 8,
+      "status": "SUPPORTED_WITH_RECORDED_LIMITS",
+      "evidence": "Five groups selected in browser; no client measurements leak to other datasets"
+    },
+    {
+      "requirement": 9,
+      "status": "SUPPORTED_IN_CONSOLIDATION_SCOPE",
+      "evidence": "20 Python tests (11 ingestion methods including 9 additions), 2 JS contract checks, full CLI fail-before-publish and custody checks"
+    }
+  ],
+  "additional_evidence": [
+    {
+      "path": "out/ingestion/remediation/build.json",
+      "sha256": "303dcd92743e007830b5eb695feb9550cbbbae3bcb64684b22dbe2f49216d9c2"
+    },
+    {
+      "path": "out/ingestion/remediation/preservation.json",
+      "sha256": "3c7620732390b9698e905ed281b2266cb05a42f59f2a5fd53ce6f6f8bdcba267"
+    },
+    {
+      "path": "out/ingestion/remediation/sealed_intake.json",
+      "sha256": "8914b3c986c7d8d1f0245c7a165df74e07c5412c7b02f00c9b76d4505f1687dc"
+    },
+    {
+      "path": "out/ingestion/remediation/assets.json",
+      "sha256": "ec7bdb19e79ed7127c9af02a7a72ee19251af2d7bba5c95118ed9ee601e81e85"
+    },
+    {
+      "path": "out/ingestion/remediation/browser_dataset_checks.json",
+      "sha256": "942189bd00594604078dd69619c61a27e83d80d9d3210fcb9a2826dc64ce2f09"
+    },
+    {
+      "path": "out/ingestion/remediation/browser_and_link_assertions.json",
+      "sha256": "bfc3e520d78df98a661efd2ed8f216c631d8cdb0ce8b2c4bbbdf25a01d88bd72"
+    },
+    {
+      "path": "out/ingestion/remediation/actual_cli_publication_failure.json",
+      "sha256": "542a9a3106eb821bb3a6aee65a1f06e8bc9b8bff9826bffd8aaa141b16c8c9d1"
+    },
+    {
+      "path": "out/ingestion/remediation/final_okf.json",
+      "sha256": "332f3b108d1aa9266e5f329bd7e9909c19da73fc754ddb1dda3e767bac0f73fa"
+    },
+    {
+      "path": "docs/okf/ingestion/baseline.md",
+      "sha256": "71d83796c732689b8e5907a5091d2affa05b9927a0cde736bb574022253c5d89"
+    },
+    {
+      "path": "tests/js/ingestion_views.test.cjs",
+      "sha256": "b8ff4c075541251b24412ed671db78063d91a3ae181cd57f7de1f4bc167af93a"
+    }
+  ],
+  "test_scope": "20 methods = 11 ingestion (two existing plus nine new) + nine existing replay/verifier regressions; two JS contract checks separately. No full project suite or historical engineering re-execution claim.",
+  "visual_interpretation": "Twelve recorded source-only flashes form six joined source-only delta shapes after composition. Pure native pane contains none of those additional source-only paths.",
+  "limits": [
+    "Historical engineering outcomes are REPLAY",
+    "Original V1.5 aggregate and GlowStitch intent remain NOT_ESTABLISHED",
+    "Client native Processing/Storage NOT_IMPLEMENTED",
+    "Single-writer local publication; no power-loss/full crash-recovery claim",
+    "Unsigned local verification is consistency, not authenticity or independent review",
+    "Common object catalogue design and implementation DEFERRED"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "pcb-cursor-readonly-audit-packet-v1",
+  "checkout": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff",
+  "head": "19ff47204d429b93fdac21d3b1a94ed3462b3629",
+  "working_tree_dirty": true,
+  "cursor_cli_version": "2026.10.14-941492e",
+  "authentication": "verified authenticated via cursor-agent status --format json; account fields not retained",
+  "execution_mode": "ask; sandbox enabled; no force/auto MCP approval",
+  "files": {
+    "AGENTS.md": "47afae6168ef667bd90f2e15af6080ef9e5d3c70ea4d3b0ca0f2200341fe84fd",
+    "docs/CURSOR_PROTOCOL.md": "9530d030a7a9bf2578a0893a493acc6554eec7f3635550ac1a03305e4431acc4",
+    "docs/okf/ingestion/handoff.md": "8a9f78965974203ddb86b5eabc4598adff18e9283ac647ae2e0100b3e072a4fe",
+    "docs/okf/ingestion/baseline.md": "71d83796c732689b8e5907a5091d2affa05b9927a0cde736bb574022253c5d89",
+    "src/ingestion_registry.py": "5d9e98ecba2a7686563f839d9fb5b487394e9e9db20b2de18d07bbb510826ed8",
+    "src/ingestion_verification.py": "306760bf3448614883adf691bb655ca99e92fd3c65c2055b933e70bad94826f9",
+    "src/ingestion_visuals.py": "1add49520e0facdb2bc0ae90e03c8ca0a970e9b19107dea50ec6de7195fac8cd",
+    "web/ingestion_views.js": "8a82ade1b5a26abe909f81b76e6c49c5685b5b2669c92dc128a43381d60cb590",
+    "tools/ingestion.py": "8a8bee68442b92bc18664ea5a7b3d2514190d6f82676e4604cb9acc356366b7b",
+    "tests/test_ingestion_registry.py": "dd6d871659d054620a3d2719553cdd17020fb954d34e82e54dcaf6d3cda77a2e",
+    "tests/js/ingestion_views.test.cjs": "b8ff4c075541251b24412ed671db78063d91a3ae181cd57f7de1f4bc167af93a",
+    "contracts/ingestion_registry_v1.json": "f2777e0f7b3cecdbce024e5daf55b44c8a66e81e1d8617a8e052052cfc5558c5",
+    "out/ingestion/remediation/completion_audit_v2.json": "e4dbe82df176dc91d90ae44f59e3077f04c837e39e17158faaaec443e32c7383",
+    "out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36/receipt.json": "fe2c5e83150527fe57e942a11e50e0bfe1eeb41b3783626f126b756e5548232b"
+  },
+  "reviewed_run": "out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36",
+  "triggering_review": "out/review/ingestion_assessment_20261016T184844_296975Z/assessment.json"
+}

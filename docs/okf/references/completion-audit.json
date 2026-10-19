@@ -1,0 +1,96 @@
+{
+  "schema": "pcb-ingestion-completion-audit-v1",
+  "status": "COMPLETE_WITH_RECORDED_LIMITS",
+  "scope": "Nine ingestion handoff requirements; common object catalogue DEFERRED",
+  "review": "LOCAL_CODEX_REVIEW; Cursor NOT_RUN: CHANNEL_UNAVAILABLE",
+  "run": "out/ingestion/workbench/run-7d3e42070aee4089b2e4c5d10a553c82",
+  "checks": [
+    {
+      "requirement": 1,
+      "name": "Reported provenance and authority",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "docs/okf/ingestion/baseline.md",
+      "sha256": "b18efc4ecc438e636d422ec998679302368b71d3ae33ed7979ba06693ed65c6d"
+    },
+    {
+      "requirement": 2,
+      "name": "Scoped qualification and evidence references",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "contracts/ingestion_registry_v1.json",
+      "sha256": "897d26a20c7baae8fa36c169ba2470232b44006452dfcdd5be531716e3fc4195"
+    },
+    {
+      "requirement": 3,
+      "name": "Coordinates and separate content identities",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "docs/okf/ingestion/baseline.md",
+      "sha256": "b18efc4ecc438e636d422ec998679302368b71d3ae33ed7979ba06693ed65c6d"
+    },
+    {
+      "requirement": 4,
+      "name": "Reference paths, shadow-only boundary and failure safety",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "out/ingestion/failed_publication_check.json",
+      "sha256": "ffa91a35db54db14afd74c7aabc4f968c056c8cf6d7a3450e5dd9a1c9d18291c"
+    },
+    {
+      "requirement": 5,
+      "name": "OKF baseline outside sealed dataset",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "out/ingestion/okf.json",
+      "sha256": "35ba1a9a5020a1d2010693c902305017fa1e52233f683358ac70b8a2c0aeacd4"
+    },
+    {
+      "requirement": 6,
+      "name": "Stable registration/selection entry and staged publication",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "out/ingestion/workbench/run-7d3e42070aee4089b2e4c5d10a553c82/receipt.json",
+      "sha256": "e4fce97284ad6e3e22ba24cb853cfaa30290ecea7b02bde4cce36626f226724a"
+    },
+    {
+      "requirement": 7,
+      "name": "Connected visual comparisons, controls and evidence",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "out/ingestion/client_ingestion.png",
+      "sha256": "00accc995d797c1be34f58df246a08524b20d781153cafb4fb232ceb0eae7204"
+    },
+    {
+      "requirement": 8,
+      "name": "All five retained dataset groups registered",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "contracts/ingestion_registry_v1.json",
+      "sha256": "897d26a20c7baae8fa36c169ba2470232b44006452dfcdd5be531716e3fc4195"
+    },
+    {
+      "requirement": 9,
+      "name": "Reproduction, failures, links and custody",
+      "status": "ESTABLISHED_IN_DECLARED_SCOPE",
+      "evidence": "out/ingestion/history_custody.json",
+      "sha256": "b0d35b811a12e19333a5a90d09c524f8f3d5b71baa8d0759946bb9e49a81a6d0"
+    }
+  ],
+  "additional_evidence": {
+    "out/ingestion/input_failure_checks.json": "c65e4634206989db7e229a19e8f14d77898ab04cdd4edf046347912b6333dbaa",
+    "out/ingestion/evidence_link_checks.json": "224759cad32d372d1648e7aada47096a17b1114349e8350c55c80df352f1bd99",
+    "out/ingestion/tests.log": "458f75e3da3a95434cd69a5dd7ecf15bdb32f512932a50e526edcf02f483cefd",
+    "out/ingestion/initial_dataset.json": "16b68cc1b7fd2920c48ce2c41ec334bef3ce6bf2060a2789cee225eb6acfe837",
+    "out/ingestion/custody.json": "ec7bdb19e79ed7127c9af02a7a72ee19251af2d7bba5c95118ed9ee601e81e85",
+    "out/ingestion/final_okf.json": "2952986fb26486d32f18f3c5e7529e048a944c6d6cf1e9c0f7467477b566e0ec",
+    "out/ingestion/final_dataset.json": "32a5832afef3aa0a14bb00be8cb6ab6e5df50fdae8af452734ec61f47187f0b5",
+    "out/ingestion/local_review.md": "082065270fd2d540d37347c24ae90e51fe1b9692189f3e013c16a474a8fbdb54"
+  },
+  "ui_check": {
+    "all_five_dataset_selections": "PASS",
+    "client_case_return": "PASS",
+    "client_shared_coordinate_comparisons": "VISUALLY_INSPECTED",
+    "embedded_scene_checksum": "PASS",
+    "http_evidence_links": 12
+  },
+  "limitations": [
+    "Historical engineering decisions not rerun",
+    "Whole-board revision/electrical equivalence NOT_ESTABLISHED",
+    "Client native Processing/Storage NOT_IMPLEMENTED",
+    "Single-writer local publication; power-loss durability NOT_ESTABLISHED",
+    "No native editing, parser expansion, acquisitions or remote actions"
+  ]
+}

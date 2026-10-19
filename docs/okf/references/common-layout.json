@@ -1,0 +1,180 @@
+{
+  "status": "PASS_SHARED_DATASET_LAYOUT",
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-da1f1ccc173746298803f64824e42ccd",
+  "url": "http://127.0.0.1:8768/run-da1f1ccc173746298803f64824e42ccd/index.html#dataset=synthetic%3Acoupon%3Av1",
+  "tabs": [
+    "Stored on disk",
+    "Input findings"
+  ],
+  "datasets": [
+    {
+      "label": "Synthetic coupon",
+      "persistence": [
+        {
+          "layer": "Preserved inputs",
+          "status": "Verified files"
+        },
+        {
+          "layer": "File registration",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Review materialization",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Board-record materialization",
+          "status": "Recorded \u00b7 2 revisions"
+        },
+        {
+          "layer": "Reopened board queries",
+          "status": "Recorded samples only"
+        }
+      ],
+      "comparison_panes": 0
+    },
+    {
+      "label": "GlowStitch",
+      "persistence": [
+        {
+          "layer": "Preserved inputs",
+          "status": "Verified files"
+        },
+        {
+          "layer": "File registration",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Review materialization",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Board-record materialization",
+          "status": "Not linked"
+        },
+        {
+          "layer": "Reopened board queries",
+          "status": "Not linked"
+        }
+      ],
+      "comparison_panes": 0
+    },
+    {
+      "label": "HALPI2-HDMI-FPC",
+      "persistence": [
+        {
+          "layer": "Preserved inputs",
+          "status": "Verified files"
+        },
+        {
+          "layer": "File registration",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Review materialization",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Board-record materialization",
+          "status": "Recorded \u00b7 1 revision"
+        },
+        {
+          "layer": "Reopened board queries",
+          "status": "Recorded samples only"
+        }
+      ],
+      "comparison_panes": 0
+    },
+    {
+      "label": "Ucamco parser examples",
+      "persistence": [
+        {
+          "layer": "Preserved inputs",
+          "status": "Verified files"
+        },
+        {
+          "layer": "File registration",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Review materialization",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Board-record materialization",
+          "status": "Not linked"
+        },
+        {
+          "layer": "Reopened board queries",
+          "status": "Not linked"
+        }
+      ],
+      "comparison_panes": 0
+    },
+    {
+      "label": "Client VME-WREN",
+      "persistence": [
+        {
+          "layer": "Preserved inputs",
+          "status": "Implemented"
+        },
+        {
+          "layer": "File registration",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Review materialization",
+          "status": "Implemented"
+        },
+        {
+          "layer": "Board-record materialization",
+          "status": "Not implemented"
+        },
+        {
+          "layer": "Reopened board queries",
+          "status": "Not implemented for this client"
+        }
+      ],
+      "comparison_panes": 3
+    }
+  ],
+  "missing_data_policy": "Not available / Not recorded / Not linked; no invented zero values, comparisons, qualification or native bindings",
+  "native_binding": "Exact registered source SHA-256; no name or archive-member inference",
+  "recorded_query_samples": "Distinct from unlinked reopen proof; browser performs no live board queries",
+  "javascript": {
+    "status": "PASS",
+    "checks": [
+      "Pure source/native panes; differences confined to delta",
+      "Receipt-driven changed comparison/drill values; no cross-dataset leakage",
+      "Generation review metadata without a fabricated channel status",
+      "Technical records collapsed and only one comparison drawn",
+      "Input qualification retains unknowns without a duplicated correction visualization",
+      "Direct dataset links open the requested review",
+      "Persistence first: five statuses and three artifact inspectors; no cross-dataset leakage",
+      "Two primary tabs; qualification loads once; forward/back reveals the new context",
+      "Sparse datasets share the layout without inherited client findings or zero measurements",
+      "Native revisions bind by exact source hash, never label alone",
+      "Recorded query samples do not imply linked reopen proof"
+    ]
+  },
+  "publication": {
+    "status": "PASS",
+    "schema": "pcb-ingestion-publication-v2",
+    "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+    "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-da1f1ccc173746298803f64824e42ccd",
+    "outputs_verified": 354,
+    "datasets_verified": 5,
+    "comparisons_verified": 3
+  },
+  "browser_report": "out/ingestion/common_layout/browser.json",
+  "source_snapshot": "out/ingestion/common_layout/source_snapshot.json",
+  "artifact_links_checked": 11,
+  "scene_and_registry_byte_identical_to_previous": true,
+  "previous_run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-b1487f81a54d45399ba3a26cdc1dd6ac",
+  "cases": "Retained; corrections not duplicated in ingestion",
+  "screenshot": "out/ingestion/common_layout/sparse_findings.jpg",
+  "python_suite": "NOT_RERUN: no Python changes in this presentation revision",
+  "engineering_results": "HISTORICAL_REPLAY_NOT_RERUN",
+  "common_object_catalogue": "DEFERRED; this change standardizes presentation only",
+  "independent_review": "NOT_RUN_FOR_THIS_CHANGE"
+}

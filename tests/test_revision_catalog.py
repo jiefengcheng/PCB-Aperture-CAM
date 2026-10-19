@@ -75,6 +75,18 @@ class RevisionCatalogTests(unittest.TestCase):
         with self.store.db:self.store.db.execute('UPDATE objects SET record_json=? WHERE revision=? AND object_id=?',('{}',revision,objects[1]['id']))
         with self.assertRaisesRegex(CatalogError,'CATALOG_MANIFEST_MISMATCH'):self.store.query(revision)
 
+    def test_payload_size_boundary_on_write_and_read(self):
+        from unittest.mock import patch
+        self.assertEqual(RevisionCatalog.MAX_PAYLOAD_BYTES,128*1024*1024)
+        with patch.object(self.store,'MAX_PAYLOAD_BYTES',8):
+            key=self.store.put_payload(b'12345678')
+            self.assertEqual(self.store.read_payload(key),b'12345678')
+            with self.assertRaisesRegex(CatalogError,'PAYLOAD_BUDGET_EXCEEDED'):
+                self.store.put_payload(b'123456789')
+            oversized=self.store.payloads/('0'*64);oversized.write_bytes(b'123456789')
+            with self.assertRaisesRegex(CatalogError,'PAYLOAD_BUDGET_EXCEEDED'):
+                self.store.read_payload('0'*64)
+
     def test_storage_read_failure_is_typed_error(self):
         revision,_=self.put()
         self.store.db.execute('DROP TABLE relations')
