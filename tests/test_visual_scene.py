@@ -44,6 +44,13 @@ class VisualScene(unittest.TestCase):
         value={'label':'</script><script>alert(1)</script>&'};raw=embed_scene(value)
         self.assertNotIn('</script>',raw);self.assertEqual(json.loads(raw),value)
         p=svg_path(box(0,0,1,1));self.assertRegex(p,r'^M[-\d. LZ]+$');self.assertNotIn('<',p)
+    def test_unsimplified_svg_retains_stored_vertices_at_declared_precision(self):
+        from shapely.geometry import Polygon
+        source=Polygon([(0.1234567891,0.2),(1.0000000001,0.2),(1.0,1.0),(0.1234567891,0.2)])
+        path=svg_path(source,tolerance=None,coordinate_precision=9)
+        self.assertIn('0.123456789 0.200000000',path)
+        self.assertIn('1.000000000 0.200000000',path)
+        self.assertEqual(path.count('L'),3,'no simplification removes stored polygon vertices')
     def test_scene_checksum_and_replay_events(self):
         page=(self.bundle/'index.html').read_text();raw=(self.bundle/'scene.json').read_bytes()
         checksum=re.search('name="scene-sha256" content="([a-f0-9]+)"',page)[1]

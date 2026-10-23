@@ -1,0 +1,127 @@
+{
+  "schema": "pcb-handoff-current-revalidation/1",
+  "status": "PASS_WITH_RECORDED_PACKAGE_INTEGRITY_BLOCKER",
+  "reviewed_at": "2026-10-23T02:39:56.884928+00:00",
+  "git_head": "21fb0bd123c25fbfb1ec3a352237a8b090b35872",
+  "working_tree_has_uncommitted_changes": true,
+  "project_python": ".venv/bin/python",
+  "runbook_source_bindings": {
+    "exit_code": 0,
+    "result": {
+      "schema": "pcb-cam-runbook-verification-v1",
+      "status": "PASS",
+      "scope": "OKF emitted-profile structure, links, source/evidence hashes and recipe syntax; no experiment or engineering validation rerun",
+      "stale_sources": [],
+      "concepts": 18,
+      "source_bindings": 89,
+      "historical_evidence_bindings": 8,
+      "shell_blocks_syntax_checked": 33,
+      "python_blocks_syntax_checked": 5,
+      "verified_at": "2026-10-23T02:39:56.881470+00:00"
+    }
+  },
+  "bootstrap_preflight": {
+    "exit_code": 0,
+    "result": {
+      "status": "PASS_BOOTSTRAP_ONLY",
+      "assets_hashed": 70,
+      "source_positions": {
+        "before": {
+          "pad_x_mm": 20.35,
+          "pad_y_mm": 20.0,
+          "aperture_x_mm": 20.0
+        },
+        "candidate": {
+          "pad_x_mm": 20.05,
+          "pad_y_mm": 20.0,
+          "aperture_x_mm": 20.0
+        }
+      },
+      "observed_before_syntax": {
+        "board_version": "10.99.0-unknown",
+        "mask_regions": 4,
+        "note": "known-coupon syntax only, not composed Gerber image"
+      },
+      "native_candidate_export": "NOT_RUN",
+      "v1_independent_gerber_validation": "NOT_RUN",
+      "connectivity_clearance_and_scope": "NOT_ESTABLISHED",
+      "cursor_review": "NOT_RUN",
+      "manufacturing_signoff": "NOT_ESTABLISHED"
+    }
+  },
+  "workbench_publication": {
+    "exit_code": 0,
+    "result": {
+      "status": "PASS",
+      "schema": "pcb-ingestion-publication-v2",
+      "scope": "Required files, exact inventory, embedded scene, registry, receipt-derived measurements and evidence/render-input bindings; no engineering acceptance or authorship claim",
+      "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/ingestion/workbench/run-5e73ae60f2334cd0ab45226cdc9a923f",
+      "outputs_verified": 2416,
+      "datasets_verified": 6,
+      "comparisons_verified": 3
+    },
+    "receipt_path": "out/ingestion/workbench/run-5e73ae60f2334cd0ab45226cdc9a923f/receipt.json",
+    "receipt_sha256": "06adcacd8979bb79994a06f4c9547b68fbafa5e9f8c9f41f9aa831b885aa9625",
+    "run": "out/ingestion/workbench/run-5e73ae60f2334cd0ab45226cdc9a923f"
+  },
+  "vme_wren_strict_package_verification": {
+    "exit_code": 1,
+    "result": {
+      "schema": "pcb-cam-dataset-verification-v1",
+      "status": "FAIL",
+      "reason": "unlisted or missing bundle files: ['.DS_Store', 'raw/.DS_Store']",
+      "root": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/dataset/vme-wren_20261016_v1",
+      "verifier_version": "1.0.0",
+      "verified_at": "2026-10-23T02:38:23.008132+00:00"
+    },
+    "expected_external_seal_sha256": "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e",
+    "unlisted_files": [
+      {
+        "path": ".DS_Store",
+        "bytes": 6148,
+        "sha256": "20d15ef542db80cae3c2c1d0d182aea79b25d9d37d3a5fa3f1aa7f1a19dedecd"
+      },
+      {
+        "path": "raw/.DS_Store",
+        "bytes": 6148,
+        "sha256": "bd8f2b1ab0020a2f8592094eb09687b38973bc36620b373d97d71764955b5050"
+      }
+    ],
+    "interpretation": "The strict verifier stops at exact inventory mismatch. Do not treat the seal check alone as a full package PASS; no package files were changed."
+  },
+  "current_source_binding_register": {
+    "path": "docs/okf/references/sources.json",
+    "sha256": "6e5f792fd16e86a2f039d059cac559117a75746906a326c625dd81e1e8e84bf7",
+    "refresh_evidence": "out/ingestion/source_binding_refresh_20261023.json",
+    "refresh_evidence_sha256": "c02336037a74286d1b1fa0262d9f8faaa954403ced0e966218d2d4997f6c3dbd"
+  },
+  "g22_manual_review": {
+    "status": "PENDING_USER",
+    "record": "out/ingestion/audits/20261024_org_and_screenshot_mapping_v1/g22_human_review/G22_REVIEW_RECORD.md",
+    "meaning": "No human decision was filled in by Codex."
+  },
+  "scope_limits": [
+    "Historical technical acceptance is not rerun by this record.",
+    "Worktree source hashes include local uncommitted changes.",
+    "The package integrity issue remains unresolved; no deletion or resealing was performed.",
+    "G22 local crop evidence remains geometric and does not establish semantic identity, electrical correctness, enhancement intent, or manufacturing acceptance."
+  ],
+  "declared_payload_hardlink_view": {
+    "status": "PASS_FOR_DECLARED_PAYLOAD_ONLY",
+    "report": "out/ingestion/handoff_revalidation_20261023/signed_inventory_diagnostic.json",
+    "report_sha256": "46ac8634d870aed345de40adf52bcba0374f150e629f7b9f315f2f4178a96e6f",
+    "view_kind": "read-only verification view built with hard links to exactly the signed SHA256SUMS entries; original package was not changed",
+    "files_verified": 70,
+    "source_package_directory_remains_strict_inventory_fail": true
+  },
+  "summary_only_followup_audit": {
+    "reviewer": "ChatGPT in the existing PCB AI CAM conversation",
+    "reviewed_at": "2026-10-23",
+    "verdict": "CONDITIONAL_PASS_ORIGINAL_REMAINS_BLOCKED",
+    "record": "out/ingestion/handoff_revalidation_20261023/chatgpt_hardlink_followup_audit.md",
+    "scope": "Accepted reported exact-inventory hard-link diagnostic for the 70 declared payload entries; did not inspect files or execute commands.",
+    "original_package_status": "FAIL_BLOCKED_UNLISTED_DS_STORE_FILES",
+    "g22_manual_review": "PENDING_USER",
+    "engineering_acceptance": "NOT_ESTABLISHED"
+  }
+}

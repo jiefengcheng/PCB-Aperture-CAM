@@ -1,5 +1,18 @@
 # PCB-Aperture-CAM-V1 — isolated Codex handoff
 
+## First intake gate: profile a received directory
+
+For a new dataset with no existing qualified package recipe, start with the [general directory profiler](docs/okf/ingestion/general-profiling.md). It preserves regular files, records source-relative paths and SHA-256 identities, and writes a sealed draft profile. Use `out/` for temporary review or `dataset/` for a durable local intake package:
+
+```bash
+.venv/bin/python tools/profile_dataset.py \
+  --source /path/to/received/directory \
+  --dataset-id client:project:revision:v1 \
+  --output dataset/project-revision-v1
+```
+
+This gate establishes file custody and identity only. It does not parse or qualify dataset contents or extract board objects. It seals a registration recipe so **+** can add the profile to the workbench; qualification remains a separate step and stays `NOT_RUN` until actually performed. Follow the [profiling-to-workbench steps](docs/okf/ingestion/general-profiling.md#continue-into-the-workbench) to verify the package, run the local server, and add the generated directory.
+
 **Current delivery: a bounded client-Gerber operation, nine-step workbench walkthrough, and narrated replay.**
 
 Start with [Client demonstration](docs/CLIENT_DATA_DEMO.md) and [consolidated decision](docs/CLIENT_OPERATION_DECISION.md). The source artwork is already aligned; a labeled controlled offset exercises automatic candidate generation, local validation and rejection/rollback. Strict asset inventory now passes for all 70 frozen assets, and the full suite passes 114 tests; [delivery issues](docs/CLIENT_ISSUES.md) records maintenance fixes. Client data, evidence and video remain local under ignored directories. Cursor review is NOT_RUN; manufacturing approval is NOT_ESTABLISHED.

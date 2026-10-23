@@ -4,7 +4,7 @@ function directoryIntakeControl(dataset) {
  const button=document.createElement('button');
  button.type='button';button.textContent='+';
  button.setAttribute('aria-label','Add dataset directory');
- button.title='Restore a qualified package from checkout/dataset';
+ button.title='Add a sealed intake profile or restore a qualified package from checkout/dataset';
  const input=document.createElement('input');
  input.type='file';input.multiple=true;input.setAttribute('webkitdirectory','');input.hidden=true;
  input.setAttribute('aria-label','Choose dataset directory');
@@ -44,9 +44,9 @@ function directoryIntakeControl(dataset) {
     inventory.push({path:file.webkitRelativePath.split('/').slice(1).join('/'),bytes:file.size,
      sha256:Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('')});
    }
-   status.textContent=' Restoring registration and saved review… Keep this page open.';
+   status.textContent=' Verifying the sealed package and adding its recorded intake status… No content qualification is run here.';
    await publishRequest('/api/ingestion/directories',{package_name:[...roots][0],files:inventory});
-  }catch(error){status.textContent=' Not restored: '+error.message+' Previous publication retained.';}
+  }catch(error){status.textContent=' Not added/restored: '+error.message+' Previous publication retained.';}
   finally{button.disabled=false;remove.disabled=!dataset;input.value='';}
  };
  group.append(button,input,status,remove);

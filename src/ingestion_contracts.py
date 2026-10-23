@@ -84,8 +84,54 @@ def intake_projection(config, read_bytes):
         path = str(seal_path.parent / row['path'])
         require((path, row['sha256']) in registered and checksums.get(row['path']) == row['sha256'],
                 'Intake raw file is not registered/sealed: ' + path)
-    return {'dataset_id': dataset['id'], 'package_root': package,
-            'artifacts': artifacts, 'input_sets': manifest['input_sets'], 'raw_files': files}
+    if manifest.get('schema') == 'pcb-cam-general-intake-manifest-v1':
+        profile_path = str(seal_path.parent / 'metadata/profile.json')
+        profile_bytes = read_bytes(profile_path)
+        profile_digest = checksums.get('metadata/profile.json')
+        require(profile_digest and hashlib.sha256(profile_bytes).hexdigest() == profile_digest,
+                'Generic intake profile does not match seal')
+        profile = json.loads(profile_bytes)
+        source_rows = [{key: value for key, value in row.items() if key != 'package_path'}
+                       for row in manifest.get('source_files', [])]
+        require(profile.get('schema') == 'pcb-cam-general-intake-profile-v1'
+                and profile.get('dataset_id') == manifest.get('dataset_id') == dataset['id']
+                and profile.get('files') == source_rows
+                and profile.get('registration_recipe', {}).get('path') == 'metadata/registration_recipe.json'
+                and profile.get('registration_recipe', {}).get('status') == 'GENERATED_AND_INCLUDED_IN_PACKAGE_SEAL'
+                and profile.get('intake', {}).get('qualification') == 'NOT_RUN'
+                and profile.get('intake', {}).get('workbench_registration') == 'NOT_RUN'
+                and profile.get('intake', {}).get('engineering_or_manufacturing_acceptance') == 'NOT_ESTABLISHED',
+                'Generic intake profile status or identity mismatch')
+        artifacts['profile'] = {'path': profile_path, 'sha256': profile_digest,
+                                 'snapshot': 'intake/metadata/profile.json'}
+        recipe_path = str(seal_path.parent / 'metadata/registration_recipe.json')
+        recipe_bytes = read_bytes(recipe_path)
+        recipe_digest = checksums.get('metadata/registration_recipe.json')
+        require(recipe_digest and hashlib.sha256(recipe_bytes).hexdigest() == recipe_digest,
+                'Generic intake registration recipe does not match seal')
+        recipe = json.loads(recipe_bytes)
+        require(recipe.get('schema') == 'pcb-cam-general-intake-registration-recipe-v1'
+                and recipe.get('package_root') == package
+                and recipe.get('seal_path') == str(seal_path)
+                and recipe.get('dataset') == dataset,
+                'Published dataset differs from its sealed registration recipe')
+        artifacts['recipe'] = {'path': recipe_path, 'sha256': recipe_digest,
+                               'snapshot': 'intake/metadata/registration_recipe.json'}
+        input_sets = {'preserved_directory': {
+            'file_count': len(manifest.get('source_files', [])),
+            'bytes': sum(row['bytes'] for row in manifest.get('source_files', [])),
+            'tree_sha256': manifest.get('raw_tree_sha256'),
+            'source_tree_identity_algorithm': manifest.get('raw_tree_identity_algorithm'),
+        }}
+        profile_kind = manifest['schema']
+    else:
+        input_sets = manifest['input_sets']
+        profile_kind = None
+    projection = {'dataset_id': dataset['id'], 'package_root': package,
+                  'artifacts': artifacts, 'input_sets': input_sets, 'raw_files': files}
+    if profile_kind:
+        projection['profile_kind'] = profile_kind
+    return projection
 
 
 def verify_generation_review(receipt, ingestion):

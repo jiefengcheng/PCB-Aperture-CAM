@@ -1,0 +1,339 @@
+{
+  "schema": "pcb-profile-record-materialization/1",
+  "status": "PASS",
+  "dataset_id": "client:szu-comm:3020301113b:intake-20261021:v1",
+  "package_seal_sha256": "c8ff34bbc0c3aba5be03453becf8a00a5b86c9f0c91563c37b7d3c49ed0a0df8",
+  "source_revisions": [
+    {
+      "path": "EDIT/1-2.gbr",
+      "revision": "ec9ffa32445faa55ff225f52369b63844f72cc0dfb6073bea20304a927b95e13",
+      "records_returned": 548,
+      "result_sha256": "f75d2d9b9e34421271287d45c66fd0bcb0ed7555e68573e58b83aa4cc88d23a2",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/1-3.gbr",
+      "revision": "19d5d283adbac5b0569f43a70c9f9a4d09128c6b61ab9cd272f8da85794f111e",
+      "records_returned": 223,
+      "result_sha256": "aa4e78d68a0e580069374d4a953bec0bb4525516420142a58aa0d229e79649b2",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/12cc.gbr",
+      "revision": "4f57e965dd0aee8f90e02f6e54388716cde1b03bdf877b512edbea1adfab2faa",
+      "records_returned": 0,
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/1tcir-p01.gbr",
+      "revision": "98f9086ab8af79837af3afdab54a2eac5babf2dc7feaea044f30d5ffb422c818",
+      "records_returned": 35776,
+      "result_sha256": "6bb29d5d598a7238cc756add09d059136c2f27f9e9e45bd4ce442a7167bfaab8",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/2-3.gbr",
+      "revision": "70e94a15dcc28c7b39ddfed09307f579b12ea8cacc1222a45942b5be57b8c949",
+      "records_returned": 189,
+      "result_sha256": "cf6f22fa50e80f21f44f46f80c0f96e7135878510b9ffc177a63a102e64c916b",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/2bcir.gbr",
+      "revision": "4f7356980aa8fde4dab8e869cc0449271b3abd22319a58b7b9f64073687474ac",
+      "records_returned": 40773,
+      "result_sha256": "9fba050a34562982b0ebb6004de70a5593b2d4ca51763a11c147384565e9897c",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/4bcir-p02.gbr",
+      "revision": "262df9e76f774d6909e76a7c0e9a71b6156422f2cda429948cbc2dc99f6a097c",
+      "records_returned": 77121,
+      "result_sha256": "2d2d15dcc5c85b055a6dcdb4fb27789116e419c14f162b1d023c20c78c8ac343",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/bcl.gbr",
+      "revision": "79b3f8ff091bec7c05d3a15fc246c0403b7fd740dd79f3fbb41bc8768a23377a",
+      "records_returned": 1503,
+      "result_sha256": "6bc1140dc2e887dad5d620ad2969d0af4fed146b26cc4f4a4092d6b7432999f2",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/bpsa.gbr",
+      "revision": "adaa0efe6a46185dc225fec1159d3194ebc5010271cd978be93f78a745271b0f",
+      "records_returned": 1783,
+      "result_sha256": "ef9256fd7bc3e8b045567437f20888d52814580169e68df3a9f31278134ff8a5",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/bsed.gbr",
+      "revision": "b88db02142b18838bb28f9ec1a49a49a6766002b57cf4dc76ef3ac684f7ae5a0",
+      "records_returned": 412,
+      "result_sha256": "a4b9242d6fae43d5f213643103f478c126660190698d68c0ec4b12f5e219cb6c",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/bslv.gbr",
+      "revision": "0aa0c6cfd1c3a9ce1b73b4809b4d1e271e2bcb0a23b03e06969bdbe6015bab27",
+      "records_returned": 310,
+      "result_sha256": "b253ed257d0a8d0736f452ef24427ec28f9e67b6024ea5715b0dee9e6b3e4160",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/bsteel.gbr",
+      "revision": "22641766b8d75f0bfa4be5b23355b241e4e6f8c00848ea29dfae1732d1c71a6f",
+      "records_returned": 70,
+      "result_sha256": "df0ef12aa7620bfa8df0667dc18d147c8ddc17d9f912377a49912adba0ceacf2",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/bwk.gbr",
+      "revision": "137154d717372a555c6ff8645c678ccff8b9096f1f6bfbce849cd62002051da9",
+      "records_returned": 23,
+      "result_sha256": "68b2c068123cf6af21318ac52410d0207ba78d4930c3c287ec15d922a76b2f2b",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/no-tsmt.gbr",
+      "revision": "327ad080a96f2188a00a2a5ebedd4730e9882ba95dca86c5bab1a10059ae51a3",
+      "records_returned": 2,
+      "result_sha256": "d6279ef95954002caa2e04b674e4d80e0984d693d6a090fe28d4eb8d18fec124",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/ol.gbr",
+      "revision": "563f2f30b51ea9b2396baf85fd4ca39d770f8e35479438076ab196fc002d5741",
+      "records_returned": 49,
+      "result_sha256": "c676ab4f3785c98eded6c18ad21b13549c5749a7a1844da105054396bb8d47a7",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/tcl.gbr",
+      "revision": "85c324128652131244871db7324739ecd38d15cfd2628983b94ea50c2530508a",
+      "records_returned": 1533,
+      "result_sha256": "72d0a46c5fce517cff7b033781f2a524c3ff5f892ea47ddd032ba142f182e972",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/tlen-xx.gbr",
+      "revision": "e84508dd895f3bc50feb9952ffafd133dd20670e94d8fdc2183dcd8d53d130a4",
+      "records_returned": 1143,
+      "result_sha256": "df66a9566a9136fe736968a6d290c8b26999d194e99fa8bcd1bb130a001de189",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/tlen.gbr",
+      "revision": "2f126aa348269523ed21b3a1207cb0bb088ae07c2d3d8cd140597a97c6eb23ee",
+      "records_returned": 1139,
+      "result_sha256": "1e69c380ec89dafef650c937730dce2cba8911d7083a9f5c55c54bc142475b9d",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/top_layer.kicad_pcb",
+      "revision": "0611f503ce6ddef1c073370424c6182df7e3533a650e5dc3c4769a5806f1e07e",
+      "records_returned": 36156,
+      "result_sha256": "2b19431bcaf6657d613bf605d6fd64cfc0b119520064ec7096a1d459e9008467",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/tslv.gbr",
+      "revision": "b6b3d5289be2cbc33d97d28de0d9d234552930e635ee8377b710416b580487fc",
+      "records_returned": 650,
+      "result_sha256": "58416301a6f268d3e4004adc80543bd3b141010b45bb44499bcf20669f24e720",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/tsm-1.gbr",
+      "revision": "45e13d501c0e5f5c42340111908fb30e96cdc980f06fb7295265a130e0e5f8e0",
+      "records_returned": 495,
+      "result_sha256": "5321227f90125ea7efa5577ca77e5ff8d324e01789f4f4b956e5892db1a29d6d",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/tsm.gbr",
+      "revision": "fb6224f39386b69fb3e1deea913b4384f7e554146723b558182bd690199e4284",
+      "records_returned": 4697,
+      "result_sha256": "d6f152a1888938d390e98e9ee6928756b251f2787038125158c905f2857b695c",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "EDIT/tsmt.gbr",
+      "revision": "178951a85b41c074b1b0f15d544bc04410ad4e8d3bee41923fdbf745e2279728",
+      "records_returned": 380,
+      "result_sha256": "305641bd3f95bbdc9ca2d97c30c500ea3ac61ba14ce466428fc825f086367bdf",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/1-2plated.ncd.gbr",
+      "revision": "d106fd6c9222fe7cd651539df5dd50bfc7c47de3c549184075bc010d721dae0e",
+      "records_returned": 548,
+      "result_sha256": "c7679a5ec067f433cf9eabfdb5868688ec24259dc2b6a81a40ca5ec86ad139eb",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/2-3plated.ncd.gbr",
+      "revision": "8c6cc4b61860d766ec446151b6b3816373f06367eed9fd7b9b62e65a533de7e9",
+      "records_returned": 189,
+      "result_sha256": "35f7cbf43664ff00134252c50de9c387a471c869e13400d31de83e329b198368",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/bottom_layer.gdo.gbr",
+      "revision": "2ffd994c71c93fc7c376a6468044249e22e8a34743a8ee1a587271304f18f2d1",
+      "records_returned": 39546,
+      "result_sha256": "933963fb751f1a17fb70c7e84017758139a2bac8f45ca84ab1650c7f5da996d0",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/bottom_soldermask.gdo.gbr",
+      "revision": "bd3131abc64f1892a7d0232e1e32b9da50ce5f4e5dd42824ad1c14b929467242",
+      "records_returned": 71,
+      "result_sha256": "bce562fec0afa798673e45198d5279f20aa2e54b7568ac613d4411d315293b37",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/cvl_bottom.gdo.gbr",
+      "revision": "34f49b5a1924f651aebc690c1771d054abba12bcbd5f949f7f03dfa385e86a98",
+      "records_returned": 709,
+      "result_sha256": "7906e1c1f6d65e580b7666db4f6b72b8bed129e74e60a44af368bd1d0cf286b2",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/cvl_top.gdo.gbr",
+      "revision": "f2ef42ce3afa571ee2940466068d04bda2e87a0c015f5b0204af043d90730d6c",
+      "records_returned": 681,
+      "result_sha256": "c558f792eecfeb04699dac6c1f996eb69943f022dfcb0f7b684f54080d2db365",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/drill.gdo.gbr",
+      "revision": "e226af05c6b2460a34df14f56540be17c54832f475cc3feaa17fde83adca47a7",
+      "records_returned": 1890,
+      "result_sha256": "55ba5654ca2e84b5c2f5313b8e60b8984c008dd0648fae1c4cb3a5857d285555",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/layer2.gdo.gbr",
+      "revision": "d0bf4b86316f5a77d54f961c4ffb9d8409d6371c73f3af2af47a49c7b6852fa0",
+      "records_returned": 18300,
+      "result_sha256": "193fb9fb7d69d26d87360766f252b3750baa19a9b5266746f31c053a7ae16358",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/nc1-2.gdo.gbr",
+      "revision": "7f294c0f5452ff19d7193402a8927d69fadb890568141343afe0d2c4b2bdfbdf",
+      "records_returned": 3218,
+      "result_sha256": "a244b37c2fd285ae391127b9b9951cbffb3c6329e0824936a8f27997e54cc94b",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/nc2-3.gdo.gbr",
+      "revision": "68a05f5e7d0a8f3e24289e758ef7e62c523937c2e1e392b8e82ea95e56552ddd",
+      "records_returned": 1799,
+      "result_sha256": "cc7725db3a3c0272138bea04557dc242d5a10015c9b7ed5d65f90ee2e3d75a59",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/outboard.gdo.gbr",
+      "revision": "33cdd926ff849940504e4b6c044a37b0362ca85e8837b5649e70532def4dc683",
+      "records_returned": 4796,
+      "result_sha256": "846ba4be506614f38b574b20c740d52029652ffcc940f581913deb0312fda286",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/sus_bottom.gdo.gbr",
+      "revision": "18ba3c71618669917e0215d36955154b513c76ac214b058f7ee4a5e33c676b93",
+      "records_returned": 17,
+      "result_sha256": "c38af12a5c4168c472b8c9992ceb2f715b5592dceaf67c636305259cd6094971",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/thruholeplated.ncd.gbr",
+      "revision": "e9e2b9a0f37f64562e28ec935e4eba18d723fdc3bec3a9b48aa8e90e142726d6",
+      "records_returned": 223,
+      "result_sha256": "45713c6c762cfe37b6e0dbb8006c43861c2fd6f5638b3732f7470be087fb6755",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/top.kicad_pcb",
+      "revision": "b77eb7e1e681b18941f23b318356c411c441f2646e4a970fdfd708d91be260b4",
+      "records_returned": 18614,
+      "result_sha256": "42f5ff8322937b81e1d0d1db80805ebb357ac9bfa9edb070b79cd6016877ec58",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/top_layer.gdo.gbr",
+      "revision": "a86cb3f48fa72b5883478b93402f4b13d2b0d301c49fc8925119f17062c8ca42",
+      "records_returned": 17849,
+      "result_sha256": "7f74b102d04df614fa6e7d27e51de63981766bb068c67950a4db9b7b817b6d98",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/top_silkscreen.gdo.gbr",
+      "revision": "5ade30ccc02b584c86891707c99909eaa895168e0374db07c387e359927fccb4",
+      "records_returned": 44799,
+      "result_sha256": "69606f092d2fd554a139e84e82e050170e8ce92eb14a7dbf4c50ee9a05567587",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/top_soldermask.gdo.gbr",
+      "revision": "9f6e2e53065a876d955a91e9d29c88a1396223e24279326006346b098f88eee7",
+      "records_returned": 434,
+      "result_sha256": "13da31ed5936ee054a1ae9a6f3f65f65c0c7860b7d9cb5f352d1fb75462bb38f",
+      "reader_pid": 16663,
+      "complete": true
+    },
+    {
+      "path": "ORG/top_solderpaste.gdo.gbr",
+      "revision": "fca9141c0be54a665e420605547c6d75fe9a01ecb16604602a2a4a21c79dbf61",
+      "records_returned": 331,
+      "result_sha256": "a0826c6979874045d4b203469a8c3729f96bfa51f848c60189eaea86e91f9a48",
+      "reader_pid": 16663,
+      "complete": true
+    }
+  ],
+  "total_records_returned": 358989,
+  "reader_pid": 16663,
+  "backend": "SQLite revision catalogue; fresh read-only process"
+}

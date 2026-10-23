@@ -50,3 +50,20 @@ class NativeInventoryTests(unittest.TestCase):
         raw=b'(kicad_pcb (layers (0 "F.Cu" signal) (2 "B.Cu" signal) (4 "In1.Cu" signal)) (via (at 0 0) (size 2) (drill 1) (layers "F.Cu" "B.Cu")))'
         result=inventory(raw)
         self.assertEqual(result['objects'][0]['layers'],['B.Cu','F.Cu','In1.Cu'])
+
+    def test_filled_yes_circle_and_rectangle_have_geometry_at_zero_stroke(self):
+        from shapely.geometry import Point
+        data=self.parse('(gr_circle (center 0 0) (end 1 0) (stroke (width 0) (type default)) (fill yes) (layer "F.Cu")) '
+                        '(gr_poly (pts (xy 2 0) (xy 4 0) (xy 4 1) (xy 2 1)) (stroke (width 0) (type default)) (fill yes) (layer "F.Cu"))')
+        circle,rectangle=data['objects']
+        self.assertEqual([r['coverage'] for r in data['objects']],['GEOMETRY_AVAILABLE','GEOMETRY_AVAILABLE'])
+        self.assertAlmostEqual(circle['filled_area_mm2'],math.pi,delta=0.0002)
+        self.assertAlmostEqual(rectangle['filled_area_mm2'],2)
+        self.assertEqual(data['unsupported_reasons'],{})
+        self.assertTrue(from_wkb(data['payloads'][circle['geometry_sha256']]).covers(Point(0,0)))
+
+    def test_zero_width_unfilled_and_degenerate_filled_circles_remain_unsupported(self):
+        data=self.parse('(gr_circle (center 0 0) (end 1 0) (stroke (width 0)) (fill none) (layer "F.Cu")) '
+                        '(gr_circle (center 2 0) (end 2 0) (stroke (width 0)) (fill yes) (layer "F.Cu"))')
+        self.assertTrue(all(row['coverage']=='UNSUPPORTED' for row in data['objects']))
+        self.assertEqual(data['unsupported_reasons'],{'NON_POSITIVE_STROKE':1,'NON_POSITIVE_RADIUS':1})

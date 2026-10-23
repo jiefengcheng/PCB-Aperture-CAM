@@ -20,7 +20,7 @@ bundle = Path(Path('out/client_demo/current.txt').read_text().strip())
 subprocess.run([sys.executable, 'tools/verify_visual_bundle.py', str(bundle)], check=True)
 print('Open: http://127.0.0.1:8766/' + bundle.name + '/index.html')
 PYCODE
-python3 -m http.server 8766 --bind 127.0.0.1 --directory out/visual
+.venv/bin/python -m http.server 8766 --bind 127.0.0.1 --directory out/visual
 ```
 
 The server runs in the foreground; Ctrl-C stops that instance. If the port is occupied, reuse an already verified loopback server or choose another loopback port and adjust the URL. Keep the complete bundle directory so finding pages and evidence links resolve. The tested browser route is localhost; don't bypass a browser policy that rejects local-file URLs.

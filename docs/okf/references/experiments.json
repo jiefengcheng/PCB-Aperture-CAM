@@ -13,24 +13,29 @@
       "bytes": 469
     },
     {
-      "project_path": "out/visual/client_20261015T074543_446151Z/build_receipt.json",
-      "sha256": "82ed852b4c1f0191ac008d6ab25e14a8ef4a18e2ef85588d94cee311efa2424b",
-      "bytes": 22217
-    },
-    {
       "project_path": "out/consolidation/demo_20261014T203427_875185Z/result.json",
       "sha256": "e9013ef9222ba2f4c23c3f28fe8ada7fb160928f6ad929966adba24aed78ca87",
       "bytes": 21437
     },
     {
-      "project_path": "out/visual/run_20261014T203700_885147Z/consolidation_seal.json",
-      "sha256": "b3d6945b711e25c4572e5c0b9bcf68b16ea3fe1f492fa58a21db9a45c8b823a0",
-      "bytes": 2466
+      "project_path": "out/dataset_registration/verification.json",
+      "sha256": "4e2fed4168c35f7bc76918807247c10b6e64476bde4fbaf9cc5f4ff0dd09f6c3",
+      "bytes": 891
     },
     {
-      "project_path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/operation_region_comparison.json",
-      "sha256": "25af97739c733644904c2624201349a8e1b4f8c5f92266f1f911d362bdd851fe",
-      "bytes": 2926
+      "project_path": "out/ingestion/audits/20261023_org_svg_geometry_fidelity_g3/browser_evidence.json",
+      "sha256": "e3106a2b8cd0db34b57b682ca8c1777bdc92544b46df52ced4b346e241baea6f",
+      "bytes": 1012
+    },
+    {
+      "project_path": "out/ingestion/audits/20261023_org_svg_geometry_fidelity_g3/publication_reviewed/run-11082f016d4143b7bf04ee8edb820778/receipt.json",
+      "sha256": "53895fd1042467e2adada76c670532d1b4ab19bd76ae18e6d78114c06da07b97",
+      "bytes": 326646
+    },
+    {
+      "project_path": "out/ingestion/audits/20261023_org_svg_geometry_fidelity_g3/roundtrip_bound/summary.json",
+      "sha256": "122d51bed4b651e8bd0031b3f6efd634d8d6716c0da329d2fbefac85a263fd40",
+      "bytes": 4337
     },
     {
       "project_path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/l2gnd_discrepancy.json",
@@ -38,9 +43,24 @@
       "bytes": 3685
     },
     {
-      "project_path": "out/dataset_registration/verification.json",
-      "sha256": "4e2fed4168c35f7bc76918807247c10b6e64476bde4fbaf9cc5f4ff0dd09f6c3",
-      "bytes": 891
+      "project_path": "out/native_gerber_crosscheck/vme-wren_kicad-10.99.0/operation_region_comparison.json",
+      "sha256": "25af97739c733644904c2624201349a8e1b4f8c5f92266f1f911d362bdd851fe",
+      "bytes": 2926
+    },
+    {
+      "project_path": "out/visual/client_20261015T074543_446151Z/build_receipt.json",
+      "sha256": "82ed852b4c1f0191ac008d6ab25e14a8ef4a18e2ef85588d94cee311efa2424b",
+      "bytes": 22217
+    },
+    {
+      "project_path": "out/visual/run_20261014T203700_885147Z/consolidation_seal.json",
+      "sha256": "b3d6945b711e25c4572e5c0b9bcf68b16ea3fe1f492fa58a21db9a45c8b823a0",
+      "bytes": 2466
+    },
+    {
+      "project_path": "out/ingestion/audits/20261023_org_svg_geometry_fidelity_g3/chatgpt_static_audit.md",
+      "sha256": "72e3ec8d12e828329e00f79c86ca98773e3a998b3ae4c125f1362effb6621b0c",
+      "bytes": 3599
     }
   ]
 }

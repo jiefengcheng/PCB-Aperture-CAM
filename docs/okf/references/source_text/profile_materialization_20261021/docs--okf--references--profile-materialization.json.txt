@@ -1,0 +1,52 @@
+{
+  "schema": "pcb-cam-profile-materialization-evidence-v1",
+  "status": "PASS_WITH_WARNINGS",
+  "scope": "Sealed source inventory, versioned persistence, and complete fresh-process retrieval. No copper-area qualification or electrical acceptance.",
+  "dataset": {
+    "id": "client:szu-comm:3020301113b:intake-20261021:v1",
+    "package_root": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2",
+    "seal_sha256": "c8ff34bbc0c3aba5be03453becf8a00a5b86c9f0c91563c37b7d3c49ed0a0df8",
+    "before_directory": "ORG",
+    "after_directory": "EDIT",
+    "pairing_basis": "Sealed source directory names; source bytes were not relabelled."
+  },
+  "execution": {
+    "bundle": "out/ingestion/profile_materializations/szu-comm_before_after_20261021_02",
+    "acceptance": "out/ingestion/profile_materializations/szu-comm_before_after_20261021_02/acceptance.json",
+    "acceptance_sha256": "d13170d52f12658840057b9a61fb1ecccbe7142eb57ae3ef4ec2a74a51e340ab",
+    "materialization_sha256": "346e2179cadadf9b54e0c6b27b0401a65d69f71e84aa214e9c4edac6ee82646e",
+    "reopened_sha256": "a1cdfdb9b93ca5b28a7fa6d25cb479d320a351023c4a5d01382b2124beb77bb9",
+    "sqlite_sha256": "da8843fd985c230c5f4c130391a8e4638b0e06064f2716f3f993a321f82913bb",
+    "sqlite_bytes": 776990720,
+    "writer_pid": 16586,
+    "fresh_reader_pid": 16663,
+    "source_records": 358989,
+    "query_records": 358989,
+    "query_result_sha256": "8209610b22f12931bf338fe351470bf5532a35fc38d3f208dae3629394dc921c",
+    "warning_groups": 41
+  },
+  "findings": {
+    "gerber_deprecation_warnings": 38,
+    "native_non_positive_stroke_before_objects": 2708,
+    "native_non_positive_stroke_after_objects": 3412,
+    "native_degenerate_arcs_after_objects": 84,
+    "native_pads_found": 0,
+    "native_footprint_references_found": 0,
+    "native_net_names_found": 0,
+    "gerber_file_function_attributes": "ABSENT",
+    "native_f_cu_primitive_counts": {"before": 17849, "after": 35776},
+    "copper_area_delta": "NOT_ESTABLISHED",
+    "terminal_pad_connection_matches": "NOT_ESTABLISHED",
+    "qualification": "NOT_RUN",
+    "engineering_acceptance": "NOT_ESTABLISHED"
+  },
+  "workbench": {
+    "publication": "out/ingestion/manual_profile_add/workbench/run-36c679dc7fbc45c7b91d804c68608a2b",
+    "receipt_sha256": "79f1bc3fb5c81c7ebde4483eb836f6161113fb20ef8c45f34efac213963e6e7e",
+    "verified_outputs": 362,
+    "datasets": 6,
+    "comparisons": 3,
+    "url": "http://127.0.0.1:8769/run-36c679dc7fbc45c7b91d804c68608a2b/index.html#dataset=client%3Aszu-comm%3A3020301113b%3Aintake-20261021%3Av1"
+  },
+  "status_meaning": "PASS applies only to sealed-source binding, persistence, and complete retrieval from a fresh process. It is not evidence that the before/after copper change or electrical relationships are correct."
+}

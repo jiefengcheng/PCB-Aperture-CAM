@@ -8,6 +8,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 from src.directory_intake import package_inventory, remove_dataset, restore_directory
+from src.dataset_profiler import profile_directory
 from src.ingestion_files import sha
 from tools.ingestion_server import make_handler
 
@@ -102,6 +103,53 @@ class DirectoryIntakeTests(unittest.TestCase):
         self.profile['packages'][0]['dataset']['evidence'][0]['path'] = 'missing.json'
         self.profile_file.write_text(json.dumps(self.profile))
         with self.assertRaisesRegex(ValueError, 'MISSING'): self.restore()
+
+    def test_sealed_general_profile_recipe_adds_only_an_unqualified_dataset(self):
+        source = self.root / 'incoming'; source.mkdir()
+        (source / 'EDIT').mkdir(); (source / 'EDIT/board.kicad_pcb').write_bytes(b'opaque board')
+        (source / 'ORG').mkdir(); (source / 'ORG/top.gbr').write_bytes(b'opaque gerber')
+        (source / '.DS_Store').write_bytes(b'Finder metadata')
+        package = self.root / 'dataset/profiled'
+        profile_directory(self.root, source, 'client:profiled:20261021:v1', package)
+        inventory = [{'path': path.relative_to(package).as_posix(), 'sha256': sha(path), 'bytes': path.stat().st_size}
+                     for path in sorted(package.rglob('*')) if path.is_file()]
+        # macOS directory pickers may omit hidden Finder metadata; the sealed
+        # package is still fully verified by the server before registration.
+        selected = [row for row in inventory if row['path'] != 'raw/.DS_Store']
+        restored = restore_directory(self.root, self.config, 'dataset/profiled', selected)
+        dataset = next(row for row in restored['datasets'] if row['id'] == 'client:profiled:20261021:v1')
+        self.assertEqual(dataset['intake_status'], 'PROFILED_NOT_QUALIFIED')
+        self.assertIn('NOT_RUN', dataset['qualification'])
+        self.assertEqual(restored['directory_intake']['mode'], 'RESTORE_PROFILED_INTAKE')
+        from src.ingestion_contracts import intake_projection
+        projection = intake_projection(restored, lambda path: (self.root / path).read_bytes())
+        self.assertEqual(projection['profile_kind'], 'pcb-cam-general-intake-manifest-v1')
+        self.assertEqual({row['path'].split('/')[1] for row in projection['raw_files']},
+                         {'.DS_Store', 'EDIT', 'ORG'})
+        self.assertIn('recipe', projection['artifacts'])
+
+    def test_web_directory_endpoint_registers_profile_without_running_qualification(self):
+        source = self.root / 'incoming_http'; source.mkdir()
+        (source / 'board.kicad_pcb').write_bytes(b'opaque board source')
+        package = self.root / 'dataset/web_profile'
+        profile_directory(self.root, source, 'client:web-profile:20261021:v1', package)
+        inventory = [{'path': path.relative_to(package).as_posix(), 'sha256': sha(path), 'bytes': path.stat().st_size}
+                     for path in sorted(package.rglob('*')) if path.is_file()]
+        server = ThreadingHTTPServer(('127.0.0.1', 0), SimpleHTTPRequestHandler)
+        server.RequestHandlerClass = make_handler(self.root, self.root / 'out/workbench', self.config, server.server_port)
+        thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+        self.addCleanup(server.server_close); self.addCleanup(server.shutdown)
+        origin = 'http://127.0.0.1:' + str(server.server_port)
+        with patch('tools.ingestion_server.published_config', return_value=self.config), \
+             patch('tools.ingestion_server.publish', return_value=Path('run-' + 'a' * 32)):
+            conn = HTTPConnection('127.0.0.1', server.server_port)
+            conn.request('POST', '/api/ingestion/directories', json.dumps({'package_name': 'web_profile', 'files': inventory}),
+                         {'Content-Type': 'application/json', 'Origin': origin})
+            response = conn.getresponse(); body = json.loads(response.read()); conn.close()
+        self.assertEqual(response.status, 200, body)
+        self.assertEqual(body['dataset_id'], 'client:web-profile:20261021:v1')
+        self.assertEqual(body['intake']['mode'], 'RESTORE_PROFILED_INTAKE')
+        self.assertIn('qualification NOT_RUN', body['intake']['scope'])
 
     def test_http_origin_inventory_and_failure_preserve_previous_entry(self):
         destination = self.root / 'out/workbench'; destination.mkdir(parents=True)

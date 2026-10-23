@@ -49,7 +49,7 @@ Run from the checkout:
 
 ```sh
 .venv/bin/python tools/ingestion.py
-python3 -m http.server 8768 --bind 127.0.0.1 --directory out/ingestion/workbench
+.venv/bin/python -m http.server 8768 --bind 127.0.0.1 --directory out/ingestion/workbench
 ```
 
 Open http://127.0.0.1:8768/index.html. Select Datasets / Ingestion and a dataset. Inspect provenance, qualification, source hashes and bound evidence. Client comparison panes show only their own historical source or native replot in shared coordinates. A separate difference-only pane uses pink for source-only geometry and green for native-only geometry. Use Inspect recorded case / controls to return to the established scene. The original is already aligned; +0.35 mm is an artificial challenge. Open-control shading represents missing copper, bridge-control shading added copper.
@@ -77,6 +77,8 @@ The previous completion claim for `out/ingestion/workbench/run-7d3e42070aee4089b
 Twenty Python methods pass: eleven ingestion methods (two existing plus nine new) and nine existing replay/verifier regressions. Two JavaScript DOM contract checks separately cover pane isolation and changed/absent measurements. This is focused verification, not a full project-suite or historical engineering re-execution claim.
 
 The actual CLI fail-before-publication preserves the prior entry. Twelve HTTP evidence links and displayed receipt values verify. The sealed client intake, 70 frozen assets, 1,268 historical files, twelve prior seal bindings, rejected run outputs and original review artifacts remain intact. New publication verification is local consistency, not authorship, independent electrical intent or manufacturing acceptance. Independent Cursor review remains NOT_RUN: CHANNEL_UNAVAILABLE.
+
+Current handoff revalidation is recorded at [handoff-revalidation-20261023.json](/references/handoff-revalidation-20261023.json). It freshly verifies the six-dataset workbench and OKF source bindings, while reporting the separate VME-WREN strict-inventory failure caused by two unlisted `.DS_Store` files. That current failure does not rewrite the historical successful intake check.
 
 The 12 source-only L2GND flashes form six joined difference shapes after composition. They are visible in the source pane and separate pink delta; absent native copper stays absent in the native pane.
 

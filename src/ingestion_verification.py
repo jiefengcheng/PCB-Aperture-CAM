@@ -129,6 +129,67 @@ def _verify_ingestion(bundle, config, scene, receipt, outputs):
     require(ingestion.get('common_object_catalogue') == 'DEFERRED',
             'Unexpected catalogue authority')
     verify_generation_review(receipt, ingestion)
+    family_maps = config.get('org_family_maps', {})
+    displayed_maps = ingestion.get('org_family_maps', {})
+    require(set(displayed_maps) == set(family_maps), 'ORG_FAMILY_MAP_SCENE_BINDING_MISMATCH')
+    for dataset_id, binding in family_maps.items():
+        displayed = displayed_maps[dataset_id]
+        snapshot = displayed.get('snapshot')
+        require(isinstance(snapshot, str) and outputs.get(snapshot) == displayed.get('projection_sha256'),
+                'ORG_FAMILY_REVIEW_PROJECTION_NOT_OUTPUT_BOUND')
+        projection_path = local(bundle, snapshot)
+        projection = json.loads(projection_path.read_text())
+        projection_binding = projection.get('binding', {})
+        schema = projection.get('schema')
+        require(schema in ('pcb-org-family-review-projection/1', 'pcb-org-family-review-projection/2', 'pcb-org-family-review-projection/3'),
+                'ORG_FAMILY_REVIEW_PROJECTION_SCHEMA_MISMATCH')
+        require(projection_binding.get('dataset_id') == dataset_id,
+                'ORG_FAMILY_REVIEW_PROJECTION_DATASET_MISMATCH')
+        require(projection_binding.get('map_revision') == displayed.get('map_revision')
+                and projection_binding.get('map_content_sha256') == displayed.get('map_content_sha256'),
+                'ORG_FAMILY_REVIEW_PROJECTION_MAP_MISMATCH')
+        require(projection_binding.get('org_revision') == displayed.get('org_revision')
+                and projection_binding.get('org_source_sha256') == displayed.get('org_source_sha256'),
+                'ORG_FAMILY_REVIEW_PROJECTION_SOURCE_MISMATCH')
+        require(len(projection.get('members', [])) == displayed.get('member_count')
+                and len(projection.get('families', [])) == displayed.get('family_count')
+                and len(projection.get('physical_groups', [])) == displayed.get('physical_group_count'),
+                'ORG_FAMILY_REVIEW_PROJECTION_COUNT_MISMATCH')
+        if schema == 'pcb-org-family-review-projection/2':
+            from .org_family_review import (
+                require_org_family_resource_budget,
+                validate_complete_physical_groups,
+                validate_geometry_path_bindings,
+            )
+            require_org_family_resource_budget(
+                'ORG family review publication', projection_path.stat().st_size)
+            validate_complete_physical_groups(
+                projection, validate_paths=schema == 'pcb-org-family-review-projection/3')
+            require(len(projection.get('excluded_features', []))
+                    == sum(projection.get('coverage', {}).get('seed_exclusions', {}).values()),
+                    'ORG_FAMILY_EXCLUSION_PROJECTION_MISMATCH')
+            stored_ref = projection.get('stored_geometry_paths_ref', {})
+            stored_snapshot = stored_ref.get('snapshot')
+            require(isinstance(stored_snapshot, str) and outputs.get(stored_snapshot) == stored_ref.get('sha256'),
+                    'ORG_FAMILY_STORED_GEOMETRY_NOT_OUTPUT_BOUND')
+            stored_path = local(bundle, stored_snapshot)
+            require_org_family_resource_budget(
+                'ORG stored-geometry publication', stored_path.stat().st_size)
+            stored_paths = json.loads(stored_path.read_text())
+            require(isinstance(stored_paths, dict)
+                    and set(stored_paths) == set(projection.get('geometry_paths', {}))
+                    and len(stored_paths) == stored_ref.get('geometry_count')
+                    and all(isinstance(path, str) and path for path in stored_paths.values()),
+                    'ORG_FAMILY_STORED_GEOMETRY_PATHS_INVALID')
+            if schema == 'pcb-org-family-review-projection/3':
+                try:
+                    validate_geometry_path_bindings(projection, stored_paths)
+                except ValueError as exc:
+                    raise ValueError(str(exc)) from exc
+        require(displayed.get('bundle_path') == binding.get('bundle_path')
+                and displayed.get('materialization_sha256') == binding.get('materialization_sha256')
+                and displayed.get('acceptance_sha256') == binding.get('acceptance_sha256'),
+                'ORG_FAMILY_SOURCE_BUNDLE_BINDING_MISMATCH')
     if 'intake' in ingestion:
         from pathlib import PurePosixPath
         package = PurePosixPath(config['dataset_seal']['path']).parent

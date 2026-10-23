@@ -3,7 +3,7 @@ function initPipeline(scene,inspectCase,renderCase){
  if(!scene.pipeline)return;
  const byId=id=>document.getElementById(id),el=(tag,value)=>{const e=document.createElement(tag);if(value!==undefined)e.textContent=String(value);return e;};
  const panel=byId('pipeline-view'),nav=byId('workbench-views');
- let commonMode=!!scene.common_context;
+ let commonMode=!!scene.common_context,orgFamilyMode=false,orgFamilyDatasetId=null;
  let dataset=scene.pipeline.datasets[0],view='Cases',selected=null,stage=null,page=0,layer='F.Cu',physical=false,permissions=false,spatialWitnesses=false,nativeGroup=false,recordedGroupMembers=[],backend='reference',sourceBytes,records;
  const views=['Storage & indexes','Cases'];
  const inputStages=new Set(['source_custody','inventory']);
@@ -16,12 +16,27 @@ function initPipeline(scene,inspectCase,renderCase){
  function permission(id){return dataset.selection?.writable_ids.includes(id)?'writable by frozen contract':dataset.selection?.context_ids.includes(id)?'protected context':'read-only inspection';}
  function anchor(record,label){const a=el('a',label);a.href=record.snapshot;a.target='_blank';a.rel='noopener';return a;}
  function render(){
+  if(orgFamilyMode&&typeof renderOrgFamilyReview==='function'){
+   delete panel.dataset.commonCatalogue;
+   renderOrgFamilyReview(scene,panel,orgFamilyDatasetId,()=>{orgFamilyMode=false;render();});
+   return;
+  }
   if(commonMode&&typeof renderCommonCatalogue==='function'&&renderCommonCatalogue(scene,panel,label=>{commonMode=false;setDataset(scene.pipeline.datasets.find(d=>d.label===label));render();}))return;
   delete panel.dataset.commonCatalogue;
   const renderStarted=performance.now();
   byId('headline').textContent=view+' · '+dataset.label;byId('story').textContent='Source '+dataset.source_sha256.slice(0,16)+' · catalog '+dataset.catalog_revision.slice(0,16)+' · recorded, read-only context';
   panel.replaceChildren();const toolbar=el('div');toolbar.className='toolbar';toolbar.append(el('b',view+' · recorded native revisions'));
   const select=el('select');select.setAttribute('aria-label','Source revision');if(scene.common_context){const option=el('option','Client VME-WREN · R140 context');option.value='common';select.append(option);}for(const d of scene.pipeline.datasets){const option=el('option',d.label+' · '+d.catalog_revision.slice(0,12));option.value=d.label;select.append(option);}select.value=dataset.label;select.onchange=()=>{if(select.value==='common')commonMode=true;else setDataset(scene.pipeline.datasets.find(d=>d.label===select.value));render();};toolbar.append(select);panel.append(toolbar);
+  const familyMaps=scene.ingestion?.org_family_maps||{};
+  if(view==='Storage & indexes'&&Object.keys(familyMaps).length){
+   const section=el('section');section.className='org-family-entry';
+   section.append(el('h2','ORG family hypotheses · read-only source inspection'),el('p','Choose an immutable map to inspect its candidate members, provisional repetition patterns, source geometry, contact evidence and unresolved associations.'));
+   const choices=el('div');choices.className='org-family-entry-buttons';
+   for(const [id,binding] of Object.entries(familyMaps).sort((a,b)=>a[0].localeCompare(b[0]))){
+    const registered=scene.ingestion.datasets.find(d=>d.id===id);const button=el('button',(registered?.label||id)+' · '+binding.family_count+' provisional families');button.type='button';button.dataset.orgFamilyMap=id;button.onclick=()=>{orgFamilyDatasetId=id;orgFamilyMode=true;render();};choices.append(button);
+   }
+   section.append(choices);panel.append(section);
+  }
   const grid=el('div');grid.className='pipeline-grid';const left=el('div'),right=el('div');grid.append(left,right);panel.append(grid);
   left.append(el('h2','How records were stored'),el('p','Inspect the recorded indexing and persistence stages, then the saved query examples. Input custody and extraction are under Datasets / Ingestion.'));
   for(const s of dataset.stages.filter(s=>!inputStages.has(s.stage))){const b=el('button',(stageTitles[s.stage]||s.stage)+' · '+s.state);b.style.display='block';b.style.marginBottom='6px';b.dataset.stage=s.id;b.setAttribute('aria-pressed',String(stage===s));b.onclick=()=>{stage=s;render();};left.append(b);}
@@ -69,6 +84,7 @@ function initPipeline(scene,inspectCase,renderCase){
   right.append(el('p',dataset.limitations.join(' ')));panel.dataset.domRenderMs=(performance.now()-renderStarted).toFixed(3);panel.dataset.renderedSourceObjects=String(Math.min(500,visible.length));
  }
  window.inspectPipelineNative=function(nativeId,sourceHash,terminalKey,center,layerName){const d=scene.pipeline.datasets.find(d=>d.source_sha256===sourceHash);const matches=d?.objects.filter(r=>nativeId?r.native_id===nativeId:r.source_terminal_key===terminalKey&&r.layers.includes(layerName)&&r.nominal_anchor_mm&&Math.hypot(r.nominal_anchor_mm[0]-center[0],r.nominal_anchor_mm[1]-center[1])<.000001)||[];if(matches.length!==1){const note=el('p',matches.length?'AMBIGUOUS_SOURCE_REFERENCE: repeated native identity':'NOT_RECORDED: no indexed record for this exact source revision');byId('detail').append(note);return;}commonMode=false;setDataset(d);selected=matches[0].id;changeView('Storage & indexes');};
- window.openCommonCatalogue=()=>{commonMode=!!scene.common_context;changeView('Storage & indexes');};
+ window.openCommonCatalogue=()=>{orgFamilyMode=false;commonMode=!!scene.common_context;changeView('Storage & indexes');};
+ window.openOrgFamilyReview=(datasetId)=>{orgFamilyMode=true;orgFamilyDatasetId=datasetId||Object.keys(scene.ingestion?.org_family_maps||{})[0];commonMode=false;changeView('Storage & indexes');};
  setDataset(dataset);changeView('Cases');
 }

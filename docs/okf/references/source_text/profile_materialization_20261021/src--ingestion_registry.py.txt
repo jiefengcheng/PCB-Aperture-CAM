@@ -1,0 +1,287 @@
+"""Stage a source-bound replay bundle, verify it, then publish its local entry.
+
+Registration does not extract a common object catalogue or run a CAM operation.
+Previous publications remain immutable. Rename is not a power-loss guarantee.
+"""
+import base64
+import copy
+import gzip
+import hashlib
+import importlib.metadata
+import json
+import os
+import shutil
+import sys
+import uuid
+from pathlib import Path
+
+from .ingestion_contracts import (
+    PUBLICATION_SCHEMA, digest_registry, generation_review, intake_projection, validate_registry,
+)
+from .ingestion_files import local, sha, verify, write_json
+from .ingestion_verification import verify_publication
+from .ingestion_visuals import comparison_views
+
+# Keep every producer/render dependency in the captured implementation snapshot.
+APP_SOURCES = (
+    'web/replay_model.js', 'web/backend_model.js', 'web/pipeline_views.js',
+    'web/directory_intake.js', 'web/ingestion_views.js', 'web/catalogue_themes.js', 'web/catalogue_views.js', 'web/workbench.js',
+)
+IMPLEMENTATION_SOURCES = (
+    'src/ingestion_files.py', 'src/ingestion_contracts.py',
+    'src/ingestion_registry.py', 'src/ingestion_verification.py',
+    'src/dataset_profiler.py',
+    'src/profile_materialization.py', 'tools/materialize_profile.py',
+    'src/ingestion_visuals.py', 'src/client_gerber.py', 'src/gerber_image.py',
+    'src/visual_scene.py', 'tools/visual_report.py', 'tools/ingestion.py',
+    'web/workbench.html', *APP_SOURCES,
+    'src/directory_intake.py', 'tools/ingestion_server.py',
+    'src/catalogue_scene.py', 'src/common_catalogue.py','src/revision_catalog.py',
+    'src/catalog_selection.py','src/spatial_context.py',
+    'src/catalogue_qualifications.py',
+    'src/catalogue_selection.py',
+)
+REPLAY_ENTRY_FILES = {'index.html', 'scene.json', 'build_receipt.json'}
+
+
+def _publication_directory(root, destination):
+    destination = Path(destination).resolve()
+    if not destination.is_relative_to(root / 'out'):
+        raise ValueError('Publication must stay under checkout/out')
+    immutable_markers = {'receipt.json', 'build_receipt.json', 'scene.json', 'registry.json'}
+    if any((destination / name).exists() for name in immutable_markers):
+        raise ValueError('Publication destination is an immutable bundle; choose an entry directory')
+    return destination
+
+
+def _input_bindings(config):
+    bindings = [config['dataset_seal'], *config['replay_bindings']]
+    if config.get('directory_intake'):
+        bindings.append(config['directory_intake']['profile'])
+    if config.get('common_context'):
+        bindings.append(config['common_context'])
+    for bundle in config.get('record_materializations', {}).values():
+        bindings.extend(bundle.get('files', []))
+    for dataset in config['datasets']:
+        bindings.extend(dataset['sources'] + dataset['evidence'])
+    return bindings
+
+
+def _copy_replay(root, config, stage):
+    """Copy only declared replay files, retaining its original envelope separately."""
+    replay = local(root, config['replay_bundle'])
+    retained = stage / 'historical_replay'
+    bindings = []
+    for binding in config['replay_bindings']:
+        source = local(root, binding['path'])
+        relative = source.relative_to(replay)
+        target = retained / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+        bindings.append({'path': str(relative), 'sha256': binding['sha256']})
+        if str(relative) not in REPLAY_ENTRY_FILES:
+            target = stage / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+    verify(retained, bindings)
+    return json.loads((retained / 'scene.json').read_text())
+
+
+def _add_ingestion(root, config, scene):
+    ingestion = {
+        'schema': config['schema'],
+        'registry_sha256': digest_registry(config),
+        'datasets': copy.deepcopy(config['datasets']),
+        'mode': 'REPLAY',
+        'common_object_catalogue': 'DEFERRED',
+        'cursor_review': generation_review(),
+    }
+    render_inputs = []
+    for dataset in ingestion['datasets']:
+        dataset['qualification_data'] = comparison_views(root, dataset)
+        for view in dataset['qualification_data']['comparisons']:
+            render_inputs.append({
+                'dataset_id': dataset['id'],
+                **{key: view[key] for key in ('label', 'roi_mm', 'receipt_role', 'inputs')},
+            })
+    scene['ingestion'] = ingestion
+    return render_inputs
+
+
+def _copy_evidence(root, scene, stage):
+    for dataset in scene['ingestion']['datasets']:
+        for binding in dataset['evidence']:
+            source = local(root, binding['path'])
+            target = stage / 'ingestion_evidence' / binding['sha256'] / source.name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+            verify(stage, [{'path': str(target.relative_to(stage)), 'sha256': binding['sha256']}])
+            binding['snapshot'] = str(target.relative_to(stage))
+
+
+def _copy_intake(root, config, scene, stage):
+    intakes = {}
+    candidates = [dataset for dataset in config['datasets']
+                  if dataset.get('intake_status') == 'PROFILED_NOT_QUALIFIED'
+                  and any(row['path'].endswith('/metadata/profile.json') for row in dataset['evidence'])]
+    preferred = config.get('directory_intake', {}).get('dataset_id')
+    primary_id = preferred if any(dataset['id'] == preferred for dataset in candidates) else (
+        candidates[0]['id'] if candidates else None)
+    for dataset in candidates:
+        profile = next((row for row in dataset['evidence']
+                        if row['path'].endswith('/metadata/profile.json')), None)
+        if not profile or dataset.get('intake_status') != 'PROFILED_NOT_QUALIFIED':
+            continue
+        package = Path(profile['path']).parent.parent.as_posix()
+        seal_path = package + '/SHA256SUMS'
+        seal_binding = {'path': seal_path, 'sha256': sha(local(root, seal_path))}
+        projected_config = dict(config)
+        projected_config['dataset_seal'] = seal_binding
+        intake = intake_projection(projected_config, lambda path: local(root, path).read_bytes())
+        if intake is None or intake['dataset_id'] != dataset['id']:
+            raise ValueError('Profile intake projection does not match registered dataset: ' + dataset['id'])
+        prefix = 'intake' if dataset['id'] == primary_id else (
+            'intake/profiles/' + hashlib.sha256(dataset['id'].encode()).hexdigest()[:16])
+        for binding in intake['artifacts'].values():
+            relative = binding['snapshot'].removeprefix('intake/')
+            binding['snapshot'] = prefix + '/' + relative
+        intakes[dataset['id']] = intake
+        for binding in intake['artifacts'].values():
+            target = local(stage, binding['snapshot'])
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(local(root, binding['path']), target)
+            verify(stage, [{'path': binding['snapshot'], 'sha256': binding['sha256']}])
+    if not intakes:
+        legacy = intake_projection(config, lambda path: local(root, path).read_bytes())
+        if legacy is not None:
+            for binding in legacy['artifacts'].values():
+                target = local(stage, binding['snapshot'])
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(local(root, binding['path']), target)
+                verify(stage, [{'path': binding['snapshot'], 'sha256': binding['sha256']}])
+            scene['ingestion']['intake'] = legacy
+            bindings = list(legacy['artifacts'].values())
+        else:
+            bindings = []
+    else:
+        bindings = [binding for intake in intakes.values() for binding in intake['artifacts'].values()]
+    if intakes:
+        scene['ingestion']['intakes'] = intakes
+        scene['ingestion']['intake'] = intakes[primary_id]
+    linked = {}
+    for dataset_id, bundle in config.get('record_materializations', {}).items():
+        from .profile_materialization import _read_materialization
+        receipt, _, bundle_root = _read_materialization(root, local(root, bundle['path']))
+        declared = {row['path']: row['sha256'] for row in bundle.get('files', [])}
+        required = {'materialization.json', 'reopened.json', 'acceptance.json'}
+        actual = {path: sha(local(root, bundle['path'] + '/' + path)) for path in required}
+        expected = {bundle['path'] + '/' + path: digest for path, digest in actual.items()}
+        if not receipt or receipt.get('status') != 'PASS' or declared != expected:
+            raise ValueError('Profile materialization is not a complete accepted bundle: ' + dataset_id)
+        materialization = json.loads(local(root, bundle['path'] + '/materialization.json').read_text())
+        receipt = json.loads(local(root, bundle['path'] + '/acceptance.json').read_text())
+        evidence = {}
+        prefix = 'record_materializations/' + hashlib.sha256(dataset_id.encode()).hexdigest()[:16]
+        for source_binding in bundle['files']:
+            source = local(root, source_binding['path'])
+            relative = source.relative_to(local(root, bundle['path']))
+            snapshot = prefix + '/' + relative.as_posix()
+            target = local(stage, snapshot)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+            verify(stage, [{'path': snapshot, 'sha256': source_binding['sha256']}])
+            evidence[relative.as_posix()] = {'path': source_binding['path'],
+                                             'sha256': source_binding['sha256'],
+                                             'snapshot': snapshot}
+            bindings.append(source_binding)
+        linked[dataset_id] = {'status': 'PASS' if receipt.get('status') == 'PASS' else 'FAIL',
+                              'materialization': materialization, 'acceptance': receipt,
+                              'evidence': evidence, 'snapshot_root': prefix,
+                              'bundle_root': bundle['path']}
+    scene['ingestion']['record_materializations'] = linked
+    return bindings
+
+
+def _write_workbench(stage, scene, config, sources):
+    from tools.visual_report import embed_scene
+
+    raw = embed_scene(scene)
+    template = sources['web/workbench.html'].decode()
+    embedded = raw
+    if len(raw.encode()) > 32 * 1024 * 1024:
+        embedded = base64.b64encode(gzip.compress(raw.encode(), mtime=0)).decode()
+        template = template.replace('id="scene-data"', 'id="scene-data" data-encoding="gzip-base64"')
+    app = '\n'.join(sources[path].decode() for path in APP_SOURCES)
+    page = (template.replace('__SCENE__', embedded)
+            .replace('__DIGEST__', hashlib.sha256(raw.encode()).hexdigest())
+            .replace('__APP__', app))
+    (stage / 'index.html').write_text(page)
+    (stage / 'scene.json').write_text(raw)
+    write_json(stage / 'registry.json', config)
+
+
+def _receipt(stage, config, render_inputs, implementation):
+    return {
+        'schema': PUBLICATION_SCHEMA,
+        'status': 'PASS',
+        'scope': 'Source/evidence consistency and read-only registration; historical engineering outcomes not rerun',
+        'registry_sha256': digest_registry(config),
+        'render_inputs': render_inputs,
+        'outputs': {str(p.relative_to(stage)): sha(p) for p in sorted(stage.rglob('*')) if p.is_file()},
+        'implementation': implementation,
+        'runtime': {
+            'python': sys.version,
+            'packages': {p: importlib.metadata.version(p) for p in ('gerbonara', 'shapely')},
+        },
+        'cursor_review': generation_review(),
+        'power_loss_durability': 'NOT_ESTABLISHED',
+    }
+
+
+def _replace_entry(destination, revision):
+    temporary = destination / ('.entry-' + uuid.uuid4().hex)
+    redirect = (
+        '<!doctype html><meta charset="utf-8">'
+        f'<meta http-equiv="refresh" content="0;url={revision.name}/index.html">'
+        f'<a href="{revision.name}/index.html">Open verified ingestion workbench</a>'
+    )
+    try:
+        temporary.write_text(redirect)
+        os.replace(temporary, destination / 'index.html')
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def publish(root, config, destination, fail_before_publish=False):
+    """Single-writer publication; failure never replaces the prior entry."""
+    validate_registry(config)
+    root = Path(root).resolve()
+    destination = _publication_directory(root, destination)
+    bindings = _input_bindings(config)
+    verify(root, bindings)
+    sources = {path: (root / path).read_bytes() for path in IMPLEMENTATION_SOURCES}
+    implementation = {path: hashlib.sha256(data).hexdigest() for path, data in sources.items()}
+    destination.mkdir(parents=True, exist_ok=True)
+    stage = destination / ('.staging-' + uuid.uuid4().hex)
+    stage.mkdir()
+    try:
+        scene = _copy_replay(root, config, stage)
+        render_inputs = _add_ingestion(root, config, scene)
+        _copy_evidence(root, scene, stage)
+        bindings.extend(_copy_intake(root, config, scene, stage))
+        from .catalogue_scene import copy_projection
+        bindings.extend(copy_projection(root,config,scene,stage))
+        _write_workbench(stage, scene, config, sources)
+        verify(root, bindings)
+        verify(root, [{'path': p, 'sha256': h} for p, h in implementation.items()])
+        write_json(stage / 'receipt.json', _receipt(stage, config, render_inputs, implementation))
+        verify_publication(stage)
+        if fail_before_publish:
+            raise RuntimeError('Injected failure before publication')
+        revision = destination / ('run-' + uuid.uuid4().hex)
+        stage.rename(revision)
+        _replace_entry(destination, revision)
+        return revision
+    finally:
+        if stage.exists():
+            shutil.rmtree(stage)

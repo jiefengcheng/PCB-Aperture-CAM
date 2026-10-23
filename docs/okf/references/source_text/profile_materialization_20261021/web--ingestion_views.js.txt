@@ -1,0 +1,710 @@
+/* Dataset registration only. Browser controls never write or query a backend. */
+const ingestionUI = (() => {
+  const namespace = 'http://www.w3.org/2000/svg';
+  const available = value => value === undefined || value === null ? 'NOT_AVAILABLE' : String(value);
+
+  function element(tag, value, className) {
+    const node = document.createElement(tag);
+    if (value !== undefined) node.textContent = String(value);
+    if (className) node.className = className;
+    return node;
+  }
+
+  function evidenceLink(reference, label) {
+    const link = element('a', label);
+    link.href = reference.snapshot;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    return link;
+  }
+
+  function savedRecord(path, label, scene) {
+    const panel = element('details');
+    panel.className = 'ingestion-saved-record';
+    panel.append(element('summary', label.replace(' ↗', '')));
+    const status = element('p');
+    status.setAttribute('role', 'status');
+    const body = element('div');
+    const download = element('a', 'Download original ' + path);
+    download.href = path;
+    download.download = path;
+    panel.append(status, body, download);
+    let loaded = false;
+    panel.ontoggle = async () => {
+      if (!panel.open || loaded) return;
+      loaded = true;
+      status.textContent = 'Loading saved record…';
+      try {
+        let record;
+        if (path === 'scene.json') record = scene;
+        else {
+          const response = await fetch(path);
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          record = await response.json();
+        }
+        // The scene can exceed 90 MB. Never render the entire geometry as text.
+        status.textContent = path === 'scene.json'
+          ? 'Saved scene loaded by this workbench. Bounded preview: arrays show up to 20 entries and long strings up to 2,000 characters. Download retains the complete original.'
+          : 'Publication receipt loaded. These are recorded publication checks, not a new engineering acceptance.';
+        const preview = value => JSON.stringify(value, (key, item) => {
+          if (typeof item === 'string' && item.length > 2000) return item.slice(0, 2000) + '… [preview truncated]';
+          if (Array.isArray(item) && item.length > 20) return [...item.slice(0, 20), '[preview truncated: ' + item.length + ' entries total]'];
+          return item;
+        }, 2);
+        for (const [key, value] of Object.entries(record)) {
+          const section = element('details');
+          section.append(element('summary', key));
+          let shown = false;
+          section.ontoggle = () => {
+            if (section.open && !shown) {
+              shown = true;
+              section.append(element('pre', path === 'scene.json' ? preview(value) : JSON.stringify(value, null, 2)));
+            }
+          };
+          body.append(section);
+        }
+      } catch (error) {
+        loaded = false;
+        status.textContent = 'Unable to load ' + path + ': ' + error.message + '. Close and reopen to retry.';
+      }
+    };
+    return panel;
+  }
+
+  function details(label, value) {
+    const node = element('details');
+    node.append(element('summary', label), element('pre', JSON.stringify(value, null, 2)));
+    return node;
+  }
+
+  function appendMeasurements(section, record) {
+    const metric = record.metrics;
+    if (record.role === 'local') {
+      for (const [layer, row] of Object.entries(metric.layers)) {
+        const scope = layer === 'Edge.Cuts' ? 'recorded profile comparison' :
+          'ROI ' + JSON.stringify(metric.roi_mm) + ' Gerber mm';
+        section.append(element('p', layer + ' · symmetric difference ' +
+          available(row.symmetric_difference_area_mm2) + ' mm² · ' + scope));
+      }
+    } else if (record.role === 'discrepancy') {
+      section.append(element('p', 'Source-only flashes: ' + available(metric.source_only_flash_count) +
+        ' · native-only flashes: ' + available(metric.native_only_flash_count) +
+        ' · symmetric difference ' + available(metric.symmetric_difference_area_mm2) +
+        ' mm² · ROI ' + JSON.stringify(metric.roi_mm) + ' Gerber mm. Cause unknown.'));
+    } else if (record.role === 'drills') {
+      for (const [kind, row] of Object.entries(metric)) {
+        section.append(element('p', kind + ' · matched hits ' + available(row.drills?.matched) +
+          ' / source ' + available(row.drills?.total_source) +
+          ' / native ' + available(row.drills?.total_native) +
+          '; position tolerance ' + available(row.drills?.position_tolerance_mm) +
+          ' mm; tool tolerance ' + available(row.drills?.tool_tolerance_mm) +
+          ' mm; matched slots ' + available(row.slot_match?.matched) +
+          '; endpoint tolerance ' + available(row.slot_match?.endpoint_tolerance_mm) + ' mm.'));
+      }
+      section.append(element('p', 'Original inch files preserved; historical normalized values retain their recorded warnings and tolerances.'));
+    }
+  }
+
+  function appendReceipt(content, dataset, record) {
+    const section = element('section');
+    section.dataset.receiptRole = record.role;
+    section.append(element('h2', record.role + ' · REPLAY'));
+    appendMeasurements(section, record);
+    const reference = dataset.evidence.find(item =>
+      item.path === record.evidence.path && item.sha256 === record.evidence.sha256);
+    if (reference) {
+      section.append(evidenceLink(reference, 'Open bound ' + record.role + ' receipt'),
+        element('small', ' · SHA-256 ' + reference.sha256));
+    }
+    section.append(details('Exact stored receipt values', record.metrics));
+    content.append(section);
+  }
+
+  function comparisonPane(view, pane, title, paths) {
+    const column = element('div');
+    column.append(element('div', title, 'view-title'));
+    const svg = document.createElementNS(namespace, 'svg');
+    svg.classList.add('board');
+    svg.setAttribute('viewBox', view.view_box.join(' '));
+    svg.setAttribute('aria-label', view.label + ' ' + title);
+    svg.setAttribute('role', 'img');
+    svg.dataset.pane = pane;
+    for (const [geometry, color, role, attributes = {}] of paths) {
+      const path = document.createElementNS(namespace, 'path');
+      path.setAttribute('d', geometry);
+      path.setAttribute('fill', color);
+      path.setAttribute('fill-rule', 'evenodd');
+      path.dataset.role = role;
+      for (const [key, value] of Object.entries(attributes)) path.setAttribute(key, value);
+      svg.append(path);
+    }
+    column.append(svg);
+    return column;
+  }
+
+  function appendComparison(content, view) {
+    const panes = element('div', undefined, 'views ingestion-panes');
+    panes.dataset.comparison = view.label;
+    panes.append(
+      comparisonPane(view, 'source', '1 · Supplied Gerber artwork', [[view.source_path, '#c8ab77', 'geometry']]),
+      comparisonPane(view, 'native', '2 · Replotted from supplied KiCad board', [[view.native_path, '#c8ab77', 'geometry']]),
+      comparisonPane(view, 'delta', '3 · Difference only', [
+        [view.source_only_path, '#ff87a8', 'source-only'],
+        [view.native_only_path, '#49dfba', 'native-only']
+      ])
+    );
+    content.append(panes, element('p', 'Same location and scale in all three panes. Gold = actual artwork. Pink = only in supplied Gerber; green = only in KiCad replot. An empty difference pane means no visible difference.', 'ingestion-caption'));
+  }
+
+  function recordFor(dataset, role) {
+    return dataset.qualification_data?.records?.find(record => record.role === role);
+  }
+
+  function receiptButton(content, dataset, record) {
+    const reference = dataset.evidence.find(item => item.path === record?.evidence.path &&
+      item.sha256 === record.evidence.sha256);
+    if (reference) content.append(evidenceLink(reference, 'Open measurement receipt ↗'));
+  }
+
+  function appendComparisonStory(content, dataset) {
+    const comparisons = dataset.qualification_data.comparisons;
+    let selected = comparisons.find(view => view.receipt_role === 'discrepancy') || comparisons[0];
+    const choices = element('nav', undefined, 'ingestion-choices');
+    choices.setAttribute('aria-label', 'Comparison location');
+    const stage = element('section');
+    const buttons = [];
+    function render() {
+      stage.replaceChildren();
+      buttons.forEach(([button, view]) => {
+        button.classList.toggle('active', view === selected);
+        button.setAttribute('aria-pressed', String(view === selected));
+      });
+      const record = recordFor(dataset, selected.receipt_role);
+      const metric = record?.metrics;
+      let area;
+      if (selected.receipt_role === 'discrepancy') {
+        area = metric?.symmetric_difference_area_mm2;
+        stage.append(element('h3', 'Ground layer · do the two representations agree?'),
+          element('p', available(metric?.source_only_flash_count) + ' plotted flashes occur only in the supplied Gerber; ' +
+            available(metric?.native_only_flash_count) + ' occur only in the KiCad replot. Pink shows the missing artwork; touching flashes may appear joined.', 'ingestion-takeaway'));
+      } else {
+        const layer = selected.label.split(' ').at(-1);
+        area = metric?.layers?.[layer]?.symmetric_difference_area_mm2;
+        stage.append(element('h3', selected.label + ' · local correspondence'),
+          element('p', area === 0 ? 'These two representations match in this selected region. The difference pane is empty.' :
+            'A difference is recorded in this selected region. Inspect the difference pane and receipt.', 'ingestion-takeaway'));
+      }
+      appendComparison(stage, selected);
+      stage.append(element('p', 'Recorded differing area: ' + available(area) + ' mm². This comparison does not establish whole-board equivalence.', 'ingestion-caption'));
+      receiptButton(stage, dataset, record);
+    }
+    for (const view of comparisons) {
+      const button = element('button', view.label);
+      button.onclick = () => { selected = view; render(); };
+      buttons.push([button, view]);
+      choices.append(button);
+    }
+    content.append(element('p', 'We compared the supplied Gerbers with Gerbers replotted from the supplied KiCad board. Choose a location to inspect a recorded match or discrepancy.'), choices, stage);
+    render();
+    const drills = recordFor(dataset, 'drills');
+    if (drills) {
+      const correspondence = element('details', undefined, 'ingestion-drills');
+      correspondence.append(element('summary', 'Also compared · drill positions, tools and slots'));
+      appendMeasurements(correspondence, drills);
+      receiptButton(correspondence, dataset, drills);
+      content.append(correspondence);
+    }
+  }
+
+  function linkedPipelines(dataset, scene) {
+    const hashes = new Set((dataset.sources || []).map(row => row.sha256));
+    return (scene.pipeline?.datasets || []).filter(row => hashes.has(row.source_sha256));
+  }
+
+  function appendInputStages(content, dataset, scene) {
+    content.append(deferredSection('Recorded input stages · custody and extraction', section => {
+      const pipelines = linkedPipelines(dataset, scene);
+      const titles = {source_custody: 'Preserve and identify the source', inventory: 'Extract the native inventory'};
+      let count = 0;
+      for (const row of pipelines) {
+        const stages = (row.stages || []).filter(stage => Object.hasOwn(titles, stage.stage));
+        if (!stages.length) continue;
+        count += stages.length;
+        section.append(element('h4', row.label), element('p', 'Historical REPLAY · exact source SHA-256 ' + row.source_sha256));
+        for (const stage of stages) {
+          const receipt = details(titles[stage.stage] + ' · ' + stage.state, stage);
+          receipt.dataset.inputStage = stage.stage;
+          section.append(receipt);
+        }
+        if (row.evidence) section.append(evidenceLink(row.evidence, 'Open bound input-stage receipts ↗'));
+      }
+      if (!count) section.append(element('p', 'No custody/extraction stage receipts are linked to these registered source hashes. File registration and saved review artifacts above do not establish native object extraction.'));
+      section.append(element('p', 'Indexing, relationships, persistence and saved query receipts are available for retained native revisions under Storage & indexes.'));
+    }));
+  }
+
+  function persistenceRows(content, rows, inspector, label = 'Dataset persistence status', statusTitle = 'Dataset status') {
+    const table = element('table', undefined, 'ingestion-table');
+    table.setAttribute('aria-label', label);
+    const head = element('thead'), heading = element('tr');
+    for (const title of ['Layer', 'What is stored on disk', statusTitle, 'Inspect']) heading.append(element('th', title));
+    head.append(heading);
+    const body = element('tbody');
+    for (const [label, description, status, action, inspect, tone] of rows) {
+      const row = element('tr');row.dataset.persistenceLayer = label;
+      const name = element('th', label);name.setAttribute('scope', 'row');
+      const state = element('td');state.append(element('span', status, 'badge ' + (tone || (inspect ? 'pass' : 'unknown'))));
+      const control = element('td');
+      if (inspect) {
+        const button = element('button', action);
+        button.onclick = () => { inspector.replaceChildren(); inspect(); };
+        control.append(button);
+      } else control.append(element('span', 'No linked artifact', 'ingestion-caption'));
+      row.append(name, element('td', description), state, control);
+      body.append(row);
+    }
+    table.append(head, body);
+    const scroll = element('div', undefined, 'ingestion-table-scroll');scroll.append(table);
+    content.append(scroll, inspector);
+  }
+
+  function appendPersistence(content, dataset, intake, scene) {
+    if (intake.profile_kind === 'pcb-cam-general-intake-manifest-v1') {
+      return appendProfilePersistence(content, dataset, intake, scene);
+    }
+    const context=scene?.common_context?.dataset_id===dataset.id?scene.common_context:null;
+    content.append(element('h3', 'Client persistence · what is stored on disk'),
+      element('p', context?'Inputs, registration and review files are saved. A bounded R140 context is also materialized and has been reopened in fresh processes. Full-board records and queries remain outside this slice.':'The first three layers are saved files that can be reopened. Client board-object records and board queries are not materialized.'));
+    const inspector = element('section', undefined, 'ingestion-artifact');
+    inspector.setAttribute('aria-live', 'polite');
+    inspector.append(element('p', 'Choose an Inspect button to see the saved records and their disk locations.'));
+    function location(path) {
+      const row = element('p', undefined, 'ingestion-caption');
+      row.append(element('span', 'Project-relative disk location: '), element('code', path));
+      return row;
+    }
+    function artifact(path, label) { return evidenceLink({snapshot:path}, label); }
+    const rows = [
+      ['Preserved inputs', 'Original bytes, manifest and checksums', 'Implemented', 'Inspect saved inputs', () => {
+        inspector.append(element('h3', 'Preserved inputs · ' + intake.raw_files.length + ' raw files'), location(intake.package_root));
+        const groups = [
+          ['Original archive', file => file.path.startsWith('raw/archive/')],
+          ['KiCad board', file => file.path.endsWith('.kicad_pcb')],
+          ['Gerber artwork', file => file.path.endsWith('.gbr')],
+          ['Drill files', file => file.path.endsWith('.drl')],
+          ['Layer description', file => file.path.endsWith('/layerfunction.txt')]
+        ];
+        const inventory = element('div', undefined, 'ingestion-input-counts');
+        for (const [label, match] of groups) {
+          const files = intake.raw_files.filter(match);
+          inventory.append(element('span', files.length + ' · ' + label));
+        }
+        inspector.append(inventory, element('p', 'These are retained source files. Their presence does not establish equivalence between the KiCad board and Gerbers.'));
+        for (const [key, label] of [['entry','Package index ↗'],['manifest','Sealed manifest ↗'],['checksums','Checksums ↗']]) {
+          inspector.append(evidenceLink(intake.artifacts[key], label));
+        }
+        const files = element('details');
+        files.append(element('summary', 'Show the ' + intake.raw_files.length + ' preserved file paths'));
+        const list = element('ul');
+        for (const row of intake.raw_files) list.append(element('li', row.path + ' · ' + row.bytes.toLocaleString() + ' bytes'));
+        files.append(list);
+        inspector.append(files, element('p', 'The three links open byte-verified metadata copies retained in this publication. The original package remains at the location above.', 'ingestion-caption'));
+      }],
+      ['File registration', 'Dataset identity, source paths, hashes and evidence references', 'Implemented', 'Inspect registration', () => {
+        inspector.append(element('h3', 'File registration · ' + dataset.id), location('contracts/ingestion_registry_v1.json'),
+          element('p', dataset.sources.length + ' registered source references and ' + dataset.evidence.length +
+            ' evidence references. The source references include the preserved raw files and retained comparison inputs.'),
+          artifact('registry.json', 'Open the published file registry ↗'),
+          element('p', 'This is a file-level registration record. It does not contain extracted client pads, tracks or board relationships.'));
+      }],
+      ['Review materialization', 'Saved comparisons, measurements, display geometry and publication receipt', 'Implemented', 'Inspect saved review', () => {
+        inspector.append(element('h3', 'Review materialization · saved replay files'),
+          element('p', dataset.qualification_data.comparisons.length + ' client comparison views and ' +
+            dataset.qualification_data.records.length + ' groups of receipt-derived measurements are stored in the scene.'),
+          savedRecord('scene.json', 'Open saved scene.json', scene), savedRecord('receipt.json', 'Open publication receipt.json', scene),
+          element('p', 'These links address files inside this immutable run directory. The scene holds the display geometry and measurements; the receipt records output hashes and exact rendering-input bindings.'),
+          element('p', 'Selecting this dataset loads the saved scene. It does not query a client board database.'));
+      }],
+      ['Board-record materialization', 'Extracted client objects, geometry, source locations and relationships in a versioned store', context?'Implemented · bounded R140 slice':'Not implemented',context?'Inspect stored R140 context':undefined,context?()=>{
+        inspector.append(element('h3','Bounded R140 materialization'),element('p','Eight source occurrences: footprint, two native pads, one native segment, three copper features and one mask opening. Full original artifacts remain retained.'),artifact(context.evidence.selection,'Open stored dataset manifest ↗'),artifact(context.evidence.receipt,'Open catalogue inventory ↗'));
+        const b=element('button','Open Storage & indexes');b.onclick=()=>window.openCommonCatalogue?.();inspector.append(b);
+      }:undefined],
+      ['Reopened board queries', 'Retrieve those records by revision, object, layer or region after restarting', context?'Passed · four-role acceptance':'Not implemented for this client',context?'Inspect reopen evidence':undefined,context?()=>{
+        inspector.append(element('h3','Fresh-process R140 retrieval · REPLAY'),element('p','The writer, reopened query and exported-bundle query ran in separate processes and returned the same selection digest. The browser displays the saved result.'),artifact(context.evidence.acceptance,'Open fresh-process acceptance ↗'),artifact(context.evidence.result,'Open retrieved records ↗'));
+      }:undefined]
+    ];
+    persistenceRows(content, rows, inspector, 'Client persistence status', 'Client status');
+  }
+
+  function appendProfilePersistence(content, dataset, intake, scene) {
+    const stored = scene.ingestion?.record_materializations?.[dataset.id];
+    content.append(element('h3', 'Profiled intake · what is stored on disk'),
+      element('p', stored?.status === 'PASS'
+        ? 'The sealed directory is preserved as one before/after pair. Source-located KiCad and Gerber records are persisted and reopened successfully. Copper-area change and terminal/pad/connection correspondence remain unqualified where the source data does not establish them.'
+        : 'The received directory is preserved and sealed. No board-record extraction has run yet; this is an intake profile, not a qualified engineering review.'));
+    const inspector = element('section', undefined, 'ingestion-artifact');
+    inspector.setAttribute('aria-live', 'polite');
+    inspector.append(element('p', 'Choose an Inspect button to review the stored profile and source inventory.'));
+    const artifact = (key, label) => evidenceLink(intake.artifacts[key], label);
+    const runMaterialization = async () => {
+      inspector.replaceChildren(element('h3', 'Before/after record materialization'),
+        element('p', 'Verifying the sealed source package, extracting source-located KiCad and Gerber records, persisting them, and reopening the records in a fresh process. The sealed ORG and EDIT directories are presented as before and after; copper change and terminal/pad/connection matches remain unqualified until supported by the inputs.'));
+      try {
+        const response = await fetch('/api/ingestion/materialize-profile', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({dataset_id: dataset.id})
+        });
+        const result = await response.json();
+        if (!response.ok || result.status !== 'PASS') throw new Error(result.error || 'Materialization failed');
+        inspector.append(element('p', 'Materialization and fresh-process retrieval passed. Opening the newly verified publication…'));
+        window.location.href = result.url;
+      } catch (error) {
+        inspector.append(element('p', 'Materialization did not complete: ' + error.message, 'ingestion-error'));
+      }
+    };
+    const inspectMaterialization = () => {
+      if (!stored || stored.status !== 'PASS') return runMaterialization();
+      const evidence = stored.evidence || {};
+      const open = (name, label) => evidenceLink(evidence[name], label);
+      const before = stored.materialization?.comparison_intent?.native_revision_summaries?.before;
+      const after = stored.materialization?.comparison_intent?.native_revision_summaries?.after;
+      inspector.append(element('h3', 'Persisted before/after records · fresh retrieval passed'),
+        element('p', stored.materialization?.source_objects?.toLocaleString() + ' source-located records persisted across ' +
+          stored.materialization?.artifact_count + ' source files; ' + stored.materialization?.warning_count + ' parser or geometry warning groups retained.'),
+        element('p', 'SQLite store: ' + (stored.materialization?.store_root || (stored.bundle_root ? stored.bundle_root + '/store' : 'path recorded in the materialization bundle'))),
+        element('p', 'Before: ' + (before?.path || 'not present') + ' · ' + (before?.object_count ?? 0).toLocaleString() + ' native records.'),
+        element('p', 'After: ' + (after?.path || 'not present') + ' · ' + (after?.object_count ?? 0).toLocaleString() + ' native records.'),
+        element('p', 'Copper-area difference: ' + (stored.materialization?.comparison_intent?.copper_delta_status || 'NOT_ESTABLISHED') + '.'),
+        element('p', 'Terminal, pad and connection context: ' + (stored.materialization?.comparison_intent?.terminal_pad_connection_status || 'NOT_ESTABLISHED') + '.'),
+        open('materialization.json', 'Open paired materialization manifest ↗'),
+        open('reopened.json', 'Open fresh-process retrieval receipt ↗'),
+        open('acceptance.json', 'Open materialization acceptance ↗'));
+    };
+    const rows = [
+      ['Preserved inputs', 'Original directory bytes, paths and checksums', 'Verified · ' + intake.raw_files.length + ' files', 'Inspect preserved inputs', () => {
+        inspector.append(element('h3', 'Preserved inputs · ' + intake.raw_files.length + ' files'),
+          element('p', 'Project-relative package: ' + intake.package_root),
+          element('p', (intake.input_sets.preserved_directory?.bytes || 0).toLocaleString() + ' bytes · source tree SHA-256 ' +
+            (intake.input_sets.preserved_directory?.tree_sha256 || 'not available')),
+          artifact('entry', 'Open package index ↗'), artifact('manifest', 'Open file manifest ↗'),
+          artifact('checksums', 'Open package checksums ↗'));
+        const files = element('details');files.append(element('summary', 'Show all preserved source paths'));
+        const list = element('ul');
+        for (const row of intake.raw_files) list.append(element('li', row.path + ' · ' + row.bytes.toLocaleString() + ' bytes · SHA-256 ' + row.sha256));
+        files.append(list);inspector.append(files);
+      }],
+      ['File registration', 'Dataset identity, source paths, hashes and profile evidence', 'Implemented', 'Inspect registration', () => {
+        inspector.append(element('h3', 'File registration · ' + dataset.id),
+          element('p', dataset.sources.length + ' source files and ' + dataset.evidence.length + ' bound intake records.'),
+          link('registry.json', 'Open the published file registry ↗'));
+      }],
+      ['Intake profile', 'Provenance, inventory and qualification boundary', 'Sealed · qualification NOT_RUN', 'Inspect intake profile', () => {
+        inspector.append(element('h3', 'Intake profile · qualification NOT_RUN'),
+          artifact('profile', 'Open machine-readable profile ↗'),
+          evidenceLink(dataset.evidence.find(row => row.path.endsWith('/metadata/provenance.json')), 'Open source provenance ↗'),
+          evidenceLink(dataset.evidence.find(row => row.path.endsWith('/qualification/index.md')), 'Open qualification status ↗'),
+          element('p', dataset.qualification), element('p', dataset.intent));
+      }],
+      ['Board-record materialization', 'Before/after KiCad and Gerber records in a versioned store; warnings retained', stored?.status === 'PASS' ? 'Persisted · retrieval passed' : 'Not run', stored?.status === 'PASS' ? 'Inspect paired records' : 'Run paired extraction', inspectMaterialization, stored?.status === 'PASS' ? 'pass' : 'unknown'],
+      ['Reopened board queries', 'Fresh-process retrieval from both recorded revisions', stored?.status === 'PASS' ? 'Passed · fresh process' : 'Not run', stored?.status === 'PASS' ? 'Inspect retrieval receipt' : undefined, stored?.status === 'PASS' ? inspectMaterialization : undefined, stored?.status === 'PASS' ? 'pass' : 'unknown']
+    ];
+    persistenceRows(content, rows, inspector, 'Profiled intake persistence status');
+  }
+
+  function appendRegisteredPersistence(content, dataset, scene) {
+    const sources = dataset.sources || [], evidence = dataset.evidence || [];
+    const pipelines = linkedPipelines(dataset, scene);
+    const stored = pipelines.filter(row => row.stages?.some(stage => stage.stage === 'persistence' && stage.state === 'COMPLETE'));
+    const sampled = pipelines.filter(row => row.query_samples?.length || row.catalog_query_examples?.length);
+    content.append(element('h3', dataset.label + ' · what is stored on disk'),
+      element('p', 'This view describes the records linked to this registration. A missing artifact link is an availability limit, not a failed engineering check.'));
+    const inspector = element('section', undefined, 'ingestion-artifact');
+    inspector.setAttribute('aria-live', 'polite');
+    inspector.append(element('p', 'Choose an Inspect button to see the saved records and their disk locations.'));
+    function link(path, label) { return evidenceLink({snapshot:path}, label); }
+    function nativeRecords(rows, queries) {
+      inspector.append(element('h3', queries ? 'Recorded query samples' : 'Recorded native materialization'),
+        element('p', 'Historical REPLAY, matched by exact registered source SHA-256. Nominal geometry and recorded samples do not establish engineering acceptance.'));
+      if (scene.pipeline?.source_pipeline) inspector.append(element('p', 'Original catalog location: ' + scene.pipeline.source_pipeline + '/catalog/catalog.sqlite', 'ingestion-caption'));
+      for (const row of rows) {
+        const section = element('section');
+        section.append(element('h4', row.label), element('p', 'Catalog revision: ' + row.catalog_revision));
+        if (queries) {
+          section.append(element('p', available(row.query_samples?.length) + ' spatial/context samples; ' + available(row.catalog_query_examples?.length) + ' catalog query examples.'),
+            element('p', 'A reopen receipt is not linked in this publication. These samples do not assert a new reopen or a live query.'));
+        } else {
+          const stage = row.stages.find(stage => stage.stage === 'persistence');
+          section.append(element('p', 'Stored objects: ' + available(stage.counts?.stored_objects) +
+            ' · relation occurrences: ' + available(stage.counts?.stored_relation_occurrences) +
+            ' · geometry available: ' + available(row.inventory_counts?.geometry_available)));
+        }
+        if (row.evidence) section.append(evidenceLink(row.evidence, 'Open bound pipeline record ↗'));
+        if (row.source_evidence) section.append(evidenceLink(row.source_evidence, 'Open retained native source ↗'));
+        inspector.append(section);
+      }
+    }
+    persistenceRows(content, [
+      ['Preserved inputs', 'Registered source bytes and exact hashes', sources.length ? 'Verified files' : 'Not available', sources.length ? 'Inspect saved inputs' : undefined, sources.length ? () => {
+        inspector.append(element('h3', 'Preserved inputs · ' + sources.length + ' registered files'),
+          element('p', 'These original source locations and hashes were verified at publication. No dataset-level package seal is linked for this registration. Counts describe registered files; archive members are not expanded here.'));
+        const files = element('details');
+        files.append(element('summary', 'Show the ' + sources.length + ' preserved file paths'));
+        const list = element('ul');
+        for (const row of sources) list.append(element('li', row.path));
+        files.append(list);
+        inspector.append(files, link('registry.json', 'Open source paths and hashes ↗'));
+      } : undefined],
+      ['File registration', 'Dataset identity, source paths, hashes and evidence references', 'Implemented', 'Inspect registration', () => {
+        inspector.append(element('h3', 'File registration · ' + dataset.id), element('p', sources.length + ' source references and ' + evidence.length + ' evidence references.'),
+          link('registry.json', 'Open the published file registry ↗'), element('p', 'Project-relative disk location: contracts/ingestion_registry_v1.json'));
+      }],
+      ['Review materialization', 'Saved dataset metadata and bound evidence; geometry only where available', 'Implemented', 'Inspect saved review', () => {
+        inspector.append(element('h3', 'Review materialization · saved replay files'),
+          element('p', evidence.length + ' linked evidence records. Source/native comparison views: ' +
+            (dataset.qualification_data?.comparisons?.length ? dataset.qualification_data.comparisons.length : 'Not available in this registration') + '.'),
+          savedRecord('scene.json', 'Open saved scene.json', scene), savedRecord('receipt.json', 'Open publication receipt.json', scene),
+          element('p', 'Selecting this dataset loads the saved scene. The browser does not query a board database.'));
+      }],
+      ['Board-record materialization', 'Source-located objects and relationships in a recorded native revision', stored.length ? 'Recorded · ' + stored.length + (stored.length === 1 ? ' revision' : ' revisions') : 'Not linked', stored.length ? 'Inspect recorded objects' : undefined, stored.length ? () => nativeRecords(stored, false) : undefined],
+      ['Reopened board queries', 'Bounded saved query examples; reopen evidence identified separately', sampled.length ? 'Recorded samples only' : 'Not linked', sampled.length ? 'Inspect recorded samples' : undefined, sampled.length ? () => nativeRecords(sampled, true) : undefined, 'unknown']
+    ], inspector);
+    if (!pipelines.length) content.append(element('p', 'No native pipeline revision is matched to the registered file hashes here. Archive members and similarly named datasets are not automatically treated as the same source.', 'ingestion-caption'));
+  }
+
+  function deferredSection(label, render) {
+    const disclosure = element('details', undefined, 'ingestion-related');
+    disclosure.append(element('summary', label));
+    let loaded = false;
+    disclosure.ontoggle = () => {
+      if (!disclosure.open || loaded) return;
+      loaded = true;
+      render(disclosure);
+    };
+    return disclosure;
+  }
+
+  function appendResults(content, dataset) {
+    content.append(element('h3', 'What the input comparisons establish'),
+      element('p', dataset.qualification),
+      element('p', 'These are recorded correspondence checks over selected regions and drill tolerances. They do not establish whole-board revision equivalence or independently confirm electrical intent.'),
+      element('h3', 'Unresolved input questions'));
+    const limits = element('ul');
+    for (const message of [
+      'The L2GND difference is confirmed in the selected region. Its cause is unknown.',
+      'The reported Gerber-to-KiCad conversion has no verified tool, recipe or intermediate history.',
+      'Participation of a schematic or netlist has not been established. Native net assignments and Gerber X2 labels are source annotations.',
+      'Whole-board equivalence, independent electrical intent and manufacturing approval remain NOT_ESTABLISHED.'
+    ]) limits.append(element('li', message));
+    content.append(limits);
+  }
+
+  function appendFindings(content, dataset) {
+    content.append(element('h3', 'Input findings · matches, discrepancies and unknowns'));
+    appendComparisonStory(content, dataset);
+    content.append(element('p', 'Finding scope: the comparisons establish correspondence only in their recorded regions and drill tolerances. Whole-board equivalence remains NOT_ESTABLISHED.', 'ingestion-transition'),
+      deferredSection('Qualification & unknowns · what the input comparisons establish', section => appendResults(section, dataset)));
+  }
+
+  function appendAvailableFindings(content, dataset, scene) {
+    const hasComparisons = Boolean(dataset.qualification_data?.comparisons?.length);
+    if (hasComparisons) {
+      appendFindings(content, dataset);
+      return;
+    }
+    content.append(element('h3', 'Input findings · recorded scope and availability'),
+      element('h4', 'Recorded qualification'), element('p', available(dataset.qualification)),
+      element('h4', 'Source intent & provenance'), element('p', available(dataset.intent)),
+      element('p', 'Source/native comparison views: Not available in this registration. No empty comparison panes or zero differences are inferred.', 'ingestion-transition'));
+    const drills = recordFor(dataset, 'drills');
+    if (drills) {
+      appendMeasurements(content, drills);
+      receiptButton(content, dataset, drills);
+    } else content.append(element('p', 'Drill correspondence: Not recorded in this registration.', 'ingestion-caption'));
+    const pipelines = linkedPipelines(dataset, scene);
+    if (pipelines.length) {
+      content.append(deferredSection('Recorded native inventory · coverage and limitations', section => {
+        for (const row of pipelines) {
+          section.append(element('h4', row.label), element('p', 'Source objects: ' + available(row.inventory_counts?.source_objects) +
+            ' · nominal geometry available: ' + available(row.inventory_counts?.geometry_available)));
+          for (const limitation of row.limitations || []) section.append(element('p', limitation));
+          if (row.inventory_counts?.unsupported_reasons) section.append(details('Recorded unsupported geometry counts', row.inventory_counts.unsupported_reasons));
+          if (row.evidence) section.append(evidenceLink(row.evidence, 'Open bound inventory/pipeline record ↗'));
+        }
+      }));
+    }
+    content.append(element('h4', 'Bound qualification evidence'));
+    if (!dataset.evidence?.length) content.append(element('p', 'No qualification receipt is linked. No PASS or FAIL is inferred.'));
+    for (const reference of dataset.evidence || []) {
+      const row = element('p');
+      row.append(evidenceLink(reference, reference.path.split('/').at(-1) + ' ↗'));
+      content.append(row);
+    }
+    content.append(element('p', 'These are retained records with the scope stated above. Missing comparison or drill data is an availability limit. Correction and operation replays remain in Cases.', 'ingestion-caption'));
+  }
+
+  function appendDatasetStory(content, dataset, scene) {
+    const intake = scene.ingestion.intakes?.[dataset.id] ||
+      (scene.ingestion.intake?.dataset_id === dataset.id ? scene.ingestion.intake : null);
+    content.append(element('p', 'Two views of this dataset: Stored on disk identifies the durable artifacts. Input findings shows the recorded qualification, comparisons and unknowns where evidence is available.', 'ingestion-intro'));
+    const choices = element('nav', undefined, 'ingestion-story-nav');
+    choices.setAttribute('aria-label', 'Dataset review');
+    const stage = element('div', undefined, 'ingestion-stage');
+    const chapters = [
+      ['Stored on disk', 'What has been preserved and materialized?',
+        'Start with the durable artifacts. This view identifies the stored files, recorded materializations and any missing evidence links for this dataset.',
+        () => {
+          if (intake) appendPersistence(stage, dataset, intake, scene);
+          else appendRegisteredPersistence(stage, dataset, scene);
+          appendInputStages(stage, dataset, scene);
+        }],
+      ['Input findings', 'Matches, discrepancies and remaining unknowns',
+        'Review the findings linked to these inputs. Comparison geometry and measurements are shown only when they are available; each dataset retains its own qualification scope.',
+        () => appendAvailableFindings(stage, dataset, scene)]
+    ];
+    const buttons = [];
+    const progress = element('p', undefined, 'eyebrow');
+    progress.setAttribute('aria-live', 'polite');
+    const steps = element('nav', undefined, 'ingestion-review-steps');
+    steps.setAttribute('aria-label', 'Continue dataset evidence review');
+    const previous = element('button'), next = element('button');
+    previous.dataset.reviewDirection = 'previous';
+    next.dataset.reviewDirection = 'next';
+    let selected = 0;
+    function open(index) {
+      if (index < 0 || index >= chapters.length) return;
+      selected = index;
+      buttons.forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+        item.setAttribute('aria-pressed', String(i === index));
+        item.setAttribute('aria-current', i === index ? 'step' : 'false');
+      });
+      progress.textContent = 'View ' + (index + 1) + ' of ' + chapters.length + ' · ' + chapters[index][0];
+      stage.replaceChildren(element('p', chapters[index][2], 'ingestion-transition'));
+      chapters[index][3]();
+      previous.disabled = index === 0;
+      next.disabled = index === chapters.length - 1;
+      previous.textContent = index === 0 ? 'Start of review' : '← ' + chapters[index - 1][0];
+      next.textContent = index === chapters.length - 1 ? 'End of review' : chapters[index + 1][0] + ' →';
+    }
+    for (const [index, [title, caption]] of chapters.entries()) {
+      const button = element('button');
+      button.append(element('strong', title), element('small', caption));
+      button.onclick = () => open(index);
+      buttons.push(button);
+      choices.append(button);
+    }
+    function continueReview(index) {
+      open(index);
+      progress.scrollIntoView?.({block: 'start'});
+    }
+    previous.onclick = () => continueReview(selected - 1);
+    next.onclick = () => continueReview(selected + 1);
+    steps.append(previous, next);
+    content.append(choices, progress, stage, steps);
+    open(0);
+  }
+
+  function appendQualification(content, dataset) {
+    const qualification = dataset.qualification_data;
+    if (!qualification?.records?.length) {
+      content.append(element('p', 'Additional correspondence/drill measurements: NOT_AVAILABLE for this dataset. Consult its scoped bound evidence.'));
+      return;
+    }
+    content.append(element('h2', 'Recorded qualification · bound receipt values'));
+    for (const record of qualification.records) appendReceipt(content, dataset, record);
+    for (const view of qualification.comparisons) content.append(details(view.label + ' · render input hashes and scope', {
+      inputs: view.inputs, roi_mm: view.roi_mm, basis: view.basis
+    }));
+    content.append(element('p', 'Native (x,y) → Gerber (x,-y) → display (x,y), millimetres, no best fitting. Client native board-record ingestion: NOT_IMPLEMENTED. Whole-board equivalence, independent electrical intent and manufacturing: NOT_ESTABLISHED.'));
+  }
+
+  function appendReview(content, review) {
+    const status = review?.status || 'NOT_RECORDED';
+    const reason = review?.reason ? ' · ' + review.reason : '';
+    const line = element('p', 'Cursor review at generation: ' + status + reason +
+      '. Later audit addenda are separate records.');
+    line.dataset.reviewStatus = status;
+    content.append(line);
+  }
+
+  function appendDataset(content, dataset, scene) {
+    content.append(element('h2', dataset.label));
+    appendDatasetStory(content, dataset, scene);
+    const evidence = element('details', undefined, 'ingestion-evidence');
+    evidence.append(element('summary', 'Evidence & technical details · receipts, source hashes and scope'),
+      element('p', dataset.id), element('p', dataset.qualification), element('p', dataset.intent),
+      element('p', 'Source verification at publication: PASS. Historical evidence REPLAY; this is not a new engineering acceptance. Common object catalogue: DEFERRED.'));
+    appendQualification(evidence, dataset);
+    evidence.append(element('h2', 'Bound evidence'));
+    for (const reference of dataset.evidence) {
+      const row = element('p');
+      row.append(evidenceLink(reference, reference.path), element('small', ' · SHA-256 ' + reference.sha256));
+      evidence.append(row);
+    }
+    evidence.append(details('Source content revisions and exact hashes (' + dataset.sources.length + ')', dataset.sources),
+      element('p', 'SQLite ordered access / Rtree candidates / GEOS predicates remain reference paths. DB0 SHADOW_ONLY; historical parity does not widen this dataset’s qualification.'));
+    appendReview(evidence, scene.ingestion.cursor_review);
+    content.append(evidence);
+  }
+
+  function init(scene) {
+    if (!scene.ingestion) return;
+    const byId = id => document.getElementById(id);
+    const navigation = byId('workbench-views');
+    const panel = element('section', undefined, 'card');
+    panel.id = 'ingestion-view';
+    panel.hidden = true;
+    navigation.after(panel);
+    let dataset = scene.ingestion.datasets[0];
+
+    function render() {
+      const toolbar = element('div', undefined, 'toolbar');
+      toolbar.append(element('h2', 'Datasets / Ingestion · REPLAY'));
+      const select = element('select');
+      select.setAttribute('aria-label', 'Registered dataset');
+      for (const item of scene.ingestion.datasets) {
+        const option = element('option', item.label);
+        option.value = item.id;
+        select.append(option);
+      }
+      select.value = dataset?.id || '';
+      select.disabled = !dataset;
+      select.onchange = () => {
+        dataset = scene.ingestion.datasets.find(item => item.id === select.value);
+        render();
+      };
+      toolbar.append(select);
+      if (typeof directoryIntakeControl === 'function') toolbar.append(directoryIntakeControl(dataset));
+      const content = element('div', undefined, 'side-section');
+      if (dataset) appendDataset(content, dataset, scene);
+      else content.append(element('h2', 'No datasets registered'), element('p', 'Use + to restore a qualified dataset directory. Removing rows retains the source files and historical review runs.'));
+      panel.replaceChildren(toolbar, content);
+    }
+
+    const entry = element('button', 'Datasets / Ingestion');
+    entry.id = 'ingestion-tab';
+    entry.onclick = () => {
+      for (const button of navigation.children) button.classList.toggle('active', button === entry);
+      byId('case-view').hidden = true;
+      byId('pipeline-view').hidden = true;
+      panel.hidden = false;
+      byId('headline').textContent = 'Datasets / Ingestion';
+      byId('story').textContent = 'Retained sources, provenance, bounded qualification and evidence';
+      render();
+    };
+    navigation.prepend(entry);
+    navigation.addEventListener('click', event => {
+      if (event.target !== entry && event.target.tagName === 'BUTTON') panel.hidden = true;
+    });
+    const route = typeof location === 'undefined' ? '' : location.hash;
+    const requested = scene.ingestion.datasets.find(item => route === '#dataset=' + encodeURIComponent(item.id));
+    if (requested) dataset = requested;
+    entry.onclick();
+  }
+
+  return { init };
+})();
+
+function initIngestion(scene) {
+  ingestionUI.init(scene);
+}

@@ -149,7 +149,7 @@ def geometry(node,kind):
         return LineString(pts).buffer(width/2,quad_segs=steps(width/2))
     if kind in ('gr_circle','fp_circle'):
         a=xy('center');b=xy('end');radius=math.dist(a,b);fill=str(one(node,'fill',['none'])[0])
-        if fill=='solid':return Point(*a).buffer(radius,quad_segs=steps(radius))
+        if fill in ('yes','solid'):return Point(*a).buffer(radius,quad_segs=steps(radius))
         if width<=0:raise UnsupportedGeometry('NON_POSITIVE_STROKE')
         return Point(*a).buffer(radius+width/2,quad_segs=steps(radius+width/2)).difference(Point(*a).buffer(max(0,radius-width/2),quad_segs=steps(radius)))
     if kind in ('gr_rect','fp_rect','gr_poly','fp_poly','filled_polygon'):
@@ -160,7 +160,7 @@ def geometry(node,kind):
             if not shape.is_valid:
                 from .gerber_image import contour
                 shape=contour(coords+[coords[0]] if coords[0]!=coords[-1] else coords)
-        if kind=='filled_polygon' or str(one(node,'fill',['none'])[0])=='solid':return shape
+        if kind=='filled_polygon' or str(one(node,'fill',['none'])[0]) in ('yes','solid'):return shape
         if width<=0:raise UnsupportedGeometry('NON_POSITIVE_STROKE')
         return shape.boundary.buffer(width/2,quad_segs=steps(width/2))
     raise UnsupportedGeometry('UNQUALIFIED_GEOMETRY_'+kind)

@@ -18,14 +18,20 @@ def bound(path,expected):
     if not p.is_file() or sha(p)!=expected:raise UnverifiedEvidence('STALE / UNVERIFIED: missing or mismatched '+str(p))
     return p
 
-def svg_path(geometry,tolerance=.001):
-    g=geometry.simplify(tolerance,preserve_topology=True)
+def svg_path(geometry,tolerance=.001,*,coordinate_precision=5):
+    """Serialize polygon geometry for SVG inspection.
+
+    ``tolerance=None`` retains the stored geometry vertices without geometric
+    simplification. Coordinate formatting remains an explicit display
+    quantization and is never an acceptance measurement.
+    """
+    g=geometry if tolerance is None else geometry.simplify(tolerance,preserve_topology=True)
     polygons=list(g.geoms) if g.geom_type=='MultiPolygon' else ([] if g.is_empty else [g])
     out=[]
     for p in polygons:
         if p.geom_type!='Polygon':raise ValueError('non-polygon composed image')
         for ring in [p.exterior,*p.interiors]:
-            out.append('M'+' L'.join(f'{x:.5f} {y:.5f}' for x,y in ring.coords)+' Z')
+            out.append('M'+' L'.join(f'{x:.{coordinate_precision}f} {y:.{coordinate_precision}f}' for x,y in ring.coords)+' Z')
     return ' '.join(out)
 
 def bounds(g,pad=.7):

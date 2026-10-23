@@ -165,6 +165,55 @@ class PublicationPathTests(unittest.TestCase):
         publish(self.root,config,self.destination)
         self.assertEqual(config,before)
 
+    def test_identity_review_images_are_hash_bound_and_staged_for_findings(self):
+        from src.ingestion_registry import publish
+        review=self.root/'review_artifacts';(review/'images').mkdir(parents=True,exist_ok=True)
+        (review/'groups').mkdir(parents=True,exist_ok=True)
+        manifest={'schema':'pcb-native-object-manual-review-v1','entries':[{'image_file':'sample.svg'}]}
+        (review/'manifest.json').write_text(json.dumps(manifest))
+        (review/'images/sample.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg"/>')
+        groups={'schema':'pcb-copper-neighborhood-review-v1','groups':[{'image_file':'group.svg'}]}
+        (review/'groups.json').write_text(json.dumps(groups))
+        (review/'groups/group.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg"><text>group</text></svg>')
+        (review/'screenshot').mkdir()
+        (review/'screenshot/pairs.csv').write_text('ORG,EDIT\na,b\n')
+        (review/'DOMAIN_QUESTIONS.md').write_text('# PCB domain questions\n')
+        config=copy.deepcopy(self.config)
+        config['identity_reviews']={'test':{
+            'manifest':{'path':'review_artifacts/manifest.json','sha256':sha(review/'manifest.json')},
+            'images':[{'path':'review_artifacts/images/sample.svg','sha256':sha(review/'images/sample.svg')}],
+            'summary':{'image_count':1},
+            'groups_manifest':{'path':'review_artifacts/groups.json','sha256':sha(review/'groups.json')},
+            'group_images':[{'path':'review_artifacts/groups/group.svg','sha256':sha(review/'groups/group.svg')}],
+            'group_summary':{'group_count':1},
+            'screenshot_evidence':[{'id':'pairs','label':'Joint crop pairs','kind':'csv',
+                                    'path':'review_artifacts/screenshot/pairs.csv',
+                                    'sha256':sha(review/'screenshot/pairs.csv')}],
+            'context':{'path':'review_artifacts/DOMAIN_QUESTIONS.md','sha256':sha(review/'DOMAIN_QUESTIONS.md')}}}
+        run=publish(self.root,config,self.destination)
+        scene=json.loads((run/'scene.json').read_text())
+        linked=scene['ingestion']['identity_reviews']['test']
+        self.assertEqual(linked['image_count'],1)
+        self.assertEqual(linked['group_image_count'],1)
+        image=run/linked['images_root']/'sample.svg'
+        self.assertTrue(image.exists())
+        self.assertEqual(image.read_text(),
+                         '<svg xmlns="http://www.w3.org/2000/svg"/>')
+        group_image=run/linked['group_images_root']/'group.svg'
+        self.assertTrue(group_image.exists())
+        self.assertEqual(group_image.read_text(), '<svg xmlns="http://www.w3.org/2000/svg"><text>group</text></svg>')
+        self.assertEqual((run/linked['context']['snapshot']).read_text(), '# PCB domain questions\n')
+        pair_evidence=linked['screenshot_evidence'][0]
+        self.assertEqual(pair_evidence['id'],'pairs')
+        self.assertEqual((run/pair_evidence['snapshot']).read_text(),'ORG,EDIT\na,b\n')
+        self.assertEqual(self.cli(run).returncode,0)
+        stale=copy.deepcopy(config)
+        stale['identity_reviews']['test']['screenshot_evidence'][0]['sha256']='0'*64
+        previous=(self.destination/'index.html').read_bytes()
+        with self.assertRaisesRegex(ValueError,'STALE'):
+            publish(self.root,stale,self.destination)
+        self.assertEqual((self.destination/'index.html').read_bytes(),previous)
+
     def test_zero_registered_rows_is_a_real_verified_workbench_not_an_empty_receipt(self):
         from src.ingestion_registry import publish
         config=copy.deepcopy(self.config);config['datasets']=[]

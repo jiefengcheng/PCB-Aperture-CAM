@@ -61,13 +61,13 @@ Record that printed directory in your review notes. Each new manual session gets
 # Check the existing result before rebuilding
 
 ```sh
-python3 docs/okf/references/verify_runbooks.py
+.venv/bin/python docs/okf/references/verify_runbooks.py
 .venv/bin/python tools/preflight.py --output "$pcb_cam_review_dir/preflight.json"
-python3 dataset/vme-wren_20261016_v1/scripts/verify.py   --expected-seal 7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e   --receipt "$pcb_cam_review_dir/intake.json"
+.venv/bin/python dataset/vme-wren_20261016_v1/scripts/verify.py   --expected-seal 7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e   --receipt "$pcb_cam_review_dir/intake.json"
 .venv/bin/python tools/ingestion.py --verify   out/ingestion/workbench/run-05888c57424f4db48bd9821fc8324b36
 ```
 
-Expected: runbooks `PASS`; preflight `PASS_BOOTSTRAP_ONLY` with 70 assets; sealed intake `PASS`; publication `PASS` with 351 outputs, five datasets and three comparisons. Preflight NOT_RUN fields describe that check's scope, not a revision of historical engineering results.
+Historical expected result: runbooks `PASS`; preflight `PASS_BOOTSTRAP_ONLY` with 70 assets; sealed intake `PASS`; publication `PASS` with 351 outputs, five datasets and three comparisons. On 2026-10-23 the runbook source bindings were refreshed, but the sealed intake verifier found unlisted `.DS_Store` files at the package root and `raw/`. A hard-link view containing only the 70 signed entries passes full verification; the original directory remains strict-inventory FAIL. Preserve the original directory and do not report it as currently verified until its inventory is reconciled. Preflight NOT_RUN fields describe that check's scope, not a revision of historical engineering results.
 
 The following read-only check verifies that the original false-positive controls now reject. Its wrapper exits successfully only if both controls are rejected as expected; it does not alter them.
 
@@ -91,7 +91,7 @@ PYCODE
 Use the existing server if it is available. Otherwise, in a second terminal from the checkout, start:
 
 ```sh
-python3 -m http.server 8768 --bind 127.0.0.1 --directory out/ingestion/workbench
+.venv/bin/python -m http.server 8768 --bind 127.0.0.1 --directory out/ingestion/workbench
 ```
 
 Keep that terminal open. Open the exact [Cursor-reviewed publication](http://127.0.0.1:8768/run-05888c57424f4db48bd9821fc8324b36/index.html). The convenience entry is [index.html](http://127.0.0.1:8768/index.html), which may point to a different run after future publication. If port 8768 is occupied by another service, use an unused loopback port and adjust the URLs; do not stop an unrelated process.
@@ -140,7 +140,7 @@ PYCODE
 In a terminal with `pcb_cam_review_dir` set to the exact directory printed earlier, serve this separate output on an unused port. A new terminal does not inherit that shell variable; set it there first. The guard below rejects an unset variable.
 
 ```sh
-python3 -m http.server 8769 --bind 127.0.0.1 \
+.venv/bin/python -m http.server 8769 --bind 127.0.0.1 \
   --directory "${pcb_cam_review_dir:?Set pcb_cam_review_dir to your printed review directory}/workbench"
 ```
  Open [the separate replay entry](http://127.0.0.1:8769/index.html). Keep its new receipt/run identity in your notes. The earlier Cursor verdict does not automatically review this new build.

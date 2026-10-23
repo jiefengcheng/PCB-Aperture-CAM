@@ -17,7 +17,7 @@ Actual source inputs are the 42 files in `external/sources/12_copper_layers_pcb_
 The visual builder also requires a sealed consolidated base and a prior operation result:
 
 ```sh
-python3 - <<'PYCODE'
+.venv/bin/python - <<'PYCODE'
 from pathlib import Path
 import hashlib, json, subprocess
 manifest = json.loads(Path('dataset/vme-wren_20261016_v1/metadata/manifest.json').read_text())

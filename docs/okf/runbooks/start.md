@@ -13,8 +13,8 @@ sources: [{"id": "implementation", "resource": "/references/sources.json", "titl
 All commands below run from the project root. First read the current `AGENTS.md`; the runbook documents existing capabilities and does not grant new scope. Client registration, synthetic execution, native discovery, validation and visual replay have different evidentiary roles.
 
 ```sh
-python3 docs/okf/references/verify_runbooks.py
-python3 tools/preflight.py
+.venv/bin/python docs/okf/references/verify_runbooks.py
+.venv/bin/python tools/preflight.py
 .venv/bin/python -c "import sys, gerbonara, shapely; print(sys.version); print(gerbonara.__version__, shapely.__version__)"
 ```
 
@@ -23,6 +23,8 @@ The preflight performs strict manifest inventory, including unexpected files, an
 # Runtime
 
 Use the checkout's existing `.venv/bin/python` for project tools and its pinned `requirements.lock.txt`. Dataset hash verification uses plain Python 3.9+ instead. Report missing dependencies; don't silently substitute another environment or install/upgrade packages as part of a replay.
+
+The offline dataset verifier is standard-library-only and can also be run with the project `.venv/bin/python`; keep all repository Python commands in this runbook on that environment.
 
 The tested local development CLI is:
 

@@ -65,13 +65,13 @@ The original client bottom-copper region was already aligned. The +0.35-mm offse
 These existing checks verify recorded structure and custody, not engineering outcomes:
 
 ```sh
-python3 docs/okf/references/verify_runbooks.py
-python3 dataset/vme-wren_20261016_v1/scripts/verify.py \
+.venv/bin/python docs/okf/references/verify_runbooks.py
+.venv/bin/python dataset/vme-wren_20261016_v1/scripts/verify.py \
   --expected-seal 7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e
 ```
 
-# Status and new-chat resume instruction
+# Status and continuation context
 
-This handoff is prepared; the new ingestion consolidation implementation and its acceptance audit are not completed by writing it. The session's tool inventory has no `create_thread`; the documented UI tool refused access to the Codex app. A new chat was not created. Do not bypass that restriction through app internals or global configuration.
+The preceding paragraph records the original 2026-10-16 handoff status. The nine ingestion requirements were subsequently addressed in the local OKF baseline and corrected completion audit; common-catalogue work was later explicitly authorized and is linked from [the catalogue result](../catalogue/minimum-slice.md). The ORG-map G3 display-path fidelity result is documented in [the current geometry fidelity entry](org-svg-fidelity.md). Current source applicability and package integrity must be rechecked before relying on any historical PASS: see [the latest revalidation](../references/handoff-revalidation-20261023.json). The current review also has a separate pending human visual judgment in the G22 record; do not fill it in for the user.
 
 In a new chat attached to this checkout, use: "Read docs/okf/ingestion/handoff.md and complete its agreed ingestion consolidation scope end to end. Keep Define the common catalogue and its implementation deferred for my review afterward."

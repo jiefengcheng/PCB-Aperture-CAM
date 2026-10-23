@@ -1,0 +1,32 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const path=require('node:path');
+const {webcrypto}=require('node:crypto');
+const {Element}=require('./ingestion_views.test.cjs');
+async function run(){
+ let sent=null,destination=null,fail=false;
+ const document={createElement:t=>{const e=new Element(t);e.click=()=>e.clicked=true;return e;}};
+ const context=vm.createContext({document,URL,crypto:webcrypto,location:{href:'http://127.0.0.1:8769/run/index.html',origin:'http://127.0.0.1:8769',assign:url=>destination=url},fetch:async(url,options)=>{sent={url,...options};return {ok:!fail,json:async()=>fail?{status:'FAIL',error:'changed package'}:{status:'PASS',url:'/restored/index.html#dataset=sample'}};}});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../../web/directory_intake.js'),'utf8'),context);
+ const control=vm.runInContext('directoryIntakeControl()',context),[button,input,status]=control.children;
+ button.onclick();assert.equal(input.clicked,true);assert.equal(input.attrs.webkitdirectory,'');
+ const file={webkitRelativePath:'sample/raw/board.gbr',size:3,arrayBuffer:async()=>new Uint8Array([1,2,3]).buffer};
+ input.files=[file];await input.onchange();
+ assert.equal(sent.url,'/api/ingestion/directories');
+ const request=JSON.parse(sent.body);assert.equal(request.package_name,'sample');assert.equal(request.files[0].path,'raw/board.gbr');assert.equal(request.files[0].sha256,'039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81');
+ assert.equal(destination,'http://127.0.0.1:8769/restored/index.html#dataset=sample');
+ assert.equal(request.files[0].bytes,3);assert.equal(request.files[0].content,undefined,'No file contents uploaded');
+ fail=true;destination=null;await input.onchange();assert.equal(destination,null);assert.match(status.textContent,/Not added\/restored: changed package.*Previous publication retained/);assert.equal(button.disabled,false);
+ input.files=[];sent=null;await input.onchange();assert.equal(sent,null,'Cancel does not send an intake request');
+ assert.equal(control.children[3].disabled,true,'Minus is disabled without a selected dataset');
+ const selected=vm.runInContext('directoryIntakeControl({id:"sample",label:"Sample"})',context);
+ fail=false;destination=null;await selected.children[3].onclick();
+ assert.equal(sent.url,'/api/ingestion/remove');assert.deepEqual(JSON.parse(sent.body),{dataset_id:'sample'});
+ assert.ok(destination);fail=true;destination=null;await selected.children[3].onclick();
+ assert.equal(destination,null);assert.match(selected.children[2].textContent,/Not removed: changed package.*Previous publication retained/);
+ assert.equal(selected.children[0].disabled,false);assert.equal(selected.children[3].disabled,false);
+ return {status:'PASS',checks:['Plus opens a directory picker','Selected file bytes are hashed and only relative identities sent to loopback','Successful restoration opens its new publication','Failure and cancellation retain the previous page','Minus sends only the selected identity and handles failed publication','Minus is disabled with no selected row']};
+}
+module.exports={run};
+if(require.main===module)run().then(result=>console.log(JSON.stringify(result)));

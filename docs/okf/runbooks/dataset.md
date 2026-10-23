@@ -15,11 +15,13 @@ dataset_seal: "7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e"
 The registered intake is `dataset/vme-wren_20261016_v1/`. Its entry point is `index.md`, with source identities and provenance in `metadata/`. It contains one native board, all 42 supplied Gerber/drill/layer files, and the original ZIP. Packaging version 1.0.0 is separate from an unknown client CAD revision.
 
 ```sh
-python3 dataset/vme-wren_20261016_v1/scripts/verify.py \
+.venv/bin/python dataset/vme-wren_20261016_v1/scripts/verify.py \
   --expected-seal 7b1374e5eeb4cac943f3d7512a19da8a65a93212bd6bfa80c006930c85bc9e0e
 ```
 
-This is offline, standard-library-only, and works from any working directory when invoked by absolute path. Optional `--receipt` must point outside the sealed dataset, normally to a fresh `out/dataset_registration/` path. Exit 0/PASS covers byte hashes, strict inventory, emitted OKF metadata and links, archive equality and source bindings. It does not recompute geometry.
+This is offline and standard-library-only, and uses the project `.venv/bin/python`. Optional `--receipt` must point outside the sealed dataset, normally to a fresh `out/dataset_registration/` path. Exit 0/PASS covers byte hashes, strict inventory, emitted OKF metadata and links, archive equality and source bindings. It does not recompute geometry.
+
+**Current revalidation note (2026-10-23):** the original external `SHA256SUMS` seal still matches, but the strict verifier currently reports `FAIL` because `.DS_Store` and `raw/.DS_Store` are unlisted. A read-only hard-link view of exactly the 70 signed entries passes the complete verifier, showing that the declared payload is intact while the original directory still fails exact inventory. Keep the stored directory unchanged and do not call the original package verified until its exact inventory is reconciled. See the [handoff revalidation record](/references/handoff-revalidation-20261023.json).
 
 # Intake policy
 

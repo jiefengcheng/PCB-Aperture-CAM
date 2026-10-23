@@ -45,7 +45,10 @@ function renderCatalogueThemes(scene,panel,onLegacy){
   document.getElementById('story').textContent='Follow one real stored context through discovery, grouping, persistence and selective export.';
   const toolbar=el('div');toolbar.className='toolbar';toolbar.append(el('b','Preliminary infrastructure view · REPLAY'));
   const selector=el('select');selector.setAttribute('aria-label','Source revision');const option=el('option','Client VME-WREN · R140 context');option.value='common';selector.append(option);
-  for(const d of scene.pipeline?.datasets||[]){const o=el('option',d.label+' · retained native inspector');o.value=d.label;selector.append(o);}selector.onchange=()=>{if(selector.value!=='common')onLegacy(selector.value);};toolbar.append(selector);panel.append(toolbar);
+  for(const d of scene.pipeline?.datasets||[]){const o=el('option',d.label+' · retained native inspector');o.value=d.label;selector.append(o);}selector.onchange=()=>{if(selector.value!=='common')onLegacy(selector.value);};toolbar.append(selector);
+  const mapIds=Object.keys(scene.ingestion?.org_family_maps||{}).sort();
+  if(mapIds.length){const review=el('button','Inspect ORG family hypotheses');review.type='button';review.onclick=()=>window.openOrgFamilyReview?.(mapIds[0]);toolbar.append(review);}
+  panel.append(toolbar);
   const nav=el('nav');nav.className='catalogue-theme-nav';nav.setAttribute('aria-label','Storage themes');
   const stats={discovery:facts.sqlite.counts.objects+' stored occurrences',grouping:result.relationships.topology.components.length+' copper groups',storage:facts.sqlite.counts.revisions+' artifact revisions',export:catalogueThemeSelection(result,[...exportRoles]).object_count+' objects with dependencies'};
   for(const [i,key] of Object.keys(titles).entries()){const b=el('button');b.dataset.storageTheme=key;b.setAttribute('aria-pressed',String(theme===key));b.append(el('small',String(i+1)),el('strong',titles[key]),el('span',stats[key]));b.onclick=()=>{theme=key;render();};nav.append(b);}panel.append(nav);

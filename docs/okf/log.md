@@ -1,5 +1,9 @@
 # Runbook update log
 
+## 2026-10-23
+
+- Completed a bounded ORG G3 WKB-to-SVG display fidelity audit for 8,476 paths. Stored paths pass the measured coordinate-rounding bound; simplified paths pass the measured envelope after reducing the parameter to 0.00005 mm. Added explicit even-odd fill semantics and checked all 44 paths in the largest complete browser group, viewport containment, and seed highlighting. See `ingestion/org-svg-fidelity.md` and `out/ingestion/audits/20261023_org_svg_geometry_fidelity_g3/`. The VME-WREN inventory issue and pending G22 user review remain separate.
+
 ## 2026-10-17
 
 - **Handoff**: Recorded the user-authorized ingestion consolidation, shared dataset entry and workbench review scope in [the new-chat handoff](ingestion/handoff.md).
@@ -79,3 +83,7 @@ Completed the authorized bounded R140 common catalogue. Original byte identities
 ## 2026-10-18
 
 Delivered preliminary Storage & indexes themes over the existing R140 store. Added source-derived disk/index inventories, relationship schematic, subset preview and real read-only local manifest download with dependency and recorded-relationship retention. Actual browser mask-only export has three objects and no writes. 161 Python tests, five JS suites, preserved case/pipeline/core-result checks and independent Cursor QUALIFIED_IN_DECLARED_SCOPE review pass. New and prior publications verify; sealed inputs and engineering limits remain unchanged.
+
+## 2026-10-23
+
+Refreshed the OKF source register from the current working tree, preserving earlier source snapshots, and standardized repository Python commands on `.venv/bin/python`. The OKF/runbook verifier now passes; the active six-dataset publication verifies 2,416 outputs. Current VME-WREN strict intake verification fails on two unlisted `.DS_Store` files. Their hashes and the exact boundary are recorded in `handoff-revalidation-20261023.json`; the sealed directory was not modified. G22 remains prepared for human visual review; no decision is recorded for the user.

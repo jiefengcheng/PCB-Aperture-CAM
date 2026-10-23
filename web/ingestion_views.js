@@ -18,6 +18,72 @@ const ingestionUI = (() => {
     return link;
   }
 
+  function highlightSourcePair(svgDocument, pair) {
+    if (!svgDocument?.querySelectorAll) return { matched: false, selected: 0 };
+    const nodes = [...svgDocument.querySelectorAll('[data-source-identity][data-source-side]')];
+    const clearSelection = () => {
+      for (const node of nodes) {
+        node.removeAttribute('data-pair-selected');
+        node.removeAttribute('data-pair-selected-side');
+        const shape = node.firstElementChild;
+        if (!shape || !shape.hasAttribute('data-original-stroke')) continue;
+        shape.setAttribute('stroke', shape.getAttribute('data-original-stroke'));
+        shape.setAttribute('stroke-width', shape.getAttribute('data-original-stroke-width'));
+        shape.removeAttribute('vector-effect');
+        const originalFilter = shape.getAttribute('data-original-filter');
+        if (originalFilter) shape.setAttribute('filter', originalFilter);
+        else shape.removeAttribute('filter');
+      }
+    };
+    const orgId = pair?.ORG_source_identity;
+    const editId = pair?.EDIT_source_identity;
+    if (!orgId || !editId || orgId === editId) {
+      clearSelection();
+      return { matched: false, selected: 0 };
+    }
+    const matchingNodes = (identity, side) => nodes.filter(node =>
+      node.getAttribute('data-source-identity') === identity &&
+      node.getAttribute('data-source-side') === side && node.firstElementChild);
+    const orgNodes = matchingNodes(orgId, 'before');
+    const editNodes = matchingNodes(editId, 'after');
+    clearSelection();
+    if (orgNodes.length !== 1 || editNodes.length !== 1) {
+      return { matched: false, selected: 0 };
+    }
+    for (const node of [orgNodes[0], editNodes[0]]) {
+      const identity = node.getAttribute('data-source-identity');
+      const side = node.getAttribute('data-source-side');
+      const shape = node.firstElementChild;
+      if (!shape.hasAttribute('data-original-stroke')) {
+        shape.setAttribute('data-original-stroke', shape.getAttribute('stroke') || 'none');
+        shape.setAttribute('data-original-stroke-width', shape.getAttribute('stroke-width') || '1');
+        shape.setAttribute('data-original-filter', shape.getAttribute('filter') || '');
+      }
+      node.setAttribute('data-pair-selected', 'true');
+      node.setAttribute('data-pair-selected-side', side);
+      shape.setAttribute('stroke', '#ffb000');
+      shape.setAttribute('stroke-width', '7');
+      shape.setAttribute('vector-effect', 'non-scaling-stroke');
+      shape.setAttribute('filter', 'drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 5px #bf5b00)');
+    }
+    return { matched: true, selected: 2 };
+  }
+
+  function pairSelectionSummary(pair, index) {
+    const point = value => {
+      try {
+        const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+        return '[' + parsed.map(number => Number(number).toFixed(3)).join(', ') + ']';
+      } catch (_) { return available(value); }
+    };
+    const cad = Number(pair.CAD_registered_center_displacement_mm);
+    const org = Number(pair.ORG_residual_mm), edit = Number(pair.EDIT_residual_mm);
+    return `Pair ${index + 1} · ORG ${point(pair.ORG_source_center_mm)} mm ↔ EDIT ${point(pair.EDIT_source_center_mm)} mm · ` +
+      `registered CAD center displacement ${Number.isFinite(cad) ? cad.toFixed(6) : 'NOT_AVAILABLE'} mm · ` +
+      `screenshot-fit center residuals ORG ${Number.isFinite(org) ? org.toFixed(4) : 'NOT_AVAILABLE'} mm / ` +
+      `EDIT ${Number.isFinite(edit) ? edit.toFixed(4) : 'NOT_AVAILABLE'} mm. Source identities are geometric; semantics remain NOT_ESTABLISHED.`;
+  }
+
   function savedRecord(path, label, scene) {
     const panel = element('details');
     panel.className = 'ingestion-saved-record';
@@ -269,6 +335,9 @@ const ingestionUI = (() => {
   }
 
   function appendPersistence(content, dataset, intake, scene) {
+    if (intake.profile_kind === 'pcb-cam-general-intake-manifest-v1') {
+      return appendProfilePersistence(content, dataset, intake, scene);
+    }
     const context=scene?.common_context?.dataset_id===dataset.id?scene.common_context:null;
     content.append(element('h3', 'Client persistence · what is stored on disk'),
       element('p', context?'Inputs, registration and review files are saved. A bounded R140 context is also materialized and has been reopened in fresh processes. Full-board records and queries remain outside this slice.':'The first three layers are saved files that can be reopened. Client board-object records and board queries are not materialized.'));
@@ -331,6 +400,81 @@ const ingestionUI = (() => {
       }:undefined]
     ];
     persistenceRows(content, rows, inspector, 'Client persistence status', 'Client status');
+  }
+
+  function appendProfilePersistence(content, dataset, intake, scene) {
+    const stored = scene.ingestion?.record_materializations?.[dataset.id];
+    content.append(element('h3', 'Profiled intake · what is stored on disk'),
+      element('p', stored?.status === 'PASS'
+        ? 'The sealed directory is preserved as one before/after pair. Source-located KiCad and Gerber records are persisted and reopened successfully. Copper-area change and terminal/pad/connection correspondence remain unqualified where the source data does not establish them.'
+        : 'The received directory is preserved and sealed. No board-record extraction has run yet; this is an intake profile, not a qualified engineering review.'));
+    const inspector = element('section', undefined, 'ingestion-artifact');
+    inspector.setAttribute('aria-live', 'polite');
+    inspector.append(element('p', 'Choose an Inspect button to review the stored profile and source inventory.'));
+    const artifact = (key, label) => evidenceLink(intake.artifacts[key], label);
+    const runMaterialization = async () => {
+      inspector.replaceChildren(element('h3', 'Before/after record materialization'),
+        element('p', 'Verifying the sealed source package, extracting source-located KiCad and Gerber records, persisting them, and reopening the records in a fresh process. The sealed ORG and EDIT directories are presented as before and after; copper change and terminal/pad/connection matches remain unqualified until supported by the inputs.'));
+      try {
+        const response = await fetch('/api/ingestion/materialize-profile', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({dataset_id: dataset.id})
+        });
+        const result = await response.json();
+        if (!response.ok || result.status !== 'PASS') throw new Error(result.error || 'Materialization failed');
+        inspector.append(element('p', 'Materialization and fresh-process retrieval passed. Opening the newly verified publication…'));
+        window.location.href = result.url;
+      } catch (error) {
+        inspector.append(element('p', 'Materialization did not complete: ' + error.message, 'ingestion-error'));
+      }
+    };
+    const inspectMaterialization = () => {
+      if (!stored || stored.status !== 'PASS') return runMaterialization();
+      const evidence = stored.evidence || {};
+      const open = (name, label) => evidenceLink(evidence[name], label);
+      const before = stored.materialization?.comparison_intent?.native_revision_summaries?.before;
+      const after = stored.materialization?.comparison_intent?.native_revision_summaries?.after;
+      inspector.append(element('h3', 'Persisted before/after records · fresh retrieval passed'),
+        element('p', stored.materialization?.source_objects?.toLocaleString() + ' source-located records persisted across ' +
+          stored.materialization?.artifact_count + ' source files; ' + stored.materialization?.warning_count + ' parser or geometry warning groups retained.'),
+        element('p', 'SQLite store: ' + (stored.materialization?.store_root || (stored.bundle_root ? stored.bundle_root + '/store' : 'path recorded in the materialization bundle'))),
+        element('p', 'Before: ' + (before?.path || 'not present') + ' · ' + (before?.object_count ?? 0).toLocaleString() + ' native records.'),
+        element('p', 'After: ' + (after?.path || 'not present') + ' · ' + (after?.object_count ?? 0).toLocaleString() + ' native records.'),
+        element('p', 'Copper-area difference: ' + (stored.materialization?.comparison_intent?.copper_delta_status || 'NOT_ESTABLISHED') + '.'),
+        element('p', 'Terminal, pad and connection context: ' + (stored.materialization?.comparison_intent?.terminal_pad_connection_status || 'NOT_ESTABLISHED') + '.'),
+        open('materialization.json', 'Open paired materialization manifest ↗'),
+        open('reopened.json', 'Open fresh-process retrieval receipt ↗'),
+        open('acceptance.json', 'Open materialization acceptance ↗'));
+    };
+    const rows = [
+      ['Preserved inputs', 'Original directory bytes, paths and checksums', 'Verified · ' + intake.raw_files.length + ' files', 'Inspect preserved inputs', () => {
+        inspector.append(element('h3', 'Preserved inputs · ' + intake.raw_files.length + ' files'),
+          element('p', 'Project-relative package: ' + intake.package_root),
+          element('p', (intake.input_sets.preserved_directory?.bytes || 0).toLocaleString() + ' bytes · source tree SHA-256 ' +
+            (intake.input_sets.preserved_directory?.tree_sha256 || 'not available')),
+          artifact('entry', 'Open package index ↗'), artifact('manifest', 'Open file manifest ↗'),
+          artifact('checksums', 'Open package checksums ↗'));
+        const files = element('details');files.append(element('summary', 'Show all preserved source paths'));
+        const list = element('ul');
+        for (const row of intake.raw_files) list.append(element('li', row.path + ' · ' + row.bytes.toLocaleString() + ' bytes · SHA-256 ' + row.sha256));
+        files.append(list);inspector.append(files);
+      }],
+      ['File registration', 'Dataset identity, source paths, hashes and profile evidence', 'Implemented', 'Inspect registration', () => {
+        inspector.append(element('h3', 'File registration · ' + dataset.id),
+          element('p', dataset.sources.length + ' source files and ' + dataset.evidence.length + ' bound intake records.'),
+          link('registry.json', 'Open the published file registry ↗'));
+      }],
+      ['Intake profile', 'Provenance, inventory and qualification boundary', 'Sealed · qualification NOT_RUN', 'Inspect intake profile', () => {
+        inspector.append(element('h3', 'Intake profile · qualification NOT_RUN'),
+          artifact('profile', 'Open machine-readable profile ↗'),
+          evidenceLink(dataset.evidence.find(row => row.path.endsWith('/metadata/provenance.json')), 'Open source provenance ↗'),
+          evidenceLink(dataset.evidence.find(row => row.path.endsWith('/qualification/index.md')), 'Open qualification status ↗'),
+          element('p', dataset.qualification), element('p', dataset.intent));
+      }],
+      ['Board-record materialization', 'Before/after KiCad and Gerber records in a versioned store; warnings retained', stored?.status === 'PASS' ? 'Persisted · retrieval passed' : 'Not run', stored?.status === 'PASS' ? 'Inspect paired records' : 'Run paired extraction', inspectMaterialization, stored?.status === 'PASS' ? 'pass' : 'unknown'],
+      ['Reopened board queries', 'Fresh-process retrieval from both recorded revisions', stored?.status === 'PASS' ? 'Passed · fresh process' : 'Not run', stored?.status === 'PASS' ? 'Inspect retrieval receipt' : undefined, stored?.status === 'PASS' ? inspectMaterialization : undefined, stored?.status === 'PASS' ? 'pass' : 'unknown']
+    ];
+    persistenceRows(content, rows, inspector, 'Profiled intake persistence status');
   }
 
   function appendRegisteredPersistence(content, dataset, scene) {
@@ -427,16 +571,543 @@ const ingestionUI = (() => {
       deferredSection('Qualification & unknowns · what the input comparisons establish', section => appendResults(section, dataset)));
   }
 
+  function appendIdentityReview(content, dataset, scene) {
+    const review = scene.ingestion.identity_reviews?.[dataset.id];
+    if (!review?.manifest?.snapshot) return;
+    if (review.groups_manifest?.snapshot) {
+      const grouped = element('section', undefined, 'copper-group-review');
+      grouped.append(element('h3', 'Copper enhancement · grouped local features'),
+        element('p', 'ORG and EDIT are aligned from F.Mask shape landmarks only; F.Cu is excluded from the registration fit. Filled round and rectangular F.Cu features are paired only when their registered centers are mutual-unique within 0.001 mm, and their size changes are compared separately. The group images retain exact-coordinate traces/arcs as connecting context; the separate trace/polygon index reports registered centerline and filled-area overlap candidates, including partial and multi-object relationships. These geometric candidates do not establish pad identity, net connectivity, or electrical correctness.', 'ingestion-transition'));
+      if (review.context?.snapshot) {
+        const contextLink = element('a', 'Open PCB context and expert questions ↗');
+        contextLink.href = review.context.snapshot; contextLink.target = '_blank'; contextLink.rel = 'noopener';
+        grouped.append(contextLink);
+      }
+      const candidateReview = review.group_summary?.screenshot_candidate_review;
+      const shortIdentity = value => {
+        const match = String(value).match(/^([a-f0-9]{64}):bytes:(\d+):(\d+)$/);
+        return match ? match[1].slice(0, 12) + '… · bytes ' + match[2] + '–' + match[3] : String(value);
+      };
+      const priorityIds = candidateReview?.priority_group_ids || [];
+      const priorityRank = new Map(priorityIds.map((id, index) => [id, index + 1]));
+      const rationaleById = candidateReview?.rationales || {};
+      if (candidateReview) {
+        const candidateSection = element('aside', undefined, 'copper-screenshot-review');
+        candidateSection.append(element('h4', 'Screenshot correspondence · visual candidates'));
+        const limits = candidateReview.limits || {};
+        candidateSection.append(element('p',
+          'Both crops match local F.Cu geometry; they point to the same board neighborhood as a candidate. The circles are geometric records; terminal, pad, and net meanings are unverified.',
+          'ingestion-transition'));
+        candidateSection.append(element('p',
+          `Crop overlap scores · ORG ${Number(limits.ORG_iou).toFixed(3)} (next ${Number(limits.ORG_runner_up_iou).toFixed(3)}) · ` +
+          `EDIT ${Number(limits.EDIT_iou).toFixed(3)} (next ${Number(limits.EDIT_runner_up_iou).toFixed(3)}). ` +
+          `Both select copper-01's neighborhood for review.`));
+        candidateSection.append(element('p',
+          `Circle-center check (conditioned on those fits) · ${limits.ORG_landmarks_associated}/${limits.ORG_landmarks_detected} detected ORG maxima; ` +
+          `${limits.EDIT_landmarks_associated}/${limits.EDIT_landmarks_detected} detected EDIT maxima associated. ` +
+          `${limits.EDIT_landmarks_not_associated_by_this_check} EDIT maxima are unmatched by this check; that does not show missing or changed copper.`));
+        candidateSection.append(element('p',
+          `Source-reference check · ${candidateReview.joint_pair_closure?.pair_count || 0} shared pairs validated against unique registered circles and both crop bounds (${candidateReview.joint_pair_closure?.status || 'NOT_RUN'}).`));
+        const evidence = review.screenshot_evidence || [];
+        const evidenceById = new Map(evidence.map(row => [row.id, row]));
+        const methodDetails = element('details', undefined, 'copper-screenshot-method');
+        methodDetails.append(element('summary', 'How the crop fit was produced'));
+        methodDetails.append(element('p', candidateReview.method || 'Fit method not recorded.'));
+        methodDetails.append(element('p', 'The two screenshots were fitted independently against source F.Cu geometry. Center associations are conditioned on those selected transforms; IoU is a mask score, not a calibrated probability.'));
+        candidateSection.append(methodDetails);
+        const leadImages = ['org-screenshot', 'org-overlay', 'edit-screenshot', 'edit-overlay']
+          .map(id => evidenceById.get(id)).filter(Boolean);
+        if (leadImages.length) {
+          const figures = element('div', undefined, 'copper-screenshot-figures');
+          for (const row of leadImages) {
+            const figure = element('figure');
+            const image = document.createElement('img');
+            image.loading = 'lazy'; image.alt = row.label; image.src = row.snapshot;
+            const caption = element('figcaption', row.label);
+            const open = element('a', 'Open full size ↗');
+            open.href = row.snapshot; open.target = '_blank'; open.rel = 'noopener';
+            figure.append(image, caption, open);
+            figures.append(figure);
+          }
+          candidateSection.append(figures);
+        }
+        const runnerUpImages = ['org-runner-up', 'edit-runner-up'].map(id => evidenceById.get(id)).filter(Boolean);
+        if (runnerUpImages.length) {
+          const alternatives = element('details', undefined, 'copper-screenshot-alternatives');
+          alternatives.append(element('summary', 'Inspect runner-up fits and repeated-pattern alternatives'));
+          const alternativeFigures = element('div', undefined, 'copper-screenshot-figures');
+          for (const row of runnerUpImages) {
+            const side = row.id.startsWith('org') ? 'ORG' : 'EDIT';
+            const score = side === 'ORG' ? limits.ORG_runner_up_iou : limits.EDIT_runner_up_iou;
+            const bounds = side === 'ORG' ? limits.ORG_runner_up_bounds_mm : limits.EDIT_runner_up_bounds_mm;
+            const figure = element('figure');
+            const image = document.createElement('img');
+            image.loading = 'lazy'; image.alt = row.label; image.src = row.snapshot;
+            figure.append(image,
+              element('figcaption', `${row.label} · IoU ${Number(score).toFixed(3)} · bounds [${(bounds || []).map(v => Number(v).toFixed(3)).join(', ')}] mm`));
+            alternativeFigures.append(figure);
+          }
+          alternatives.append(alternativeFigures);
+          candidateSection.append(alternatives);
+        }
+        const landmarkImages = ['org-centers', 'edit-centers'].map(id => evidenceById.get(id)).filter(Boolean);
+        if (landmarkImages.length) {
+          const landmarkDetails = element('details', undefined, 'copper-screenshot-landmarks');
+          landmarkDetails.append(element('summary', 'Inspect landmark associations and registration limits'));
+          const figures = element('div', undefined, 'copper-screenshot-figures');
+          for (const row of landmarkImages) {
+            const figure = element('figure');
+            const image = document.createElement('img');
+            image.loading = 'lazy'; image.alt = row.label; image.src = row.snapshot;
+            figure.append(image, element('figcaption', row.label));
+            figures.append(figure);
+          }
+          landmarkDetails.append(figures);
+          candidateSection.append(landmarkDetails);
+        }
+        const pairs = candidateReview.joint_pairs || [];
+        if (pairs.length) {
+          const pairDetails = element('details', undefined, 'copper-screenshot-pairs');
+          pairDetails.append(element('summary', `Review all ${pairs.length} geometric ORG ↔ EDIT pairs`));
+          pairDetails.append(element('p', 'Each row is linked through the previously registered mutual-unique round-feature correspondence. Coordinates and residuals are in millimetres; semantic identity remains NOT_ESTABLISHED.'));
+          const table = element('table', undefined, 'copper-screenshot-pair-table');
+          const head = element('tr');
+          for (const label of ['ORG source record', 'EDIT source record', 'ORG center (mm)', 'EDIT center (mm)', 'Registered CAD center displacement (mm)', 'Screenshot-fit residual ORG / EDIT (mm)']) head.append(element('th', label));
+          const thead = element('thead'); thead.append(head);
+          const tbody = element('tbody');
+          let activePair = pairs[0];
+          let pairPreviewHost, pairPreviewCaption;
+          const selectPair = (pair, index) => {
+            activePair = pair;
+            for (const tableRow of tbody.children) {
+              const selected = tableRow.dataset.pairIndex === String(index);
+              tableRow.setAttribute('aria-selected', selected ? 'true' : 'false');
+              if (selected) tableRow.setAttribute('data-pair-active', 'true');
+              else tableRow.removeAttribute('data-pair-active');
+            }
+            pairPreviewCaption.textContent = pairSelectionSummary(pair, index);
+            if (pairPreviewHost?.firstElementChild) {
+              const result = highlightSourcePair(pairPreviewHost, pair);
+              pairPreviewHost.setAttribute('data-selection-status', result.matched ? 'matched' : 'source-shape-not-found');
+            }
+          };
+          for (const [index, pair] of pairs.entries()) {
+            const row = element('tr');
+            row.dataset.pairIndex = String(index);
+            // Preserve native table semantics so assistive technology exposes
+            // each source identity and measurement cell. The row itself stays
+            // keyboard focusable and responds to Enter/Space below.
+            row.tabIndex = 0;
+            const cells = [
+              shortIdentity(pair.ORG_source_identity), shortIdentity(pair.EDIT_source_identity),
+              pair.ORG_source_center_mm, pair.EDIT_source_center_mm,
+              Number(pair.CAD_registered_center_displacement_mm).toFixed(6),
+              `${Number(pair.ORG_residual_mm).toFixed(4)} / ${Number(pair.EDIT_residual_mm).toFixed(4)}`
+            ];
+            for (const value of cells) row.append(element('td', String(value)));
+            row.onclick = () => selectPair(pair, index);
+            row.onkeydown = event => {
+              if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectPair(pair, index); }
+            };
+            tbody.append(row);
+          }
+          table.append(thead, tbody);
+          pairDetails.append(table);
+          const selectionFigure = element('figure', undefined, 'copper-pair-selection');
+          pairPreviewHost = element('div', undefined, 'copper-pair-source-view');
+          pairPreviewHost.setAttribute('role', 'img');
+          pairPreviewHost.setAttribute('aria-label', 'Source-coordinate ORG and EDIT geometry with the selected pair outlined in yellow');
+          pairPreviewCaption = element('figcaption', 'Select a row to highlight its exact ORG and EDIT source records in yellow.');
+          selectionFigure.append(pairPreviewHost, pairPreviewCaption);
+          pairDetails.append(element('p', 'The yellow outline selects the paired native source records in the common CAD view. Registered CAD center displacement is separate from each screenshot-fit residual.'), selectionFigure);
+          const sourceViewURL = (review.group_images_root || '') + '/' + (candidateReview.source_selection_group_image || '');
+          fetch(sourceViewURL).then(response => {
+            if (!response.ok) throw new Error('Source geometry request failed: ' + response.status);
+            return response.text();
+          }).then(markup => {
+            const parsed = new DOMParser().parseFromString(markup, 'image/svg+xml');
+            if (parsed.querySelector('parsererror') || parsed.documentElement.localName !== 'svg') {
+              throw new Error('Source geometry is not valid SVG.');
+            }
+            const svg = document.importNode(parsed.documentElement, true);
+            svg.classList.add('copper-pair-source-svg');
+            pairPreviewHost.replaceChildren(svg);
+            const result = highlightSourcePair(pairPreviewHost, activePair);
+            pairPreviewHost.setAttribute('data-selection-status', result.matched ? 'matched' : 'source-shape-not-found');
+          }).catch(() => { pairPreviewCaption.textContent = 'Selected source geometry could not be loaded.'; });
+          if (activePair) selectPair(activePair, 0);
+          const pairCsv = evidenceById.get('joint-pairs');
+          if (pairCsv) {
+            const link = element('a', 'Download pair evidence CSV ↗');
+            link.href = pairCsv.snapshot; link.target = '_blank'; link.rel = 'noopener';
+            pairDetails.append(link);
+          }
+          candidateSection.append(pairDetails);
+        }
+        const sensitivity = evidenceById.get('sensitivity');
+        if (sensitivity) {
+          const link = element('a', 'Open complete fit, scramble and sensitivity report ↗');
+          link.href = sensitivity.snapshot; link.target = '_blank'; link.rel = 'noopener';
+          candidateSection.append(link);
+        }
+        const closure = evidenceById.get('pair-closure');
+        if (closure) {
+          const link = element('a', 'Open source-bound pair closure report ↗');
+          link.href = closure.snapshot; link.target = '_blank'; link.rel = 'noopener';
+          candidateSection.append(link);
+        }
+        if ((candidateReview.limitations || []).length) {
+          const limitDetails = element('details', undefined, 'copper-screenshot-limits');
+          limitDetails.append(element('summary', 'What these results do not establish'));
+          const list = element('ul');
+          for (const message of candidateReview.limitations) list.append(element('li', message));
+          limitDetails.append(list);
+          candidateSection.append(limitDetails);
+        }
+        grouped.append(candidateSection);
+      }
+      const groupStatus = element('p', 'Loading grouped copper neighborhoods…', 'copper-group-status');
+      const candidateGrid = element('div', undefined, 'copper-group-grid');
+      const otherGroups = element('details', undefined, 'copper-other-groups');
+      const otherGroupsSummary = element('summary', 'Other reviewed neighborhoods');
+      const otherGrid = element('div', undefined, 'copper-group-grid');
+      otherGroups.append(otherGroupsSummary, otherGrid);
+      grouped.append(groupStatus, candidateGrid);
+      if (candidateReview) grouped.append(otherGroups);
+      content.append(grouped);
+      fetch(review.groups_manifest.snapshot).then(response => {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      }).then(manifest => {
+        const groups = manifest.groups || [];
+        const orderedGroups = candidateReview
+          ? [...groups].sort((a, b) => (priorityRank.get(a.group_id) || Infinity) - (priorityRank.get(b.group_id) || Infinity))
+          : groups;
+        const root = review.group_images_root || '';
+        const registration = manifest.registration || {};
+        const fit = registration.fitted_after_to_before || {};
+        const translation = fit.translation_mm || [NaN, NaN];
+        const rotationDegrees = Number(fit.rotation_radians) * 180 / Math.PI;
+        grouped.append(element('p',
+          `Registration result: ${registration.inlier_count ?? 'NOT_AVAILABLE'} mutual-unique F.Mask landmarks; ` +
+          `EDIT→ORG shift (${Number(translation[0]).toFixed(6)}, ${Number(translation[1]).toFixed(6)}) mm; ` +
+          `rotation ${Number(rotationDegrees).toFixed(6)}°; max landmark residual ${Number(registration.max_inlier_residual_mm).toExponential(2)} mm. ` +
+          `Fit tolerance ${Number(registration.tolerance_mm).toFixed(3)} mm; F.Cu geometry was not used to fit the transform.`, 'ingestion-transition'));
+        const registrationLink = element('a', 'Open registration and complete correspondence records ↗');
+        registrationLink.href = review.groups_manifest.snapshot;
+        registrationLink.target = '_blank'; registrationLink.rel = 'noopener';
+        grouped.append(registrationLink);
+        if (candidateReview) otherGroupsSummary.textContent = `Other ${Math.max(0, groups.length - priorityIds.length)} source-derived neighborhoods available for review`;
+        for (const item of orderedGroups) {
+          const card = element('article', undefined, 'copper-group-card');
+          const rank = priorityRank.get(item.group_id);
+          card.append(element('h4', rank
+            ? `Candidate ${rank} · ${item.group_id} · ${item.title}`
+            : `${item.group_id} · ${item.title}`));
+          if (rank) card.append(element('p', rationaleById[item.group_id] || 'Shortlisted for manual visual review; exact screenshot match remains unresolved.', 'copper-group-candidate-note'));
+          const counts = item.kind_counts || {};
+          const terminalCount = Number(counts.gr_circle || 0);
+          const traceCount = Number(counts.segment || 0) + Number(counts.arc || 0);
+          const otherCount = item.pair_count - terminalCount - traceCount;
+          const composition = `${terminalCount} registered-center round-feature pairs · ${traceCount} coordinate-matched trace/arc pairs` +
+            (otherCount > 0 ? ` · ${otherCount} other filled-copper pairs` : '');
+          card.append(element('p', `${item.pair_count} paired geometric records: ${composition} · X ${(item.center_mm || [])[0]?.toFixed(3)}, Y ${(item.center_mm || [])[1]?.toFixed(3)} mm`));
+          const image = document.createElement('img');
+          image.loading = 'lazy'; image.alt = item.title + ' · ORG and EDIT grouped copper comparison';
+          image.src = root + '/' + item.image_file;
+          const open = element('a', 'Open full-size grouped comparison ↗');
+          open.href = image.src; open.target = '_blank'; open.rel = 'noopener';
+          const members = element('details', undefined, 'copper-group-members');
+          members.append(element('summary', 'Inspect paired source objects'));
+          const list = element('ul');
+          for (const member of item.members || []) {
+            const measurement = member.kind === 'gr_circle'
+              ? `radius ${member.before_radius_mm} → ${member.after_radius_mm} mm; registered center displacement ${Number(member.center_displacement_mm || 0).toFixed(6)} mm`
+              : member.kind === 'gr_poly'
+                ? `filled area ${member.before_area_mm2} → ${member.after_area_mm2} mm²; registered center displacement ${Number(member.center_displacement_mm || 0).toFixed(6)} mm`
+                : `width ${member.before_width_mm} → ${member.after_width_mm} mm; same defining coordinates`;
+            const label = `${member.kind}: ORG ${shortIdentity(member.before_identity)} ↔ EDIT ${shortIdentity(member.after_identity)}; ${measurement}`;
+            list.append(element('li', label));
+          }
+          members.append(list);
+          card.append(image, open, members);
+          if (candidateReview && !rank) otherGrid.append(card);
+          else candidateGrid.append(card);
+        }
+        const roundPairs = manifest.round_feature_pairs || [];
+        if (roundPairs.length) {
+          const pairDetails = element('details', undefined, 'copper-round-pairs');
+          const pairSummary = element('summary', `All ${roundPairs.length} registered round-feature pairs`);
+          const roundAudit = manifest.circle_pairing || {};
+          pairDetails.append(pairSummary,
+            element('p', `Mutual-unique center matches after F.Mask registration. ${roundAudit.ambiguous_before?.length || 0} ORG and ${roundAudit.ambiguous_after?.length || 0} EDIT circles have multiple candidates; ${roundAudit.one_sided_before?.length || 0} ORG and ${roundAudit.one_sided_after?.length || 0} have a single candidate whose reverse is ambiguous; ${roundAudit.unmatched_before?.length || 0} ORG and ${roundAudit.unmatched_after?.length || 0} have none within tolerance. These cases remain unpaired. Radius changes are measurements for review, not proof that a source object has a semantic terminal role.`));
+          const pairSearch = element('input');
+          pairSearch.type = 'search';
+          pairSearch.placeholder = 'Filter by ORG or EDIT byte span';
+          pairSearch.setAttribute('aria-label', 'Filter registered round-feature pairs');
+          const pairList = element('ul');
+          const renderPairs = () => {
+            pairList.replaceChildren();
+            const query = pairSearch.value.trim().toLowerCase();
+            const matches = roundPairs.filter(pair => !query ||
+              String(pair.before_identity + ' ' + pair.after_identity).toLowerCase().includes(query));
+            for (const pair of matches) {
+              pairList.append(element('li',
+                `ORG ${shortIdentity(pair.before_identity)} ↔ EDIT ${shortIdentity(pair.after_identity)} · ` +
+                `radius ${Number(pair.before_radius_mm).toFixed(5)} → ${Number(pair.after_radius_mm).toFixed(5)} mm · ` +
+                `center offset ${Number(pair.center_displacement_mm).toFixed(6)} mm · ` +
+                `disk-area delta ${Number(pair.added_area_mm2).toFixed(6)} mm²`));
+            }
+            pairSummary.textContent = `${matches.length} of ${roundPairs.length} registered round-feature pairs`;
+          };
+          pairSearch.oninput = renderPairs;
+          pairDetails.append(pairSearch, pairList);
+          grouped.append(pairDetails);
+          renderPairs();
+        }
+        const topology = manifest.trace_polygon_correspondence || {};
+        const traceRelations = topology.trace_relations || [];
+        const polygonRelations = topology.polygon_relations || [];
+        if (topology.trace_summary || topology.polygon_summary) {
+          const relationsSection = element('details', undefined, 'copper-trace-polygon-correspondence');
+          relationsSection.append(element('summary', 'Trace and filled-polygon overlap candidates'));
+          relationsSection.append(element('p',
+            'The EDIT shapes are transformed into the ORG coordinate frame. Candidate links use centerline or filled-polygon overlap. A separate copper-footprint measurement buffers trace centerlines by half their declared width with round caps/joins, and compares filled polygons directly; it does not create or relabel matches. The footprint construction has declared arc/buffer approximation bounds. One-to-many and ambiguous relations stay grouped. These local metrics are not a board-wide copper-area delta, semantic identity, or electrical result.', 'ingestion-transition'));
+          const traceSummary = topology.trace_summary || {};
+          const polygonSummary = topology.polygon_summary || {};
+          relationsSection.append(element('p',
+            `Trace gate: ${traceSummary.one_to_one_full_coverage_count ?? 0} one-to-one with ≥90% coverage on both sides; ` +
+            `${traceSummary.one_to_one_partial_coverage_count ?? 0} partial one-to-one; ` +
+            `${traceSummary.one_to_many_count ?? 0} one-to-many; ${traceSummary.many_to_one_count ?? 0} many-to-one; ` +
+            `${traceSummary.many_to_many_ambiguous_count ?? 0} ambiguous multi-to-multi components; ` +
+            `${traceSummary.excluded_invalid_after_count ?? 0} EDIT traces excluded as degenerate/unsupported.`));
+          relationsSection.append(element('p',
+            `Polygon gate: ${polygonSummary.one_to_one_full_coverage_count ?? 0} one-to-one with ≥90% coverage on both sides; ` +
+            `${polygonSummary.one_to_one_partial_coverage_count ?? 0} partial one-to-one; ` +
+            `${polygonSummary.one_to_many_count ?? 0} one-to-many; ${polygonSummary.many_to_one_count ?? 0} many-to-one; ` +
+            `${polygonSummary.many_to_many_ambiguous_count ?? 0} ambiguous multi-to-multi components.`));
+          const traceFootprintMethod = topology.trace_copper_footprint_method || {};
+          const footprintSummary = traceFootprintMethod.model
+            ? `Separate footprint metrics: ${traceSummary.copper_footprint_metrics_available ?? 0}/${traceSummary.relation_component_count ?? 0} trace components and ` +
+              `${polygonSummary.copper_footprint_metrics_available ?? 0}/${polygonSummary.relation_component_count ?? 0} polygon components. ` +
+              `Trace buffering uses round caps/joins with arc and buffer sagitta bounds ≤${Number(traceFootprintMethod.arc_centerline_max_chord_error_mm).toFixed(5)} mm and ≤${Number(traceFootprintMethod.buffer_rounding_max_sagitta_mm).toFixed(5)} mm. ` +
+              `These component-local comparisons are a separate measurement channel; they do not alter candidate matching or sum to board-wide copper growth.`
+            : 'Copper-footprint metrics were not recorded in this correspondence publication.';
+          relationsSection.append(element('p', footprintSummary));
+          const renderRelationList = (kind, records, summary) => {
+            const details = element('details', undefined, 'copper-geometric-relation-list');
+            const title = kind === 'trace' ? 'F.Cu trace centerlines' : 'F.Cu filled polygons';
+            const listSummary = element('summary',
+              `${title}: ${summary?.relation_component_count ?? records.length} overlap components · ` +
+              `${summary?.unmatched_before_count ?? 0} ORG and ${summary?.unmatched_after_count ?? 0} EDIT objects without a candidate`);
+            details.append(listSummary);
+            const filter = element('input');
+            filter.type = 'search'; filter.placeholder = 'Filter ORG or EDIT source identity';
+            filter.setAttribute('aria-label', `Filter ${title} correspondence`);
+            const list = element('ul');
+            const render = () => {
+              list.replaceChildren();
+              const query = filter.value.trim().toLowerCase();
+              const matches = records.filter(row => !query ||
+                `${row.before_identities.join(' ')} ${row.after_identities.join(' ')}`.toLowerCase().includes(query));
+              for (const row of matches) {
+                const counts = `${row.before_identities.length} ORG ↔ ${row.after_identities.length} EDIT`;
+                const identities = element('li', `${row.status}: ${counts} · ${row.relation_id}`);
+                const members = element('details');
+                members.append(element('summary', 'Inspect source identities and measurements'));
+                const componentFootprint = row.copper_footprint_comparison;
+                if (componentFootprint?.status === 'MEASURED') {
+                  members.append(element('p',
+                    `Component-union copper footprint: ${Number(componentFootprint.before_copper_area_mm2).toFixed(6)} → ${Number(componentFootprint.after_copper_area_mm2).toFixed(6)} mm² · ` +
+                    `signed change ${Number(componentFootprint.signed_area_delta_mm2).toFixed(6)} mm² · ` +
+                    `symmetric difference ${Number(componentFootprint.symmetric_difference_area_mm2).toFixed(6)} mm² · ` +
+                    `covered ORG/EDIT ${Number(componentFootprint.before_covered_fraction).toFixed(3)} / ${Number(componentFootprint.after_covered_fraction).toFixed(3)}`));
+                } else if (componentFootprint) {
+                  members.append(element('p', `Copper-footprint comparison unavailable: ${componentFootprint.reason || componentFootprint.status}.`));
+                }
+                const edgeList = element('ul');
+                for (const edge of row.candidate_edges || []) {
+                  const measurement = kind === 'trace'
+                    ? `length ${Number(edge.before_length_mm).toFixed(4)} → ${Number(edge.after_length_mm).toFixed(4)} mm · ` +
+                      `covered ${Number(edge.before_covered_fraction).toFixed(3)} / ${Number(edge.after_covered_fraction).toFixed(3)} · ` +
+                      `width ${edge.before_width_mm} → ${edge.after_width_mm} mm`
+                    : `area ${Number(edge.before_area_mm2).toFixed(6)} → ${Number(edge.after_area_mm2).toFixed(6)} mm² · ` +
+                      `delta ${Number(edge.area_delta_mm2).toFixed(6)} mm² · ` +
+                      `covered ${Number(edge.before_covered_fraction).toFixed(3)} / ${Number(edge.after_covered_fraction).toFixed(3)}`;
+                  const footprint = edge.copper_footprint_comparison;
+                  const footprintText = footprint?.status === 'MEASURED'
+                    ? ` · footprint symmetric difference ${Number(footprint.symmetric_difference_area_mm2).toFixed(6)} mm²; covered ORG/EDIT ${Number(footprint.before_covered_fraction).toFixed(3)} / ${Number(footprint.after_covered_fraction).toFixed(3)}`
+                    : footprint ? ` · footprint ${footprint.status}: ${footprint.reason || ''}` : '';
+                  edgeList.append(element('li', `ORG ${shortIdentity(edge.before_identity)} ↔ EDIT ${shortIdentity(edge.after_identity)} · ${measurement}${footprintText}`));
+                }
+                members.append(edgeList);
+                identities.append(members);
+                list.append(identities);
+              }
+              listSummary.textContent = `${title}: ${matches.length} of ${records.length} overlap components`;
+            };
+            filter.oninput = render;
+            details.append(filter, list);
+            render();
+            relationsSection.append(details);
+
+            const accounting = topology[`${kind}_graph_accounting`] || {};
+            const unmatchedBefore = accounting.unmatched_before_identities || [];
+            const unmatchedAfter = accounting.unmatched_after_identities || [];
+            const unmatchedDetails = element('details', undefined, 'copper-unmatched-object-list');
+            const unmatchedTitle = kind === 'trace' ? 'F.Cu traces without a candidate' : 'F.Cu polygons without a candidate';
+            const unmatchedSummary = element('summary',
+              `${unmatchedTitle}: ${summary?.unmatched_before_count ?? unmatchedBefore.length} ORG · ` +
+              `${summary?.unmatched_after_count ?? unmatchedAfter.length} EDIT`);
+            unmatchedDetails.append(unmatchedSummary);
+            unmatchedDetails.append(element('p',
+              'These source objects have no relation under the current geometric gates. This does not establish that they are new, removed, or unrelated physical features. Search by source hash or byte-span fragment.'));
+            const unmatchedFilter = element('input');
+            unmatchedFilter.type = 'search';
+            unmatchedFilter.placeholder = 'Search no-candidate ORG or EDIT source identity';
+            unmatchedFilter.setAttribute('aria-label', `Filter no-candidate F.Cu ${kind} source identity`);
+            const unmatchedList = element('ul');
+            const unmatchedResultSummary = element('p', 'Enter a source hash or byte-span fragment to inspect identities.');
+            const unmatchedLimit = 250;
+            const renderUnmatched = () => {
+              unmatchedList.replaceChildren();
+              const query = unmatchedFilter.value.trim().toLowerCase();
+              if (!query) {
+                unmatchedResultSummary.textContent =
+                  `${unmatchedBefore.length} ORG and ${unmatchedAfter.length} EDIT no-candidate identities retained; enter a source hash or byte-span fragment to inspect.`;
+                return;
+              }
+              const matches = [
+                ...unmatchedBefore.filter(identity => identity.toLowerCase().includes(query)
+                  || `org ${identity}`.toLowerCase().includes(query)).map(identity => ['ORG', identity]),
+                ...unmatchedAfter.filter(identity => identity.toLowerCase().includes(query)
+                  || `edit ${identity}`.toLowerCase().includes(query)).map(identity => ['EDIT', identity]),
+              ];
+              for (const [side, identity] of matches.slice(0, unmatchedLimit)) {
+                unmatchedList.append(element('li', `${side} · ${identity}`));
+              }
+              unmatchedResultSummary.textContent = matches.length > unmatchedLimit
+                ? `Showing ${unmatchedLimit} of ${matches.length} matching source identities.`
+                : `${matches.length} matching source identities.`;
+            };
+            unmatchedFilter.oninput = renderUnmatched;
+            unmatchedDetails.append(unmatchedFilter, unmatchedResultSummary, unmatchedList);
+            renderUnmatched();
+            relationsSection.append(unmatchedDetails);
+          };
+          renderRelationList('trace', traceRelations, topology.trace_summary);
+          renderRelationList('polygon', polygonRelations, topology.polygon_summary);
+          grouped.append(relationsSection);
+        }
+        groupStatus.textContent = groups.length + ' representative copper neighborhoods · ' +
+          (manifest.scope || 'grouped for manual review');
+      }).catch(error => { groupStatus.textContent = 'Unable to load grouped copper artifacts: ' + error.message + '.'; });
+    }
+    const panel = element('section', undefined, 'identity-review');
+    panel.append(element('h3', 'Object-level pair index · detailed review'),
+      element('p', 'Each image compares one source-located object from each board. Anchor links use the same kind, layer, net code and defining coordinates; stroke width is compared separately. Near-geometry candidates use a 5 µm keypoint tolerance and need your judgment; proximity does not prove identity.', 'ingestion-transition'));
+    const status = element('p', 'Loading pair list and comparison images…', 'identity-review-status');
+    const controls = element('div', undefined, 'identity-review-controls');
+    const filter = element('select');
+    filter.setAttribute('aria-label', 'Filter identity pairs');
+    const search = element('input');
+    search.type = 'search';
+    search.placeholder = 'Search ORG or EDIT source identity';
+    search.setAttribute('aria-label', 'Search source identity');
+    const pager = element('div', undefined, 'identity-review-pager');
+    const previous = element('button', 'Previous pairs');
+    const next = element('button', 'Next pairs');
+    const pageLabel = element('span');
+    const grid = element('div', undefined, 'identity-review-grid');
+    controls.append(filter, search);
+    pager.append(previous, pageLabel, next);
+    panel.append(status, controls, pager, grid);
+    const allPairs = element('details', undefined, 'identity-review-all-pairs');
+    allPairs.append(element('summary', 'Open the complete object-level pair index'));
+    allPairs.append(panel);
+    content.append(allPairs);
+    const pageSize = 12;
+    const shortIdentity = value => {
+      const match = String(value).match(/^([a-f0-9]{64}):bytes:(\d+):(\d+)$/);
+      return match ? match[1].slice(0, 12) + '… · bytes ' + match[2] + '–' + match[3] : String(value);
+    };
+    let entries = [];
+    let page = 0;
+    let mode = 'all';
+    const imageRoot = review.images_root;
+    function render() {
+      const query = (search.value || '').trim().toLowerCase();
+      const visible = entries.filter(item => (mode === 'all' || item.review_class === mode) &&
+        (!query || (item.before_identity + ' ' + item.after_identity).toLowerCase().includes(query)));
+      const pages = Math.max(1, Math.ceil(visible.length / pageSize));
+      page = Math.min(page, pages - 1);
+      const shown = visible.slice(page * pageSize, (page + 1) * pageSize);
+      grid.replaceChildren();
+      for (const item of shown) {
+        const card = element('article', undefined, 'identity-review-card');
+        const title = (item.layer || 'Layer unavailable') + ' · ' + item.kind + ' · ' +
+          (item.review_class === 'exact' ? 'Unique coordinate-anchor match' : 'Near-geometry candidate');
+        card.append(element('h4', title));
+        const identity = element('p', 'ORG ' + shortIdentity(item.before_identity) +
+          ' ↔ EDIT ' + shortIdentity(item.after_identity));
+        identity.title = 'Full source identities: ORG ' + item.before_identity + ' ↔ EDIT ' + item.after_identity;
+        card.append(identity);
+        if (item.keypoint_displacement_mm !== undefined && item.keypoint_displacement_mm !== null) {
+          card.append(element('p', 'Maximum keypoint displacement: ' + item.keypoint_displacement_mm + ' mm'));
+        } else if (item.stroke_width_changed !== null && item.stroke_width_changed !== undefined) {
+          card.append(element('p', 'Stroke width: ORG ' + item.before_width_mm + ' mm · EDIT ' + item.after_width_mm + ' mm' +
+            (item.stroke_width_changed ? ' · changed' : ' · same')));
+        }
+        const image = document.createElement('img');
+        image.loading = 'lazy';
+        image.alt = title + ' comparison image';
+        image.src = imageRoot + '/' + item.image_file;
+        const open = element('a', 'Open full-size comparison image ↗');
+        open.href = image.src;
+        open.target = '_blank';
+        open.rel = 'noopener';
+        card.append(image, open);
+        grid.append(card);
+      }
+      status.textContent = visible.length + ' pairs · ' + entries.filter(x => x.review_class === 'exact').length +
+        ' unique anchor links · ' + entries.filter(x => x.review_class === 'candidate').length +
+        ' near-geometry candidates. These are review records, not engineering acceptance.';
+      pageLabel.textContent = 'Page ' + (page + 1) + ' of ' + pages + ' · showing ' + shown.length + ' of ' + visible.length;
+      previous.disabled = page === 0;
+      next.disabled = page >= pages - 1;
+    }
+    previous.onclick = () => { page = Math.max(0, page - 1); render(); };
+    next.onclick = () => { page += 1; render(); };
+    filter.onchange = () => { mode = filter.value; page = 0; render(); };
+    search.oninput = () => { page = 0; render(); };
+    fetch(review.manifest.snapshot).then(response => {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.json();
+    }).then(manifest => {
+      entries = manifest.entries || [];
+      for (const [value, label] of [['all', 'All pairs · ' + entries.length],
+        ['exact', 'Unique anchor links · ' + entries.filter(x => x.review_class === 'exact').length],
+        ['candidate', 'Near-geometry candidates · ' + entries.filter(x => x.review_class === 'candidate').length]]) {
+        const option = element('option', label); option.value = value; filter.append(option);
+      }
+      render();
+    }).catch(error => {
+      status.textContent = 'Unable to load identity-review artifacts: ' + error.message + '.';
+    });
+  }
+
   function appendAvailableFindings(content, dataset, scene) {
     const hasComparisons = Boolean(dataset.qualification_data?.comparisons?.length);
     if (hasComparisons) {
       appendFindings(content, dataset);
+      appendIdentityReview(content, dataset, scene);
       return;
     }
     content.append(element('h3', 'Input findings · recorded scope and availability'),
       element('h4', 'Recorded qualification'), element('p', available(dataset.qualification)),
       element('h4', 'Source intent & provenance'), element('p', available(dataset.intent)),
       element('p', 'Source/native comparison views: Not available in this registration. No empty comparison panes or zero differences are inferred.', 'ingestion-transition'));
+    appendIdentityReview(content, dataset, scene);
     const drills = recordFor(dataset, 'drills');
     if (drills) {
       appendMeasurements(content, drills);
@@ -465,7 +1136,8 @@ const ingestionUI = (() => {
   }
 
   function appendDatasetStory(content, dataset, scene) {
-    const intake = scene.ingestion.intake?.dataset_id === dataset.id ? scene.ingestion.intake : null;
+    const intake = scene.ingestion.intakes?.[dataset.id] ||
+      (scene.ingestion.intake?.dataset_id === dataset.id ? scene.ingestion.intake : null);
     content.append(element('p', 'Two views of this dataset: Stored on disk identifies the durable artifacts. Input findings shows the recorded qualification, comparisons and unknowns where evidence is available.', 'ingestion-intro'));
     const choices = element('nav', undefined, 'ingestion-story-nav');
     choices.setAttribute('aria-label', 'Dataset review');
@@ -623,7 +1295,7 @@ const ingestionUI = (() => {
     entry.onclick();
   }
 
-  return { init };
+  return { init, highlightSourcePair, pairSelectionSummary };
 })();
 
 function initIngestion(scene) {

@@ -17,7 +17,7 @@ async function run(){
  const request=JSON.parse(sent.body);assert.equal(request.package_name,'sample');assert.equal(request.files[0].path,'raw/board.gbr');assert.equal(request.files[0].sha256,'039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81');
  assert.equal(destination,'http://127.0.0.1:8769/restored/index.html#dataset=sample');
  assert.equal(request.files[0].bytes,3);assert.equal(request.files[0].content,undefined,'No file contents uploaded');
- fail=true;destination=null;await input.onchange();assert.equal(destination,null);assert.match(status.textContent,/Not restored: changed package.*Previous publication retained/);assert.equal(button.disabled,false);
+ fail=true;destination=null;await input.onchange();assert.equal(destination,null);assert.match(status.textContent,/Not added\/restored: changed package.*Previous publication retained/);assert.equal(button.disabled,false);
  input.files=[];sent=null;await input.onchange();assert.equal(sent,null,'Cancel does not send an intake request');
  assert.equal(control.children[3].disabled,true,'Minus is disabled without a selected dataset');
  const selected=vm.runInContext('directoryIntakeControl({id:"sample",label:"Sample"})',context);

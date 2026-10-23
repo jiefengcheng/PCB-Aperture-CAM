@@ -18,7 +18,7 @@ The prior entry remains published if validation or publication fails. Cancellati
 
 # Remove a saved row
 
-Select a dataset and click **−** beside **+**. This removes only that dataset registration from the current saved dropdown and publishes a new workbench revision. It survives reload, server restart and an ordinary rebuild. The original Gerber/KiCad inputs, qualified package recipes, retained evidence and historical workbench runs are not deleted. Use **+** to restore the supported sealed client package later. Other datasets need their applicable registration recipe; the + directory workflow is still limited to the qualified VME-WREN package.
+Select a dataset and click **−** beside **+**. This removes only that dataset registration from the current saved dropdown and publishes a new workbench revision. It survives reload, server restart and an ordinary rebuild. The original Gerber/KiCad inputs, qualified package recipes, retained evidence and historical workbench runs are not deleted. Use **+** to restore a qualified package or add any valid sealed general-intake profile. Profile-only rows remain explicitly unqualified; see the [general profiler guide](general-profiling.md#continue-into-the-workbench).
 
 With no rows remaining, the view says No datasets registered, + stays available and − is disabled. Missing/unknown selections and failed publication leave the previous entry intact. Historical run URLs retain their original rows because they are immutable snapshots. Open the current entry rather than an older run to see the saved removal.
 
@@ -30,7 +30,9 @@ An ordinary rebuild now reads the current published registry. Supplying `--regis
 
 The raw package supplies both the KiCad and Gerber representations. Restoring its registration does not create extracted KiCad pad/track records, a client board database, a common object catalogue or reopened board queries. Their existing Not implemented statuses remain visible.
 
-The restoration recipe lives independently of the dropdown in `contracts/ingestion_packages_v1.json`. It binds the package seal and retained qualification/render inputs. This is why a missing dataset row can be reconstructed. The sealed folder alone does not contain every retained replot and operation input used by this review. Missing or changed dependencies cause rejection rather than invented comparisons. This first workflow supports the known sealed VME-WREN package at its project-local location; unfamiliar directories have no qualified restoration profile and are rejected explicitly. This is not general ingestion of arbitrary raw folders.
+Qualified restoration recipes live in `contracts/ingestion_packages_v1.json` and bind the package seal plus retained qualification/render inputs. A general profiler package also carries a sealed registration recipe; **+** can add it as a profile-only row with qualification `NOT_RUN`. That path verifies preserved bytes and records their identities, but does not run parsers or qualification. A general profile is not promoted to a qualified restoration recipe or engineering acceptance.
+
+For a new, unqualified folder, use the separate [general profiling tool](general-profiling.md) to preserve and seal it, then select the generated package directory with **+** to register the profile in the workbench.
 
 # Run locally
 

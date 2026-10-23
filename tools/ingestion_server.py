@@ -2,6 +2,8 @@
 import json
 import re
 import threading
+import hashlib
+import uuid
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote,urlsplit,parse_qs
@@ -41,7 +43,8 @@ def make_handler(root, destination, fallback, port):
             self.wfile.write(data)
 
         def do_POST(self):
-            if self.path not in ('/api/ingestion/directories', '/api/ingestion/remove'):
+            if self.path not in ('/api/ingestion/directories', '/api/ingestion/remove',
+                                 '/api/ingestion/materialize-profile'):
                 return self.response(404, {'status': 'FAIL', 'error': 'Unknown local endpoint'})
             if self.headers.get('Host') != '127.0.0.1:' + str(port) or self.headers.get('Origin') != origin:
                 return self.response(403, {'status': 'FAIL', 'error': 'Same-origin loopback request required'})
@@ -53,6 +56,48 @@ def make_handler(root, destination, fallback, port):
                     raise ValueError('Expected a bounded JSON request')
                 request = json.loads(self.rfile.read(length))
                 config = published_config(destination, fallback)
+                if self.path == '/api/ingestion/materialize-profile':
+                    dataset_id = request.get('dataset_id')
+                    dataset = next((row for row in config['datasets'] if row.get('id') == dataset_id), None)
+                    if dataset is None:
+                        raise ValueError('Selected dataset is not registered in the current publication')
+                    profile = next((row for row in dataset.get('evidence', [])
+                                    if row.get('path', '').endswith('/metadata/profile.json')), None)
+                    if dataset.get('intake_status') != 'PROFILED_NOT_QUALIFIED' or not profile:
+                        raise ValueError('Selected dataset has no bound sealed generic intake profile')
+                    existing = config.get('record_materializations', {}).get(dataset_id)
+                    if existing:
+                        from src.profile_materialization import _read_materialization
+                        receipt, _, _ = _read_materialization(root, root / existing['path'])
+                        if not receipt or receipt.get('status') != 'PASS':
+                            raise ValueError('Previously linked materialization is not accepted')
+                        match = re.search(r'url=(run-[0-9a-f]{32})/index.html',
+                                          (destination / 'index.html').read_text())
+                        if not match:
+                            raise ValueError('Current publication entry is invalid')
+                        return self.response(200, {'status': 'PASS', 'dataset_id': dataset_id,
+                                                   'url': '/' + match[1] + '/index.html#dataset=' +
+                                                   quote(dataset_id, safe=''),
+                                                   'reused': True})
+                    profile_path = Path(profile['path'])
+                    if hashlib.sha256((root / profile_path).read_bytes()).hexdigest() != profile['sha256']:
+                        raise ValueError('Selected dataset profile evidence hash mismatch')
+                    package_root = profile_path.parent.parent.as_posix()
+                    output = root / 'out/ingestion/profile_materializations' / (
+                        hashlib.sha256(dataset_id.encode()).hexdigest()[:16] + '_' + uuid.uuid4().hex)
+                    from src.profile_materialization import accept_materialization
+                    accept_materialization(root, package_root, dataset_id, output)
+                    bundle_root = output.relative_to(root).as_posix()
+                    files = [{'path': (output / name).relative_to(root).as_posix(),
+                              'sha256': hashlib.sha256((output / name).read_bytes()).hexdigest()}
+                             for name in ('materialization.json', 'reopened.json', 'acceptance.json')]
+                    updated = dict(config)
+                    updated['record_materializations'] = dict(config.get('record_materializations', {}))
+                    updated['record_materializations'][dataset_id] = {'path': bundle_root, 'files': files}
+                    run = publish(root, updated, destination)
+                    return self.response(200, {'status': 'PASS', 'dataset_id': dataset_id,
+                                               'url': '/' + run.name + '/index.html#dataset=' +
+                                               quote(dataset_id, safe='')})
                 if self.path == '/api/ingestion/remove':
                     updated = remove_dataset(config, request.get('dataset_id'))
                     run = publish(root, updated, destination)
@@ -107,5 +152,5 @@ def make_handler(root, destination, fallback, port):
 def serve(root, destination, fallback, port=8769):
     server = ThreadingHTTPServer(('127.0.0.1', port), make_handler(root, destination, fallback, port))
     print(json.dumps({'status': 'SERVING', 'url': 'http://127.0.0.1:' + str(port) + '/index.html',
-                      'scope': 'Project-local qualified-package restoration; no uploads or CAM execution'}), flush=True)
+                      'scope': 'Project-local sealed-intake registration and qualified-package restoration; no content qualification or CAM execution'}), flush=True)
     server.serve_forever()

@@ -1,0 +1,20 @@
+{
+  "schema": "pcb-profile-materialization-acceptance/1",
+  "status": "PASS",
+  "dataset_id": "client:szu-comm:3020301113b:intake-20261021:v1",
+  "package_seal_sha256": "c8ff34bbc0c3aba5be03453becf8a00a5b86c9f0c91563c37b7d3c49ed0a0df8",
+  "materialization_status": "MATERIALIZED_WITH_WARNINGS",
+  "materialization_pid": 16586,
+  "reader_pid": 16663,
+  "source_records": 358989,
+  "warnings": 41,
+  "query_records": 358989,
+  "query_result_sha256": "8209610b22f12931bf338fe351470bf5532a35fc38d3f208dae3629394dc921c",
+  "outputs": {
+    "materialization.json": "346e2179cadadf9b54e0c6b27b0401a65d69f71e84aa214e9c4edac6ee82646e",
+    "reopened.json": "a1cdfdb9b93ca5b28a7fa6d25cb479d320a351023c4a5d01382b2124beb77bb9",
+    "store/catalog.sqlite": "da8843fd985c230c5f4c130391a8e4638b0e06064f2716f3f993a321f82913bb"
+  },
+  "qualification": "NOT_RUN",
+  "engineering_acceptance": "NOT_ESTABLISHED"
+}

@@ -1,0 +1,1018 @@
+{
+  "schema": "pcb-profile-record-materialization/1",
+  "dataset_id": "client:szu-comm:3020301113b:intake-20261021:v1",
+  "package_root": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2",
+  "package_seal": {
+    "path": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/SHA256SUMS",
+    "sha256": "c8ff34bbc0c3aba5be03453becf8a00a5b86c9f0c91563c37b7d3c49ed0a0df8"
+  },
+  "profile": {
+    "path": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/metadata/profile.json",
+    "sha256": "b6e89c390cdaf6e7da6a22f42d3a7c407871bfe83e05935f2bbee533b02a5b1d",
+    "tree_sha256": "02fb362a1c89b4a8b3a0ac6db65205c0310ee6796c6d936ddef31468688611b5"
+  },
+  "comparison_intent": {
+    "objective": "Compare one before revision with one after revision; inspect copper-area expansion and retain terminal, pad, and connection context.",
+    "pairing": {
+      "before": "ORG",
+      "after": "EDIT",
+      "basis": "sealed source directory names; no source bytes relabelled"
+    },
+    "status": "PAIR_PRESENT",
+    "native_revision_summaries": {
+      "before": {
+        "path": "ORG/top.kicad_pcb",
+        "sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+        "status": "PARSED_WITH_WARNINGS",
+        "object_count": 18614,
+        "counts": {
+          "gr_line": 32,
+          "gr_poly": 940,
+          "gr_arc": 16,
+          "gr_circle": 1768,
+          "segment": 11929,
+          "arc": 3929
+        },
+        "layer_instance_counts": {
+          "F.Mask": 434,
+          "F.Paste": 331,
+          "F.Cu": 17849
+        },
+        "unsupported_reasons": {
+          "NON_POSITIVE_STROKE": 2708
+        },
+        "pad_records": 0,
+        "footprint_references": [],
+        "net_names": []
+      },
+      "after": {
+        "path": "EDIT/top_layer.kicad_pcb",
+        "sha256": "ec141305a9d93db87709124ba5aa9378135485ae5458f019e47a342d099496a5",
+        "status": "PARSED_WITH_WARNINGS",
+        "object_count": 36156,
+        "counts": {
+          "gr_poly": 811,
+          "gr_circle": 2601,
+          "gr_arc": 22,
+          "gr_line": 27,
+          "segment": 21234,
+          "arc": 11461
+        },
+        "layer_instance_counts": {
+          "F.Mask": 380,
+          "F.Cu": 35776
+        },
+        "unsupported_reasons": {
+          "NON_POSITIVE_STROKE": 3412,
+          "DEGENERATE_ARC": 84
+        },
+        "pad_records": 0,
+        "footprint_references": [],
+        "net_names": []
+      }
+    },
+    "copper_delta_status": "NOT_ESTABLISHED: source layer identities and a qualified same-coordinate copper image are required",
+    "terminal_pad_connection_status": "NOT_FOUND_IN_NATIVE_INVENTORY",
+    "warning": "Native source inventory records board primitives but does not infer terminal identity or electrical connectivity from absent pad/reference/net records."
+  },
+  "artifacts": [
+    {
+      "path": "EDIT/1-2.gbr",
+      "side": "after",
+      "sha256": "d680c66c98bd072529cdf00cb1fe0faa39f7fa35ef127818ae1370ea90d6fdba",
+      "bytes": 9767,
+      "format": "Gerber",
+      "revision": "ec9ffa32445faa55ff225f52369b63844f72cc0dfb6073bea20304a927b95e13",
+      "source_objects": 548,
+      "geometry_available": 0,
+      "bounds_available": 548,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/1-2.gbr:7 \"LN1-2.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 548
+    },
+    {
+      "path": "EDIT/1-3.gbr",
+      "side": "after",
+      "sha256": "3b2e3ad20a3d0d5d8d4246b9322ea4ef8a746593c52a0c2d05a0dcb62ae777c9",
+      "bytes": 3459,
+      "format": "Gerber",
+      "revision": "19d5d283adbac5b0569f43a70c9f9a4d09128c6b61ab9cd272f8da85794f111e",
+      "source_objects": 223,
+      "geometry_available": 0,
+      "bounds_available": 223,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/1-3.gbr:6 \"LN1-3.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 223
+    },
+    {
+      "path": "EDIT/12cc.gbr",
+      "side": "after",
+      "sha256": "d18c9efedbe3579608db89ff57856717299701b1f827874366cd079443c08bc7",
+      "bytes": 38,
+      "format": "Gerber",
+      "revision": "4f57e965dd0aee8f90e02f6e54388716cde1b03bdf877b512edbea1adfab2faa",
+      "source_objects": 0,
+      "geometry_available": 0,
+      "bounds_available": 0,
+      "status": "PARSED",
+      "warnings": [],
+      "queryable_objects": 0
+    },
+    {
+      "path": "EDIT/1tcir-p01.gbr",
+      "side": "after",
+      "sha256": "4b12551e515a039f9521768863fceff684ad2420e2f01dc775edf6d66090841b",
+      "bytes": 1271052,
+      "format": "Gerber",
+      "revision": "98f9086ab8af79837af3afdab54a2eac5babf2dc7feaea044f30d5ffb422c818",
+      "source_objects": 35776,
+      "geometry_available": 0,
+      "bounds_available": 24764,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/1tcir-p01.gbr:1946 \"LN1tcir-p01.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            14291,
+            14310
+          ]
+        }
+      ],
+      "queryable_objects": 35776
+    },
+    {
+      "path": "EDIT/2-3.gbr",
+      "side": "after",
+      "sha256": "6c5a8644d972b5d735a4f8a4d7b80e23b58420f321c0d6d5da6034898b50acf0",
+      "bytes": 3067,
+      "format": "Gerber",
+      "revision": "70e94a15dcc28c7b39ddfed09307f579b12ea8cacc1222a45942b5be57b8c949",
+      "source_objects": 189,
+      "geometry_available": 0,
+      "bounds_available": 189,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/2-3.gbr:6 \"LN2-3.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 189
+    },
+    {
+      "path": "EDIT/2bcir.gbr",
+      "side": "after",
+      "sha256": "b972dba54967d9f889fb8e2989e9755582c341c018d16aa8cafd748bf5e24293",
+      "bytes": 1612409,
+      "format": "Gerber",
+      "revision": "4f7356980aa8fde4dab8e869cc0449271b3abd22319a58b7b9f64073687474ac",
+      "source_objects": 40773,
+      "geometry_available": 0,
+      "bounds_available": 23645,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/2bcir.gbr:1878 \"LN2bcir.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            13397,
+            13416
+          ]
+        }
+      ],
+      "queryable_objects": 40773
+    },
+    {
+      "path": "EDIT/4bcir-p02.gbr",
+      "side": "after",
+      "sha256": "a8aa14b3cdf0e35b0965b46a0e7a95c394aa07c816665d71ff4570695cea5edf",
+      "bytes": 2936280,
+      "format": "Gerber",
+      "revision": "262df9e76f774d6909e76a7c0e9a71b6156422f2cda429948cbc2dc99f6a097c",
+      "source_objects": 77121,
+      "geometry_available": 0,
+      "bounds_available": 46449,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/4bcir-p02.gbr:1570 \"LN4bcir-p02.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            13388,
+            13407
+          ]
+        }
+      ],
+      "queryable_objects": 77121
+    },
+    {
+      "path": "EDIT/bcl.gbr",
+      "side": "after",
+      "sha256": "f637e70acc770ce5b8b74eac295186be7343f781e2abc92254045e5abf3f2181",
+      "bytes": 52240,
+      "format": "Gerber",
+      "revision": "79b3f8ff091bec7c05d3a15fc246c0403b7fd740dd79f3fbb41bc8768a23377a",
+      "source_objects": 1503,
+      "geometry_available": 0,
+      "bounds_available": 1207,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/bcl.gbr:16 \"LNbcl.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9649,
+            9665
+          ]
+        }
+      ],
+      "queryable_objects": 1503
+    },
+    {
+      "path": "EDIT/bpsa.gbr",
+      "side": "after",
+      "sha256": "553460229ea2847dce269498074be792e040463753c5666e30159f7c0a274127",
+      "bytes": 53234,
+      "format": "Gerber",
+      "revision": "adaa0efe6a46185dc225fec1159d3194ebc5010271cd978be93f78a745271b0f",
+      "source_objects": 1783,
+      "geometry_available": 0,
+      "bounds_available": 1783,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/bpsa.gbr:6 \"LNbpsa.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            11097,
+            11113
+          ]
+        }
+      ],
+      "queryable_objects": 1783
+    },
+    {
+      "path": "EDIT/bsed.gbr",
+      "side": "after",
+      "sha256": "45c7807983fea1c00db7cf7013b931d2cd5beec1c331717c6f71a41978382b56",
+      "bytes": 6464,
+      "format": "Gerber",
+      "revision": "b88db02142b18838bb28f9ec1a49a49a6766002b57cf4dc76ef3ac684f7ae5a0",
+      "source_objects": 412,
+      "geometry_available": 0,
+      "bounds_available": 412,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/bsed.gbr:7 \"LNbsed.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 412
+    },
+    {
+      "path": "EDIT/bslv.gbr",
+      "side": "after",
+      "sha256": "d4414064d527080cc4f225b369fd7269aa4a0c883afc3a5dd4b98285cee0ba0a",
+      "bytes": 11302,
+      "format": "Gerber",
+      "revision": "0aa0c6cfd1c3a9ce1b73b4809b4d1e271e2bcb0a23b03e06969bdbe6015bab27",
+      "source_objects": 310,
+      "geometry_available": 0,
+      "bounds_available": 240,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/bslv.gbr:14 \"LNbslv.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            10168,
+            10185
+          ]
+        }
+      ],
+      "queryable_objects": 310
+    },
+    {
+      "path": "EDIT/bsteel.gbr",
+      "side": "after",
+      "sha256": "88f3e37acd2e718608767577ebd558cdc62d95bb12277598107a82e559864e9a",
+      "bytes": 2775,
+      "format": "Gerber",
+      "revision": "22641766b8d75f0bfa4be5b23355b241e4e6f8c00848ea29dfae1732d1c71a6f",
+      "source_objects": 70,
+      "geometry_available": 0,
+      "bounds_available": 60,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/bsteel.gbr:12 \"LNbsteel.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 70
+    },
+    {
+      "path": "EDIT/bwk.gbr",
+      "side": "after",
+      "sha256": "f46eaa0b3b0dcc2d429b6106e6b72799b740f44a14f633d09cad2fa9bcac5b1a",
+      "bytes": 839,
+      "format": "Gerber",
+      "revision": "137154d717372a555c6ff8645c678ccff8b9096f1f6bfbce849cd62002051da9",
+      "source_objects": 23,
+      "geometry_available": 0,
+      "bounds_available": 23,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/bwk.gbr:9 \"LNbwk.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 23
+    },
+    {
+      "path": "EDIT/no-tsmt.gbr",
+      "side": "after",
+      "sha256": "795256f02f534be1cf0b3737e4c4080a9177ef44e82b2b3c5f4a478f1a0f1138",
+      "bytes": 131,
+      "format": "Gerber",
+      "revision": "327ad080a96f2188a00a2a5ebedd4730e9882ba95dca86c5bab1a10059ae51a3",
+      "source_objects": 2,
+      "geometry_available": 0,
+      "bounds_available": 2,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/no-tsmt.gbr:6 \"LNno-tsmt.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 2
+    },
+    {
+      "path": "EDIT/ol.gbr",
+      "side": "after",
+      "sha256": "3c4ba2906739fa3e4b2acc33cc80dc803b11afc4d72d7de4f8aa301209cd18ce",
+      "bytes": 1123,
+      "format": "Gerber",
+      "revision": "563f2f30b51ea9b2396baf85fd4ca39d770f8e35479438076ab196fc002d5741",
+      "source_objects": 49,
+      "geometry_available": 0,
+      "bounds_available": 34,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/ol.gbr:6 \"LNol.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 49
+    },
+    {
+      "path": "EDIT/tcl.gbr",
+      "side": "after",
+      "sha256": "4bac40026d2d6193845addf7b1de143834b5270468794c0a62b820202c1e9425",
+      "bytes": 52313,
+      "format": "Gerber",
+      "revision": "85c324128652131244871db7324739ecd38d15cfd2628983b94ea50c2530508a",
+      "source_objects": 1533,
+      "geometry_available": 0,
+      "bounds_available": 1234,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/tcl.gbr:15 \"LNtcl.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9397,
+            9407
+          ]
+        }
+      ],
+      "queryable_objects": 1533
+    },
+    {
+      "path": "EDIT/tlen-xx.gbr",
+      "side": "after",
+      "sha256": "76f2fedddf2b0ddd85d5eff35a1d7351bb38b17c4837c99262085f4d0e5af91a",
+      "bytes": 29832,
+      "format": "Gerber",
+      "revision": "e84508dd895f3bc50feb9952ffafd133dd20670e94d8fdc2183dcd8d53d130a4",
+      "source_objects": 1143,
+      "geometry_available": 0,
+      "bounds_available": 979,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/tlen-xx.gbr:12 \"LNtlen-xx.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9747,
+            9756
+          ]
+        }
+      ],
+      "queryable_objects": 1143
+    },
+    {
+      "path": "EDIT/tlen.gbr",
+      "side": "after",
+      "sha256": "fe3ab548d073f04763fc45a0358b92f51e6a7edd0609dfa1566d753a3c2ee5af",
+      "bytes": 29691,
+      "format": "Gerber",
+      "revision": "2f126aa348269523ed21b3a1207cb0bb088ae07c2d3d8cd140597a97c6eb23ee",
+      "source_objects": 1139,
+      "geometry_available": 0,
+      "bounds_available": 975,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/tlen.gbr:12 \"LNtlen.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9716,
+            9726
+          ]
+        }
+      ],
+      "queryable_objects": 1139
+    },
+    {
+      "path": "EDIT/top_layer.kicad_pcb",
+      "side": "after",
+      "sha256": "ec141305a9d93db87709124ba5aa9378135485ae5458f019e47a342d099496a5",
+      "bytes": 3780994,
+      "format": "KiCad",
+      "revision": "0611f503ce6ddef1c073370424c6182df7e3533a650e5dc3c4769a5806f1e07e",
+      "source_objects": 36156,
+      "geometry_available": 32660,
+      "bounds_available": 32660,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DEGENERATE_ARC",
+          "count": 84,
+          "message": "Native geometry or layer coverage remains explicit on source records"
+        },
+        {
+          "severity": "WARNING",
+          "code": "NON_POSITIVE_STROKE",
+          "count": 3412,
+          "message": "Native geometry or layer coverage remains explicit on source records"
+        }
+      ],
+      "queryable_objects": 36156
+    },
+    {
+      "path": "EDIT/tslv.gbr",
+      "side": "after",
+      "sha256": "792753524e24a04bac81e715a43fcb2ea4eec313a9522e940f9f22c4258b35a2",
+      "bytes": 22072,
+      "format": "Gerber",
+      "revision": "b6b3d5289be2cbc33d97d28de0d9d234552930e635ee8377b710416b580487fc",
+      "source_objects": 650,
+      "geometry_available": 0,
+      "bounds_available": 542,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/tslv.gbr:17 \"LNtslv.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            8962,
+            8979
+          ]
+        }
+      ],
+      "queryable_objects": 650
+    },
+    {
+      "path": "EDIT/tsm-1.gbr",
+      "side": "after",
+      "sha256": "b5ba08d2c50b8542827f22bbcc0a534eb1b3092e095e5b1c09c452bdfdfe98ad",
+      "bytes": 17893,
+      "format": "Gerber",
+      "revision": "45e13d501c0e5f5c42340111908fb30e96cdc980f06fb7295265a130e0e5f8e0",
+      "source_objects": 495,
+      "geometry_available": 0,
+      "bounds_available": 366,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/tsm-1.gbr:16 \"LNtsm-1.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9713,
+            9720
+          ]
+        }
+      ],
+      "queryable_objects": 495
+    },
+    {
+      "path": "EDIT/tsm.gbr",
+      "side": "after",
+      "sha256": "c06698c228c70b065962bdddbda50eb6416974d02183089e6c5f732e3c78830c",
+      "bytes": 131582,
+      "format": "Gerber",
+      "revision": "fb6224f39386b69fb3e1deea913b4384f7e554146723b558182bd690199e4284",
+      "source_objects": 4697,
+      "geometry_available": 0,
+      "bounds_available": 4032,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/tsm.gbr:15 \"LNtsm.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9328,
+            9343
+          ]
+        }
+      ],
+      "queryable_objects": 4697
+    },
+    {
+      "path": "EDIT/tsmt.gbr",
+      "side": "after",
+      "sha256": "9a7817c0a17de38260ab7dbfd87eb634cec2476630a60b922e47e8840028096d",
+      "bytes": 7331,
+      "format": "Gerber",
+      "revision": "178951a85b41c074b1b0f15d544bc04410ad4e8d3bee41923fdbf745e2279728",
+      "source_objects": 380,
+      "geometry_available": 0,
+      "bounds_available": 365,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "EDIT/tsmt.gbr:47 \"LNtsmt.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 380
+    },
+    {
+      "path": "ORG/1-2plated.ncd.gbr",
+      "side": "before",
+      "sha256": "313c68574f1998c17be9301b727900126cdc6897a99d6b28826d6f87fedcbfd0",
+      "bytes": 9318,
+      "format": "Gerber",
+      "revision": "d106fd6c9222fe7cd651539df5dd50bfc7c47de3c549184075bc010d721dae0e",
+      "source_objects": 548,
+      "geometry_available": 0,
+      "bounds_available": 548,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/1-2plated.ncd.gbr:6 \"LN1-2plated.ncd.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 548
+    },
+    {
+      "path": "ORG/2-3plated.ncd.gbr",
+      "side": "before",
+      "sha256": "e1b9ba59449846486615c6dfd739317093bc0a436973d871361c93d9af25d3e8",
+      "bytes": 3019,
+      "format": "Gerber",
+      "revision": "8c6cc4b61860d766ec446151b6b3816373f06367eed9fd7b9b62e65a533de7e9",
+      "source_objects": 189,
+      "geometry_available": 0,
+      "bounds_available": 189,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/2-3plated.ncd.gbr:6 \"LN2-3plated.ncd.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 189
+    },
+    {
+      "path": "ORG/bottom_layer.gdo.gbr",
+      "side": "before",
+      "sha256": "cada626de17262168655b3e1161b8d4dd9165f6076f9912445203bf0d7e92c75",
+      "bytes": 976849,
+      "format": "Gerber",
+      "revision": "2ffd994c71c93fc7c376a6468044249e22e8a34743a8ee1a587271304f18f2d1",
+      "source_objects": 39546,
+      "geometry_available": 0,
+      "bounds_available": 34946,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/bottom_layer.gdo.gbr:37 \"LNbottom_layer.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9394,
+            9402
+          ]
+        }
+      ],
+      "queryable_objects": 39546
+    },
+    {
+      "path": "ORG/bottom_soldermask.gdo.gbr",
+      "side": "before",
+      "sha256": "c4a11fda0ff5ace4d106aecb29a386f75df6327cce7ead75a2c2d03078097e03",
+      "bytes": 2384,
+      "format": "Gerber",
+      "revision": "bd3131abc64f1892a7d0232e1e32b9da50ce5f4e5dd42824ad1c14b929467242",
+      "source_objects": 71,
+      "geometry_available": 0,
+      "bounds_available": 57,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/bottom_soldermask.gdo.gbr:10 \"LNbottom_soldermask.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 71
+    },
+    {
+      "path": "ORG/cvl_bottom.gdo.gbr",
+      "side": "before",
+      "sha256": "a0699e2204520876ed219073929c58dc2e4e6615978f32c9cbd011f87f85fc47",
+      "bytes": 23931,
+      "format": "Gerber",
+      "revision": "34f49b5a1924f651aebc690c1771d054abba12bcbd5f949f7f03dfa385e86a98",
+      "source_objects": 709,
+      "geometry_available": 0,
+      "bounds_available": 664,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/cvl_bottom.gdo.gbr:13 \"LNcvl_bottom.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9632,
+            9649
+          ]
+        }
+      ],
+      "queryable_objects": 709
+    },
+    {
+      "path": "ORG/cvl_top.gdo.gbr",
+      "side": "before",
+      "sha256": "5c386f7692f259267c7da727201172e78d7338cfc9d44cdb026a8b5421447d00",
+      "bytes": 23219,
+      "format": "Gerber",
+      "revision": "f2ef42ce3afa571ee2940466068d04bda2e87a0c015f5b0204af043d90730d6c",
+      "source_objects": 681,
+      "geometry_available": 0,
+      "bounds_available": 646,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/cvl_top.gdo.gbr:14 \"LNcvl_top.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9736,
+            9753
+          ]
+        }
+      ],
+      "queryable_objects": 681
+    },
+    {
+      "path": "ORG/drill.gdo.gbr",
+      "side": "before",
+      "sha256": "1434fcdfd15dc41f2526cada2c367afa76bb4a2bf8c2501bef5d6337cb983c7b",
+      "bytes": 35774,
+      "format": "Gerber",
+      "revision": "e226af05c6b2460a34df14f56540be17c54832f475cc3feaa17fde83adca47a7",
+      "source_objects": 1890,
+      "geometry_available": 0,
+      "bounds_available": 1890,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/drill.gdo.gbr:6 \"LNdrill.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            10200,
+            10211
+          ]
+        }
+      ],
+      "queryable_objects": 1890
+    },
+    {
+      "path": "ORG/layer2.gdo.gbr",
+      "side": "before",
+      "sha256": "dc7fa6319efe62d686940fa3e4b2082d399691719958d2618fb7834b0a814826",
+      "bytes": 562465,
+      "format": "Gerber",
+      "revision": "d0bf4b86316f5a77d54f961c4ffb9d8409d6371c73f3af2af47a49c7b6852fa0",
+      "source_objects": 18300,
+      "geometry_available": 0,
+      "bounds_available": 13385,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/layer2.gdo.gbr:37 \"LNlayer2.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9385,
+            9394
+          ]
+        }
+      ],
+      "queryable_objects": 18300
+    },
+    {
+      "path": "ORG/nc1-2.gdo.gbr",
+      "side": "before",
+      "sha256": "6d2945e28969c89a7a9b4a27f57d59ec89431fa4bf855c35f0731c9ae5c43b0c",
+      "bytes": 67218,
+      "format": "Gerber",
+      "revision": "7f294c0f5452ff19d7193402a8927d69fadb890568141343afe0d2c4b2bdfbdf",
+      "source_objects": 3218,
+      "geometry_available": 0,
+      "bounds_available": 3218,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/nc1-2.gdo.gbr:6 \"LNnc1-2.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            10908,
+            10925
+          ]
+        }
+      ],
+      "queryable_objects": 3218
+    },
+    {
+      "path": "ORG/nc2-3.gdo.gbr",
+      "side": "before",
+      "sha256": "574cf595d754853d189c1e79a3a92b2778528bf1bbf5420e86f5f146bc4d1394",
+      "bytes": 35994,
+      "format": "Gerber",
+      "revision": "68a05f5e7d0a8f3e24289e758ef7e62c523937c2e1e392b8e82ea95e56552ddd",
+      "source_objects": 1799,
+      "geometry_available": 0,
+      "bounds_available": 1799,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/nc2-3.gdo.gbr:6 \"LNnc2-3.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            10942,
+            10958
+          ]
+        }
+      ],
+      "queryable_objects": 1799
+    },
+    {
+      "path": "ORG/outboard.gdo.gbr",
+      "side": "before",
+      "sha256": "b42b511a851465472589b74b0cfeeac428e821f0bd2088e40d84431661cf24ea",
+      "bytes": 99727,
+      "format": "Gerber",
+      "revision": "33cdd926ff849940504e4b6c044a37b0362ca85e8837b5649e70532def4dc683",
+      "source_objects": 4796,
+      "geometry_available": 0,
+      "bounds_available": 4752,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/outboard.gdo.gbr:6 \"LNoutboard.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            8595,
+            8605
+          ]
+        }
+      ],
+      "queryable_objects": 4796
+    },
+    {
+      "path": "ORG/sus_bottom.gdo.gbr",
+      "side": "before",
+      "sha256": "ca225f76a5733b7b2519d9bffb4f1d3ae920e8091e337ef8971a991403a7fcd9",
+      "bytes": 481,
+      "format": "Gerber",
+      "revision": "18ba3c71618669917e0215d36955154b513c76ac214b058f7ee4a5e33c676b93",
+      "source_objects": 17,
+      "geometry_available": 0,
+      "bounds_available": 12,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/sus_bottom.gdo.gbr:6 \"LNsus_bottom.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 17
+    },
+    {
+      "path": "ORG/thruholeplated.ncd.gbr",
+      "side": "before",
+      "sha256": "d87923d596e8fb1f5dd27ec58948625a871da297a5c3726637d9a63b3b88cd22",
+      "bytes": 3408,
+      "format": "Gerber",
+      "revision": "e9e2b9a0f37f64562e28ec935e4eba18d723fdc3bec3a9b48aa8e90e142726d6",
+      "source_objects": 223,
+      "geometry_available": 0,
+      "bounds_available": 223,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/thruholeplated.ncd.gbr:6 \"LNthruholeplated.ncd.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 223
+    },
+    {
+      "path": "ORG/top.kicad_pcb",
+      "side": "before",
+      "sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+      "bytes": 1958333,
+      "format": "KiCad",
+      "revision": "b77eb7e1e681b18941f23b318356c411c441f2646e4a970fdfd708d91be260b4",
+      "source_objects": 18614,
+      "geometry_available": 15906,
+      "bounds_available": 15906,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "NON_POSITIVE_STROKE",
+          "count": 2708,
+          "message": "Native geometry or layer coverage remains explicit on source records"
+        }
+      ],
+      "queryable_objects": 18614
+    },
+    {
+      "path": "ORG/top_layer.gdo.gbr",
+      "side": "before",
+      "sha256": "207a51318f103190a4d61e76f4a0457fcfd11fd3db560c9439dd2f5f460f9b90",
+      "bytes": 532869,
+      "format": "Gerber",
+      "revision": "a86cb3f48fa72b5883478b93402f4b13d2b0d301c49fc8925119f17062c8ca42",
+      "source_objects": 17849,
+      "geometry_available": 0,
+      "bounds_available": 14227,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/top_layer.gdo.gbr:52 \"LNtop_layer.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            9197,
+            9206
+          ]
+        }
+      ],
+      "queryable_objects": 17849
+    },
+    {
+      "path": "ORG/top_silkscreen.gdo.gbr",
+      "side": "before",
+      "sha256": "418bf1711b090421f5a2fa6f0174c26e8d3ecb0eac3e8cd53b8026748a1fc2f9",
+      "bytes": 719093,
+      "format": "Gerber",
+      "revision": "5ade30ccc02b584c86891707c99909eaa895168e0374db07c387e359927fccb4",
+      "source_objects": 44799,
+      "geometry_available": 0,
+      "bounds_available": 44794,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/top_silkscreen.gdo.gbr:11 \"LNtop_silkscreen.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": [
+            11226,
+            11243
+          ]
+        }
+      ],
+      "queryable_objects": 44799
+    },
+    {
+      "path": "ORG/top_soldermask.gdo.gbr",
+      "side": "before",
+      "sha256": "4b21980c32dbb928ce3cfc77b24f6b7e85071d8fcbabc47abe3365d90f8109d6",
+      "bytes": 7477,
+      "format": "Gerber",
+      "revision": "9f6e2e53065a876d955a91e9d29c88a1396223e24279326006346b098f88eee7",
+      "source_objects": 434,
+      "geometry_available": 0,
+      "bounds_available": 429,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/top_soldermask.gdo.gbr:26 \"LNtop_soldermask.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 434
+    },
+    {
+      "path": "ORG/top_solderpaste.gdo.gbr",
+      "side": "before",
+      "sha256": "38155fc8ba2c6e39990f97ca9a8c581e9e23e2fa4d6fe6b5a1988a9061d428c8",
+      "bytes": 4971,
+      "format": "Gerber",
+      "revision": "fca9141c0be54a665e420605547c6d75fe9a01ecb16604602a2a4a21c79dbf61",
+      "source_objects": 331,
+      "geometry_available": 0,
+      "bounds_available": 331,
+      "status": "PARSED_WITH_WARNINGS",
+      "warnings": [
+        {
+          "severity": "WARNING",
+          "code": "DeprecationWarning",
+          "message": "ORG/top_solderpaste.gdo.gbr:18 \"LNtop_solderpaste.gdo.gbr\": Deprecated LN (load name) statement found. This deprecated since rev. I4 (Oct 2013).",
+          "source_span": null
+        }
+      ],
+      "queryable_objects": 331
+    }
+  ],
+  "artifact_count": 41,
+  "source_objects": 358989,
+  "geometry_available": 48566,
+  "warning_count": 41,
+  "correspondence_status": "NOT_RUN: no cross-source layer/coordinate mapping was inferred; before/after pairing uses sealed ORG and EDIT directory names only",
+  "qualification": "NOT_RUN",
+  "engineering_acceptance": "NOT_ESTABLISHED",
+  "parser_runtime": {
+    "gerbonara": "1.6.3",
+    "shapely": "2.1.2"
+  },
+  "scope": "Read-only source inventory and persisted, source-located records; unsupported geometry and parser warnings remain explicit"
+}

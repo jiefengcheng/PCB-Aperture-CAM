@@ -11,6 +11,9 @@ class Element {
  prepend(...items){this.children.unshift(...items);}
  replaceChildren(...items){this.children=items;}
  setAttribute(k,v){this.attrs[k]=v;}
+ getAttribute(k){return this.attrs[k]??null;}
+ focus(){this.focused=true;}
+ setSelectionRange(start,end){this.selection=[start,end];}
  after(item){this.following=item;}
  addEventListener(){}
  scrollIntoView(options){this.scrolled=options.block;}
