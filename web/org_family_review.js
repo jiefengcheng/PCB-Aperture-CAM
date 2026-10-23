@@ -71,7 +71,7 @@ async function renderOrgFamilyReview(scene,panel,initialDatasetId,onBack){
  const el=(tag,value,cls)=>{const n=document.createElement(tag);if(value!==undefined)n.textContent=String(value);if(cls)n.className=cls;return n;};
  const ns='http://www.w3.org/2000/svg',cache=new Map(),storedPathCache=new Map();
  let datasetId=ids.includes(initialDatasetId)?initialDatasetId:ids[0];
- let data=null,selectedFamily=null,selectedMember=null,selectedExcluded=null,search='',page=0,epoch=0,memberSearch='',memberFilter='all',memberPage=0,excludedSearch='',excludedPage=0,geometryMode='simplified',storedPaths=null;
+ let data=null,selectedFamily=null,selectedMember=null,selectedExcluded=null,search='',page=0,epoch=0,memberSearch='',memberFilter='all',memberPage=0,excludedSearch='',excludedPage=0,geometryMode='simplified',storedPaths=null,g22Member=1;
  const short=value=>String(value||'').slice(0,18)+'…';
  const panelRoot=el('div',undefined,'org-family-review');
  const toolbar=el('div',undefined,'toolbar');
@@ -169,6 +169,70 @@ async function renderOrgFamilyReview(scene,panel,initialDatasetId,onBack){
    if(role==='uncertain_trace_contact')p.setAttribute('stroke-dasharray','.04 .025');svg.append(p);
   }
  }
+ function g22Figure(member,kind,title,layers){
+  const figure=el('figure',undefined,'g22-reconstruction-figure'),svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox',member.view_box_mm.join(' '));svg.setAttribute('role','img');svg.setAttribute('aria-label',title+' · member '+member.member);
+  const bg=document.createElementNS(ns,'rect');for(const [key,value]of Object.entries({x:member.view_box_mm[0],y:member.view_box_mm[1],width:member.view_box_mm[2],height:member.view_box_mm[3],fill:'#f5f8fa'}))bg.setAttribute(key,String(value));svg.append(bg);
+  for(const [pathKey,color,opacity] of layers){const d=member.panels[pathKey];if(!d)continue;const shape=document.createElementNS(ns,'path');shape.setAttribute('d',d);shape.setAttribute('fill',color);shape.setAttribute('fill-rule','evenodd');shape.setAttribute('fill-opacity',String(opacity));shape.setAttribute('stroke',color);shape.setAttribute('stroke-width','.0015');svg.append(shape);}
+  figure.append(svg,el('figcaption',title));return figure;
+ }
+ function renderG22Experiment(){
+  const linked=scene.ingestion?.g22_reconstruction,payload=linked?.payload;
+  if(!payload||linked.dataset_id!==datasetId)return null;
+  const member=payload.members.find(row=>row.member===g22Member)||payload.members[0];if(!member)return null;
+  const section=el('section',undefined,'g22-reconstruction');
+  section.append(el('h2','G22 · ORG to experimental candidate to EDIT'),el('p','One registered three-member family. The panels share the same ORG coordinate frame and fixed window plus halo. This is a measured experiment over exported F.Cu, not a reconstruction of the expert’s intent.'));
+  const selectors=el('div',undefined,'g22-member-selectors');selectors.setAttribute('role','group');selectors.setAttribute('aria-label','Choose G22 family member');
+  for(const row of payload.members){const button=el('button','Member '+row.member);button.type='button';button.setAttribute('aria-pressed',String(row.member===member.member));button.onclick=()=>{g22Member=row.member;renderBody();};selectors.append(button);}section.append(selectors);
+  const keys=member.measurements,grid=el('div',undefined,'g22-reconstruction-grid');
+  grid.append(g22Figure(member,'org','1 · ORG / before',[['org','#65747d',.92]]));
+  grid.append(g22Figure(member,'candidate','2 · Generated candidate',[['candidate','#18a0a6',.84],['candidate_added_vs_org','#28bad2',.95],['candidate_removed_vs_org','#ee9b32',.95]]));
+  grid.append(g22Figure(member,'edit','3 · EDIT / observed after',[['edit','#bd4a43',.75],['edit_missing_vs_candidate','#8e69c8',.82],['candidate_extra_vs_edit','#f0a43b',.9]]));
+  section.append(grid);
+  const legend=el('p','Candidate pane: cyan = added vs ORG; amber = removed vs ORG. EDIT pane: violet = EDIT copper missing from the candidate; gold = candidate copper beyond EDIT. The EDIT pane is an observed KiCad plot; its complete native F.Cu coverage is NOT_ESTABLISHED.','g22-legend');section.append(legend);
+  const stats=el('div',undefined,'g22-reconstruction-stats');
+  const cvEdit=keys.candidate_vs_edit,base=keys.unchanged_org_vs_edit,cvOrg=keys.candidate_vs_org;
+  stats.append(stat('Candidate vs EDIT · symmetric difference',Number(cvEdit.symmetric_difference_area_mm2).toFixed(6)+' mm²','Measured plotted-image comparison · '+keys.edit_target_qualification));
+  stats.append(stat('Unchanged ORG vs EDIT',Number(base.symmetric_difference_area_mm2).toFixed(6)+' mm²','Same fixed window and export reader'));
+  stats.append(stat('Candidate change vs ORG',Number(cvOrg.symmetric_difference_area_mm2).toFixed(6)+' mm²','Candidate-only F.Cu delta area'));
+  stats.append(stat('Local neighbor interaction',keys.local_neighbor_interaction.status,'Plot geometry only · not electrical connectivity'));
+  section.append(stats);
+  const split=el('div',undefined,'g22-reconstruction-notes');
+  const statusCard=el('div',undefined,'g22-reconstruction-status');statusCard.append(el('h3','Two separate readings'));
+  const localFidelity=keys.native_to_gerber_fidelity['candidate_member_'+member.member],boundary=keys.local_neighbor_interaction.analysis_boundary_open?'candidate delta reaches observation boundary':'candidate delta stays inside observation boundary';
+  const referenceStatus=Object.entries(keys.reference_layer_preservation_vs_org||{}).filter(([layer])=>['F.Mask','F.Paste','Edge.Cuts'].includes(layer)).map(([layer,result])=>layer+' '+(result.whole_layer_normalized_byte_check?.status||'NOT_RECORDED')).join(' · ');
+  statusCard.append(el('p','Execution and local geometric checks: LOCAL_NATIVE_EXPORT_FIDELITY_'+localFidelity.status+' within this member window; '+keys.local_neighbor_interaction.status+' under bounded local plotted-copper predicates. '+boundary+'. Outside-neighborhood continuation and electrical connectivity are not assessed. Full-layer reference export comparison: '+referenceStatus+'.'));
+  const targetConclusion=member.member===1?'A: weak improvement in the supported fixed window; substantial residual remains.':member.member===2?'B: weak improvement; both EDIT circle alternatives remain ambiguous.':'C: target completeness and whole-target fit are NOT_ESTABLISHED.';
+  statusCard.append(el('p','Similarity to EDIT: '+Number(cvEdit.symmetric_difference_area_mm2).toFixed(6)+' mm² plotted-image residual. '+targetConclusion+' This is not an acceptance score.'));
+  split.append(statusCard);
+  const recipe=el('details',undefined,'g22-recipe');recipe.append(el('summary','Frozen recipe, source objects and parameter provenance'));
+  const p=member.recipe?.editable_source_occurrences||[];
+  recipe.append(el('p','Family: '+(member.recipe?.family||'selective_land_neck')+' · shared A-calibrated radius growth '+Number(member.recipe?.radius_growth_mm??member.recipe?.parameters_shared?.radius_growth_mm??0.00953).toFixed(5)+' mm · attached-trace width increase '+Number(member.recipe?.attached_trace_width_increase_mm??member.recipe?.parameters_shared?.attached_trace_width_increase_mm??0.05).toFixed(3)+' mm. Parameters calibrated on A from EDIT observations, then transferred without per-member retuning. Candidate constructor used ORG bytes only; EDIT informed calibration/scoring, not direct geometry copying.'));
+  const sources=el('ul');for(const op of p){sources.append(el('li',op.kind+' · ORG bytes '+(op.source_span||[]).join('–')+' · '+op.source_identity));}recipe.append(sources);
+  if(member.member===2){const alternatives=member.measurements.B_alternatives_retained||[];recipe.append(el('p','B target identity remains ambiguous. Both recorded EDIT circle alternatives are retained ('+alternatives.length+'); the candidate score does not select the true correspondence.'));for(const alt of alternatives)recipe.append(el('p',alt.identity+' · center '+alt.center_mm.map(x=>Number(x).toFixed(4)).join(', ')+' mm · radius '+Number(alt.radius_mm).toFixed(5)+' mm'));
+  }else if(member.member===3)recipe.append(el('p','C target composition remains NOT_ESTABLISHED. The complete EDIT native inventory contains 84 F.Cu arcs with unsupported, unbounded geometry; these cannot be treated as empty. The displayed residual is only a plotted-image comparison and cannot establish whole-target fit.'));
+  recipe.append(el('p','Source receipt SHA-256: '+payload.source_receipt_sha256+' · candidate native SHA-256: '+member.candidate_board_sha256));split.append(recipe);section.append(split);
+  const execution=el('details',undefined,'g22-recipe');execution.append(el('summary','What actually ran · linked execution records'));
+  execution.append(el('p','This is a record of completed stages, not an animation. Candidate boards are final outputs; no intermediate geometry snapshots were captured.'));
+  const stages=el('ol');for(const stage of payload.execution_stages||[]){const item=el('li');item.append(el('strong',stage.stage_id+' · '+stage.title),el('p',stage.detail),el('code',stage.evidence_path+' · SHA-256 '+stage.evidence_sha256));stages.append(item);}
+  const buildReceipt=linked.slice_d_build_receipt;if(buildReceipt?.snapshot){const item=el('li');item.append(el('strong','D · Build the visual comparison payload'),el('p','The source-bound visual payload was built from the recorded Slice C receipt. This build receipt records payload generation; workbench publication verification remains a separate receipt.'),el('code',buildReceipt.snapshot+' · SHA-256 '+buildReceipt.sha256));stages.append(item);}execution.append(stages);section.append(execution);
+  const scope=el('details',undefined,'g22-recipe');scope.append(el('summary','Editable scope, protected geometry and local constraints'));
+  const rules=member.scope_and_constraints||{};
+  scope.append(el('p','Fixed member window: '+(rules.fixed_window_mm||[]).map(x=>Number(x).toFixed(6)).join(', ')+' mm · intervention halo: '+Number(rules.safety_halo_mm).toFixed(3)+' mm.'));
+  scope.append(el('p','Protected: '+rules.protected_scope));
+  scope.append(el('p','Reference layers: '+Object.entries(rules.reference_roles||{}).map(([layer,role])=>layer+' — '+role).join(' · ')));
+  const interactionRule=typeof rules.interaction_rule==='string'?rules.interaction_rule:(rules.interaction_rule?.reason||'NOT_RECORDED')+' · factor '+String(rules.interaction_rule?.factor??'NOT_RECORDED');
+  scope.append(el('p','Local interaction rule: '+interactionRule+' · measured result: '+(rules.interaction_result?.status||'NOT_RECORDED')+'. Geometry only; this does not establish electrical connectivity.'));
+  const scopeCheck=rules.source_authorization_and_geometric_containment||{};
+  scope.append(el('p','Source and geometric-scope check: '+scopeCheck.status+' · constructor source '+scopeCheck.source_role+' · EDIT supplied to constructor: '+String(scopeCheck.edit_target_input_to_constructor)+' · every expanded source-object bound inside window + halo: '+String(scopeCheck.all_source_object_bounds_inside_window_plus_halo)+'. '+scopeCheck.editable_occurrence_count+' edited occurrences; replayed candidate hash matches the stored candidate: '+String(scopeCheck.replayed_candidate_sha256===scopeCheck.stored_candidate_sha256)+'.'));
+  scope.append(el('p',rules.fixed_ports_disposition||'Named electrical ports: NOT_RECORDED.'));
+  scope.append(el('p','Context classifications remain '+Object.entries(rules.context_unknowns||{}).map(([k,v])=>k+'='+v).join(' · ')+'.'));
+  const editable=el('ul');for(const op of rules.editable_source_occurrences||[]){editable.append(el('li',op.kind+' · source '+op.source_identity+' · radius change '+Number(op.radius_delta_mm||0).toFixed(5)+' mm · width change '+Number(op.width_delta_mm||0).toFixed(3)+' mm'));}scope.append(editable);section.append(scope);
+  section.append(el('p','Limitations: '+payload.limitations.join(' '),'g22-limitations'));
+  const reviewLink=el('a','Open Slice C summary audit receipt ↗');reviewLink.href=linked.review_receipt?.snapshot||'#';reviewLink.target='_blank';reviewLink.rel='noopener';
+  section.append(el('p','ChatGPT disposition: '+(payload.review?.chatgpt_summary_audit||'NOT_RECORDED')+' · summary-only. Cursor: '+(payload.review?.cursor||'NOT_RECORDED')+'. ',reviewLink));
+  return section;
+ }
  function renderBody(){
   if(!data)return;
   const family=selectedFamily&&familyFor(selectedFamily);if(family&&!family.member_keys.includes(selectedMember?.member_key))selectedMember=memberFor(family.member_keys[0]);
@@ -208,6 +272,7 @@ async function renderOrgFamilyReview(scene,panel,initialDatasetId,onBack){
   const modeButtons=el('div',undefined,'org-family-geometry-controls');modeButtons.setAttribute('role','group');modeButtons.setAttribute('aria-label','Choose ORG display geometry');
   for(const [mode,label] of [['simplified','Simplified inspection'],['stored','Stored WKB · unsimplified']]){const button=el('button',label);button.type='button';button.setAttribute('aria-pressed',String(geometryMode===mode));button.onclick=async()=>{try{if(mode==='stored'){status.textContent='Verifying stored geometry paths…';await getStoredPaths();}geometryMode=mode;renderBody();}catch(error){geometryMode='simplified';status.textContent='NOT_AVAILABLE · '+error.message;}};modeButtons.append(button);}
   geometryControls.append(modeButtons);content.append(geometryControls);
+  const g22Experiment=renderG22Experiment();if(g22Experiment)content.append(g22Experiment);
 
   const excludedBrowser=el('section',undefined,'org-family-excluded');excludedBrowser.append(el('h2','Excluded F.Cu source features'),el('p',`${data.excluded_features.length.toLocaleString()} source features excluded from candidate-member recognition. These stay selectable here with their exact ORG source identity and reason; selection does not add them to the map.`));
   const excludedSearchBox=el('input');excludedSearchBox.type='search';excludedSearchBox.placeholder='Search source ID, byte span, or exclusion reason';excludedSearchBox.setAttribute('aria-label','Search excluded ORG source features');excludedSearchBox.value=excludedSearch;excludedSearchBox.oninput=()=>{excludedSearch=excludedSearchBox.value.toLowerCase();excludedPage=0;renderBody();refocus('Search excluded ORG source features');};excludedBrowser.append(excludedSearchBox);

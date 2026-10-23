@@ -95,3 +95,8 @@ The authorized synthetic MovePadWithConnections V2 slice is complete. See [V2 de
 ## Visual case workbench
 
 [Visual delivery and guided replay](docs/VISUAL_WORKBENCH.md) connects the synthetic aperture, HALPI2 electrical controls and GlowStitch information boundary to actual local geometry/evidence. Generate a self-contained HTML/SVG bundle with `.venv/bin/python tools/visual_report.py`. Output location is printed and recorded in out/visual/current.txt. No server, cloud upload, board editor or new acceptance decision is required.
+
+
+## G22 family reconstruction experiment
+
+The bounded G22 experiment applies a compact ORG-derived copper-area treatment to three registered family members, exports the candidates through KiCad, rereads the Gerbers, and compares the results with EDIT in the existing workbench. The scope, measurements, remaining uncertainty and replay command are in the [G22 reconstruction report](docs/G22_FAMILY_RECONSTRUCTION_REPORT.md); the experiment rules are in the [handoff](docs/G22_FAMILY_RECONSTRUCTION_HANDOFF.md). This is experimental local geometry evidence only, not electrical or manufacturing acceptance.

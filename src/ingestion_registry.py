@@ -42,6 +42,7 @@ IMPLEMENTATION_SOURCES = (
     'src/catalogue_qualifications.py',
     'src/catalogue_selection.py',
     'src/org_family_review.py',
+    'tools/build_g22_slice_d.py', 'tools/run_g22_slice_c.py', 'tools/run_g22_reconstruction.py', 'src/visual_scene.py',
 )
 REPLAY_ENTRY_FILES = {'index.html', 'scene.json', 'build_receipt.json'}
 
@@ -70,6 +71,13 @@ def _input_bindings(config):
             {'path': prefix + '/materialization.json', 'sha256': family_map['materialization_sha256']},
             {'path': prefix + '/acceptance.json', 'sha256': family_map['acceptance_sha256']},
         ])
+    if config.get('g22_reconstruction'):
+        bindings.append(config['g22_reconstruction']['payload'])
+        for key in ('slice_c_receipt', 'slice_b_report', 'experiment_contract', 'slice_d_build_receipt'):
+            if config['g22_reconstruction'].get(key):
+                bindings.append(config['g22_reconstruction'][key])
+        if config['g22_reconstruction'].get('chatgpt_audit_receipt'):
+            bindings.append(config['g22_reconstruction']['chatgpt_audit_receipt'])
     for review in config.get('identity_reviews', {}).values():
         bindings.append(review['manifest'])
         bindings.extend(review.get('images', []))
@@ -352,6 +360,143 @@ def _copy_org_family_maps(root, config, scene, stage):
     return []
 
 
+def _validate_g22_reconstruction_payload(payload, slice_receipt, fit, dataset_id):
+    if (payload.get('schema') != 'pcb-g22-family-reconstruction-visual-v1'
+            or payload.get('dataset_id') != dataset_id
+            or [row.get('member') for row in payload.get('members', [])] != [1, 2, 3]):
+        raise ValueError('G22 reconstruction payload identity or member set mismatch')
+    for member in payload['members']:
+        number = member['member']
+        key = str(number)
+        transfer = next((row for row in fit.get('transfer', []) if row.get('member') == number), None)
+        recorded = slice_receipt.get('windows', {}).get(key)
+        candidate_case = slice_receipt.get('cases', {}).get(f'candidate_member_{number}', {})
+        if not transfer or not recorded or not candidate_case:
+            raise ValueError('G22 reconstruction member has no bound experiment receipt')
+        exported = recorded.get('exported_copper_comparison', {})
+        measurements = member.get('measurements', {})
+        for field in ('candidate_vs_org', 'candidate_vs_edit', 'unchanged_org_vs_edit', 'local_neighbor_interaction'):
+            if measurements.get(field) != exported.get(field):
+                raise ValueError(f'G22 reconstruction measurement differs from Slice C receipt: {number}:{field}')
+        if (measurements.get('native_to_gerber_fidelity') != recorded.get('native_export_fidelity')
+                or measurements.get('reference_layer_preservation_vs_org') != candidate_case.get('reference_layer_preservation_vs_org')
+                or measurements.get('edit_target_qualification') != transfer.get('target_composition_status')
+                or measurements.get('whole_target_fit') != transfer.get('whole_target_fit_status')
+                or member.get('candidate_board_sha256') != candidate_case.get('source_sha256')
+                or member.get('member_key') != transfer.get('member_key')):
+            raise ValueError(f'G22 reconstruction qualification differs from bound receipts: {number}')
+        display_binding = member.get('display_binding', {})
+        expected_panel_sources = {
+            'org': ['ORG'], 'candidate': [f'candidate_member_{number}'], 'edit': ['EDIT'],
+            'candidate_added_vs_org': [f'candidate_member_{number}', 'ORG'],
+            'candidate_removed_vs_org': ['ORG', f'candidate_member_{number}'],
+            'edit_missing_vs_candidate': ['EDIT', f'candidate_member_{number}'],
+            'candidate_extra_vs_edit': [f'candidate_member_{number}', 'EDIT'],
+        }
+        expected_source_hashes = {
+            case: slice_receipt.get('cases', {}).get(case, {}).get('gerbers', {}).get('F.Cu', {}).get('sha256')
+            for case in {source for sources in expected_panel_sources.values() for source in sources}
+        }
+        if any(not isinstance(digest, str) or len(digest) != 64
+               or any(character not in '0123456789abcdef' for character in digest)
+               for digest in expected_source_hashes.values()):
+            raise ValueError(f'G22 reconstruction source Gerber hash missing or invalid: {number}')
+        expected_analysis_bounds = exported.get('local_neighbor_interaction', {}).get('window_bounds_mm')
+        expected_view_box = ([expected_analysis_bounds[0], expected_analysis_bounds[1],
+                              expected_analysis_bounds[2] - expected_analysis_bounds[0],
+                              expected_analysis_bounds[3] - expected_analysis_bounds[1]]
+                             if isinstance(expected_analysis_bounds, list) and len(expected_analysis_bounds) == 4
+                             else None)
+        if (display_binding.get('member') != number
+                or display_binding.get('member_key') != transfer.get('member_key')
+                or display_binding.get('fixed_window_mm') != recorded.get('bounds_org_mm')
+                or display_binding.get('analysis_window_mm') != expected_analysis_bounds
+                or display_binding.get('view_box_mm') != expected_view_box
+                or member.get('view_box_mm') != expected_view_box
+                or display_binding.get('panel_source_cases') != expected_panel_sources
+                or display_binding.get('source_gerber_sha256_by_case') != expected_source_hashes):
+            raise ValueError(f'G22 reconstruction display/source binding mismatch: {number}')
+        panel_hashes = display_binding.get('panel_sha256', {})
+        panels = member.get('panels', {})
+        if (set(panel_hashes) != set(expected_panel_sources)
+                or set(panels) != set(expected_panel_sources)
+                or any(panel_hashes.get(panel) != hashlib.sha256(panels[panel].encode('utf-8')).hexdigest()
+                       for panel in expected_panel_sources)):
+            raise ValueError(f'G22 reconstruction displayed panel content hash mismatch: {number}')
+        if number == 2 and measurements.get('B_alternatives_retained') != transfer.get('edit_candidate_alternatives_retained'):
+            raise ValueError('G22 reconstruction changed B correspondence alternatives')
+        if number == 3 and measurements.get('whole_target_fit') != 'NOT_ESTABLISHED':
+            raise ValueError('G22 reconstruction falsely qualifies incomplete C target')
+
+
+def _copy_g22_reconstruction(root, config, scene, stage):
+    """Attach a verified Slice D payload to its registered client family map."""
+    binding = config.get('g22_reconstruction')
+    if not binding:
+        return
+    payload_binding = binding['payload']
+    payload_path = local(root, payload_binding['path'])
+    payload = json.loads(payload_path.read_text())
+    if payload.get('schema') != 'pcb-g22-family-reconstruction-visual-v1':
+        raise ValueError('G22 reconstruction visual payload schema mismatch')
+    dataset_id = binding['dataset_id']
+    if dataset_id not in {row['id'] for row in config['datasets']}:
+        raise ValueError('G22 reconstruction dataset is not registered')
+    if dataset_id not in scene['ingestion'].get('org_family_maps', {}):
+        raise ValueError('G22 reconstruction requires the matching ORG family map in this publication')
+    if payload.get('dataset_id') != dataset_id or payload.get('source_receipt_sha256') != binding['slice_c_receipt_sha256']:
+        raise ValueError('G22 reconstruction payload/receipt identity mismatch')
+    receipt_binding = binding.get('slice_c_receipt')
+    fit_binding = binding.get('slice_b_report')
+    contract_binding = binding.get('experiment_contract')
+    if not receipt_binding or not fit_binding or not contract_binding:
+        raise ValueError('G22 reconstruction requires bound contract, fit report, and Slice C receipt')
+    receipt_path, fit_path, contract_path = (local(root, receipt_binding['path']), local(root, fit_binding['path']),
+                                             local(root, contract_binding['path']))
+    if (sha(receipt_path) != binding['slice_c_receipt_sha256']
+            or payload.get('slice_b_report_sha256') != sha(fit_path)
+            or payload.get('experiment_contract_sha256') != sha(contract_path)):
+        raise ValueError('G22 reconstruction evidence hashes do not match payload')
+    audit_binding = binding.get('chatgpt_audit_receipt')
+    if not audit_binding or payload.get('review', {}).get('chatgpt_audit_receipt_sha256') != audit_binding.get('sha256'):
+        raise ValueError('G22 reconstruction summary audit receipt is not bound')
+    audit_path = local(root, audit_binding['path'])
+    audit_snapshot = Path('g22_reconstruction/chatgpt_audit_receipt.md')
+    target = stage / audit_snapshot
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(audit_path, target)
+    build_binding = binding.get('slice_d_build_receipt')
+    build_snapshot = None
+    if build_binding:
+        build_path = local(root, build_binding['path'])
+        build_data = json.loads(build_path.read_text())
+        if (sha(build_path) != build_binding.get('sha256')
+                or build_data.get('schema') != 'g22-slice-d-build-receipt/1'
+                or build_data.get('status') != 'SOURCE_BOUND_VISUAL_PAYLOAD_BUILT'
+                or build_data.get('output_payload_sha256') != sha(payload_path)):
+            raise ValueError('G22 Slice D build receipt is invalid or unbound')
+        build_snapshot = Path('g22_reconstruction/slice_d_build_receipt.json')
+        build_target = stage / build_snapshot
+        build_target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(build_path, build_target)
+    slice_receipt = json.loads(receipt_path.read_text())
+    fit = json.loads(fit_path.read_text())
+    _validate_g22_reconstruction_payload(payload, slice_receipt, fit, dataset_id)
+    if not payload.get('members') or [row.get('member') for row in payload['members']] != [1, 2, 3]:
+        raise ValueError('G22 reconstruction payload member set mismatch')
+    if not any(row.get('member_key') for row in payload['members']):
+        raise ValueError('G22 reconstruction member identities are missing')
+    scene['ingestion']['g22_reconstruction'] = {
+        'dataset_id': dataset_id,
+        'payload_sha256': sha(payload_path),
+        'slice_c_receipt_sha256': binding['slice_c_receipt_sha256'],
+        'payload': payload,
+        'review_receipt': {'snapshot': audit_snapshot.as_posix(), 'sha256': sha(target)},
+        'slice_d_build_receipt': ({'snapshot': build_snapshot.as_posix(), 'sha256': sha(stage / build_snapshot)}
+                                  if build_snapshot else None),
+    }
+
+
 def _write_workbench(stage, scene, config, sources):
     from tools.visual_report import embed_scene
 
@@ -421,6 +566,7 @@ def publish(root, config, destination, fail_before_publish=False):
         _copy_identity_reviews(root, config, scene, stage)
         bindings.extend(_copy_intake(root, config, scene, stage))
         bindings.extend(_copy_org_family_maps(root, config, scene, stage))
+        _copy_g22_reconstruction(root, config, scene, stage)
         from .catalogue_scene import copy_projection
         bindings.extend(copy_projection(root,config,scene,stage))
         _write_workbench(stage, scene, config, sources)

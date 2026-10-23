@@ -190,6 +190,38 @@ def _verify_ingestion(bundle, config, scene, receipt, outputs):
                 and displayed.get('materialization_sha256') == binding.get('materialization_sha256')
                 and displayed.get('acceptance_sha256') == binding.get('acceptance_sha256'),
                 'ORG_FAMILY_SOURCE_BUNDLE_BINDING_MISMATCH')
+    g22_binding = config.get('g22_reconstruction')
+    displayed_g22 = ingestion.get('g22_reconstruction')
+    if g22_binding:
+        require(isinstance(displayed_g22, dict), 'G22_RECONSTRUCTION_SCENE_MISSING')
+        payload = displayed_g22.get('payload')
+        require(displayed_g22.get('dataset_id') == g22_binding.get('dataset_id')
+                and displayed_g22.get('slice_c_receipt_sha256') == g22_binding.get('slice_c_receipt_sha256'),
+                'G22_RECONSTRUCTION_RECEIPT_BINDING_MISMATCH')
+        require(displayed_g22.get('payload_sha256') == g22_binding.get('payload', {}).get('sha256'),
+                'G22_RECONSTRUCTION_PAYLOAD_HASH_MISMATCH')
+        review_receipt = displayed_g22.get('review_receipt', {})
+        require(isinstance(review_receipt.get('snapshot'), str)
+                and outputs.get(review_receipt['snapshot']) == review_receipt.get('sha256')
+                and review_receipt.get('sha256') == g22_binding.get('chatgpt_audit_receipt', {}).get('sha256'),
+                'G22_RECONSTRUCTION_REVIEW_RECEIPT_NOT_OUTPUT_BOUND')
+        build_binding = g22_binding.get('slice_d_build_receipt')
+        displayed_build = displayed_g22.get('slice_d_build_receipt')
+        if build_binding:
+            require(isinstance(displayed_build, dict)
+                    and isinstance(displayed_build.get('snapshot'), str)
+                    and outputs.get(displayed_build['snapshot']) == displayed_build.get('sha256')
+                    and displayed_build.get('sha256') == build_binding.get('sha256'),
+                    'G22_SLICE_D_BUILD_RECEIPT_NOT_OUTPUT_BOUND')
+        require(payload.get('schema') == 'pcb-g22-family-reconstruction-visual-v1'
+                and payload.get('dataset_id') == g22_binding.get('dataset_id')
+                and payload.get('source_receipt_sha256') == g22_binding.get('slice_c_receipt_sha256')
+                and [row.get('member') for row in payload.get('members', [])] == [1, 2, 3],
+                'G22_RECONSTRUCTION_PAYLOAD_IDENTITY_MISMATCH')
+        require(displayed_g22.get('dataset_id') in {row['id'] for row in config['datasets']},
+                'G22_RECONSTRUCTION_DATASET_UNREGISTERED')
+    else:
+        require(displayed_g22 is None, 'UNREGISTERED_G22_RECONSTRUCTION_IN_SCENE')
     if 'intake' in ingestion:
         from pathlib import PurePosixPath
         package = PurePosixPath(config['dataset_seal']['path']).parent
