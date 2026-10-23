@@ -74,6 +74,40 @@ class OrgEditTargetMapTests(unittest.TestCase):
         self.assertTrue(all(component["completeness"] == "NOT_ESTABLISHED"
                             for component in self.members[3]["physical_contact_group"]["edit_supported_local_components"]))
 
+    def test_audit_scope_registration_and_area_method_are_machine_readable(self):
+        quality = self.result["registration_quality"]
+        self.assertEqual(quality["matched_anchor_count"], self.result["registration"]["inlier_count"])
+        self.assertEqual(quality["residual_summary_mm"]["maximum"],
+                         self.result["registration"]["max_inlier_residual_mm"])
+        self.assertEqual(len(quality["org_anchor_centroid_bounds_mm"]), 4)
+        self.assertGreater(len(self.result["source_record_sha256"]), 100)
+        source_by_hash = {
+            self.result["sources"]["ORG"]["sha256"]: (ROOT / ORG_REL).read_bytes(),
+            self.result["sources"]["EDIT"]["sha256"]: (ROOT / EDIT_REL).read_bytes(),
+        }
+        for identity, digest in self.result["source_record_sha256"].items():
+            source_hash, span = identity.split(":bytes:")
+            byte_start, byte_end = map(int, span.split(":"))
+            self.assertEqual(hashlib.sha256(source_by_hash[source_hash][byte_start:byte_end]).hexdigest(), digest)
+        for member in self.members.values():
+            search = member["seed"]["candidate_search"]
+            self.assertIn("gr_circle", search["universe"])
+            self.assertIn("Other primitive kinds", search["excluded_semantics"])
+            self.assertGreater(search["universe_count"], 0)
+            mask = next(ref for ref in member["reference_correspondence"] if ref["layer"] == "F.Mask")
+            self.assertTrue(mask["candidates"][0]["registration_fit_anchor"]["included"])
+            local = member["local_copper_region"]
+            method = local["measurement_method"]
+            self.assertEqual(method["area_units"], "mm^2")
+            self.assertEqual(method["window_bounds_mm"], member["window_mm"])
+            self.assertEqual(method["inventory_version"], "native-inventory/2")
+            self.assertGreater(method["per_curve_approximation_error_mm"], 0)
+            self.assertIn("unioned", method["included_objects"])
+            self.assertIn("segment and arc", member["trace_correspondence"]["candidate_scope"])
+            for edges in member["trace_correspondence"]["by_org_trace"].values():
+                for edge in edges:
+                    self.assertEqual(edge["uncovered_edit_extent_status"].split(":",1)[0], "NOT_ESTABLISHED")
+
 
 if __name__ == "__main__":
     unittest.main()

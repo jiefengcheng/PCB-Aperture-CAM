@@ -9,6 +9,8 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
+import statistics
 from xml.sax.saxutils import escape
 
 from shapely import affinity, wkb
@@ -90,7 +92,84 @@ def _inventory_side(raw, source_hash):
             raise ValueError("inventory row is not bound to the expected source hash")
         if row.get("id") != _object_identity(source_hash, row["source_span"]):
             raise ValueError("inventory identity does not match its exact byte span")
-    return {"rows": rows, "payloads": inv["payloads"], "source_hash": source_hash}
+    return {"rows": rows, "payloads": inv["payloads"], "source_hash": source_hash,
+            "inventory_version": inv["version"], "units": inv["units"],
+            "coordinates": inv["coordinates"],
+            "geometry_error_mm": inv["geometry_error_mm"],
+            "per_curve_approximation_error_mm": inv["per_curve_approximation_error_mm"]}
+
+
+def _registration_quality(record, before_side, after_side):
+    """Summarize residuals and the spatial extent of the pinned F.Mask anchors."""
+    before_by_id = {row["id"]: row for row in before_side["rows"]}
+    residuals = [float(pair["residual_mm"]) for pair in record["keypoint_pairs"]]
+    points = []
+    for pair in record["keypoint_pairs"]:
+        row = before_by_id.get(pair["before_identity"])
+        geom = _row_geometry(row, before_side["payloads"]) if row else None
+        if geom is None or geom.is_empty:
+            raise ValueError("registration anchor geometry is absent from pinned ORG inventory")
+        centroid = geom.centroid
+        points.append((centroid.x, centroid.y))
+    if len(points) != int(record["inlier_count"]) or not residuals:
+        raise ValueError("registration anchor count differs from pinned inlier record")
+    xs, ys = [p[0] for p in points], [p[1] for p in points]
+    ordered = sorted(residuals)
+    p95_index = min(len(ordered) - 1, math.ceil(0.95 * len(ordered)) - 1)
+    return {
+        "matched_anchor_count": len(points),
+        "org_anchor_centroid_bounds_mm": [min(xs), min(ys), max(xs), max(ys)],
+        "org_anchor_span_mm": [max(xs) - min(xs), max(ys) - min(ys)],
+        "residual_summary_mm": {
+            "minimum": min(residuals), "median": statistics.median(residuals),
+            "p95_nearest_rank": ordered[p95_index], "maximum": max(residuals)},
+        "residual_definition": "Recorded point residuals for the pinned mutual-unique F.Mask keypoint pairs.",
+        "coverage_limit": "Anchor bounds summarize observed landmark extent only; they are not a statistical registration confidence region or board-wide completeness proof.",
+    }
+
+
+def _source_record_digests(value, sources):
+    """Hash exact end-exclusive source byte slices for every emitted object identity."""
+    identity_pattern = re.compile(r"^([0-9a-f]{64}):bytes:(\d+):(\d+)$")
+    identities = set()
+
+    def visit(item):
+        if isinstance(item, dict):
+            for nested in item.values():
+                visit(nested)
+        elif isinstance(item, list):
+            for nested in item:
+                visit(nested)
+        elif isinstance(item, str):
+            match = identity_pattern.fullmatch(item)
+            if match:
+                identities.add((item, match.group(1), int(match.group(2)), int(match.group(3))))
+
+    visit(value)
+    result = {}
+    for identity, source_hash, start, end in sorted(identities):
+        raw = sources.get(source_hash)
+        if raw is None or start < 0 or end <= start or end > len(raw):
+            raise ValueError(f"source span cannot be verified: {identity}")
+        result[identity] = hashlib.sha256(raw[start:end]).hexdigest()
+    return result
+
+
+def _circle_candidates(center_org, seed_radius, after_side, raw_after, transform):
+    """Enumerate every F.Cu gr_circle in the pinned inventory within center tolerance."""
+    universe = [row for row in after_side["rows"]
+                if row["kind"] == "gr_circle" and "F.Cu" in row.get("layers", [])]
+    candidates = []
+    for row in universe:
+        details = _circle_details(raw_after, row)
+        edit_center_in_org = _xform_geometry(Point(details["center_mm"]), transform)
+        distance = math.dist(center_org, tuple(edit_center_in_org.coords[0]))
+        if distance <= MATCH_TOLERANCE_MM:
+            candidates.append({"identity": row["id"], **details,
+                               "center_displacement_mm": distance,
+                               "radius_delta_mm": details["radius_mm"] - seed_radius,
+                               "area_delta_mm2": details["area_mm2"] - math.pi * seed_radius * seed_radius})
+    return universe, sorted(candidates, key=lambda item: item["identity"])
 
 
 def _verify_dataset_manifest(root):
@@ -432,8 +511,10 @@ def _trace_map(member, before_side, after_side, raw_before, raw_after, window, r
                     "copper_footprint_comparison")} | {
                 "before_width_sample_centerline_midpoint_mm": [before_mid.x, before_mid.y],
                 "after_width_sample_centerline_midpoint_mm": [after_mid.x, after_mid.y],
+                "uncovered_edit_extent_status": "NOT_ESTABLISHED: the centerline portion outside the matched overlap is not classified as an extension, branch, separate continuation, or unrelated geometry.",
                 "width_scope": "Native width is constant along each source primitive; midpoint is the explicit sample location."})
     return {"status": "MEASURED", "rule": "existing trace_correspondence: centerline tolerance 0.001 mm, at least 90% of shorter line and 0.02 mm overlap",
+            "candidate_scope": "All local EDIT F.Cu segment and arc centerlines whose source bounds intersect the member window; ORG inputs are the frozen profile's listed trace candidates. Filled polygons and other primitive kinds are not trace-identity candidates. A missing edge is unmatched under this rule only, not evidence of deletion.",
             "before_trace_count": len(before_inputs["before"]), "local_after_trace_count": len(before_inputs["after"]),
             "excluded": excluded, "relations": compared["relations"],
             "by_org_trace": links_by_before}
@@ -463,6 +544,7 @@ def build_target_map(root: Path):
         raise ValueError("registration is not the pinned F.Mask-only fit")
     before_side = _inventory_side(raw_before, hashes["before"])
     after_side = _inventory_side(raw_after, hashes["after"])
+    registration_quality = _registration_quality(registration_record, before_side, after_side)
     package_integrity = _verify_dataset_manifest(root)
     recorded_package = profile["source_material_integrity"]["dataset_sha256_manifest"]
     package_integrity["profile_recorded_status"] = recorded_package.get("status")
@@ -487,28 +569,13 @@ def build_target_map(root: Path):
         seed_row = next(r for r in before_side["rows"] if r["id"] == seed_id)
         seed_before = _circle_details(raw_before, seed_row)
         circle = links_by_before.get(seed_id)
-        if circle:
-            seed_after_row = next(r for r in after_side["rows"] if r["id"] == circle["after_identity"])
-            seed_after = _circle_details(raw_after, seed_after_row)
-            circle_status = "SUPPORTED"
-            circle_candidates = [{"identity": circle["after_identity"], **seed_after,
-                                  "center_displacement_mm": circle["center_displacement_mm"],
-                                  "radius_delta_mm": seed_after["radius_mm"] - seed_before["radius_mm"],
-                                  "area_delta_mm2": circle["added_area_mm2"]}]
-        else:
-            candidates = []
-            for row in after_side["rows"]:
-                if row["kind"] == "gr_circle" and "F.Cu" in row.get("layers", []):
-                    d = _circle_details(raw_after, row)
-                    point = _xform_geometry(__import__("shapely").geometry.Point(d["center_mm"]), transform)
-                    dist = math.dist(center, tuple(point.coords[0]))
-                    if dist <= MATCH_TOLERANCE_MM:
-                        candidates.append({"identity": row["id"], **d,
-                                           "center_displacement_mm": dist,
-                                           "radius_delta_mm": d["radius_mm"] - seed_before["radius_mm"],
-                                           "area_delta_mm2": d["area_mm2"] - seed_before["area_mm2"]})
-            circle_status = "AMBIGUOUS" if len(candidates) > 1 else "UNMATCHED" if not candidates else "NOT_ESTABLISHED"
-            circle_candidates = candidates
+        circle_universe, circle_candidates = _circle_candidates(
+            center, seed_before["radius_mm"], after_side, raw_after, transform)
+        matched_link = (circle is not None and len(circle_candidates) == 1
+                        and circle["after_identity"] == circle_candidates[0]["identity"])
+        circle_status = ("AMBIGUOUS" if len(circle_candidates) > 1 else
+                         "UNMATCHED" if not circle_candidates else
+                         "SUPPORTED" if matched_link else "NOT_ESTABLISHED")
         org_nearest = [{"identity": n.get("object_id"), "kind": n.get("kind"),
                         "gap_mm": n.get("gap_from_seed_mm"),
                         "outside_org_contact_group": n.get("outside_member_contact_group")}
@@ -533,11 +600,24 @@ def build_target_map(root: Path):
         local_status = "NOT_ESTABLISHED" if unsupported_before or unsupported_after else "MEASURED_SUPPORTED_GEOMETRY"
         traces = _trace_map(m, before_side, after_side, raw_before, raw_after, window, registration_record)
         refs = _reference_candidates(m, before_side, after_side, raw_before, raw_after, transform)
+        fit_pairs = {(pair["before_identity"], pair["after_identity"]): pair
+                     for pair in registration_record["keypoint_pairs"]}
+        for reference in refs:
+            for candidate in reference["candidates"]:
+                pair = fit_pairs.get((reference["org_identity"], candidate["identity"]))
+                candidate["registration_fit_anchor"] = ({
+                    "included": True, "residual_mm": float(pair["residual_mm"])}
+                    if pair else {"included": False, "residual_mm": None})
         member_out = {
             "ordinal": m["ordinal"], "member_key": m["member_key"], "center_org_mm": center,
             "coordinate_frame": "ORG KiCad board coordinates (X right, Y down); EDIT mapped by pinned F.Mask-only rigid transform",
             "window_mm": window,
             "seed": {"org_identity": seed_id, "org": seed_before, "edit_status": circle_status,
+                     "candidate_search": {
+                         "universe_count": len(circle_universe),
+                         "universe": "All inventoried EDIT source objects with kind gr_circle and F.Cu layer.",
+                         "predicate": "Transformed circle center within 0.001 mm of the frozen ORG seed center; radius and area are measured after candidate search.",
+                         "excluded_semantics": "Other primitive kinds, including filled polygons, segments, and arcs, are not circle candidates. They remain part of the local copper-region comparison when supported."},
                      "edit_candidates": circle_candidates,
                      "edit_identity": circle["after_identity"] if circle else None},
             "physical_contact_group": {
@@ -557,6 +637,15 @@ def build_target_map(root: Path):
                                                           registration_record, traces, circle_candidates),
             "local_copper_region": {"status": local_status,
                 "metric_scope": "union of supported native F.Cu effective geometries clipped to the same fixed window; source-object areas are not summed",
+                "measurement_method": {
+                    "window_bounds_mm": list(window), "window_area_mm2": window_geom.area,
+                    "included_objects": "Every inventoried F.Cu object with GEOMETRY_AVAILABLE whose geometry intersects this window; each geometry is clipped to the window, and all clipped shapes are unioned before added/removed area is calculated.",
+                    "excluded_objects": "F.Cu objects with unsupported geometry are omitted from the union and listed separately when their source control points fall in the window; any such item makes full-window totals NOT_ESTABLISHED.",
+                    "inventory_version": before_side["inventory_version"],
+                    "geometry_error_mm": before_side["geometry_error_mm"],
+                    "per_curve_approximation_error_mm": before_side["per_curve_approximation_error_mm"],
+                    "area_units": "mm^2",
+                    "no_board_wide_sum": "Member windows overlap; their areas are not additive and must not be summed."},
                 "org_supported_object_count": len(before_rows), "edit_supported_object_count": len(after_rows),
                 "org_source_identities": sorted(r["id"] for r in before_rows),
                 "edit_source_identities": sorted(r["id"] for r in after_rows),
@@ -579,6 +668,8 @@ def build_target_map(root: Path):
                                                   unsupported_after, refs, before_side, after_side,
                                                   transform)
         members_out.append(member_out)
+    source_record_digests = _source_record_digests(members_out, {
+        hashes["before"]: raw_before, hashes["after"]: raw_after})
     return {
         "schema": "org-edit-one-family-target-map/1", "status": "REVIEW_EVIDENCE_READY",
         "family_key": binding["family_key"], "member_keys": list(binding["member_keys"]),
@@ -588,6 +679,7 @@ def build_target_map(root: Path):
                     "profile": {"path": PROFILE_REL, "sha256": sha(profile_path)},
                     "registration": {"path": REGISTRATION_REL, "sha256": sha(registration_path)}},
         "registration": {k: v for k, v in registration_record.items() if k not in ("keypoint_pairs", "source_files")},
+        "registration_quality": registration_quality,
         "comparison": {"coordinate_frame": "ORG board coordinates", "window_half_size_mm": list(WINDOW_HALF_MM),
                        "no_independent_recentering": True, "circle_center_tolerance_mm": MATCH_TOLERANCE_MM},
         "circle_pairing_audit": {k: v for k, v in circle_audit.items() if k not in ("ambiguous_before", "one_sided_before", "unmatched_before", "ambiguous_after", "one_sided_after", "unmatched_after")},
@@ -598,9 +690,10 @@ def build_target_map(root: Path):
             "local_regions": "Supported-geometry union additions exceed removals in all three fixed windows; C is NOT_ESTABLISHED as a complete-window measure because two local EDIT arcs are degenerate and unsupported. Windows overlap spatially and must not be summed.",
             "interpretation": "Observed destination geometry only; this is not a common operation sequence or manufacturing rationale."},
         "members": members_out,
+        "source_record_sha256": source_record_digests,
         "package_integrity": package_integrity,
         "limits": ["The nine UNKNOWN assessments remain UNKNOWN.",
                    "Source geometry correspondence is not PCB semantic identity or electrical connectivity.",
                    "No manufacturing intent, editing recipe, or edit authority is inferred.",
-                   "The separate G22 crop-neighborhood human review remains PENDING_USER."]
+                   "The user approved the G22 crop-neighborhood review on 2026-10-24; no categorical SUPPORTED/AMBIGUOUS/UNRESOLVED judgment or detailed visual observations were specified."]
     }
