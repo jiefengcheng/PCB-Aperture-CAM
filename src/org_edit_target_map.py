@@ -189,11 +189,32 @@ def _verify_dataset_manifest(root):
     changed = sorted(path for path in set(expected) & set(actual)
                      if expected[path] != actual[path])
     failures = sorted(set(missing + extra + changed))
+    failed_path_details = []
+    for path in failures:
+        failed_path_details.append({
+            "path": path,
+            "condition": ("MISSING" if path in missing else "UNLISTED_EXTRA" if path in extra else "HASH_MISMATCH"),
+            "expected_sha256": expected.get(path),
+            "actual_sha256": actual.get(path),
+            "classification": "MACOS_FINDER_METADATA" if Path(path).name == ".DS_Store" else "UNCLASSIFIED",
+        })
+    board_inputs = {
+        "raw/ORG/top.kicad_pcb": expected.get("raw/ORG/top.kicad_pcb") == actual.get("raw/ORG/top.kicad_pcb"),
+        "raw/EDIT/top_layer.kicad_pcb": expected.get("raw/EDIT/top_layer.kicad_pcb") == actual.get("raw/EDIT/top_layer.kicad_pcb"),
+    }
+    metadata_only = bool(failures) and all(Path(path).name == ".DS_Store" for path in failures)
+    geometry_impact_status = (
+        "NO_BOARD_GEOMETRY_SOURCE_MISMATCH_DETECTED"
+        if metadata_only and all(board_inputs.values()) else "NOT_ESTABLISHED")
     return {"status": "PASS" if not failures else "MISMATCH",
             "manifest_path": f"{DATASET_PACKAGE_REL}/SHA256SUMS",
             "manifest_sha256": sha(sums), "checked_count": len(expected),
             "failed_paths": failures, "missing_paths": missing, "extra_paths": extra,
             "changed_paths": changed,
+            "failed_path_details": failed_path_details,
+            "registered_board_inputs_match_manifest": board_inputs,
+            "geometry_dependency_impact_status": geometry_impact_status,
+            "geometry_dependency_impact_basis": "Both exact registered KiCad source paths are present and match their package-manifest SHA-256 values; every package mismatch is limited to .DS_Store Finder metadata. The package remains MISMATCH, and this assessment applies only to these registered KiCad geometry inputs.",
             "treatment": "Read-only verification. No source bytes, manifest, or package metadata were changed."}
 
 

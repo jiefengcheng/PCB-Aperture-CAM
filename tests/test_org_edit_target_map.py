@@ -108,6 +108,16 @@ class OrgEditTargetMapTests(unittest.TestCase):
                 for edge in edges:
                     self.assertEqual(edge["uncovered_edit_extent_status"].split(":",1)[0], "NOT_ESTABLISHED")
 
-
+    def test_package_mismatch_is_preserved_and_scoped_to_metadata(self):
+        integrity = self.result["package_integrity"]
+        self.assertEqual(integrity["status"], "MISMATCH")
+        self.assertEqual(integrity["failed_paths"], [".DS_Store", "raw/.DS_Store"])
+        self.assertEqual(integrity["geometry_dependency_impact_status"],
+                         "NO_BOARD_GEOMETRY_SOURCE_MISMATCH_DETECTED")
+        self.assertTrue(all(integrity["registered_board_inputs_match_manifest"].values()))
+        self.assertTrue(all(item["classification"] == "MACOS_FINDER_METADATA"
+                            for item in integrity["failed_path_details"]))
+        self.assertEqual(integrity["failed_path_details"][0]["condition"], "UNLISTED_EXTRA")
+        self.assertEqual(integrity["failed_path_details"][1]["condition"], "HASH_MISMATCH")
 if __name__ == "__main__":
     unittest.main()
