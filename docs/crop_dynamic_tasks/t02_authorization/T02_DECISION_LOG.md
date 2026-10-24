@@ -81,3 +81,7 @@ The corrected fresh run v3 admits 76 rectangles; repeat v4 is byte-identical on 
 ## Current authorized slice — 2026-10-25
 
 The checkpoint section “Post-commit v7/v8 replay” supersedes the preceding run status. The owner-marked T01 round-loss correction is accepted and frozen at `out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11/`; T02 v7/v8 apply the frozen 1.5× rectangle cap and tolerance-bounded `max(0.02002 mm, 0.5 × ORG surface gap)` growth reservations beside native traces. The checkpoint records the summary-only ChatGPT verdict, exact 0.72 nm gap-floor reconciliation, parser census, review path, test evidence, and limits. T02 remains an experimental review candidate; no owner acceptance, engineering/manufacturing approval, or T03 authorization is claimed.
+
+## Current final bundle — 2026-10-25
+
+The “Full-census disposition repair and final review bundle” section in [`T02_PROGRESS_CHECKPOINT_20261025.md`](T02_PROGRESS_CHECKPOINT_20261025.md) supersedes v7/v8 as the current T02 review artifact. Final run/replay are v9/v10 and composition audit v6. The reporting fix preserves all 1,032 crop-intersecting source dispositions and explicitly protects the two unresolved crop-crossing polygon contours; no geometry policy or frozen T01 result changed. T02 remains experimental and pending owner judgment. The T02-only handoff still requires stopping before T03.

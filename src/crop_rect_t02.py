@@ -70,6 +70,63 @@ def validate_accepted_t01_baseline(
         raise ValueError("T01_VIEWPORT_DOES_NOT_COVER_T02_CROP")
 
 
+def bind_source_dispositions(
+    inventory_rows: list[dict[str, Any]],
+    runtime_rows: list[dict[str, Any]],
+    decision_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Join T02 decisions onto the frozen, source-bound ORG disposition census.
+
+    Inventory classifications are authoritative for source identity and eligibility;
+    this helper only adds the outcome for eligible rectangles. It fails closed when
+    the runtime census or the decision set differs from that frozen inventory.
+    """
+    def unique_by_source(rows: list[dict[str, Any]], label: str) -> dict[str, dict[str, Any]]:
+        result: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            source_id = row.get("source_id", row.get("id"))
+            if not source_id or source_id in result:
+                raise ValueError(f"T02_{label}_SOURCE_ID_INVALID_OR_DUPLICATE")
+            result[source_id] = row
+        return result
+
+    inventory = unique_by_source(inventory_rows, "INVENTORY")
+    runtime = unique_by_source(runtime_rows, "RUNTIME_CENSUS")
+    decisions = unique_by_source(decision_rows, "DECISION")
+    if set(inventory) != set(runtime):
+        raise ValueError("T02_RUNTIME_INVENTORY_DISPOSITION_SET_MISMATCH")
+    treated = {source_id for source_id, row in inventory.items()
+               if row.get("disposition") == "TREAT"}
+    if set(decisions) != treated:
+        raise ValueError("T02_DECISION_TARGET_SET_MISMATCH")
+
+    identity_fields = ("source_sha256", "source_span", "source_kind",
+                       "source_geometry_sha256")
+    merged = []
+    for source_id in sorted(inventory):
+        source = dict(inventory[source_id])
+        live = runtime[source_id]
+        for field in identity_fields:
+            live_value = live.get(field)
+            if field == "source_span" and live_value is not None:
+                live_value = list(live_value)
+            if source.get(field) != live_value:
+                raise ValueError(f"T02_RUNTIME_SOURCE_BINDING_MISMATCH:{field}:{source_id}")
+        if source.get("disposition") == "TREAT":
+            decision = decisions[source_id]
+            source["t02_result"] = {
+                "decision": decision["decision"],
+                "source_size_mm": decision["source_size_mm"],
+                "accepted_size_mm_in_source_axes": decision["accepted_size_mm_in_source_axes"],
+                "orientation_radians": decision["orientation_radians"],
+                "added_area_mm2": decision["added_area_mm2"],
+                "candidate_geometry_sha256": decision["candidate_geometry_sha256"],
+                "verification": decision["verification"],
+            }
+        merged.append(source)
+    return merged
+
+
 @dataclass(frozen=True)
 class RectGrowthPolicy:
     max_axis_factor: float = 1.5

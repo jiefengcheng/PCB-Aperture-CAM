@@ -6,6 +6,7 @@ from shapely.geometry import box
 
 from src.crop_rect_t02 import (
     RectGrowthPolicy,
+    bind_source_dispositions,
     execute,
     rectangular_feature,
     validate_accepted_t01_baseline,
@@ -20,6 +21,56 @@ def row_for(geom, identity='source-id'):
 
 
 class CropRectT02Tests(unittest.TestCase):
+    def test_source_dispositions_preserve_inventory_classes_and_bind_target_outcomes(self):
+        inventory = [
+            {"source_id": "rect", "source_sha256": "src", "source_span": [1, 2],
+             "source_kind": "gr_poly", "source_geometry_sha256": "shape-r",
+             "geometric_class": "filled_rectangle", "disposition": "TREAT",
+             "reason": "Exact four-corner source rectangle."},
+            {"source_id": "poly", "source_sha256": "src", "source_span": [3, 4],
+             "source_kind": "gr_poly", "source_geometry_sha256": "shape-p",
+             "geometric_class": "crop_crossing_nonrectangle_polygon",
+             "disposition": "KEEP_PROTECTED", "reason": "Partial crop polygon; ownership unresolved."},
+        ]
+        runtime = [
+            {"source_id": "rect", "source_sha256": "src", "source_span": [1, 2],
+             "source_kind": "gr_poly", "source_geometry_sha256": "shape-r"},
+            {"source_id": "poly", "source_sha256": "src", "source_span": [3, 4],
+             "source_kind": "gr_poly", "source_geometry_sha256": "shape-p"},
+        ]
+        decisions = [{"source_id": "rect", "decision": "GROW",
+                      "source_size_mm": [1.0, 0.5],
+                      "accepted_size_mm_in_source_axes": [1.2, 0.8],
+                      "orientation_radians": 0.25, "added_area_mm2": 0.21,
+                      "candidate_geometry_sha256": "candidate-r", "verification": {"ok": True}}]
+
+        result = bind_source_dispositions(inventory, runtime, decisions)
+
+        self.assertEqual([row["source_id"] for row in result], ["poly", "rect"])
+        by_id = {row["source_id"]: row for row in result}
+        self.assertEqual(by_id["poly"]["geometric_class"], "crop_crossing_nonrectangle_polygon")
+        self.assertEqual(by_id["poly"]["disposition"], "KEEP_PROTECTED")
+        self.assertNotIn("t02_result", by_id["poly"])
+        self.assertEqual(by_id["rect"]["t02_result"]["decision"], "GROW")
+        self.assertEqual(by_id["rect"]["t02_result"]["candidate_geometry_sha256"], "candidate-r")
+
+    def test_source_disposition_binding_fails_closed_on_set_or_identity_drift(self):
+        inventory = [{"source_id": "rect", "source_sha256": "src", "source_span": [1, 2],
+                      "source_kind": "gr_poly", "source_geometry_sha256": "shape",
+                      "disposition": "TREAT"}]
+        runtime = [{"source_id": "rect", "source_sha256": "src", "source_span": [1, 2],
+                    "source_kind": "gr_poly", "source_geometry_sha256": "shape"}]
+        decision = [{"source_id": "rect", "decision": "KEEP", "source_size_mm": [1, 1],
+                     "accepted_size_mm_in_source_axes": [1, 1], "orientation_radians": 0,
+                     "added_area_mm2": 0, "candidate_geometry_sha256": "candidate",
+                     "verification": {"ok": True}}]
+        with self.assertRaisesRegex(ValueError, "T02_RUNTIME_INVENTORY_DISPOSITION_SET_MISMATCH"):
+            bind_source_dispositions(inventory, runtime + [{"source_id": "other"}], decision)
+        with self.assertRaisesRegex(ValueError, "T02_RUNTIME_SOURCE_BINDING_MISMATCH:source_span"):
+            bind_source_dispositions(inventory, [dict(runtime[0], source_span=[1, 3])], decision)
+        with self.assertRaisesRegex(ValueError, "T02_DECISION_TARGET_SET_MISMATCH"):
+            bind_source_dispositions(inventory, runtime, [])
+
     def accepted_baseline(self):
         owner = {
             'decision_id': 'accepted', 'status': 'ACCEPTED_VISUAL_CROP',

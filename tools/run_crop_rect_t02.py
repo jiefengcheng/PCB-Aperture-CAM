@@ -19,7 +19,8 @@ from shapely.geometry import box
 from shapely.ops import unary_union
 from src.crop_circle_sources import verify_assets
 from src.org_edit_target_map import _inventory_side,_row_geometry,_svg_path
-from src.crop_rect_t02 import RectGrowthPolicy,rectangular_feature,execute,validate_accepted_t01_baseline
+from src.crop_rect_t02 import (RectGrowthPolicy,rectangular_feature,execute,
+                               validate_accepted_t01_baseline,bind_source_dispositions)
 from tools.build_copper_group_review import _mask_keypoints,_fit_translation_from_anchors
 sha=lambda b:hashlib.sha256(b).hexdigest()
 def save(path,obj):(OUT/path).write_text(json.dumps(obj,indent=2,sort_keys=True)+'\n')
@@ -205,7 +206,23 @@ for d in result['decisions']:
     d['verification']['saved_trace_gap_reservations_pass']=True
     assert candidate.is_valid
     assert sha(candidate.wkb)==d['candidate_geometry_sha256']
-save('feature_dispositions.json',{'schema':'crop-t02-feature-dispositions/1','crop_bounds_mm':report['crop_bounds_org_mm'],'target_count':len(features),'dispositions':dispositions})
+bound_dispositions=bind_source_dispositions(
+    inventory_dispositions['dispositions'],dispositions,result['decisions'])
+source_disposition_counts=Counter(d['disposition'] for d in bound_dispositions)
+source_class_counts=Counter(d.get('geometric_class') or 'unclassified_protected_source'
+                            for d in bound_dispositions)
+save('feature_dispositions.json',{
+    'schema':'crop-t02-feature-dispositions/2',
+    'source_sha256':source_hash,
+    'crop_bounds_mm':report['crop_bounds_org_mm'],
+    'source_disposition_count':len(bound_dispositions),
+    'source_disposition_counts':dict(sorted(source_disposition_counts.items())),
+    'source_class_counts':dict(sorted(source_class_counts.items())),
+    'target_count':len(features),
+    'target_set_sha256':inventory_report['candidate_target_ids_sha256'],
+    'inventory_manifest_sha256':inventory_hash,
+    'dispositions':bound_dispositions,
+})
 (OUT/'t02_policy.json').write_bytes(policy_raw)
 save('org_inventory_binding.json',{'schema':'t02-org-inventory-binding/1','inventory_directory':str(INVENTORY_PATH.relative_to(ROOT)),'inventory_manifest_sha256':inventory_hash,'inventory_report_sha256':sha((INVENTORY_PATH/'inventory_report.json').read_bytes()),'target_set_sha256':inventory_report['candidate_target_ids_sha256'],'target_count':inventory_report['candidate_target_count'],'policy_sha256':policy_hash,'source_sha256':source_hash})
 rows=[]
@@ -229,6 +246,6 @@ def ring_data(g):
 for name,g in [('org',org_region),('accepted_t01',t01_scene),('t01_plus_t02',combined),('t02_delta',add)]:
     save(name+'_render_rings.json',ring_data(g))
 causal_events=[{'target_source_id':d['source_id'],'neighbor':n} for d in rows for n in d['causal_prior_t02_neighbors']]
-summary={'task':'T02_ONLY','status':'EXPERIMENTAL_REAL_CROP_EXECUTED','accepted_T01_decision_id':owner['decision_id'],'accepted_T01_status':'ACCEPTED_VISUAL_CROP','accepted_T01_scene_sha256':sha(t01_scene_bytes),'accepted_T01_scene_area_mm2':t01_scene.area,'accepted_T01_policy_sha256':sha(t01_policy_bytes),'accepted_T01_selection_sha256':sha(t01_selection_bytes),'accepted_T01_square_recess_policy':t01_policy.get('square_guided_recess'),'accepted_T01_owner_correction':t01_policy.get('owner_marked_area_correction'),'source_sha256':source_hash,'policy_sha256':policy_hash,'org_inventory_manifest_sha256':inventory_hash,'crop_bounds_mm':report['crop_bounds_org_mm'],'target_set_count':len(features),'target_set_sha256':sha('\n'.join(sorted(target_ids)).encode()),'decision_counts':dict(Counter(d['decision'] for d in rows)),'added_area_mm2':add.area,'accepted_union_area_mm2':combined.area,'all_per_target_checks_pass':all(all(d['verification'].values()) for d in rows),'current_neighbor_events':len(causal_events),'current_neighbor_causal_pairs':causal_events,'side_trace_reservation_fraction_of_org_gap':policy.side_trace_gap_fraction_of_org,'side_trace_reservation_count':sum(len(d['trace_gap_reservations']) for d in rows),'edit_access_in_constructor':False,'native_export':'NOT_RUN','electrical_status':'NOT_ESTABLISHED','manufacturing_status':'NOT_ESTABLISHED','EDIT_equivalence':'NOT_ESTABLISHED','environment':{'python':platform.python_version()},'limitations':['Standalone F.Cu geometry records contain no pad/net identity; TREAT denotes a source-owned geometric rectangle only.','Native segment/arc proximity is geometric; it does not infer same-net or attachment intent.','EDIT was used only to locate the displayed viewport and was not read by proposal generation.','Screenshot crop edge estimate uncertainty is at least 0.0223 mm; source geometry uses exact native units.','The shared 1.5x per-axis ceiling and half-ORG trace corridor are experimental guardrails, not manufacturing rules.']}
+summary={'task':'T02_ONLY','status':'EXPERIMENTAL_REAL_CROP_EXECUTED','accepted_T01_decision_id':owner['decision_id'],'accepted_T01_status':'ACCEPTED_VISUAL_CROP','accepted_T01_scene_sha256':sha(t01_scene_bytes),'accepted_T01_scene_area_mm2':t01_scene.area,'accepted_T01_policy_sha256':sha(t01_policy_bytes),'accepted_T01_selection_sha256':sha(t01_selection_bytes),'accepted_T01_square_recess_policy':t01_policy.get('square_guided_recess'),'accepted_T01_owner_correction':t01_policy.get('owner_marked_area_correction'),'source_sha256':source_hash,'policy_sha256':policy_hash,'org_inventory_manifest_sha256':inventory_hash,'crop_bounds_mm':report['crop_bounds_org_mm'],'target_set_count':len(features),'target_set_sha256':sha('\n'.join(sorted(target_ids)).encode()),'decision_counts':dict(Counter(d['decision'] for d in rows)),'source_disposition_counts':dict(source_disposition_counts),'source_class_counts':dict(source_class_counts),'added_area_mm2':add.area,'accepted_union_area_mm2':combined.area,'all_per_target_checks_pass':all(all(d['verification'].values()) for d in rows),'current_neighbor_events':len(causal_events),'current_neighbor_causal_pairs':causal_events,'side_trace_reservation_fraction_of_org_gap':policy.side_trace_gap_fraction_of_org,'side_trace_reservation_count':sum(len(d['trace_gap_reservations']) for d in rows),'edit_access_in_constructor':False,'native_export':'NOT_RUN','electrical_status':'NOT_ESTABLISHED','manufacturing_status':'NOT_ESTABLISHED','EDIT_equivalence':'NOT_ESTABLISHED','environment':{'python':platform.python_version()},'limitations':['Standalone F.Cu geometry records contain no pad/net identity; TREAT denotes a source-owned geometric rectangle only.','Native segment/arc proximity is geometric; it does not infer same-net or attachment intent.','EDIT was used only to locate the displayed viewport and was not read by proposal generation.','Screenshot crop edge estimate uncertainty is at least 0.0223 mm; source geometry uses exact native units.','The shared 1.5x per-axis ceiling and half-ORG trace corridor are experimental guardrails, not manufacturing rules.']}
 save('t02_result.json',summary)
 print(json.dumps(summary,indent=2))

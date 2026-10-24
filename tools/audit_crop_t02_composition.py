@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 import sys
@@ -163,9 +164,48 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
             feature = rectangular_feature(row, side["payloads"], crop)
             if feature is not None:
                 feature_by_id[row["id"]] = feature
-    target_rows = [row for row in dispositions["dispositions"] if row.get("disposition") == "TREAT"]
-    target_ids = {row["source_id"] for row in target_rows}
+    run_source_rows = dispositions.get("dispositions", [])
+    inv_source_rows = inventory_dispositions.get("dispositions", [])
+    run_by_id = {row.get("source_id"): row for row in run_source_rows}
+    inv_by_id = {row.get("source_id"): row for row in inv_source_rows}
+    if (None in run_by_id or None in inv_by_id
+            or len(run_by_id) != len(run_source_rows)
+            or len(inv_by_id) != len(inv_source_rows)
+            or set(run_by_id) != set(inv_by_id)):
+        raise ValueError("T02_SOURCE_DISPOSITION_COVERAGE_MISMATCH")
     decision_by_id = {d["source_id"]: d for d in decisions_doc["decisions"]}
+    if len(decision_by_id) != len(decisions_doc["decisions"]):
+        raise ValueError("T02_DUPLICATE_TARGET_DECISION")
+    for sid in sorted(inv_by_id):
+        source = inv_by_id[sid]
+        runtime_source = run_by_id[sid]
+        for field in ("source_sha256", "source_span", "source_kind",
+                      "source_geometry_sha256", "source_record_sha256",
+                      "geometric_class", "disposition", "reason"):
+            if runtime_source.get(field) != source.get(field):
+                raise ValueError(f"T02_SOURCE_DISPOSITION_BINDING_MISMATCH:{field}:{sid}")
+        if source.get("disposition") == "TREAT":
+            result_row = runtime_source.get("t02_result")
+            decision = decision_by_id.get(sid)
+            if not isinstance(result_row, dict) or decision is None:
+                raise ValueError(f"T02_TARGET_OUTCOME_MISSING:{sid}")
+            if (result_row.get("decision") != decision.get("decision")
+                    or result_row.get("candidate_geometry_sha256") != decision.get("candidate_geometry_sha256")
+                    or result_row.get("accepted_size_mm_in_source_axes") != decision.get("accepted_size_mm_in_source_axes")):
+                raise ValueError(f"T02_TARGET_OUTCOME_BINDING_MISMATCH:{sid}")
+        elif "t02_result" in runtime_source:
+            raise ValueError(f"T02_PROTECTED_SOURCE_HAS_EDIT_OUTCOME:{sid}")
+    run_disposition_counts = Counter(row.get("disposition") for row in run_source_rows)
+    run_class_counts = Counter(row.get("geometric_class") or "unclassified_protected_source"
+                               for row in run_source_rows)
+    if (dispositions.get("source_disposition_count") != len(run_source_rows)
+            or dispositions.get("source_disposition_counts") != dict(sorted(run_disposition_counts.items()))
+            or dispositions.get("source_class_counts") != dict(sorted(run_class_counts.items()))
+            or dispositions.get("inventory_manifest_sha256") != inventory_binding.get("inventory_manifest_sha256")):
+        raise ValueError("T02_SOURCE_DISPOSITION_SUMMARY_MISMATCH")
+
+    target_rows = [row for row in run_source_rows if row.get("disposition") == "TREAT"]
+    target_ids = {row["source_id"] for row in target_rows}
     if (len(target_ids) != int(result.get("target_set_count", -1)) or target_ids != set(decision_by_id)
             or target_ids != set(feature_by_id)):
         raise ValueError("T02_TARGET_INVENTORY_COVERAGE_MISMATCH")
@@ -286,6 +326,11 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         "accepted_T01_prestate_render_matches_scene": True,
         "T01_round_shape_audit": round_audit,
         "T02_target_count": len(target_ids),
+        "T02_source_disposition_count": len(run_source_rows),
+        "T02_source_disposition_counts": dict(sorted(run_disposition_counts.items())),
+        "T02_source_class_counts": dict(sorted(run_class_counts.items())),
+        "T02_crop_crossing_nonrectangle_polygon_count": run_class_counts.get("crop_crossing_nonrectangle_polygon", 0),
+        "T02_full_source_dispositions_bind_to_inventory": True,
         "T02_growth_decision_count": sum(d.get("decision") == "GROW" for d in decisions_doc["decisions"]),
         "T02_keep_decision_count": sum(d.get("decision") == "KEEP" for d in decisions_doc["decisions"]),
         "T02_keep_decisions_preserve_exact_source": True,

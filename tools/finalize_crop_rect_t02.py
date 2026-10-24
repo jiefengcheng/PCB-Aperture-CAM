@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,8 +54,13 @@ def finalize(run, repeat, audit):
                "electrical_status":result["electrical_status"],
                "manufacturing_status":result["manufacturing_status"]}
     (run / "t02_execution_receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True)+"\n")
-    dispositions=json.loads((run/"feature_dispositions.json").read_bytes())["dispositions"]
-    withheld=sum("complete 1.5x growth envelope crosses" in d.get("reason","") for d in dispositions)
+    disposition_doc=json.loads((run/"feature_dispositions.json").read_bytes())
+    dispositions=disposition_doc["dispositions"]
+    class_counts=Counter(d.get("geometric_class") for d in dispositions)
+    withheld=class_counts.get("crop_edge_rectangle_withheld",0)
+    crossing_polygons=class_counts.get("crop_crossing_nonrectangle_polygon",0)
+    protected_other=class_counts.get(None,0)
+    unsupported=sum(d.get("disposition")=="UNSUPPORTED_GEOMETRY" for d in dispositions)
     audit_link=(f'<p><a href="../{audit.name}/t02_composition_audit.json">Fresh T01→T02 composition audit</a></p>'
                 if audit else '<p>Composition audit pending.</p>')
     tolerance_mm = float(policy["geometry_tolerance_mm"])
@@ -72,15 +78,21 @@ def finalize(run, repeat, audit):
                          f"a {tolerance_mm:.5f} mm numerical/curve-approximation tolerance. "
                          f"It is {below_nm:.2f} nm below the nominal floor and passes the implemented "
                          "tolerance-bounded predicate; do not read this as a strict floor guarantee.")
-    census = (f"Source census: {inventory_report['source_record_count']} source records enumerated; "
-              f"{inventory_report['intersecting_supported_fcu_count']} intersect the crop, including "
-              f"{inventory_report['intersecting_supported_fcu_counts_by_kind'].get('segment', 0)} segments and "
-              f"{inventory_report['intersecting_supported_fcu_counts_by_kind'].get('arc', 0)} arcs. "
-              f"All {inventory_report['source_record_count']} inventory records had geometry available "
-              "to this parser; this is not independent parser-completeness verification.")
+    kind_counts=inventory_report['intersecting_supported_fcu_counts_by_kind']
+    census = (f"ORG source census: {inventory_report['source_record_count']} board records enumerated; "
+              f"{inventory_report['intersecting_supported_fcu_count']} supported F.Cu contributions intersect the crop "
+              f"({kind_counts.get('gr_poly',0)} polygons, {kind_counts.get('gr_circle',0)} circles, "
+              f"{kind_counts.get('segment',0)} segments, {kind_counts.get('arc',0)} arcs). "
+              f"Disposition table covers {len(dispositions)} crop-intersecting contributions. "
+              "The source inventory uses one parser lineage; independent parser completeness is NOT ESTABLISHED.")
+    disposition_note = (f"The {crossing_polygons} nonrectangular polygon(s) crossing the crop edge remain protected "
+                        f"because local ownership and a bounded write envelope are not established. "
+                        f"{withheld} crop-edge rectangle(s) are also withheld unchanged; {protected_other} other "
+                        f"non-target contributions remain protected and {unsupported} intersecting source records "
+                        "have unsupported geometry.")
     growth=result['decision_counts'].get('GROW',0)
     kept=result['decision_counts'].get('KEEP',0)
-    html=f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>T02 rectangle and trace-corridor crop review</title><style>body{{font:16px/1.5 system-ui,sans-serif;margin:0;background:#eef3f7;color:#17283a}}main{{max-width:1500px;margin:auto;padding:28px}}header,article{{background:white;border:1px solid #cad6e0;border-radius:16px;padding:22px;margin:0 0 22px}}h1,h2{{margin:0 0 8px}}img{{display:block;width:100%;height:auto;border:1px solid #b8c7d4;border-radius:8px;background:#071522}}.stats{{display:flex;gap:20px;flex-wrap:wrap}}.stats div{{padding:10px 14px;background:#f3f7fa;border-radius:10px}}.small{{font-size:.9rem;color:#405366}}a{{color:#075ea8}}</style><main><header><h1>T02 · Rectangles on the frozen T01 crop</h1><p>Four views of the registered ORG crop. A target is eligible only when its complete 1.5× growth envelope stays inside the reviewed crop; edge-crossing rectangles remain unchanged. The corridor reserves at least half the original ORG surface gap for future trace growth, subject to the declared numeric tolerance.</p><p>{corridor_note}</p><p class="small">{census}</p><div class="stats"><div><b>Eligible rectangles</b><br>{result['target_set_count']}</div><div><b>Grown</b><br>{growth}</div><div><b>Kept unchanged</b><br>{kept}</div><div><b>Crop-edge shapes withheld</b><br>{withheld}</div><div><b>Added copper</b><br>{result['added_area_mm2']:.6f} mm²</div><div><b>Trace reservations</b><br>{result['side_trace_reservation_count']}</div><div><b>Neighbor responses</b><br>{len(result['current_neighbor_causal_pairs'])} counterfactual pairs</div><div><b>Replay</b><br>byte-identical</div></div><p class="small">Geometric experiment only. Trace proximity is geometric and does not infer electrical attachment. Electrical identity, EDIT equivalence, native export and manufacturing approval remain NOT ESTABLISHED.</p><p><a href="t02_result.json">Run summary</a> · <a href="t02_decisions.json">Decisions</a> · <a href="feature_dispositions.json">Source dispositions</a> · <a href="determinism_receipt.json">Replay receipt</a></p>{audit_link}</header><article><h2>ORG · original crop</h2><img src="org_crop.svg" alt="ORG crop"></article><article><h2>T01 · accepted frozen scene</h2><img src="accepted_t01_crop.svg" alt="accepted T01 crop"></article><article><h2>T01 + T02 · resulting crop</h2><img src="t01_plus_t02.svg" alt="combined crop"></article><article><h2>T02 · additions only</h2><img src="t02_delta.svg" alt="T02 additions"></article></main></html>'''
+    html=f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>T02 noncircular crop review</title><style>body{{font:16px/1.5 system-ui,sans-serif;margin:0;background:#eef3f7;color:#17283a}}main{{max-width:1500px;margin:auto;padding:28px}}header,article{{background:white;border:1px solid #cad6e0;border-radius:16px;padding:22px;margin:0 0 22px}}h1,h2{{margin:0 0 8px}}img{{display:block;width:100%;height:auto;border:1px solid #b8c7d4;border-radius:8px;background:#071522}}.stats{{display:flex;gap:20px;flex-wrap:wrap}}.stats div{{padding:10px 14px;background:#f3f7fa;border-radius:10px}}.small{{font-size:.9rem;color:#405366}}a{{color:#075ea8}}</style><main><header><h1>T02 · Noncircular features on the frozen T01 crop</h1><p>Four same-scale views of the registered ORG crop. The 76 eligible original rectangles received additive proposals; complete 1.5× envelopes that cross the review boundary remain unchanged. Growth also reserves at least half each rectangle's original surface gap to nearby traces, subject to the declared numeric tolerance.</p><p>{corridor_note}</p><p class="small">{census}</p><p class="small">{disposition_note}</p><div class="stats"><div><b>Eligible rectangles</b><br>{result['target_set_count']}</div><div><b>Grown</b><br>{growth}</div><div><b>Eligible targets kept unchanged</b><br>{kept}</div><div><b>Edge rectangles withheld</b><br>{withheld}</div><div><b>Nonrect edge polygons protected</b><br>{crossing_polygons}</div><div><b>Other protected contributions</b><br>{protected_other}</div><div><b>Added copper</b><br>{result['added_area_mm2']:.6f} mm²</div><div><b>Trace reservations</b><br>{result['side_trace_reservation_count']}</div><div><b>Neighbor responses</b><br>{len(result['current_neighbor_causal_pairs'])} counterfactual pairs</div><div><b>Replay</b><br>byte-identical</div></div><p class="small">Geometric experiment only. Trace proximity is geometric and does not infer electrical attachment. Electrical identity, EDIT equivalence, native export and manufacturing approval remain NOT ESTABLISHED.</p><p><a href="t02_result.json">Run summary</a> · <a href="t02_decisions.json">Decisions</a> · <a href="feature_dispositions.json">Full source dispositions</a> · <a href="determinism_receipt.json">Replay receipt</a></p>{audit_link}</header><article><h2>ORG · original crop</h2><img src="org_crop.svg" alt="ORG crop"></article><article><h2>T01 · accepted frozen scene</h2><img src="accepted_t01_crop.svg" alt="accepted T01 crop"></article><article><h2>T01 + T02 · resulting crop</h2><img src="t01_plus_t02.svg" alt="combined crop"></article><article><h2>T02 · additions only</h2><img src="t02_delta.svg" alt="T02 additions"></article></main></html>'''
     (run/"index.html").write_text(html)
     entries=[f"{digest(p)}  {p.relative_to(run).as_posix()}" for p in sorted(run.rglob("*")) if p.is_file() and p.name!="SHA256SUMS.txt"]
     (run/"SHA256SUMS.txt").write_text("\n".join(entries)+"\n")
