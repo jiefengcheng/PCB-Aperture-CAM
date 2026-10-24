@@ -1,0 +1,39 @@
+{
+  "approved_pair": [
+    "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1539974:1540098",
+    "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540482:1540606"
+  ],
+  "area_epsilon": 1e-10,
+  "comparison_only": "Whole-crop trial for review; preserve historical T01 acceptance and source evidence. No T02+ or manufacturing approval.",
+  "computational_envelope": "Union of immutable native core and inscribed polygonal buffer at the declared analytic radius. KEEP uses exact source core. Native polygon angular phase must not cause source shaving or a relaxed containment epsilon.",
+  "construction_gap": 0.02002,
+  "counterfactual": "For each later companion, restore only one earlier grown neighbor to original core; fixed target radius, other neighbors, ports, group and settings. Save changed geometry and context revision.",
+  "event_epsilon": 1e-08,
+  "expected_occurrences": 53,
+  "expected_unique_sites": 51,
+  "factor": "Each group min(1.5, member priority source-feasible round factors, A-square/B-envelope group bound). Co-reserve interacting priorities by proportional reduction of both groups growth increments; only decrease factors. All members keep same factor. Negligible growth <=safety becomes KEEP group.",
+  "grouping": "Preserve reviewed pair first. Remaining disjoint competition pairs greedily by normalized center distance then stable IDs; unmatched sites are singletons. No transitive whole-crop common factor.",
+  "hard_factor": 1.5,
+  "hard_gap": 0.02,
+  "orientation": -45,
+  "owner_balance_choice": "Balance local neighbouring groups",
+  "owner_tentative_approval": "I will tentatively approve this. but plz apply the latest developed processing over the T01 crop to see what we get so that I can further decide if we are close to the pass point.",
+  "pair_report_sha256": "3157719a095de4bce489b4ffa267c2f8a30d80fd0c71f2d34b232dd304bcbbcb",
+  "port_rule": "Fixed source-existing segment/arc contact zones using own cap 1.5*r0; no blanket same-component exemption.",
+  "priority": "One source-qualified round priority per complete original physical component: largest circle, stable source ID tie-break. Existing source trace ports only. All priorities co-reserved before companions.",
+  "qsegs": 128,
+  "radius_multiplier": 1.5,
+  "required_actual_adapted_later_sites": 3,
+  "safety": 2e-05,
+  "schedule": "All priorities ascending source ID first, then remaining sites ascending source centroid Y,X,ID. Atomic live updates and rebuilt STRtree per acceptance.",
+  "schema": "balanced-t01-crop-trial-policy/2",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "static": "Same source, targets, order, factors, priorities grown and reserved, ports and buffers; companion neighbors frozen at source. Only accepted companion updates differ.",
+  "viewport_mm": [
+    1.2858444444444446,
+    -15.687077777777787,
+    4.508066666666666,
+    -12.975966666666665
+  ]
+}

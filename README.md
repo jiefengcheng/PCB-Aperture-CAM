@@ -13,6 +13,29 @@ For a new dataset with no existing qualified package recipe, start with the [gen
 
 This gate establishes file custody and identity only. It does not parse or qualify dataset contents or extract board objects. It seals a registration recipe so **+** can add the profile to the workbench; qualification remains a separate step and stays `NOT_RUN` until actually performed. Follow the [profiling-to-workbench steps](docs/okf/ingestion/general-profiling.md#continue-into-the-workbench) to verify the package, run the local server, and add the generated directory.
 
+## T01 crop trial: balanced growth with a hard 1.5× ceiling
+
+The owner's tentative two-site approval is applied to all 51 circle sites in the
+frozen client crop, balancing small neighbouring groups and retaining one round
+priority per original physical component. The [frozen trial policy](contracts/crop_balanced_t01_policy.json)
+sets the unconditional radius ceiling; existing T01/R1 evidence is preserved.
+This is a local review experiment, not accepted CAM or manufacturing output.
+
+```bash
+.venv/bin/python -m unittest tests.test_crop_balanced_t01 tests.test_crop_balanced_t01_publication tests.test_crop_balanced_capped_growth tests.test_crop_square_neighbor_experiment -v
+.venv/bin/python tools/run_crop_balanced_t01.py --output out/crop_dynamic_tasks/t01_balanced_capped_replay_01
+.venv/bin/python -m http.server 8783 --bind 127.0.0.1 --directory out/crop_dynamic_tasks/t01_balanced_capped_20261024_v4
+```
+
+Use a fresh output directory for each execution. The saved review shows the full
+ORG crop, accepted effective copper, additions, component priorities, the fair
+static-neighbour comparator and all individual sites. The latest trial grows
+45 sites and preserves 26 round priorities. Fifteen companions respond to grown
+priority reservations, but **zero** respond to evolving companion updates; the
+fair static comparator is identical. Local geometry passes, while T01 remains
+**PARTIAL** pending the missing dynamic behaviour and owner crop review. Receipts,
+counterfactuals, failed runs and ignored visual artifacts remain under `out/`.
+
 **Current delivery: a bounded client-Gerber operation, nine-step workbench walkthrough, and narrated replay.**
 
 Start with [Client demonstration](docs/CLIENT_DATA_DEMO.md) and [consolidated decision](docs/CLIENT_OPERATION_DECISION.md). The source artwork is already aligned; a labeled controlled offset exercises automatic candidate generation, local validation and rejection/rollback. Strict asset inventory now passes for all 70 frozen assets, and the full suite passes 114 tests; [delivery issues](docs/CLIENT_ISSUES.md) records maintenance fixes. Client data, evidence and video remain local under ignored directories. Cursor review is NOT_RUN; manufacturing approval is NOT_ESTABLISHED.
