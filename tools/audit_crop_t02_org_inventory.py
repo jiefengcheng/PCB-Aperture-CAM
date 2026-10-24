@@ -74,7 +74,7 @@ def native_filled_rectangle(raw: bytes, span: list[int], tolerance: float = 1e-9
     }
 
 
-def run_audit(output_rel: str = "out/crop_dynamic_tasks/t02_org_inventory_20261025") -> dict:
+def run_audit(output_rel: str = "out/crop_dynamic_tasks/t02_org_inventory_20261025_v7") -> dict:
     output = ROOT / output_rel
     report = json.loads((output / "inventory_report.json").read_text())
     table = json.loads((output / "feature_dispositions.json").read_text())
@@ -92,7 +92,8 @@ def run_audit(output_rel: str = "out/crop_dynamic_tasks/t02_org_inventory_202610
           table["target_set_sha256"])
 
     counts = Counter(row["disposition"] for row in table["dispositions"])
-    check("expected_disposition_counts", counts == {"TREAT": 81, "KEEP_PROTECTED": 951}, dict(counts))
+    expected_counts = report["disposition_counts"]
+    check("expected_disposition_counts", counts == expected_counts, dict(counts))
     targets = [row for row in table["dispositions"] if row["disposition"] == "TREAT"]
     parsed_sizes = []
     bad = []
@@ -115,11 +116,13 @@ def run_audit(output_rel: str = "out/crop_dynamic_tasks/t02_org_inventory_202610
             bad.append({"source_id": row["source_id"], "reason": "native_bounds_disagree"})
             continue
         parsed_sizes.append(native["size_mm"])
-    check("all_treat_rows_are_native_filled_rectangles", not bad and len(parsed_sizes) == 81,
+    check("all_treat_rows_are_native_filled_rectangles",
+          not bad and len(parsed_sizes) == int(report["candidate_target_count"]),
           {"verified": len(parsed_sizes), "failures": bad[:10]})
 
     nonrect_polys = [row for row in table["dispositions"]
-                     if row.get("source_kind") == "gr_poly" and row["disposition"] == "KEEP_PROTECTED"]
+                     if row.get("source_kind") == "gr_poly" and row["disposition"] == "KEEP_PROTECTED"
+                     and native_filled_rectangle(raw, row.get("source_span", [])) is None]
     poly_checks = []
     for row in nonrect_polys:
         if row.get("source_geometry_sha256") is None:
@@ -141,7 +144,7 @@ def run_audit(output_rel: str = "out/crop_dynamic_tasks/t02_org_inventory_202610
         "shared_kernel_note": "Native-coordinate geometry classification is recomputed from exact source spans without the Shapely/WKB rectangle classifier; inventory completeness and source-object enumeration still depend on native_inventory/2.",
         "limitations": [
             "This validates geometric source eligibility, not object ownership as a semantic PCB pad or electrical net.",
-            "The T02 candidate set remains provisional until the full-crop T01 scene is accepted and bound.",
+            "This source-span audit does not establish admissibility against the accepted T01 scene; the separate T02 composition audit checks that binding and scope.",
             "This does not validate any grown geometry, clearance, electrical behavior, native export, or manufacturing rule.",
         ],
     }

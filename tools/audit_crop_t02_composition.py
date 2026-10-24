@@ -12,21 +12,46 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from shapely import STRtree, from_wkb, wkb
 from shapely.affinity import scale
-from shapely.geometry import Point, box
+from shapely.geometry import LineString, Point, box
 from shapely.ops import unary_union
+from sexpdata import loads
 
 from src import crop_circle_sources as circle_sources
-from src.crop_rect_t02 import RectGrowthPolicy, rectangular_feature
+from src.crop_rect_t02 import (RectGrowthPolicy, rectangular_feature,
+                               envelope_constraint_records, _projected_size,
+                               is_side_by_side_trace)
+from src.native_inventory import arc_points
+from src.native_reference import one
 from src.org_edit_target_map import _inventory_side, _row_geometry
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RUN = ROOT / "out/crop_dynamic_tasks/t02_rectangles_crop_20261025_v5"
-DEFAULT_AUDIT = ROOT / "out/crop_dynamic_tasks/t02_composition_audit_20261025_v3"
+DEFAULT_RUN = ROOT / "out/crop_dynamic_tasks/t02_rectangles_crop_20261025_v31"
+DEFAULT_AUDIT = ROOT / "out/crop_dynamic_tasks/t02_composition_audit_20261025_v13"
 AREA_TOL = 1e-8
 
 
 def sha_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def is_simple_rectangle(geometry, tolerance: float = 1e-9) -> bool:
+    """Check four straight orthogonal sides without relying on oriented-envelope heuristics."""
+    if geometry.geom_type != "Polygon" or geometry.interiors:
+        return False
+    coords = list(geometry.exterior.coords)
+    if len(coords) != 5:
+        return False
+    points = coords[:-1]
+    if len({(round(x, 10), round(y, 10)) for x, y in points}) != 4:
+        return False
+    edges = [(points[(i + 1) % 4][0] - points[i][0],
+              points[(i + 1) % 4][1] - points[i][1]) for i in range(4)]
+    lengths = [(x*x + y*y) ** 0.5 for x, y in edges]
+    if min(lengths) <= tolerance:
+        return False
+    if abs(lengths[0] - lengths[2]) > tolerance or abs(lengths[1] - lengths[3]) > tolerance:
+        return False
+    return abs(edges[0][0] * edges[1][0] + edges[0][1] * edges[1][1]) <= tolerance * lengths[0] * lengths[1]
 
 
 def assert_t01_round_classes(sites: list[dict], decisions: list[dict], geometries: dict[str, object],
@@ -95,13 +120,16 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
             or inventory_dispositions.get("target_set_sha256") != inventory_report.get("candidate_target_ids_sha256")
             or inventory_binding.get("target_set_sha256") != inventory_report.get("candidate_target_ids_sha256")):
         raise ValueError("T02_FROZEN_INVENTORY_CONTENT_BINDING_MISMATCH")
+    trace_policy_v8 = "trace_interactions" in policy_doc
+    side_gap_fraction = (0.0 if trace_policy_v8 else
+                         float(policy_doc["side_trace_gap_reservation"]["fraction_of_original_surface_gap"]))
     policy = RectGrowthPolicy(
         max_axis_factor=float(policy_doc["factor_per_axis"]),
         construction_gap_mm=float(policy_doc["construction_gap_mm"]),
         hard_gap_mm=float(policy_doc["hard_experimental_gap_mm"]),
         geometry_tolerance_mm=float(policy_doc["geometry_tolerance_mm"]),
         quad_segs=int(policy_doc["quad_segs"]),
-        side_trace_gap_fraction_of_org=float(policy_doc["side_trace_gap_reservation"]["fraction_of_original_surface_gap"]),
+        side_trace_gap_fraction_of_org=side_gap_fraction,
     )
     policy.validate()
 
@@ -161,9 +189,21 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         if geometry is not None and not geometry.is_empty:
             source_geometries[row["id"]] = geometry
             source_rows[row["id"]] = row
-            feature = rectangular_feature(row, side["payloads"], crop)
+            feature = rectangular_feature(row, side["payloads"], crop,
+                                          max_axis_factor=float(policy_doc["factor_per_axis"]))
             if feature is not None:
                 feature_by_id[row["id"]] = feature
+    org_region = unary_union([geometry.intersection(crop) for geometry in source_geometries.values()])
+    t01_additions = t01_scene.difference(org_region)
+    accepted_t01_constraint_id = f"T01_SCENE:{owner['decision_id']}"
+    limiting_source_geometries = dict(source_geometries)
+    limiting_source_metadata = {sid: row for sid, row in source_rows.items()}
+    if not t01_additions.is_empty:
+        limiting_source_geometries[accepted_t01_constraint_id] = t01_additions
+        limiting_source_metadata[accepted_t01_constraint_id] = {
+            "kind": "accepted_T01_scene_addition", "source_span": [],
+            "geometry_sha256": scene_hash,
+        }
     run_source_rows = dispositions.get("dispositions", [])
     inv_source_rows = inventory_dispositions.get("dispositions", [])
     run_by_id = {row.get("source_id"): row for row in run_source_rows}
@@ -219,9 +259,27 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
 
     expected_additions = []
     target_growth = {}
-    trace_by_id = {sid: geometry for sid, geometry in source_geometries.items()
-                   if source_rows[sid].get("kind") in policy_doc["side_trace_gap_reservation"]["native_source_kinds"]
-                   and "F.Cu" in source_rows[sid].get("layers", [])}
+    trace_kinds = (set(policy_doc["trace_interactions"]["trace_source_kinds"])
+                   if trace_policy_v8 else
+                   set(policy_doc["side_trace_gap_reservation"]["native_source_kinds"]))
+    trace_copper_by_id = {sid: geometry for sid, geometry in source_geometries.items()
+                          if source_rows[sid].get("kind") in trace_kinds
+                          and "F.Cu" in source_rows[sid].get("layers", [])}
+
+    def native_trace_centerline(row):
+        start, end = map(int, row["source_span"])
+        node = loads(org_bytes[start:end].decode("utf-8"))
+        xy = lambda key: tuple(map(float, one(node, key)))
+        points = ([xy("start"), xy("end")] if row["kind"] == "segment" else
+                  arc_points(xy("start"), xy("mid"), xy("end")))
+        return LineString(points)
+
+    trace_centerline_by_id = ({sid: native_trace_centerline(source_rows[sid])
+                               for sid in trace_copper_by_id}
+                              if trace_policy_v8 else trace_copper_by_id)
+    # The limiter receipt measures side interactions to centerlines and all other
+    # deferred trace records to their source centerline geometry.
+    trace_by_id = trace_centerline_by_id
     if inventory_binding.get("target_count") != len(target_ids):
         raise ValueError("T02_FROZEN_INVENTORY_TARGET_COUNT_MISMATCH")
     for sid in sorted(target_ids):
@@ -234,9 +292,25 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         core = feature["geometry"]
         if core.difference(candidate).area > policy.area_epsilon_mm2:
             raise ValueError(f"T02_TARGET_CORE_LOSS:{sid}")
-        cap = scale(core, xfact=1.5, yfact=1.5, origin=tuple(feature["center_mm"]))
+        cap = scale(core, xfact=policy.max_axis_factor, yfact=policy.max_axis_factor,
+                    origin=tuple(feature["center_mm"]))
         if candidate.difference(cap).area > policy.area_epsilon_mm2:
             raise ValueError(f"T02_TARGET_CAP_EXCEEDED:{sid}")
+        if not is_simple_rectangle(candidate):
+            raise ValueError(f"T02_RECTANGULAR_CONTOUR_RECESSED_OR_NOTCHED:{sid}")
+        expected_envelopes = envelope_constraint_records(
+            candidate, cap, crop,
+            accepted_size_mm=_projected_size(candidate, feature["center_mm"], feature["orientation_radians"]),
+            maximum_size_mm=[value * policy.max_axis_factor for value in feature["source_size_mm"]],
+            policy_sha256=policy_hash,
+            tolerance_mm=policy.geometry_tolerance_mm,
+            area_epsilon_mm2=policy.area_epsilon_mm2,
+        )
+        recorded_limits = decision.get("limiting_constraints", {})
+        if recorded_limits.get("policy_cap") != expected_envelopes["policy_cap"]:
+            raise ValueError(f"T02_POLICY_CAP_WITNESS_MISMATCH:{sid}")
+        if recorded_limits.get("crop_boundary") != expected_envelopes["crop_boundary"]:
+            raise ValueError(f"T02_CROP_BOUNDARY_WITNESS_MISMATCH:{sid}")
         growth = candidate.difference(core)
         if decision.get("decision") == "GROW":
             if growth.area <= policy.area_epsilon_mm2:
@@ -246,28 +320,173 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
                 raise ValueError(f"T02_KEEP_DECISION_CHANGED_SOURCE:{sid}")
         else:
             raise ValueError(f"T02_UNSUPPORTED_TARGET_DECISION:{sid}:{decision.get('decision')}")
-        query = cap.buffer(policy.construction_gap_mm, quad_segs=policy.quad_segs)
-        expected_trace_ids = {trace_id for trace_id, trace in trace_by_id.items() if trace.intersects(query)}
         reservations = decision.get("trace_gap_reservations", [])
+        expected_trace_ids = set()
+        expected_trace_policy = {}
+        for trace_id, trace_copper in trace_copper_by_id.items():
+            trace_centerline = trace_centerline_by_id[trace_id]
+            org_gap = core.distance(trace_copper)
+            trace_kind = source_rows[trace_id].get("kind")
+            side_by_side = is_side_by_side_trace(
+                core, feature["center_mm"], feature["orientation_radians"],
+                trace_centerline, trace_kind)
+            if trace_policy_v8:
+                required = policy.construction_gap_mm if side_by_side else 0.0
+                relevant = ((side_by_side and trace_copper.distance(cap) + policy.geometry_tolerance_mm < required)
+                            or (not side_by_side and trace_copper.distance(cap) <= policy.geometry_tolerance_mm))
+            else:
+                fraction = 1.0 if side_by_side else policy.side_trace_gap_fraction_of_org
+                required = max(policy.construction_gap_mm, fraction * org_gap)
+                relevant = trace_copper.distance(cap) + policy.geometry_tolerance_mm < required
+            expected_trace_policy[trace_id] = (side_by_side, required, org_gap)
+            if relevant:
+                expected_trace_ids.add(trace_id)
         reserved_trace_ids = {r["source_id"] for r in reservations}
         if expected_trace_ids != reserved_trace_ids:
             raise ValueError(f"T02_TRACE_RESERVATION_COVERAGE_MISMATCH:{sid}")
         for reservation in reservations:
             trace = trace_by_id.get(reservation["source_id"])
-            if trace is None:
+            trace_copper = trace_copper_by_id.get(reservation["source_id"])
+            if trace is None or trace_copper is None:
                 raise ValueError(f"T02_TRACE_RESERVATION_SOURCE_MISSING:{sid}:{reservation['source_id']}")
-            org_gap = core.distance(trace)
-            required = max(policy.construction_gap_mm,
-                           policy.side_trace_gap_fraction_of_org * org_gap)
+            org_gap = core.distance(trace_copper)
+            expected_side_by_side, required, _ = expected_trace_policy[reservation["source_id"]]
+            if reservation.get("side_by_side_classification") != expected_side_by_side:
+                raise ValueError(f"T02_TRACE_SIDE_BY_SIDE_CLASSIFICATION_MISMATCH:{sid}:{reservation['source_id']}")
             if abs(org_gap - float(reservation["org_surface_gap_mm"])) > policy.geometry_tolerance_mm:
                 raise ValueError(f"T02_TRACE_ORG_GAP_MISMATCH:{sid}:{reservation['source_id']}")
             if abs(required - float(reservation["required_retained_gap_mm"])) > policy.geometry_tolerance_mm:
                 raise ValueError(f"T02_TRACE_POLICY_GAP_MISMATCH:{sid}:{reservation['source_id']}")
-            if (decision.get("decision") == "GROW"
-                    and growth.distance(trace) + policy.geometry_tolerance_mm < required):
-                raise ValueError(f"T02_HALF_ORG_TRACE_GAP_NOT_PRESERVED:{sid}:{reservation['source_id']}")
+            final_gap_geometry = trace if (trace_policy_v8 and expected_side_by_side) else trace_copper
+            if (decision.get("decision") == "GROW" and required > 0.0
+                    and growth.distance(final_gap_geometry) + policy.geometry_tolerance_mm < required):
+                raise ValueError(f"T02_TRACE_GAP_NOT_PRESERVED:{sid}:{reservation['source_id']}")
         target_growth[sid] = growth
         expected_additions.append(growth)
+
+    # Reconstruct each recorded limiter from source geometry and the deterministic
+    # accepted-scene order. This verifies audit-row identity and distances; it does
+    # not create an independent geometry-kernel qualification.
+    target_decision_order = decisions_doc["decisions"]
+    if [row["source_id"] for row in target_decision_order] != [
+            row["source_id"] for row in sorted(
+                target_decision_order,
+                key=lambda row: (feature_by_id[row["source_id"]]["center_mm"][1],
+                                 feature_by_id[row["source_id"]]["center_mm"][0],
+                                 row["source_id"]))]:
+        raise ValueError("T02_DECISION_ORDER_NOT_DETERMINISTIC")
+    earlier_grown_ids = []
+    limit_record_count = 0
+    for decision in target_decision_order:
+        sid = decision["source_id"]
+        growth = target_growth[sid]
+        recorded = decision.get("limiting_constraints")
+        if not isinstance(recorded, dict):
+            raise ValueError(f"T02_LIMITING_CONSTRAINTS_MISSING:{sid}")
+
+        def verify_nearest(record, candidates, threshold, label):
+            if growth.is_empty:
+                if record is not None:
+                    raise ValueError(f"T02_UNEXPECTED_LIMIT_RECORD_FOR_EMPTY_GROWTH:{label}:{sid}")
+                return None
+            expected_rows = []
+            for candidate_id, geometry in candidates.items():
+                gap = float(growth.distance(geometry))
+                source_row = limiting_source_metadata.get(candidate_id, {})
+                expected_rows.append({
+                    "source_id": candidate_id,
+                    "source_kind": source_row.get("kind"),
+                    "source_span": list(source_row.get("source_span", [])),
+                    "source_geometry_sha256": source_row.get("geometry_sha256"),
+                    "measured_gap_mm": gap,
+                    "required_gap_mm": threshold,
+                    "margin_mm": gap - threshold,
+                    "passes_tolerance": gap + policy.geometry_tolerance_mm >= threshold,
+                })
+            expected = min(expected_rows, key=lambda row: (row["margin_mm"], row["source_id"])) if expected_rows else None
+            if expected is None:
+                if record is not None:
+                    raise ValueError(f"T02_UNEXPECTED_LIMIT_RECORD:{label}:{sid}")
+                return None
+            if not isinstance(record, dict):
+                raise ValueError(f"T02_LIMIT_RECORD_MISSING:{label}:{sid}")
+            for field in ("source_id", "source_kind", "source_span", "source_geometry_sha256",
+                          "required_gap_mm", "passes_tolerance"):
+                if record.get(field) != expected[field]:
+                    raise ValueError(f"T02_LIMIT_RECORD_BINDING_MISMATCH:{label}:{field}:{sid}")
+            for field in ("measured_gap_mm", "margin_mm"):
+                if abs(float(record.get(field, float("inf"))) - expected[field]) > 1e-12:
+                    raise ValueError(f"T02_LIMIT_RECORD_MEASUREMENT_MISMATCH:{label}:{field}:{sid}")
+            return expected
+
+        expected_source = verify_nearest(
+            recorded.get("nearest_original_protected_source"),
+            {source_id: geometry for source_id, geometry in limiting_source_geometries.items() if source_id != sid},
+            policy.construction_gap_mm, "original_source")
+        expected_prior = verify_nearest(
+            recorded.get("nearest_prior_t02_addition"),
+            {prior_id: target_growth[prior_id] for prior_id in earlier_grown_ids},
+            policy.construction_gap_mm, "prior_t02")
+
+        trace_records = recorded.get("trace_reservations", [])
+        decision_reservations = {row["source_id"]: row for row in decision.get("trace_gap_reservations", [])}
+        if growth.is_empty and trace_records:
+            raise ValueError(f"T02_UNEXPECTED_TRACE_LIMIT_RECORD_FOR_EMPTY_GROWTH:{sid}")
+        expected_limit_trace_ids = (set() if growth.is_empty else set(decision_reservations))
+        if {row.get("source_id") for row in trace_records} != expected_limit_trace_ids:
+            raise ValueError(f"T02_LIMIT_TRACE_SET_MISMATCH:{sid}")
+        trace_limit_rows = []
+        for actual in trace_records:
+            source_id = actual["source_id"]
+            trace = trace_by_id.get(source_id)
+            if trace is None:
+                raise ValueError(f"T02_LIMIT_TRACE_SOURCE_MISSING:{sid}:{source_id}")
+            reservation = decision_reservations[source_id]
+            gap = float(growth.distance(trace))
+            required = float(reservation["required_retained_gap_mm"])
+            gap_field = ("measured_final_centerline_gap_mm"
+                         if trace_policy_v8 and reservation.get("side_by_side_classification")
+                         else "measured_final_gap_mm")
+            if (actual.get("source_kind") != source_rows[source_id].get("kind")
+                    or actual.get("source_span") != list(source_rows[source_id].get("source_span", []))
+                    or actual.get("source_geometry_sha256") != source_rows[source_id].get("geometry_sha256")
+                    or actual.get("required_retained_gap_mm") != required
+                    or actual.get("org_surface_gap_mm") != reservation["org_surface_gap_mm"]
+                    or actual.get("required_centerline_gap_mm") != reservation.get("required_centerline_gap_mm")
+                    or actual.get("passes_tolerance") != (gap + policy.geometry_tolerance_mm >= required)
+                    or abs(float(actual.get(gap_field, float("inf"))) - gap) > 1e-12
+                    or abs(float(actual.get("clearance_margin_mm", float("inf"))) - (gap - required)) > 1e-12):
+                raise ValueError(f"T02_LIMIT_TRACE_MEASUREMENT_MISMATCH:{sid}:{source_id}")
+            trace_limit_rows.append({
+                "source_id": source_id,
+                "source_kind": source_rows[source_id].get("kind"),
+                "source_span": list(source_rows[source_id].get("source_span", [])),
+                "source_geometry_sha256": source_rows[source_id].get("geometry_sha256"),
+                "measured_gap_mm": gap,
+                "required_gap_mm": required,
+                "margin_mm": gap - required,
+                "passes_tolerance": gap + policy.geometry_tolerance_mm >= required,
+            })
+        expected_tightest = min(
+            [row for row in [expected_source, expected_prior] if row is not None] + trace_limit_rows,
+            key=lambda row: (row["margin_mm"], row["source_id"]),
+        ) if (expected_source or expected_prior or trace_limit_rows) else None
+        actual_tightest = recorded.get("tightest_recorded_constraint")
+        if (expected_tightest is None) != (actual_tightest is None):
+            raise ValueError(f"T02_TIGHTEST_LIMIT_PRESENCE_MISMATCH:{sid}")
+        if expected_tightest is not None:
+            if (actual_tightest.get("source_id") != expected_tightest["source_id"]
+                    or actual_tightest.get("measured_gap_mm") != expected_tightest["measured_gap_mm"]
+                    or actual_tightest.get("required_gap_mm") != expected_tightest["required_gap_mm"]
+                    or actual_tightest.get("source_geometry_sha256") != expected_tightest.get("source_geometry_sha256")
+                    or actual_tightest.get("margin_mm") != expected_tightest["margin_mm"]
+                    or actual_tightest.get("passes_tolerance") != expected_tightest["passes_tolerance"]):
+                raise ValueError(f"T02_TIGHTEST_LIMIT_MISMATCH:{sid}")
+        limit_record_count += 1
+        if decision.get("decision") == "GROW":
+            if decision.get("input_scene_revision") != len(earlier_grown_ids):
+                raise ValueError(f"T02_SCENE_REVISION_ORDER_MISMATCH:{sid}")
+            earlier_grown_ids.append(sid)
 
     reconstructed_additions = unary_union(expected_additions)
     addition_diff = additions.symmetric_difference(reconstructed_additions).area
@@ -275,15 +494,18 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         raise ValueError("T02_ADDITIONS_DO_NOT_MATCH_TARGET_CANDIDATES")
     if abs(additions.area - float(result["added_area_mm2"])) > AREA_TOL:
         raise ValueError("T02_ADDED_AREA_REPORT_MISMATCH")
-    if abs((combined.area - t01_scene.area) - additions.area) > AREA_TOL:
+    unique_scene_delta = additions.difference(t01_scene).area
+    if abs((combined.area - t01_scene.area) - unique_scene_delta) > AREA_TOL:
         raise ValueError("T02_UNION_AREA_DELTA_MISMATCH")
     if abs(combined.area - float(result["accepted_union_area_mm2"])) > AREA_TOL:
         raise ValueError("T02_COMBINED_AREA_REPORT_MISMATCH")
 
-    # Recheck that target additions retain clearance from every non-target ORG
-    # contribution, other target cores/additions, and frozen T01 additions.
+    # Recheck hard construction clearance from protected non-trace ORG
+    # contributions, other target cores/additions, and frozen T01 additions.
+    # Trace interactions follow the explicit v8 centerline/deferred-overlap
+    # contract and are verified above plus by the source-bound overlap audit.
     t01_additions = t01_scene.difference(unary_union([g.intersection(crop) for sid, g in source_geometries.items()]))
-    source_ids = list(source_geometries)
+    source_ids = [sid for sid in source_geometries if sid not in trace_copper_by_id]
     source_tree = STRtree([source_geometries[sid] for sid in source_ids])
     growth_ids = list(target_growth)
     growth_tree = STRtree([target_growth[sid] for sid in growth_ids])
@@ -326,6 +548,13 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         "accepted_T01_prestate_render_matches_scene": True,
         "T01_round_shape_audit": round_audit,
         "T02_target_count": len(target_ids),
+        "T02_per_target_limiting_constraint_records_pass": limit_record_count == len(target_ids),
+        "T02_per_target_limiting_constraint_record_count": limit_record_count,
+        "T02_constraint_witness_categories_reconstructed": [
+            "all_ORG_FCu_geometry", "accepted_T01_scene_addition", "all_earlier_accepted_T02_additions",
+            "all_reserved_ORG_side_traces", "configured_per_axis_policy_cap", "full_cap_envelope_crop_boundary",
+        ],
+        "T02_constraint_witness_completeness_pass": limit_record_count == len(target_ids),
         "T02_source_disposition_count": len(run_source_rows),
         "T02_source_disposition_counts": dict(sorted(run_disposition_counts.items())),
         "T02_source_class_counts": dict(sorted(run_class_counts.items())),
@@ -335,9 +564,10 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         "T02_keep_decision_count": sum(d.get("decision") == "KEEP" for d in decisions_doc["decisions"]),
         "T02_keep_decisions_preserve_exact_source": True,
         "T02_target_growth_reconstructs_saved_additions": True,
-        "T02_half_org_trace_gap_reservations_pass": True,
+        "T02_trace_interaction_reservations_pass": True,
         "T02_trace_reservation_count": sum(len(d.get("trace_gap_reservations", [])) for d in decisions_doc["decisions"]),
-        "T02_trace_gap_fraction_of_org": policy.side_trace_gap_fraction_of_org,
+        "T02_trace_policy_mode": ("centerline_standoff_and_deferred_overlap_recording"
+                                   if trace_policy_v8 else "fraction_of_org_surface_gap"),
         "T02_policy_sha256": policy_hash,
         "T02_org_inventory_manifest_sha256": inventory_binding.get("inventory_manifest_sha256"),
         "T01_square_recess_policy": t01_policy.get("square_guided_recess"),
@@ -347,6 +577,7 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         "T02_added_area_report_matches_mm2": float(result["added_area_mm2"]),
         "T02_accepted_union_area_report_matches_mm2": float(result["accepted_union_area_mm2"]),
         "T02_union_area_delta_mm2": combined.area - t01_scene.area,
+        "T02_addition_area_overlapping_existing_T01_scene_mm2": additions.area - unique_scene_delta,
         "T02_to_protected_minimum_gap_mm": min_protected_gap,
         "t01_area_loss_mm2": lost_t01,
         "composition_difference_area_mm2": unexpected_composition,
