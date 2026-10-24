@@ -537,6 +537,29 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         relative = decision["geometry"]["dynamic"]
         t01_geometries[decision["source_id"]] = from_wkb((scene_path.parent / relative).read_bytes())
     round_audit = assert_t01_round_classes(sites, t01_report["decisions"], t01_geometries)
+    # The independent overlap summary tracks intersections against the union of
+    # native traces. Reconcile the actual intersection geometry with all
+    # pre-existing T01 copper, not merely the two reported areas.
+    trace_union = unary_union(list(trace_copper_by_id.values()))
+    overlap_with_existing_scene = additions.intersection(t01_scene)
+    overlap_with_native_traces = additions.intersection(trace_union)
+    overlap_set_difference_area = overlap_with_existing_scene.symmetric_difference(
+        overlap_with_native_traces).area
+    if overlap_set_difference_area > AREA_TOL:
+        raise ValueError("T02_EXISTING_COPPER_OVERLAP_SET_DIFFERS_FROM_TRACE_OVERLAP_SET")
+
+    # A source circle can remain intact as an object while a nearby T02
+    # addition merges with its effective contour. Check every saved T01 circle
+    # contour against the proposed additions, including the round enlargement.
+    round_site_gaps = {sid: float(additions.distance(geometry))
+                       for sid, geometry in t01_geometries.items()}
+    minimum_round_gap_site_id, minimum_round_gap = min(
+        round_site_gaps.items(), key=lambda item: item[1])
+    round_site_overlap_count = sum(additions.intersection(geometry).area > policy.area_epsilon_mm2
+                                   for geometry in t01_geometries.values())
+    if (round_site_overlap_count
+            or minimum_round_gap + policy.geometry_tolerance_mm < policy.hard_gap_mm):
+        raise ValueError("T02_ADDITION_INTERFERES_WITH_T01_ROUND_CONTOUR")
 
     audit = {
         "schema": "t02-composition-audit/1",
@@ -547,6 +570,12 @@ def audit(run_dir: Path, audit_dir: Path) -> dict:
         "accepted_T01_scene_sha256": scene_hash,
         "accepted_T01_prestate_render_matches_scene": True,
         "T01_round_shape_audit": round_audit,
+        "T02_existing_scene_overlap_set_matches_native_trace_overlap_set": True,
+        "T02_existing_vs_trace_overlap_symmetric_difference_area_mm2": overlap_set_difference_area,
+        "T02_additions_preserve_effective_T01_round_contours": True,
+        "T02_addition_round_site_overlap_count": round_site_overlap_count,
+        "T02_minimum_T01_round_site_gap_mm": minimum_round_gap,
+        "T02_minimum_T01_round_site_gap_source_id": minimum_round_gap_site_id,
         "T02_target_count": len(target_ids),
         "T02_per_target_limiting_constraint_records_pass": limit_record_count == len(target_ids),
         "T02_per_target_limiting_constraint_record_count": limit_record_count,
