@@ -1,4 +1,29 @@
 # Crop-scale dynamic copper transformation
+
+> **Active scope update — 2026-10-24:** The owner supplied
+> [`t02_authorization/T02_ONLY_HANDOFF.md`](t02_authorization/T02_ONLY_HANDOFF.md).
+> It authorizes **T02 only**, with a local commit and stop before T03. The
+> earlier T01-only authority below is retained as history and is superseded
+> only for this T02 work. The owner subsequently selected a larger region from
+> an EDIT screenshot; the corresponding ORG window and registration evidence
+> are recorded in the T02 decision log. This does not authorize using EDIT
+> contours to generate proposals.
+>
+> **Owner sequence correction — 2026-10-25:** T01 ran on the selected crop.
+> Envelope groups (local competition among 1.5× envelopes) remain separate
+> from whole-board physical F.Cu connected components. The owner-marked round
+> shape losses were corrected; the exact screenshot, accepted T01 scene, source,
+> policy and audit are bound by decision `t01_marked_area_fix_freeze_20261025`
+> as `ACCEPTED_VISUAL_CROP`. T01 behavior remains `PARTIAL_0_OF_3`.
+>
+> T02 then ran against that exact frozen scene. The current deterministic real-
+> crop review is v5/v6: 76 source rectangles eligible and grown, five edge-
+> crossing rectangles preserved unchanged, 1.5× per-axis ceiling, and half-ORG
+> trace-growth reservations with a declared numerical tolerance. T02 remains an
+> experimental visual-review candidate, not owner-accepted engineering or
+> manufacturing output. T03 remains unauthorized. The exact audit, caveats,
+> test evidence and review path are in
+> [`t02_authorization/T02_PROGRESS_CHECKPOINT_20261025.md`](t02_authorization/T02_PROGRESS_CHECKPOINT_20261025.md).
 ## Milestone plan; **current authorization is T01 only**
 
 **Prepared:** 2026-10-24  

@@ -8,6 +8,7 @@ from shapely.geometry import Point,box
 from src.native_inventory import inventory
 from src.native_reference import one
 from src.crop_square_neighbor_experiment import geometry_hash
+from src.source_locators import locate
 ROOT=Path(__file__).resolve().parents[1]
 
 def sha(path):
@@ -18,7 +19,33 @@ def dump(path, value):
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
 
 
-def source_scene(source, policy):
+def _raw_filled_circle_scan(source, viewport, quad_segs):
+    """Enumerate filled F.Cu circle spans directly from raw native syntax.
+
+    This independent dispatch cross-check intentionally does not rely on the
+    inventory's kind/layer/geometry fields or its WKB geometry grouping.
+    """
+    occurrences = []
+    geometries = defaultdict(int)
+    for span in locate(source):
+        if span.head != "gr_circle":
+            continue
+        node = sexpdata.loads(source[span.start:span.end].decode("utf-8"))
+        layer = one(node, "layer", [""])[0]
+        fill = one(node, "fill", ["none"])[0]
+        if str(layer) != "F.Cu" or str(fill) not in ("yes", "solid"):
+            continue
+        center, end = one(node, "center"), one(node, "end")
+        cx, cy = float(center[0]), float(center[1])
+        radius = math.hypot(float(end[0]) - cx, float(end[1]) - cy)
+        if not Point(cx, cy).buffer(radius, quad_segs=quad_segs).intersects(viewport):
+            continue
+        occurrences.append(f"{span.revision}:bytes:{span.start}:{span.end}")
+        geometries[(round(cx, 12), round(cy, 12), round(radius, 12))] += 1
+    return occurrences, geometries
+
+
+def source_scene(source, policy, *, expected_unique_sites=51, expected_occurrences=53):
     inv = inventory(source)
     rows = [row for row in inv["objects"] if "F.Cu" in row["layers"]]
     unsupported = [row["id"] for row in rows if not row["geometry_sha256"]]
@@ -45,7 +72,29 @@ def source_scene(source, policy):
                       "core": core, "center": center, "radius": radius,
                       "geometry_sha256": geometry_sha, "indexes": indexes})
     sites.sort(key=lambda site: (site["center"][1], site["center"][0], site["source_id"]))
-    assert len(sites) == 51
+    if expected_unique_sites is not None and len(sites) != expected_unique_sites:
+        raise ValueError(f"UNEXPECTED_UNIQUE_CIRCLE_SITES:{len(sites)}")
+    occurrence_count = sum(len(site["aliases"]) for site in sites)
+    if expected_occurrences is not None and occurrence_count != expected_occurrences:
+        raise ValueError(f"UNEXPECTED_CIRCLE_OCCURRENCES:{occurrence_count}")
+    raw_spans, raw_geometry_counts = _raw_filled_circle_scan(
+        source, viewport, policy.get("quad_segs", 128))
+    inventory_spans = sorted(row["id"] for site in sites for row in
+                             (rows[index] for index in site["indexes"]))
+    if sorted(raw_spans) != inventory_spans:
+        raise ValueError("RAW_CIRCLE_SOURCE_SPANS_DIFFER_FROM_INVENTORY")
+    inventory_geometry_counts = defaultdict(int)
+    for site in sites:
+        key = (round(site["center"][0], 12), round(site["center"][1], 12),
+               round(site["radius"], 12))
+        inventory_geometry_counts[key] += len(site["aliases"])
+    if dict(raw_geometry_counts) != dict(inventory_geometry_counts):
+        raise ValueError("RAW_CIRCLE_CENTER_RADIUS_SITES_DIFFER_FROM_INVENTORY")
+    inv["circle_recognition_audit"] = {
+        "method": "Raw gr_circle source-span rescan independently parses each feature layer, fill, center and end; compares occurrence spans and rounded center/radius multiplicities against inventory-derived sites.",
+        "raw_occurrences": len(raw_spans), "inventory_occurrences": occurrence_count,
+        "raw_unique_sites": len(raw_geometry_counts), "inventory_unique_sites": len(sites),
+        "occurrence_spans_match": True, "site_center_radius_multiplicities_match": True}
     # Fresh whole-source same-layer physical contact groups, not electrical nets.
     group_by_index = {}
     for site in sites:
@@ -65,6 +114,9 @@ def source_scene(source, policy):
             for index in seen:
                 group_by_index[index] = group_id
         site["physical_contact_group"] = group_by_index[seed]
+        # Explicitly named alias for crop policies that reason about physical
+        # F.Cu connected components, keeping it distinct from local T01 groups.
+        site["physical_component_source_id"] = group_by_index[seed]
         site["enlarged_radius"] = policy["radius_multiplier"] * site["radius"]
     return inv, rows, shapes, tree, sites
 

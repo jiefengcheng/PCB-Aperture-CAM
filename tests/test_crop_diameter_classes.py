@@ -29,6 +29,22 @@ class DiameterClassTests(unittest.TestCase):
         self.assertIn(.3749,admissible_diameters(.12497,[.2999,.3374,.3749,.4499]))
         self.assertIn(.3749,admissible_diameters(.14999,[.2999,.3374,.3749,.4499]))
 
+    def test_crop_physical_groups_can_disable_legacy_square_direction(self):
+        from shapely.geometry import Point
+        from src.crop_diameter_classes import promote_round_priorities
+        class EmptyScene:
+            def obstacles(self, site, revision): return []
+        sites=[]
+        for sid, radius in [('A', .2), ('B', .1)]:
+            sites.append({'source_id':sid,'center':[0.,0.],'radius':radius,
+                          'core':Point(0,0).buffer(radius,quad_segs=32)})
+        groups=[{'group_id':'PC-test','site_ids':['A','B'],'apply_square_bound':False}]
+        priorities={'PC-test':'A'}
+        targets,records,_=select_targets(sites,groups,priorities,EmptyScene(),CropSettings(),[.3,.45,.6])
+        promote_round_priorities(sites,groups,priorities,EmptyScene(),CropSettings(),targets,records)
+        self.assertNotIn('square_anchor_id',groups[0])
+        self.assertTrue(all(s['radius']<=targets[s['source_id']]<=1.5*s['radius'] for s in sites))
+
     def test_fresh_contract_rejects_continuous_size_and_over_cap(self):
         site={'source_id':'A','radius':1.}
         policy={'diameter_classes_mm':[2.2,2.6,2.9]}

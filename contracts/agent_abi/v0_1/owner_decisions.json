@@ -1,0 +1,90 @@
+{
+  "decisions": {
+    "t01_marked_area_fix_freeze_20261025": {
+      "actual_adapted_later_sites": 0,
+      "audit_sha256": "6ea39252f3ed73ad9eb5abf41674c6044d7f89987da5bbe05cf92ae6c4c430d0",
+      "basis": "USER_REQUESTED_FIX_OF_MARKED_AREAS_AND_FREEZE_T01_FOR_T02",
+      "date": "2026-10-25",
+      "decision_id": "t01_marked_area_fix_freeze_20261025",
+      "limits": [
+        "Visual crop acceptance only",
+        "T01 behavior remains partial",
+        "No engineering qualification",
+        "No manufacturing approval"
+      ],
+      "policy_sha256": "1b423537ba3987d6d5e94a6d8b120c9ebac13875f2fe462cbf602a9ed79a1140",
+      "profile_id": "t01_marked_area_fix_frozen",
+      "publication_receipt_sha256": "8d4f549ecd9064d482951d3df056711fcb22c59336082e29127e77d85547ec9e",
+      "report_sha256": "111ae69c7fa983f9453e51442d9c6562a2b46ebea99980521d4071335ee4ac56",
+      "required_actual_sites": 3,
+      "scene_sha256": "073361e8f26c0127a218b4dfacfe9577937641c1c85d5d684f46f63dc075141d",
+      "selection_sha256": "fd8439ce9c3cb8a8da8bb7f13ae29c5dc150e437f7f0aec3bbfb8661e0d6e26c",
+      "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+      "statement": "Owner instruction: \u201cplz fix them and frozen T01 result so that T02 can derterministic kicked off\u201d; subsequent correction: \u201cfix bugs in those marked areas.\u201d",
+      "status": "ACCEPTED_VISUAL_CROP",
+      "technical_status": "PARTIAL_0_OF_3"
+    },
+    "t01_r1_not_accepted_20261024": {
+      "basis": "FROZEN_OWNER_REVIEW_DOCUMENT",
+      "date": "2026-10-24",
+      "decision_doc_sha256": "bcf683e0d31ae569cee9d1a20e2471477119340bb7082be31204a67b222401d6",
+      "decision_id": "t01_r1_not_accepted_20261024",
+      "limits": [
+        "The separate calibrated correction remains unaccepted unless reviewed independently",
+        "No engineering qualification",
+        "No manufacturing approval"
+      ],
+      "owner_review_sha256": "6c7e94fbfc2e9d224082b411006bcbe4f8947b9279efca159fd344341b711587",
+      "policy_sha256": "85157972dfddfd9cd7c56ccf41fe97e173803838b6f22964e0dc1f979fa86861",
+      "profile_id": "t01_r1_spacing_rejected",
+      "report_sha256": "84877662e340828cebf823fb1298005b07aba1ec2e93dd6317b57013568d7fdb",
+      "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+      "statement": "The owner rejected T01-R1 as a delivered slice; PASS_WITH_SCOPE_LIMITS remains internal geometry evidence only.",
+      "status": "NOT_ACCEPTED_BY_OWNER",
+      "t01_behavior": "PARTIAL_0_OF_3",
+      "technical_status": "PASS_WITH_SCOPE_LIMITS"
+    },
+    "t01_round_priority_review_pending_20261024": {
+      "actual_adapted_later_sites": 0,
+      "audit_sha256": "87573f2d31ebbec9684f1cac74c7a965e07b1dc3782fa0d59daa694648020733",
+      "basis": "NO_RUN_SPECIFIC_ACCEPTANCE_RECORD",
+      "date": "2026-10-24",
+      "decision_id": "t01_round_priority_review_pending_20261024",
+      "limits": [
+        "No engineering qualification",
+        "No manufacturing approval"
+      ],
+      "policy_sha256": "b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be",
+      "profile_id": "t01_round_priority_promotion",
+      "report_sha256": "c96ddfd99e7fb1e582386ec3af6f5272bd74fe4eb4e0a4eb01526e7425d7be34",
+      "required_actual_sites": 3,
+      "scene_sha256": "08f8db9d4177b2a53eeec1ece64d1e1efd562c32c32fc42916682224aadf8ef0",
+      "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+      "statement": "This later promotion bundle is kept separate; no acceptance is inferred from the visual-crop decision.",
+      "status": "PENDING_OWNER_REVIEW",
+      "technical_status": "PARTIAL_INSUFFICIENT_ACTUAL_DYNAMIC_EVENTS"
+    },
+    "t01_visual_crop_acceptance_20261024": {
+      "actual_adapted_later_sites": 0,
+      "audit_sha256": "cdc890a4baa12d69f08b3c80ab5e2625c443ec73b386c07358775ff97bec51e1",
+      "basis": "USER_REVIEW_IN_THIS_CHAT",
+      "date": "2026-10-24",
+      "decision_id": "t01_visual_crop_acceptance_20261024",
+      "limits": [
+        "No engineering qualification",
+        "No manufacturing approval",
+        "No claim that the full T01 behavioral criterion passed"
+      ],
+      "policy_sha256": "1b084cb2366a08e356841ebe5b8890248ba0f75656280e174dee23af1f1fcf5f",
+      "profile_id": "t01_visual_crop_accepted",
+      "report_sha256": "c65f91a33cf6b6770da818bbe517da3c4b21eb4e2614fcd77af5935c4316fdb9",
+      "required_actual_sites": 3,
+      "scene_sha256": "08f8db9d4177b2a53eeec1ece64d1e1efd562c32c32fc42916682224aadf8ef0",
+      "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+      "statement": "Owner said: \u201cFinally. I will call it acceptance.\u201d Scope is visual crop acceptance only.",
+      "status": "ACCEPTED_VISUAL_CROP",
+      "technical_status": "PARTIAL_INSUFFICIENT_ACTUAL_DYNAMIC_EVENTS"
+    }
+  },
+  "schema": "cam-agent-owner-decisions/0.1"
+}

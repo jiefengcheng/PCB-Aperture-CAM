@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cam-agent-abi-request/0.1",
+  "title": "CAM Agent ABI v0.1 request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "abi_version",
+    "operation",
+    "profile_id",
+    "site_id",
+    "left_profile_id",
+    "right_profile_id",
+    "overrides"
+  ],
+  "properties": {
+    "abi_version": {
+      "const": "0.1"
+    },
+    "operation": {
+      "enum": [
+        "cam_describe",
+        "cam_inspect",
+        "cam_plan",
+        "cam_run",
+        "cam_verify",
+        "cam_compare",
+        "cam_review"
+      ]
+    },
+    "profile_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "site_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "left_profile_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "right_profile_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "overrides": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "cam_describe"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "profile_id": {
+            "const": null
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "cam_inspect"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "site_id": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "cam_plan"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "cam_run"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "cam_verify"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "cam_compare"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "profile_id": {
+            "const": null
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "right_profile_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "cam_review"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,399 @@
+{
+  "schema": "cam-agent-abi-tool-projection/0.1",
+  "transport": "local JSON CLI; host-neutral projection only",
+  "tools": [
+    {
+      "name": "cam_describe",
+      "description": "List local profiles and operation availability.",
+      "input_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "cam-agent-abi-cam_describe/0.1",
+        "title": "cam_describe request",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "abi_version",
+          "operation",
+          "profile_id",
+          "site_id",
+          "left_profile_id",
+          "right_profile_id",
+          "overrides"
+        ],
+        "properties": {
+          "abi_version": {
+            "const": "0.1"
+          },
+          "operation": {
+            "const": "cam_describe"
+          },
+          "profile_id": {
+            "const": null
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          },
+          "overrides": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "cam_inspect",
+      "description": "Read hash-bound run, site, warning, or mismatch evidence.",
+      "input_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "cam-agent-abi-cam_inspect/0.1",
+        "title": "cam_inspect request",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "abi_version",
+          "operation",
+          "profile_id",
+          "site_id",
+          "left_profile_id",
+          "right_profile_id",
+          "overrides"
+        ],
+        "properties": {
+          "abi_version": {
+            "const": "0.1"
+          },
+          "operation": {
+            "const": "cam_inspect"
+          },
+          "profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "site_id": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          },
+          "overrides": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "cam_plan",
+      "description": "Compose a deterministic policy-bound plan; does not write or execute.",
+      "input_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "cam-agent-abi-cam_plan/0.1",
+        "title": "cam_plan request",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "abi_version",
+          "operation",
+          "profile_id",
+          "site_id",
+          "left_profile_id",
+          "right_profile_id",
+          "overrides"
+        ],
+        "properties": {
+          "abi_version": {
+            "const": "0.1"
+          },
+          "operation": {
+            "const": "cam_plan"
+          },
+          "profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          },
+          "overrides": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "cam_run",
+      "description": "Declared execution port; currently returns NOT_RUN.",
+      "input_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "cam-agent-abi-cam_run/0.1",
+        "title": "cam_run request",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "abi_version",
+          "operation",
+          "profile_id",
+          "site_id",
+          "left_profile_id",
+          "right_profile_id",
+          "overrides"
+        ],
+        "properties": {
+          "abi_version": {
+            "const": "0.1"
+          },
+          "operation": {
+            "const": "cam_run"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          },
+          "overrides": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "cam_verify",
+      "description": "Declared verification port; currently returns NOT_RUN.",
+      "input_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "cam-agent-abi-cam_verify/0.1",
+        "title": "cam_verify request",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "abi_version",
+          "operation",
+          "profile_id",
+          "site_id",
+          "left_profile_id",
+          "right_profile_id",
+          "overrides"
+        ],
+        "properties": {
+          "abi_version": {
+            "const": "0.1"
+          },
+          "operation": {
+            "const": "cam_verify"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          },
+          "overrides": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "cam_compare",
+      "description": "Compare registered runs with explicit source, scene, and policy compatibility.",
+      "input_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "cam-agent-abi-cam_compare/0.1",
+        "title": "cam_compare request",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "abi_version",
+          "operation",
+          "profile_id",
+          "site_id",
+          "left_profile_id",
+          "right_profile_id",
+          "overrides"
+        ],
+        "properties": {
+          "abi_version": {
+            "const": "0.1"
+          },
+          "operation": {
+            "const": "cam_compare"
+          },
+          "profile_id": {
+            "const": null
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "right_profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "overrides": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "cam_review",
+      "description": "Retrieve registered saved review and publication evidence.",
+      "input_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "cam-agent-abi-cam_review/0.1",
+        "title": "cam_review request",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "abi_version",
+          "operation",
+          "profile_id",
+          "site_id",
+          "left_profile_id",
+          "right_profile_id",
+          "overrides"
+        ],
+        "properties": {
+          "abi_version": {
+            "const": "0.1"
+          },
+          "operation": {
+            "const": "cam_review"
+          },
+          "profile_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "site_id": {
+            "const": null
+          },
+          "left_profile_id": {
+            "const": null
+          },
+          "right_profile_id": {
+            "const": null
+          },
+          "overrides": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

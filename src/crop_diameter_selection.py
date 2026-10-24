@@ -71,7 +71,7 @@ def select_targets(sites, groups, priorities, scene, settings, palette):
     # transmitting a round priority's reduced size to its partner as a factor.
     for group in groups:
         ids=group['site_ids']
-        if len(ids)!=2:continue
+        if len(ids)!=2 or not group.get('apply_square_bound', True):continue
         anchors=sorted(sid for sid in ids if sid in priority_ids)
         aid=anchors[0] if anchors else ids[0];bid=next(sid for sid in ids if sid!=aid)
         a,b=byid[aid],byid[bid]
@@ -108,7 +108,7 @@ def promote_round_priorities(sites, groups, priorities, scene, settings, targets
             if math.dist(s['center'],n['center'])-radius-targets[other] < settings.construction_gap+settings.safety:
                 blockers.append({'reason':'OTHER_FULL_ROUND_RESERVATION','source_id':other,'diameter_mm':2*targets[other]})
         for group in groups:
-            if len(group['site_ids'])!=2:continue
+            if len(group['site_ids'])!=2 or not group.get('apply_square_bound', True):continue
             aid,bid=group['square_anchor_id'],group['square_follower_id']
             if sid not in (aid,bid):continue
             a,b=byid[aid],byid[bid];ra=radius if sid==aid else targets[aid];rb=radius if sid==bid else targets[bid]
@@ -140,10 +140,9 @@ def promote_round_priorities(sites, groups, priorities, scene, settings, targets
         assert targets[sid]<=1.5*byid[sid]['radius']
     # Square bounds depend on the final enlarged A radius, not an earlier value.
     for group in groups:
-        if len(group['site_ids'])!=2:continue
+        if len(group['site_ids'])!=2 or not group.get('apply_square_bound', True):continue
         a,b=(byid[group[key]] for key in ['square_anchor_id','square_follower_id'])
         side=facing_square_side(inscribed_square(a['center'],targets[a['source_id']],orientation_degrees=settings.orientation),a['center'],b['center'])
         group['square_radius_bound_mm']=sum(side['normal'][j]*(b['center'][j]-a['center'][j]) for j in range(2))-settings.construction_gap-settings.safety-targets[a['source_id']]/math.sqrt(2)
     return accepted
-
 

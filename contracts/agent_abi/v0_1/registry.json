@@ -1,0 +1,223 @@
+{
+  "abi_version": "0.1",
+  "profiles": {
+    "t01_marked_area_fix_frozen": {
+      "artifact_dir": "out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11",
+      "artifacts": {
+        "audit": {
+          "path": "out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11/fresh_audit.json",
+          "sha256": "6ea39252f3ed73ad9eb5abf41674c6044d7f89987da5bbe05cf92ae6c4c430d0"
+        },
+        "policy": {
+          "path": "out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11/policy.json",
+          "sha256": "1b423537ba3987d6d5e94a6d8b120c9ebac13875f2fe462cbf602a9ed79a1140"
+        },
+        "receipt": {
+          "path": "out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11/publication_receipt.json",
+          "sha256": "8d4f549ecd9064d482951d3df056711fcb22c59336082e29127e77d85547ec9e"
+        },
+        "report": {
+          "path": "out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11/report.json",
+          "sha256": "111ae69c7fa983f9453e51442d9c6562a2b46ebea99980521d4071335ee4ac56"
+        },
+        "scene": {
+          "path": "out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11/t01_multicircle_crop.wkb",
+          "sha256": "073361e8f26c0127a218b4dfacfe9577937641c1c85d5d684f46f63dc075141d"
+        },
+        "selection": {
+          "path": "out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11/selection.json",
+          "sha256": "fd8439ce9c3cb8a8da8bb7f13ae29c5dc150e437f7f0aec3bbfb8661e0d6e26c"
+        }
+      },
+      "audit_sha256": "6ea39252f3ed73ad9eb5abf41674c6044d7f89987da5bbe05cf92ae6c4c430d0",
+      "claims": {
+        "engineering": "NOT_ESTABLISHED",
+        "manufacturing": "NOT_ESTABLISHED",
+        "owner_review": "ACCEPTED_VISUAL_CROP",
+        "t01_behavior": "PARTIAL_0_OF_3",
+        "technical_geometry": "PASS_FRESH_PROCESS_RETRIEVAL_AND_GEOMETRY_AUDIT"
+      },
+      "kind": "crop_run",
+      "label": "T01 new crop, marked-area corrections frozen for T02",
+      "owner_decision_id": "t01_marked_area_fix_freeze_20261025",
+      "policy_sha256": "1b423537ba3987d6d5e94a6d8b120c9ebac13875f2fe462cbf602a9ed79a1140",
+      "profile_id": "t01_marked_area_fix_frozen",
+      "publication_receipt_sha256": "8d4f549ecd9064d482951d3df056711fcb22c59336082e29127e77d85547ec9e",
+      "recipe_id": "t01_new_crop_marked_area_fix_v1",
+      "report_sha256": "111ae69c7fa983f9453e51442d9c6562a2b46ebea99980521d4071335ee4ac56",
+      "scene": {
+        "path": "out/crop_dynamic_tasks/t01_owner_corrected_20261025_v11/t01_multicircle_crop.wkb",
+        "sha256": "073361e8f26c0127a218b4dfacfe9577937641c1c85d5d684f46f63dc075141d"
+      },
+      "scene_sha256": "073361e8f26c0127a218b4dfacfe9577937641c1c85d5d684f46f63dc075141d",
+      "selection_sha256": "fd8439ce9c3cb8a8da8bb7f13ae29c5dc150e437f7f0aec3bbfb8661e0d6e26c",
+      "source": {
+        "path": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+        "sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0"
+      }
+    },
+    "t01_r1_spacing_rejected": {
+      "artifact_dir": "out/crop_dynamic_tasks/t01_r1_spacing_driven_20261024",
+      "artifacts": {
+        "decision": {
+          "path": "docs/crop_dynamic_tasks/amendments/T01_R1_20261024/DECISION.md",
+          "sha256": "bcf683e0d31ae569cee9d1a20e2471477119340bb7082be31204a67b222401d6"
+        },
+        "fresh_verification": {
+          "path": "out/crop_dynamic_tasks/t01_r1_spacing_driven_20261024/fresh_verification.json",
+          "sha256": "8be14d2849541d327eed5cbc15a07c87990e378a72a917d6098da210a2cfc553"
+        },
+        "owner_review": {
+          "path": "docs/crop_dynamic_tasks/amendments/T01_R1_20261024/OWNER_REVIEW.md",
+          "sha256": "6c7e94fbfc2e9d224082b411006bcbe4f8947b9279efca159fd344341b711587"
+        },
+        "policy": {
+          "path": "out/crop_dynamic_tasks/t01_r1_spacing_driven_20261024/frozen_policy.json",
+          "sha256": "85157972dfddfd9cd7c56ccf41fe97e173803838b6f22964e0dc1f979fa86861"
+        },
+        "run": {
+          "path": "out/crop_dynamic_tasks/t01_r1_spacing_driven_20261024/t01_r1_run.json",
+          "sha256": "84877662e340828cebf823fb1298005b07aba1ec2e93dd6317b57013568d7fdb"
+        },
+        "selection": {
+          "path": "out/crop_dynamic_tasks/t01_r1_spacing_driven_20261024/selection_and_priority_map.json",
+          "sha256": "3262519aa9ba8c9187b06df9505f3128e200033dd2d44f038899d298a85cbcf6"
+        }
+      },
+      "claims": {
+        "engineering": "NOT_ESTABLISHED",
+        "manufacturing": "NOT_ESTABLISHED",
+        "owner_review": "NOT_ACCEPTED_BY_OWNER",
+        "t01_behavior": "PARTIAL_0_OF_3",
+        "technical_geometry": "PASS_WITH_SCOPE_LIMITS"
+      },
+      "kind": "historical_r1",
+      "label": "T01-R1 spacing-driven historical candidate",
+      "owner_decision_id": "t01_r1_not_accepted_20261024",
+      "policy_sha256": "85157972dfddfd9cd7c56ccf41fe97e173803838b6f22964e0dc1f979fa86861",
+      "profile_id": "t01_r1_spacing_rejected",
+      "scene": null,
+      "source": {
+        "path": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+        "sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0"
+      }
+    },
+    "t01_round_priority_promotion": {
+      "artifact_dir": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3",
+      "artifacts": {
+        "audit": {
+          "path": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/fresh_audit.json",
+          "sha256": "87573f2d31ebbec9684f1cac74c7a965e07b1dc3782fa0d59daa694648020733"
+        },
+        "coverage": {
+          "path": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/round_priority_coverage.json",
+          "sha256": "cd41b4371b79419905bd0e6770cb40fb92927dc0aae04ae1d0ae5f2be988437a"
+        },
+        "policy": {
+          "path": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/policy.json",
+          "sha256": "b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be"
+        },
+        "receipt": {
+          "path": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/publication_receipt.json",
+          "sha256": "13f0e7269acdc1914be2f98d39c4d06599b01dc9fc0f81a837cf49057746cf2c"
+        },
+        "report": {
+          "path": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/report.json",
+          "sha256": "c96ddfd99e7fb1e582386ec3af6f5272bd74fe4eb4e0a4eb01526e7425d7be34"
+        },
+        "scene": {
+          "path": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/context.wkb",
+          "sha256": "08f8db9d4177b2a53eeec1ece64d1e1efd562c32c32fc42916682224aadf8ef0"
+        },
+        "selection": {
+          "path": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/selection.json",
+          "sha256": "5616d59d467831f6a2e66993e05bf49b293a1b8c9c1d13e05232ef94c895e445"
+        }
+      },
+      "audit_sha256": "87573f2d31ebbec9684f1cac74c7a965e07b1dc3782fa0d59daa694648020733",
+      "claims": {
+        "engineering": "NOT_ESTABLISHED",
+        "manufacturing": "NOT_ESTABLISHED",
+        "owner_review": "PENDING_OWNER_REVIEW",
+        "t01_behavior": "PARTIAL_0_OF_3",
+        "technical_geometry": "PASS_SCOPED_FRESH_CROP_AUDIT"
+      },
+      "kind": "crop_run",
+      "label": "T01 round-priority promotion experiment",
+      "owner_decision_id": "t01_round_priority_review_pending_20261024",
+      "policy_sha256": "b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be",
+      "profile_id": "t01_round_priority_promotion",
+      "recipe_id": "t01_round_priority_promotion_v1",
+      "report_sha256": "c96ddfd99e7fb1e582386ec3af6f5272bd74fe4eb4e0a4eb01526e7425d7be34",
+      "scene": {
+        "path": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/context.wkb",
+        "sha256": "08f8db9d4177b2a53eeec1ece64d1e1efd562c32c32fc42916682224aadf8ef0"
+      },
+      "scene_sha256": "08f8db9d4177b2a53eeec1ece64d1e1efd562c32c32fc42916682224aadf8ef0",
+      "selection_sha256": "5616d59d467831f6a2e66993e05bf49b293a1b8c9c1d13e05232ef94c895e445",
+      "source": {
+        "path": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+        "sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0"
+      }
+    },
+    "t01_visual_crop_accepted": {
+      "artifact_dir": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2",
+      "artifacts": {
+        "audit": {
+          "path": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2/fresh_audit.json",
+          "sha256": "cdc890a4baa12d69f08b3c80ab5e2625c443ec73b386c07358775ff97bec51e1"
+        },
+        "owner_scope": {
+          "path": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2/owner_scope.json",
+          "sha256": "e08d8f5593b051fad7e23b095bcdf40aabceedc619b78b3f582037123e00b94a"
+        },
+        "policy": {
+          "path": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2/policy.json",
+          "sha256": "1b084cb2366a08e356841ebe5b8890248ba0f75656280e174dee23af1f1fcf5f"
+        },
+        "receipt": {
+          "path": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2/publication_receipt.json",
+          "sha256": "e437289f3ce2f8a3255f2540ba57f6f9e012116bd02ad377fe973654018b0211"
+        },
+        "report": {
+          "path": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2/report.json",
+          "sha256": "c65f91a33cf6b6770da818bbe517da3c4b21eb4e2614fcd77af5935c4316fdb9"
+        },
+        "scene": {
+          "path": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2/context.wkb",
+          "sha256": "08f8db9d4177b2a53eeec1ece64d1e1efd562c32c32fc42916682224aadf8ef0"
+        },
+        "selection": {
+          "path": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2/selection.json",
+          "sha256": "33007307329d80561a6dfeb9b914e897be6dd8c4f250b7e4fc43ebba34a42d12"
+        }
+      },
+      "audit_sha256": "cdc890a4baa12d69f08b3c80ab5e2625c443ec73b386c07358775ff97bec51e1",
+      "claims": {
+        "engineering": "NOT_ESTABLISHED",
+        "manufacturing": "NOT_ESTABLISHED",
+        "owner_review": "ACCEPTED_VISUAL_CROP",
+        "t01_behavior": "PARTIAL_0_OF_3",
+        "technical_geometry": "PASS_SCOPED_FRESH_CROP_AUDIT"
+      },
+      "kind": "crop_run",
+      "label": "T01 owner-reviewed visual crop",
+      "owner_decision_id": "t01_visual_crop_acceptance_20261024",
+      "policy_sha256": "1b084cb2366a08e356841ebe5b8890248ba0f75656280e174dee23af1f1fcf5f",
+      "profile_id": "t01_visual_crop_accepted",
+      "recipe_id": "t01_diameter_classes_owner_review_v1",
+      "report_sha256": "c65f91a33cf6b6770da818bbe517da3c4b21eb4e2614fcd77af5935c4316fdb9",
+      "scene": {
+        "path": "out/crop_dynamic_tasks/t01_owner_review_20261024_v2/context.wkb",
+        "sha256": "08f8db9d4177b2a53eeec1ece64d1e1efd562c32c32fc42916682224aadf8ef0"
+      },
+      "scene_sha256": "08f8db9d4177b2a53eeec1ece64d1e1efd562c32c32fc42916682224aadf8ef0",
+      "selection_sha256": "33007307329d80561a6dfeb9b914e897be6dd8c4f250b7e4fc43ebba34a42d12",
+      "source": {
+        "path": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+        "sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0"
+      }
+    }
+  },
+  "schema": "cam-agent-abi-registry/0.1"
+}

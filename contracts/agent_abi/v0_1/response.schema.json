@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cam-agent-abi-response/0.1",
+  "title": "CAM Agent ABI v0.1 response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "abi_version",
+    "operation",
+    "status",
+    "result",
+    "error"
+  ],
+  "properties": {
+    "abi_version": {
+      "const": "0.1"
+    },
+    "operation": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "OK",
+        "NOT_RUN",
+        "REJECTED",
+        "FAIL"
+      ]
+    },
+    "result": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "error": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "OK"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object"
+          },
+          "error": {
+            "const": null
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "NOT_RUN"
+          },
+          "error": {
+            "const": null
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "REJECTED",
+              "FAIL"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "const": null
+          },
+          "error": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "OK"
+          },
+          "operation": {
+            "const": "cam_describe"
+          }
+        },
+        "required": [
+          "status",
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "required": [
+              "abi_version",
+              "transport",
+              "profile_ids",
+              "operations",
+              "boundaries"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "OK"
+          },
+          "operation": {
+            "const": "cam_inspect"
+          }
+        },
+        "required": [
+          "status",
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "required": [
+              "profile",
+              "source",
+              "owner_decision",
+              "evidence"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "OK"
+          },
+          "operation": {
+            "const": "cam_plan"
+          }
+        },
+        "required": [
+          "status",
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "required": [
+              "plan_id",
+              "status",
+              "profile_id",
+              "recipe_id",
+              "owner_decision_id",
+          "owner_decision_status",
+          "execution_authorization",
+              "scope",
+              "bindings",
+              "steps",
+              "execution_status",
+              "verification_status",
+              "write_scope"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "OK"
+          },
+          "operation": {
+            "const": "cam_compare"
+          }
+        },
+        "required": [
+          "status",
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "required": [
+              "status",
+              "compatibility",
+              "left_profile_id",
+              "right_profile_id",
+              "changed_site_count",
+              "changed_sites"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "OK"
+          },
+          "operation": {
+            "const": "cam_review"
+          }
+        },
+        "required": [
+          "status",
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "required": [
+              "profile",
+              "decision",
+              "review_artifacts",
+              "replay_status"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "NOT_RUN"
+          },
+          "operation": {
+            "enum": [
+              "cam_run",
+              "cam_verify"
+            ]
+          },
+          "error": {
+            "const": null
+          }
+        },
+        "required": [
+          "status",
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "required": [
+              "adapter_status",
+              "execution_status",
+              "verification_status",
+              "reason",
+              "side_effects"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
