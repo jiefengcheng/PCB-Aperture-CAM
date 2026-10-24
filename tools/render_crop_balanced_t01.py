@@ -27,8 +27,11 @@ def diameter_review(r,p,out,audit):
     content+='<p>'+''.join(f'<span style="display:inline-block;margin:4px;padding:5px 9px;background:{colors[i]};color:#152b40;border-radius:5px">Ø {diameter:.4f} · {counts[diameter]} sites</span>' for i,diameter in enumerate(p['diameter_classes_mm']))+f'<span> · {counts[None]} exact source target KEEPs; {sum(d['size_class']['category_mm'] is not None and d['added_area_mm2']<=1e-10 for d in r['decisions'])} class proposals add no copper after clipping</span></p>'
     content+=f'<p>Added copper: {comparison["previous_effective_added_union_mm2"]:.6f} → {r["effective_added_union_mm2"]:.6f} mm². {comparison["sites_with_more_added_area"]} sites gain more than before; {comparison["sites_with_less_added_area"]} gain less. The trial prioritizes common sizes; it does not promise that every site grows more.</p>'
     improved=sum(c['net_area_change_mm2']>1e-8 for c in marked)
-    content+=f'<p><strong>{improved} of your {len(marked)} marked sites now gain more copper. Any marked site with no area increase remains open; its full-round outline and protections are retained.</strong></p>'
-    content+='<h2>Your eight marked locations</h2><p>Each card uses the same local frame as its saved source-bound site view. “Diameter” describes the envelope before recessing.</p>'
+    if not p.get('owner_review_application'):
+        content+=f'<p><strong>{improved} of your {len(marked)} marked sites now gain more copper. Any marked site with no area increase remains open; its full-round outline and protections are retained.</strong></p>'
+    content+=f'<h2>Your {len(marked)} marked locations</h2><p>Each card uses the same local frame as its saved source-bound site view. “Diameter” describes the envelope before recessing.</p>'
+    if p.get('owner_review_application'):
+        content+='<p><strong>Owner review applied: S38 and S22 restored to their exact pre-promotion round contours; S08 grows with a square-guided recess toward S12.</strong> Reversions are requested corrections, not failed growth. Other target radii are frozen; related companion contours can readapt.</p>'
     controls={c['source_id']:c for c in audit.get('round_next_class_controls',[])}
     keyfor={d['source_id']:d['key'] for d in r['decisions']}
     for c in marked:
@@ -49,7 +52,7 @@ def diameter_review(r,p,out,audit):
             if control['round_blockers']:details.append('round reservations: '+', '.join(keyfor.get(b['source_id'],'source object')+f' (next-class gap {b["gap_mm"]:.6f} mm)' for b in control['round_blockers']))
             if control['square_blockers']:details.append('auxiliary square-side bounds: '+', '.join(b['group_id'] for b in control['square_blockers']))
             why=f'<h3>Why the next round size stops at Ø {control["diameter_mm"]:.4f} mm</h3><p>'+html.escape('; '.join(details))+f'.</p><img src="focus/{c["key"]}_next_round.svg" alt="Mark {c["annotation_number"]} rejected next round class"><p>Blue: rejected next circle. Green: selected round circle. Pink: new intrusion into the protected 0.020 mm gap. A square-side bound can reject a size without a visible copper collision. This is a rejected diagnostic, never accepted copper.</p>'
-        expanded=c['annotation_number']==(1 if p.get('round_promotion') else 6)
+        expanded=c['annotation_number']==(3 if p.get('owner_review_application') else 1 if p.get('round_promotion') else 6)
         content+=f'<details id="mark-{c["annotation_number"]}" {"open" if expanded else ""}><summary>Mark {c["annotation_number"]} · {c["key"]} · Ø {c["old_diameter_mm"]:.4f} → {c["new_diameter_mm"]:.4f} mm · area change {c["net_area_change_mm2"]:+.6f} mm²</summary><p>{reason}</p><div class="grid"><article><h2>Previous result</h2><img src="focus/{c["key"]}_previous.svg" alt="Mark {c["annotation_number"]} previous result"></article><article><h2>Current result and construction</h2><img src="focus/{c["key"]}_final.svg" alt="Mark {c["annotation_number"]} revised result"></article></div><p><a href="report.json">Source identity, dimensions, limits and consumed square sides</a></p>{why}</details>'
     return content
 
@@ -58,11 +61,13 @@ def publish(out):
     assert out.resolve().is_relative_to(ROOT/'out')
     r=json.loads((out/'report.json').read_bytes());p=json.loads((out/'policy.json').read_bytes());a=json.loads((out/'fresh_audit.json').read_bytes())
     class_mode=p['schema'].startswith('diameter-class-t01-trial-policy/')
-    expected={'diameter-class-t01-trial-policy/1':'c5605b67986dfb64a7cf1cf8400aa624547231e73145af0ea39e7fa1b9731397','diameter-class-t01-trial-policy/2':'b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be'}.get(p['schema'],POLICY_SHA)
+    expected={'diameter-class-t01-trial-policy/1':'c5605b67986dfb64a7cf1cf8400aa624547231e73145af0ea39e7fa1b9731397','diameter-class-t01-trial-policy/2':'b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be','diameter-class-t01-trial-policy/3':'1b084cb2366a08e356841ebe5b8890248ba0f75656280e174dee23af1f1fcf5f'}.get(p['schema'],POLICY_SHA)
     assert sha(out/'policy.json')==r['policy_sha256']==expected
     assert sha(ROOT/p['source'])==r['source_sha256']==p['source_sha256']
     assert sha(out/'selection.json')==r['selection_sha256']
     assert a['status']=='PASS_SCOPED_FRESH_CROP_AUDIT' and a['report_sha256']==sha(out/'report.json')
+    if p.get('owner_review_application'):
+        assert {row['key'] for row in a['owner_review_checks']}==set(p['marked_sites'])
     assert len(a['dynamic_cases'])==51 and all(not c['violations'] for c in a['dynamic_cases'])
     if p.get('round_promotion'):
         require_round_diagnostics(r,a)
@@ -154,7 +159,7 @@ def publish(out):
     matrix=[('Source coverage','51 sites / 53 source occurrences'),('Hard 1.5× ceiling','PASS on proposed radii and accepted contours'),('Local group balance',f'{len(r["groups"])} small groups; one factor per group'),('Round priorities',f'{r["priority_count"]} preserved; one per original physical component'),('Assembled source / gap checks','PASS · fresh-process full-source audit'),('Same-policy replay','Identical saved geometry hashes'),('Grown priority reservation responses',f'{r["reservation_response_later_sites"]} companions; reservations also exist in static comparator'),('Evolving companion adaptation',f'{causal} distinct later sites / target ≥3 — {criterion}'),('Static-neighbour comparison',f'{r["static_comparison"]["changed_sites"]} changed sites; {static_bad} static assembled violating sites'),('Owner decision','PENDING · pair approval was tentative')]
     if class_mode:
         matrix[2]=('Local size agreement','Shared physical diameter class per pair; clearance exceptions descend independently')
-        matrix[3]=('Round priorities',f'{r["priority_count"]} round reservations; S31 (earlier case 6) is an explicit square-guided recess exception')
+        matrix[3]=('Round priorities',f'{r["priority_count"]} round reservations; '+', '.join(p['square_guided_sites'])+' have owner-specific recess exceptions')
     desk='ChatGPT desk audit: NOT_RUN for this crop trial.'
     if (out/'chatgpt_desk_audit.json').exists():
         desk_audit=json.loads((out/'chatgpt_desk_audit.json').read_bytes());assert desk_audit['report_sha256']==sha(out/'report.json');desk='<a href="chatgpt_desk_audit.json">ChatGPT summary-only crop audit recorded</a>.'
@@ -177,9 +182,9 @@ body{font:16px/1.5 system-ui;background:#eaf0f5;color:#152b40;margin:0}main{max-
     page+=f'<details><summary>Evidence, limitations and historical comparison</summary><p>{desk}</p><p>Fresh same-author verification reopens all 17,849 original F.Cu records. Every grown candidate and counterfactual is checked against the full source; unchanged source sites have no new-copper gap test. It shares the native parser and geometry kernel. Source-derived trace-port exceptions are bounded and checked; physical contact is not a recovered electrical net.</p><p><a href="report.json">Execution receipt / every site and event</a> · <a href="fresh_audit.json">Fresh audit</a> · <a href="selection.json">Frozen groups and priorities</a> · <a href="policy.json">Predeclared policy</a> · <a href="SHA256SUMS">Checksums</a> · <a href="historical_t01.svg">Historical T01, different policy</a></p><p>No EDIT contours or calibration enter construction. Tentative visual approval does not establish full T01 acceptance, expert equivalence, native export, electrical or manufacturing qualification. Frozen T01/R1 evidence is preserved. No T02+ processing is run.</p></details>'
     if class_mode:
         page=page.replace('balanced, capped circle growth','shared diameter classes').replace('After · balanced capped result','After · shared diameter classes')
-        page=page.replace('round priorities</div>', 'round reservations + 1 recess exception</div>')
+        page=page.replace('round priorities</div>', f'round reservations + {len(p["square_guided_sites"])} recess exceptions</div>')
         page=page.replace('The balance groups are small disjoint neighbouring pairs plus singletons, not a transitive chain across the whole crop.', 'The size groups are small neighbouring pairs and singletons; common diameter is a preference, with explicit clearance exceptions.')
-        page=page.replace('Original physical components are tracked separately for round-priority ownership.', 'Original components are tracked separately; S31 retains the earlier owner-requested recess exception.')
+        page=page.replace('Original physical components are tracked separately for round-priority ownership.', 'Original components are tracked separately; owner-specific recess exceptions: '+', '.join(p['square_guided_sites'])+'.')
         page=page.replace('The reviewed pair is retained; crop-wide component reservations add constraints beyond that two-site illustration.', 'This is a new experimental sizing policy, not a fitted EDIT rule.')
         page=page.replace('<button onclick="mode(\'sites\')">Site IDs</button>', '<button onclick="mode(\'classes\')">Size classes</button><button onclick="mode(\'previous\')">Previous result</button><button onclick="mode(\'sites\')">Site IDs</button>')
     js=json.dumps(site_ui).replace('<','\\u003c')

@@ -95,4 +95,31 @@ class RoundDiagnosticPublicationTests(unittest.TestCase):
         for audit in [{},{'round_next_class_controls':[]},{'round_next_class_controls':[{'source_id':'A','diameter_mm':2.9,'source_case':{'violations':[]},'round_blockers':[],'square_blockers':[]}]}]:
             with self.assertRaises((KeyError,AssertionError)):require_round_diagnostics(report,audit)
 
+
+class OwnerReviewTests(unittest.TestCase):
+    def test_owner_neighbor_controls_recess_instead_of_larger_unrelated_conflict(self):
+        from shapely.geometry import Point
+        from src.crop_diameter_classes import square_guided_recess
+        site={'core':Point(0,0).buffer(1,quad_segs=128),'center':[0,0],'square_recess_neighbor_id':'owner'}
+        obstacles=[{'source_id':'owner','geometry':Point(1.8,0).buffer(.6,quad_segs=128),'port_zone':None},
+                   {'source_id':'other','geometry':Point(-1.75,0).buffer(.6,quad_segs=128),'port_zone':None}]
+        candidate,records=square_guided_recess(site,1.5,obstacles,CropSettings())
+        self.assertEqual(records[0]['source_id'],'owner')
+        with self.assertRaisesRegex(ValueError,'NO_ACTUAL_CONFLICT'):square_guided_recess(site,1.5,obstacles[1:],CropSettings())
+
+    def test_missing_second_recess_control_cannot_pass(self):
+        from tools.audit_crop_balanced_t01 import require_square_control
+        report={'square_disabled_controls':[{'key':'S31','source_id':'A','symmetric_difference_mm2':.1}],
+                'decisions':[{'key':'S31','source_id':'A','square_guided':True,'square_recesses':[{}]}]}
+        with self.assertRaises(AssertionError):require_square_control(report,['S31','S08'])
+
+    def test_changed_review_reference_is_rejected(self):
+        import tempfile
+        from pathlib import Path
+        from src.crop_diameter_classes import select_owner_review_targets
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);folder=root/'out/frozen';folder.mkdir(parents=True);(folder/'report.json').write_text('{}')
+            with self.assertRaisesRegex(ValueError,'HASH_MISMATCH'):
+                select_owner_review_targets(root,{'previous_bundle':'out/frozen','previous_report_sha256':'0'*64},[])
+
 if __name__=='__main__':unittest.main()

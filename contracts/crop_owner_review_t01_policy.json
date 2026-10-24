@@ -1,0 +1,77 @@
+{
+  "annotation_mapping": "Manual locator reconciliation from eight marked screenshots to unique circle centers in the bound ORG crop; marker locations are not executable identities. Source IDs/centers frozen in selection.",
+  "approved_pair": [
+    "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1539974:1540098",
+    "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540482:1540606"
+  ],
+  "area_epsilon": 1e-10,
+  "class_origin": "Provisional ORG-only palette, not manufacturing standards: source diameters near 0.24994 and 0.29998 mm, their midpoint rounded down to 0.2749; larger source rounded down to 0.2999; midpoint toward smaller 1.5x cap rounded down to 0.3374; cap bands rounded down to 0.3749/0.4499 mm. Tiny cap bands 0.0380/0.0761. No EDIT lookup.",
+  "comparison_only": "Whole-crop trial for review; preserve historical T01 acceptance and source evidence. No T02+ or manufacturing approval.",
+  "computational_envelope": "Union of immutable native core and inscribed polygonal buffer at the declared analytic radius. KEEP uses exact source core. Native polygon angular phase must not cause source shaving or a relaxed containment epsilon.",
+  "construction_gap": 0.02002,
+  "counterfactual": "For each later companion, restore only one earlier grown neighbor to original core; fixed target radius, other neighbors, ports, group and settings. Save changed geometry and context revision.",
+  "diameter_classes_mm": [
+    0.038,
+    0.0761,
+    0.2749,
+    0.2999,
+    0.3374,
+    0.3749,
+    0.4499
+  ],
+  "event_epsilon": 1e-08,
+  "expected_occurrences": 53,
+  "expected_unique_sites": 51,
+  "factor": "Superseded only for this new trial: use discrete shared physical diameters. A constrained priority may descend classes without shrinking its companion.",
+  "grouping": "Preserve reviewed pair first. Remaining disjoint competition pairs greedily by normalized center distance then stable IDs; unmatched sites are singletons. No transitive whole-crop common factor.",
+  "hard_factor": 1.5,
+  "hard_gap": 0.02,
+  "marked_sites": [
+    "S38",
+    "S22",
+    "S08"
+  ],
+  "orientation": -45,
+  "owner_balance_choice": "Local neighbouring groups with shared physical diameters; hard 1.5x per-site ceiling.",
+  "owner_feedback_file": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3/owner_review_annotations_20261024.json",
+  "owner_feedback_sha256": "c5e16f6c1d587d3ad71e507152f0fd55dd9647d9edac4ceb11a6f7ce361f9f33",
+  "owner_review_application": true,
+  "owner_tentative_approval": "Owner completed three annotations: S38/S22 violate nearby size consistency and both should reverse; owner clarified \"undo is fine.\" S08 should grow with a clear recess toward upper-left circle S12. No full-crop acceptance inferred.",
+  "pair_report_sha256": "3157719a095de4bce489b4ffa267c2f8a30d80fd0c71f2d34b232dd304bcbbcb",
+  "port_rule": "Fixed source-existing segment/arc contact zones using own cap 1.5*r0; no blanket same-component exemption.",
+  "previous_bundle": "out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3",
+  "previous_policy_sha256": "b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be",
+  "previous_report_sha256": "c96ddfd99e7fb1e582386ec3af6f5272bd74fe4eb4e0a4eb01526e7425d7be34",
+  "priority": "Retain previous round priorities except owner-specific S08 recess exception; preserve earlier S31 exception. S38/S22 stay round at their exact pre-promotion size.",
+  "priority_exception": "S31 remains the earlier exception; new specific S08 comment permits recess toward S12 and supersedes the earlier blanket full-round preference only at S08.",
+  "qsegs": 128,
+  "radius_multiplier": 1.5,
+  "required_actual_adapted_later_sites": 3,
+  "safety": 2e-05,
+  "schedule": "All priorities ascending source ID first, then remaining sites ascending source centroid Y,X,ID. Atomic live updates and rebuilt STRtree per acceptance.",
+  "schema": "diameter-class-t01-trial-policy/3",
+  "sizing": "Freeze all previous reviewed target radii, undo S38 and S22 to exact pre-promotion references, grow S08 to its highest admissible existing class and recess toward source-bound S12; reprocess live/frozen scenes with unchanged original core/port/gap/cap invariants. No new global promotion or maximality claim.",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "square_guided_sites": [
+    "S31",
+    "S08"
+  ],
+  "square_recess": "45 degree square from selected circular envelope. Choose one primary actual conflict by greatest optional-envelope overlap with protected-copper construction buffer (stable source ID ties); use nearest applicable point to choose square-facing side, remove only that optional outward lobe, then enforce every ordinary obstacle clearance. Not a square copper replacement.",
+  "square_recess_neighbors": {
+    "S08": "S12"
+  },
+  "static": "Same source, targets, order, factors, priorities grown and reserved, ports and buffers; companion neighbors frozen at source. Only accepted companion updates differ.",
+  "undo_reference_bundle": "out/crop_dynamic_tasks/t01_diameter_classes_20261024_v3",
+  "undo_reference_report_sha256": "7fe28da5bc57feeec7250026291836d66d34358b20b5c70d46932404879a8ac3",
+  "undo_sites": [
+    "S38",
+    "S22"
+  ],
+  "viewport_mm": [
+    1.2858444444444446,
+    -15.687077777777787,
+    4.508066666666666,
+    -12.975966666666665
+  ]
+}

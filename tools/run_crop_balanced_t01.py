@@ -44,7 +44,13 @@ def main(out, *, policy_path=POLICY, policy_sha=POLICY_SHA):
             if sid in square_guided_ids:
                 del priorities[component]
                 exceptions.append({'component_id':component,'source_id':sid,'reason':'OWNER_REQUESTED_SQUARE_GUIDED_RECESS','previous_round_priority':sid})
-        targets,size_records,limits=select_targets(sites,groups,priorities,initial,settings,p['diameter_classes_mm'])
+        if p.get('owner_review_application'):
+            from src.crop_diameter_classes import select_owner_review_targets
+            feedback=ROOT/p['owner_feedback_file'];assert sha(feedback)==p['owner_feedback_sha256']
+            shutil.copy2(feedback,out/'owner_annotations.json')
+            targets,size_records,groups,limits=select_owner_review_targets(ROOT,p,sites)
+        else:
+            targets,size_records,limits=select_targets(sites,groups,priorities,initial,settings,p['diameter_classes_mm'])
         if p.get('round_promotion'):
             from src.crop_diameter_classes import promote_round_priorities
             promotions=promote_round_priorities(sites,groups,priorities,initial,settings,targets,size_records)
@@ -57,6 +63,7 @@ def main(out, *, policy_path=POLICY, policy_sha=POLICY_SHA):
         'priority_exceptions':exceptions,'factor_limits':limits,'source_feasible_priority_factors':round_factors,
         'ports':{sid:{trace:to_wkb(zone,byte_order=1).hex() for trace,zone in ports.items()} for sid,ports in initial.ports.items()}}
     if size_records is not None:selection['size_classes']=size_records
+    if p.get('owner_review_application'):selection['owner_review_edits']=limits
     # Freeze identities, groups, factors and component priorities before either scene run.
     dump(out/'selection.json',selection)
     print('Frozen selection:',len(sites),'sites,',len(groups),'local groups,',len(priorities),'round priorities',flush=True)

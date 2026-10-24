@@ -38,13 +38,14 @@ def audit_diameter_contract(policy,selection,decisions):
         else:
             assert 2*radius in choices[sid] and size['category_mm']==2*radius and size['original_keep'] is False
 
-def require_square_control(report):
-    controls=report['square_disabled_controls']
-    assert len(controls)==1 and controls[0]['key']=='S31'
+def require_square_control(report, required_keys=('S31',)):
+    controls=report['square_disabled_controls'];assert len(controls)==len(required_keys)
+    assert {control['key'] for control in controls}==set(required_keys)
     decisions={d['source_id']:d for d in report['decisions']}
-    control=controls[0];d=decisions[control['source_id']]
-    assert d['key']=='S31' and d['square_guided'] and len(d['square_recesses'])==1
-    assert control['symmetric_difference_mm2']>1e-8
+    for control in controls:
+        d=decisions[control['source_id']]
+        assert d['key']==control['key'] and d['square_guided'] and len(d['square_recesses'])==1
+        assert control['symmetric_difference_mm2']>1e-8
 
 def main(out):
     assert out.resolve().is_relative_to(ROOT/'out')
@@ -52,7 +53,8 @@ def main(out):
     assert sha(out/'policy.json')==r['policy_sha256'] and sha(out/'selection.json')==r['selection_sha256']
     expected_policies={'balanced-t01-crop-trial-policy/2':'b7b2063cdeadac5ccb1fe44ab872a596428f7a2caaa7d2dacbcd72c392605f59',
                       'diameter-class-t01-trial-policy/1':'c5605b67986dfb64a7cf1cf8400aa624547231e73145af0ea39e7fa1b9731397',
-                      'diameter-class-t01-trial-policy/2':'b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be'}
+                      'diameter-class-t01-trial-policy/2':'b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be',
+                      'diameter-class-t01-trial-policy/3':'1b084cb2366a08e356841ebe5b8890248ba0f75656280e174dee23af1f1fcf5f'}
     assert r['policy_sha256']==expected_policies[policy['schema']]
     assert policy['hard_factor']==1.5 and r['groups']==selection['groups']
     for name,h in r['code_sha256'].items():assert sha(out/'review_source'/name)==h
@@ -65,15 +67,17 @@ def main(out):
     assert len(sites)==len(decisions)==51 and sum(len(s['aliases']) for s in sites.values())==53
     alias={a:sid for sid,s in sites.items() for a in s['aliases']};priority=set(selection['priorities_by_physical_component'].values())
     if policy['schema'].startswith('diameter-class-t01-trial-policy/'):
-        assert len(priority)==25 and len(selection['priority_exceptions'])==1
-        exception=selection['priority_exceptions'][0]
-        assert exception['reason']=='OWNER_REQUESTED_SQUARE_GUIDED_RECESS'
-        assert decisions[exception['source_id']]['key']=='S31' and decisions[exception['source_id']]['square_guided'] is True
+        expected_exceptions=set(policy['square_guided_sites'])
+        assert len(priority)==26-len(expected_exceptions) and len(selection['priority_exceptions'])==len(expected_exceptions)
+        assert {decisions[e['source_id']]['key'] for e in selection['priority_exceptions']}==expected_exceptions
+        for exception in selection['priority_exceptions']:
+            assert exception['reason']=='OWNER_REQUESTED_SQUARE_GUIDED_RECESS'
+            assert decisions[exception['source_id']]['square_guided'] is True
         assert len({s['physical_contact_group'] for s in sites.values()})==26
     else:assert len(priority)==26 and not selection['priority_exceptions']
     if policy['schema'].startswith('diameter-class-t01-trial-policy/'):
         audit_diameter_contract(policy,selection,decisions)
-        require_square_control(r)
+        require_square_control(r,policy['square_guided_sites'])
         assert r['diameter_classes_mm']==policy['diameter_classes_mm']
         assert all(d['size_class']==selection['size_classes'][sid] for sid,d in decisions.items())
     else:
@@ -83,6 +87,30 @@ def main(out):
     geometries={sid:saved[d['geometry']['dynamic']] for sid,d in decisions.items()}
     statics={sid:saved[d['geometry']['static']] for sid,d in decisions.items()}
     core={sid:saved[d['geometry']['core']] for sid,d in decisions.items()}
+    owner_checks=[]
+    if policy.get('owner_review_application'):
+        previous_dir=ROOT/policy['previous_bundle'];undo_dir=ROOT/policy['undo_reference_bundle']
+        assert sha(previous_dir/'report.json')==policy['previous_report_sha256']
+        assert sha(undo_dir/'report.json')==policy['undo_reference_report_sha256']
+        assert sha(out/'owner_annotations.json')==policy['owner_feedback_sha256']
+        previous=json.loads((previous_dir/'report.json').read_bytes());undo=json.loads((undo_dir/'report.json').read_bytes())
+        previous_keys={item['key']:item for item in previous['decisions']};undo_keys={item['key']:item for item in undo['decisions']}
+        for sid,d in decisions.items():
+            key=d['key'];old=previous_keys[key];assert sid==old['source_id']
+            if key in policy['undo_sites']:
+                reference=undo_keys[key];path=undo_dir/reference['geometry']['dynamic']
+                assert sha(path)==undo['geometry_sha256'][reference['geometry']['dynamic'][:-4]]
+                assert sid==reference['source_id'] and d['proposed_radius_mm']==reference['proposed_radius_mm']
+                assert geometries[sid].equals_exact(from_wkb(path.read_bytes()),0)
+                assert d['priority'] is True
+                owner_checks.append({'key':key,'status':'EXACT_PRE_PROMOTION_CONTOUR_RESTORED','diameter_mm':2*d['proposed_radius_mm'],'reference_report_sha256':policy['undo_reference_report_sha256']})
+            elif key in policy['square_recess_neighbors']:
+                neighbor_key=policy['square_recess_neighbors'][key]
+                neighbor=next(item['source_id'] for item in decisions.values() if item['key']==neighbor_key)
+                assert d['proposed_radius_mm']>old['proposed_radius_mm'] and d['square_guided'] and not d['priority']
+                assert len(d['square_recesses'])==1 and d['square_recesses'][0]['source_id']==neighbor
+                owner_checks.append({'key':key,'status':'LARGER_ENVELOPE_AND_REQUESTED_NEIGHBOR_RECESS','neighbor_key':neighbor_key,'diameter_mm':2*d['proposed_radius_mm']})
+            else:assert d['proposed_radius_mm']==old['proposed_radius_mm'],'UNAUTHORIZED_TARGET_RADIUS_CHANGE'
     for sid,s in sites.items():
         d=decisions[sid];candidate=geometries[sid];radius=d['proposed_radius_mm']
         assert original[sid].equals_exact(core[sid],0)
@@ -189,7 +217,7 @@ def main(out):
     square_controls=[]
     for control in r.get('square_disabled_controls',[]):
         sid=control['source_id'];d=decisions[sid];s=sites[sid]
-        assert d['square_guided'] and d['key']=='S31' and sid not in priority
+        assert d['square_guided'] and d['key'] in policy['square_guided_sites'] and sid not in priority
         assert control['input_revision']==d['input_revision']
         prior={item['source_id']:geometries[item['source_id']] for item in ordered[:d['input_revision']]}
         plain=saved[control['disabled_wkb']];delta=plain.symmetric_difference(geometries[sid]).area
@@ -205,6 +233,11 @@ def main(out):
             if row['id'] in selection['ports'][sid]:exclusion=exclusion.difference(from_wkb(bytes.fromhex(selection['ports'][sid][row['id']])))
             exclusions[canonical]=exclusion
         conflicts=[(optional.intersection(exclusion).area,key,exclusion) for key,exclusion in exclusions.items() if optional.intersection(exclusion).area>policy['event_epsilon']]
+        preferred_key=policy.get('square_recess_neighbors',{}).get(d['key'])
+        if preferred_key:
+            preferred=next(item['source_id'] for item in r['decisions'] if item['key']==preferred_key)
+            conflicts=[item for item in conflicts if item[1]==preferred]
+            assert conflicts,'REQUIRED_OWNER_RECESS_NEIGHBOR_NOT_IN_CONFLICT'
         area,neighbor,excluded=sorted(conflicts,key=lambda item:(-item[0],item[1]))[0]
         point=nearest_points(Point(*s['center']),excluded)[1]
         square=saved[d['geometry']['square']];corners=list(square.exterior.coords)[:4]
@@ -250,6 +283,7 @@ def main(out):
         'scope':'Same-author fresh-process verifier; shared native parser and geometry kernel. No constructor, trial runner, or source-scene spatial index imported.',
         'coverage':{'unique_sites':51,'occurrences':53,'full_source_fcu_records':17849,'priority_sites':len(priority)},
         'priority_exceptions':selection['priority_exceptions'],
+        'owner_review_checks':owner_checks,
         'dynamic_cases':dynamic_cases,'static_comparator_cases':static_cases,'counterfactual_cases':event_cases,
         'square_disabled_controls':square_controls,
         'round_next_class_controls':round_controls,

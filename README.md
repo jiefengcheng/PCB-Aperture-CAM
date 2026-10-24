@@ -13,7 +13,19 @@ For a new dataset with no existing qualified package recipe, start with the [gen
 
 This gate establishes file custody and identity only. It does not parse or qualify dataset contents or extract board objects. It seals a registration recipe so **+** can add the profile to the workbench; qualification remains a separate step and stays `NOT_RUN` until actually performed. Follow the [profiling-to-workbench steps](docs/okf/ingestion/general-profiling.md#continue-into-the-workbench) to verify the package, run the local server, and add the generated directory.
 
-## Current T01 review: recover growth while keeping priorities round
+## Current T01 review: owner corrections
+
+The [owner-correction guide](docs/crop_dynamic_tasks/T01_OWNER_CORRECTIONS.md)
+records the exact undo of S38/S22 and the larger S08 envelope with a recess toward
+S12. Other target radii remain frozen. Geometry checks pass; T01 remains
+**PARTIAL**, awaiting owner review and with zero evolving-companion events.
+
+```bash
+.venv/bin/python tools/run_crop_diameter_classes_t01.py --apply-owner-review --output out/crop_dynamic_tasks/t01_owner_review_replay_01
+.venv/bin/python -m http.server 8783 --bind 127.0.0.1 --directory out/crop_dynamic_tasks/t01_owner_review_20261024_v2
+```
+
+## Earlier T01 review: recover growth while keeping priorities round
 
 The [full-round growth review](docs/crop_dynamic_tasks/T01_FULL_ROUND_GROWTH_REVIEW.md)
 implements the owner's latest choice to keep all eight newly marked priorities
