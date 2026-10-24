@@ -42,10 +42,13 @@ from src.native_inventory import inventory  # noqa: E402
 ORG_REL = Path("dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb")
 EXPECTED_ORG_SHA = "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0"
 EXPECTED_BASELINE_COMMIT = "ee619a01be1f6b8d4088380b5234f06f7d33fefa"
+EXPECTED_REJECTED_SLICE_COMMIT = "0172c7d7d633adef60daf3b9f47afbac8de6e293"
 EXPECTED_FROZEN_T01_SHA = "e8685dfa1a315c0c25ec60c3e0431415e120ccff8819752bf9d7976a46eeab70"
-EVIDENCE = ROOT / "out/crop_dynamic_tasks/t01_r1"
-INPUTS = EVIDENCE / "input_references"
+EVIDENCE = ROOT / "out/crop_dynamic_tasks/t01_r1_edit_calibrated"
+INPUTS = ROOT / "out/crop_dynamic_tasks/t01_r1/input_references"
 OLD_EVIDENCE = ROOT / "out/crop_dynamic_tasks/t01"
+EDIT_REL = Path("dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/EDIT/top_layer.kicad_pcb")
+EXPECTED_EDIT_SHA = "ec141305a9d93db87709124ba5aa9378135485ae5458f019e47a342d099496a5"
 ZIP_SHA = "70c320a1e3f59a0422faa2ce0e11677da599effd4340f8744940f139ffc115de"
 REFERENCE_SHAS = {
     "01_missed_candidates.png": "707c3aa1ae3273b0aeb24657c9cad59bcff0638fde2fb4a0e5ef93fcf07c7a0a",
@@ -386,14 +389,35 @@ def main() -> None:
     if source_sha != EXPECTED_ORG_SHA:
         raise SystemExit(f"ORG_SOURCE_HASH_MISMATCH:{source_sha}")
     commit = current_commit()
-    if commit != EXPECTED_BASELINE_COMMIT:
-        raise SystemExit(f"REPORTED_BASELINE_CHANGED:{commit}")
+    for anchor, label in ((EXPECTED_BASELINE_COMMIT, "HISTORICAL_BASELINE"),
+                          (EXPECTED_REJECTED_SLICE_COMMIT, "REJECTED_SLICE")):
+        if subprocess.run(["git", "merge-base", "--is-ancestor", anchor, commit], cwd=ROOT).returncode:
+            raise SystemExit(f"{label}_COMMIT_NOT_ANCESTOR:{commit}")
+    subprocess.run([sys.executable, "tools/calibrate_t01_edit_growth_range.py"], cwd=ROOT, check=True)
+    calibration_path = EVIDENCE / "edit_range_calibration.json"
+    calibration_bytes = calibration_path.read_bytes()
+    calibration = json.loads(calibration_bytes)
+    edit_sha = sha((ROOT / EDIT_REL).read_bytes())
+    if (calibration["org_sha256"] != source_sha or calibration["edit_sha256"] != edit_sha or
+            edit_sha != EXPECTED_EDIT_SHA or calibration["exact_center_unique_match_count"] != 46 or
+            calibration["unmatched_org_count"] != 5 or calibration["ambiguous_org_count"] != 0):
+        raise SystemExit("EDIT_RANGE_CALIBRATION_BINDING_OR_CENSUS_FAILED")
+    calibrated_radius_limits = {float(row["org_radius_class_mm"]):
+                                float(row["frozen_constructor_max_final_radius_mm"])
+                                for row in calibration["class_ranges"]}
+    if calibrated_radius_limits != {0.12497: 0.14505999999999952,
+                                    0.14999: 0.17012000000000027}:
+        raise SystemExit(f"UNEXPECTED_EDIT_RADIUS_LIMITS:{calibrated_radius_limits}")
     old_receipt_bytes = (OLD_EVIDENCE / "t01_run.json").read_bytes()
     if sha(old_receipt_bytes) != EXPECTED_FROZEN_T01_SHA:
         raise SystemExit("FROZEN_T01_RECEIPT_HASH_MISMATCH")
     refs = {name: sha((INPUTS / name).read_bytes()) for name in REFERENCE_SHAS}
     if refs != REFERENCE_SHAS:
         raise SystemExit(f"OWNER_REFERENCE_HASH_MISMATCH:{refs}")
+    copied_inputs = EVIDENCE / "input_references"
+    copied_inputs.mkdir(parents=True, exist_ok=True)
+    for name in REFERENCE_SHAS:
+        (copied_inputs / name).write_bytes((INPUTS / name).read_bytes())
     inv, scope = frozen_scope(source)
     if scope["target_occurrence_count"] != 53 or scope["unique_geometry_site_count"] != 51:
         raise SystemExit(f"UNEXPECTED_PRE_RUN_DENOMINATOR:{scope['target_occurrence_count']}:{scope['unique_geometry_site_count']}")
@@ -403,8 +427,19 @@ def main() -> None:
         raise SystemExit(f"UNEXPECTED_FROZEN_T01_MANIFEST_STATE:{manifest_paths}")
 
     policy = {
-        "schema": "crop-dynamic-t01-r1-policy/1",
+        "schema": "crop-dynamic-t01-r1-edit-calibrated-policy/1",
         "source_sha256": source_sha,
+        "edit_calibration_path": str(calibration_path.relative_to(ROOT)),
+        "edit_calibration_sha256": sha(calibration_bytes),
+        "edit_sha256": edit_sha,
+        "edit_calibration_status": calibration["status"],
+        "calibrated_radius_limits_mm": {str(key): value for key, value in calibrated_radius_limits.items()},
+        "same_job_calibration_counts": {"unique_org_sites": calibration["org_unique_supported_circle_count"],
+            "unique_edit_sites": calibration["edit_unique_supported_circle_count"],
+            "matched": calibration["exact_center_unique_match_count"],
+            "unmatched_unchanged": calibration["unmatched_org_count"],
+            "ambiguous": calibration["ambiguous_org_count"]},
+        "implementation_run_base_commit": commit,
         "historical_baseline_commit": EXPECTED_BASELINE_COMMIT,
         "historical_frozen_t01_receipt_sha256": EXPECTED_FROZEN_T01_SHA,
         "viewport_mm": list(V_BOUNDS),
@@ -419,7 +454,8 @@ def main() -> None:
             "inventory_precision_mm": ERROR_MM,
             "curve_quad_segs": QUAD_SEGS,
             "nominal_construction_buffer_is_not_final_clearance": True,
-            "EDIT_used_for_construction": False,
+            "EDIT_geometry_passed_to_constructor": False,
+            "EDIT_used_in_separate_range_calibration": True,
             "smoothing": "none"},
         "implementation_sha256": sha((ROOT / "src/crop_dynamic_t01_r1.py").read_bytes()),
         "handoff_sha256": sha((ROOT / "docs/crop_dynamic_tasks/amendments/T01_R1_20261024/T01_R1_AMENDMENT_HANDOFF.md").read_bytes()),
@@ -437,7 +473,7 @@ def main() -> None:
 
     # Main run begins only after the exact target census and shared policy are
     # persisted and hash-bound.
-    result = run(source)
+    result = run(source, calibrated_radius_limits=calibrated_radius_limits)
     geometry_dir = EVIDENCE / "geometry"
     geometry_dir.mkdir(exist_ok=True)
     geometry_payloads = {}
@@ -468,7 +504,8 @@ def main() -> None:
         "source_path": str(ORG_REL),
         "source_sha256": source_sha,
         "run": result,
-        "status": {"task_execution": "COMPLETE", "technical_checks": "PENDING"}}
+        "status": {"task_execution": "COMPLETE", "technical_checks": "PENDING",
+            "owner_acceptance": "NOT_ACCEPTED"}}
     # Do not carry WKB hex in the durable receipt; the files have explicit hashes.
     result["geometry_payloads"] = {key: sha(value) for key, value in geometry_payloads.items()}
     write_json(EVIDENCE / "t01_r1_run.json", receipt)
@@ -511,7 +548,7 @@ def build_report(result, policy_sha, render, manifest_audit):
     count_by_disposition = Counter(row["prior_disposition"] for row in result["target_occurrences"])
     count_by_decision = Counter(row["decision"] for row in result["decisions"])
     return "\n".join([
-        "# T01-R1 crop run",
+        "# T01-R1 EDIT-range-calibrated crop run",
         "",
         f"- Status: `RUN COMPLETE; TECHNICAL VERIFICATION PENDING`",
         f"- ORG SHA-256: `{result['source_sha256']}`",
@@ -520,14 +557,15 @@ def build_report(result, policy_sha, render, manifest_audit):
         f"- Full source-bound target scope: {result['target_occurrence_count']} circular occurrences, {result['target_site_count']} unique geometries; {len(result['priority_sites_by_component'])} complete ORG physical components receive a round priority.",
         f"- Previous dispositions in the new denominator: `{dict(count_by_disposition)}`.",
         f"- New decisions: `{dict(count_by_decision)}`; no target is excluded solely by diameter or display-edge crossing.",
-        f"- W' is the union of each complete source circle's 0.20 mm local growth envelope; H' extends each by 0.025 mm construction allowance plus 0.00001 mm inventory precision. No viewport-clipped writing.",
+        f"- EDIT calibration: {result['policy']['calibrated_radius_limits_mm']}; 46 unique-center matches set class maximum final radii, and 5 unmatched ORG sites remain unchanged. Same-job range calibration only; no blind generalization.",
+        f"- Per-site radial growth is bounded by its matched ORG radius class, with a maximum observed reach of {MAX_GROWTH_REACH_MM:.5f} mm; uncalibrated sites have zero reach. H' extends the per-site range by 0.025 mm construction allowance plus 0.00001 mm inventory precision. No viewport-clipped writing.",
         f"- Construction buffer: 0.025 mm; experimental hard separation remains 0.020 mm with 0.00001 mm tolerance. The buffer is not a final-clearance claim.",
         f"- Dynamic neighbor adaptations: {result['dynamic_adaptation_event_count']}; controlled single-neighbor counterfactuals: {len(result['controlled_counterfactuals'])}.",
         f"- Same-seed open/crowded control: `{result['same_seed_space_control']['status']}`.",
         f"- Smaller-roomier/larger-crowded real-crop relation: `{result['smaller_roomier_vs_larger_crowded']['status']}`.",
         f"- Minimum raw dynamic optional gap: `{result['minimum_dynamic_optional_gap_mm']}` mm, pair `{result['minimum_dynamic_gap_pair_source_ids']}`; violations: {len(result['dynamic_hard_gap_violations'])}.",
         f"- Explicit source-existing attachment-port contact violations outside the bounded port zones: {len(result['attached_trace_port_violations'])}.",
-        f"- Growth touched the shared reach cap at {sum(row['growth_cap_touched'] for row in result['decisions'])} sites; was limited by the cap alone at {sum(row['growth_cap_only_limiter'] for row in result['decisions'])} sites.",
+        f"- Growth touched its per-site EDIT-calibrated reach cap at {sum(row['growth_cap_touched'] for row in result['decisions'])} sites; the cap alone was the limiting factor at {sum(row['growth_cap_only_limiter'] for row in result['decisions'])} sites.",
         f"- Priority outline failures: {sum(row['status'] != 'ROUND_OUTLINE_PRESERVED' for row in result['priority_outline_checks'])}; exceptions: {len(result['priority_exceptions'])}.",
         f"- Fair static comparison uses the same source sites, priorities, ports, gap buffers, reach, schedule and geometry kernel; only evolving-neighbor updates are disabled.",
         f"- Existing T01 geometry/WKB manifest: {sum(r['status']=='PASS' for r in manifest_audit['checks'])}/{len(manifest_audit['checks'])} entries match; preserved mismatch: `{manifest_audit['mismatch_paths']}`. This run rebuilds frozen T01 from its verified source geometry artifacts, not the mismatched PNG.",
@@ -555,7 +593,7 @@ def build_owner_site_details(result, geometry_payloads, source_inv):
         core = from_wkb(source_inv["payloads"][source_row["geometry_sha256"]])
         growth = candidate.difference(core)
         cx, cy = decision["center_mm"]
-        reach = MAX_GROWTH_REACH_MM + decision["original_radius_mm"] + CONSTRUCTION_BUFFER_MM
+        reach = decision["maximum_growth_reach_mm"] + decision["original_radius_mm"] + CONSTRUCTION_BUFFER_MM
         directional = []
         for sector in range(8):
             start = sector * 45.0
@@ -576,6 +614,8 @@ def build_owner_site_details(result, geometry_payloads, source_inv):
             "priority_site_id": decision["priority_site_id"],
             "center_mm": decision["center_mm"],
             "original_radius_mm": decision["original_radius_mm"],
+            "calibrated_org_radius_class_mm": decision["calibrated_org_radius_class_mm"],
+            "maximum_final_radius_mm": decision["maximum_final_radius_mm"],
             "original_area_mm2": decision["original_area_mm2"],
             "final_effective_area_mm2": decision["final_effective_area_mm2"],
             "added_area_mm2": decision["added_area_mm2"],

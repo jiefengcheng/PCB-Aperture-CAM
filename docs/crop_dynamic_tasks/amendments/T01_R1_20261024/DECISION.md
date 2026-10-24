@@ -1,6 +1,8 @@
 # T01-R1 local completion decision
 
-**Status: PASS WITH SCOPE LIMITS**
+**Owner acceptance: NOT ACCEPTED.** The earlier local technical status below does not establish that the delivered enlargement fits the EDIT-implied range.
+
+**Correction status:** range-bounded replacement run prepared for review; acceptance remains `NOT_ACCEPTED`. See [OWNER_REVIEW.md](OWNER_REVIEW.md) and the new, separately bound evidence at `out/crop_dynamic_tasks/t01_r1_edit_calibrated/`. The completion result below describes the superseded 0.20 mm run only and is retained as historical evidence.
 
 **Baseline:** `ee619a01be1f6b8d4088380b5234f06f7d33fefa`
 

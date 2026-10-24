@@ -15,29 +15,28 @@ from src.crop_dynamic_t01_r1 import (
 class CropDynamicT01R1GeometryTests(unittest.TestCase):
     def test_same_seed_uses_more_space_when_neighbor_is_removed(self):
         core = Point(0, 0).buffer(0.10, quad_segs=64)
-        obstacle = Point(0.29, 0).buffer(0.12, quad_segs=64)
-        crowded = grow_in_available_space(core, [("right-neighbor", obstacle, "circle_neighbor")])
-        open_space = grow_in_available_space(core, [])
+        obstacle = Point(0.26, 0).buffer(0.12, quad_segs=64)
+        crowded = grow_in_available_space(core, [("right-neighbor", obstacle, "circle_neighbor")], reach_mm=0.02)
+        open_space = grow_in_available_space(core, [], reach_mm=0.02)
 
-        self.assertAlmostEqual(MAX_GROWTH_REACH_MM, 0.20)
+        self.assertAlmostEqual(MAX_GROWTH_REACH_MM, 0.02013)
         self.assertGreater(open_space["area_delta_mm2"], crowded["area_delta_mm2"])
         self.assertGreater(open_space["candidate"].symmetric_difference(crowded["candidate"]).area, 1e-5)
         self.assertTrue(crowded["limiting_obstacles"])
 
     def test_smaller_roomy_site_can_finish_larger_than_larger_crowded_site(self):
-        smaller = Point(0, 0).buffer(0.05, quad_segs=64)
+        smaller = Point(0, 0).buffer(0.11, quad_segs=64)
         larger = Point(1, 0).buffer(0.12, quad_segs=64)
-        roomy = grow_in_available_space(smaller, [])
-        # A bounded annular neighboring copper obstacle leaves only 0.005 mm
-        # of radial room after the shared 0.025 mm construction buffer.
-        crowded_ring = Point(1, 0).buffer(0.18, quad_segs=64).difference(
+        roomy = grow_in_available_space(smaller, [], reach_mm=0.02)
+        # The buffered annulus closes the larger site's calibrated 0.02 mm reach.
+        crowded_ring = Point(1, 0).buffer(0.19, quad_segs=64).difference(
             Point(1, 0).buffer(0.15, quad_segs=64))
         crowded_obstacles = [("crowded-annular-neighbor", crowded_ring, "protected_copper")]
-        crowded = grow_in_available_space(larger, crowded_obstacles)
+        crowded = grow_in_available_space(larger, crowded_obstacles, reach_mm=0.02)
 
         roomy_max_radius = max(Point(0, 0).distance(Point(x, y)) for x, y in roomy["candidate"].exterior.coords)
         crowded_max_radius = max(Point(1, 0).distance(Point(x, y)) for x, y in crowded["candidate"].exterior.coords)
-        self.assertLess(0.05, 0.12)
+        self.assertLess(0.11, 0.12)
         self.assertGreater(roomy_max_radius, crowded_max_radius)
         self.assertTrue(crowded["limiting_obstacles"])
 
@@ -81,6 +80,12 @@ class CropDynamicT01R1GeometryTests(unittest.TestCase):
         self.assertAlmostEqual(CONSTRUCTION_BUFFER_MM, 0.025)
         self.assertAlmostEqual(HARD_GAP_MM, 0.020)
         self.assertGreater(CONSTRUCTION_BUFFER_MM, HARD_GAP_MM)
+
+    def test_uncalibrated_site_has_zero_growth_reach(self):
+        core = Point(0, 0).buffer(0.03, quad_segs=64)
+        result = grow_in_available_space(core, [], reach_mm=0.0)
+        self.assertEqual(result["area_delta_mm2"], 0.0)
+        self.assertTrue(result["candidate"].equals(core))
 
 
 if __name__ == "__main__":

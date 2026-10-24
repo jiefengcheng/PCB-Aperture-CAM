@@ -21,11 +21,12 @@ from .native_reference import one
 
 V_BOUNDS = (1.2858444444444446, -15.687077777777787,
             4.508066666666666, -12.975966666666665)
-MAX_GROWTH_REACH_MM = 0.20
+RADIUS_CLASS_MATCH_TOLERANCE_MM = 0.00002
+MAX_GROWTH_REACH_MM = 0.02013  # observed maximum from same-job calibration; policy binds calibration receipt
 HARD_GAP_MM = 0.020
 GAP_TOLERANCE_MM = 0.00001
 CONSTRUCTION_BUFFER_MM = 0.025
-PORT_EXTENSION_MM = 0.060
+PORT_EXTENSION_MM = MAX_GROWTH_REACH_MM
 PORT_LATERAL_MARGIN_MM = 0.005
 ROUND_OUTLINE_TOLERANCE_MM = 2 * ERROR_MM
 AREA_EPSILON_MM2 = 1e-10
@@ -68,14 +69,14 @@ def _source_width(source: bytes, row: dict) -> float | None:
     return float(match.group(1)) if match else None
 
 
-def _port_zone(core, trace, trace_width: float | None):
+def _port_zone(core, trace, trace_width: float | None, reach_mm=MAX_GROWTH_REACH_MM):
     """Bound one source-existing attachment port close to its land core."""
     if not trace.intersects(core.buffer(1e-7, quad_segs=QUAD_SEGS)):
         return None
     lateral = max(PORT_LATERAL_MARGIN_MM,
                   (trace_width or 0.0) / 2 + PORT_LATERAL_MARGIN_MM)
     local = trace.buffer(lateral, quad_segs=QUAD_SEGS).intersection(
-        core.buffer(PORT_EXTENSION_MM, quad_segs=QUAD_SEGS))
+        core.buffer(reach_mm, quad_segs=QUAD_SEGS))
     return local if not local.is_empty else None
 
 
@@ -200,8 +201,13 @@ def _area_summary(decisions, geometries):
     }
 
 
-def run(source: bytes, *, dynamic: bool = True) -> dict:
-    """Run revised crop scope over full ORG geometries; EDIT is not accepted."""
+def run(source: bytes, *, dynamic: bool = True,
+        calibrated_radius_limits) -> dict:
+    """Run ORG construction under frozen EDIT-calibrated class bounds.
+
+    The constructor accepts only class-level upper bounds, never EDIT geometry
+    or per-site EDIT measurements.
+    """
     inv = inventory(source)
     viewport = box(*V_BOUNDS)
     fcu_rows = []
@@ -234,9 +240,18 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
         primary = aliases[0]
         core = geom_by_hash[geometry_hash]
         center, radius, round_error = _circle_metrics(core)
+        radius_class = min(calibrated_radius_limits,
+            key=lambda value: abs(value-radius), default=None)
+        if radius_class is not None and abs(radius_class-radius) > RADIUS_CLASS_MATCH_TOLERANCE_MM:
+            radius_class = None
+        maximum_final_radius = calibrated_radius_limits[radius_class] if radius_class is not None else radius
+        growth_reach = max(0.0, maximum_final_radius-radius) if radius_class is not None else 0.0
         sites.append({"site_id": primary, "source_ids": aliases,
                       "geometry_sha256": geometry_hash, "core": core,
                       "center": center, "radius_mm": radius,
+                      "radius_class_mm": radius_class,
+                      "maximum_final_radius_mm": maximum_final_radius,
+                      "growth_reach_mm": growth_reach,
                       "diameter_mm": radius * 2, "roundness_error_mm": round_error,
                       "indexes": indexes})
     sites.sort(key=lambda site: (site["center"].y, site["center"].x, site["site_id"]))
@@ -260,15 +275,15 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
 
     # The local write domain is the union of complete source envelopes.  Its
     # influence domain adds the declared construction clearance and precision.
-    write_envelopes = [site["core"].buffer(MAX_GROWTH_REACH_MM, quad_segs=QUAD_SEGS)
+    write_envelopes = [site["core"].buffer(site["growth_reach_mm"], quad_segs=QUAD_SEGS)
                        for site in sites]
     write_domain = unary_union(write_envelopes)
-    influence_domain = unary_union([
-        envelope.buffer(CONSTRUCTION_BUFFER_MM + ERROR_MM, quad_segs=QUAD_SEGS)
-        for envelope in write_envelopes])
+    influence_envelopes = [site["core"].buffer(
+        site["growth_reach_mm"] + CONSTRUCTION_BUFFER_MM + ERROR_MM,
+        quad_segs=QUAD_SEGS) for site in sites]
+    influence_domain = unary_union(influence_envelopes)
     local_indexes = set()
-    for envelope in [geometry.buffer(CONSTRUCTION_BUFFER_MM + ERROR_MM,
-                                    quad_segs=QUAD_SEGS) for geometry in write_envelopes]:
+    for envelope in influence_envelopes:
         local_indexes.update(int(index) for index in tree.query(envelope))
     local_rows = [(fcu_rows[index], fcu_shapes[index], index)
                   for index in sorted(local_indexes)
@@ -287,7 +302,8 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
         for row, geometry, _ in local_rows:
             if row["kind"] not in ("segment", "arc"):
                 continue
-            zone = _port_zone(site["core"], geometry, _source_width(source, row))
+            zone = _port_zone(site["core"], geometry, _source_width(source, row),
+                              site["growth_reach_mm"])
             if zone is not None:
                 port_geometries.append(zone)
                 port_trace_ids.add(row["id"])
@@ -381,6 +397,7 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
                        if priority_id != source_id]
         port_zones = port["trace_zones"]
         result = grow_in_available_space(site["core"], obstacle_rows,
+            reach_mm=site["growth_reach_mm"],
             port_zones=port_zones, priority_reservations=reservations)
         result["obstacle_rows"] = obstacle_rows
         return result
@@ -397,7 +414,8 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
         if source_id in priority_by_site:
             status = "KEEP_PRIORITY_ROUND"
         else:
-            status = "GROW" if result["area_delta_mm2"] > AREA_EPSILON_MM2 else "KEEP_CONSTRAINED"
+            status = ("KEEP_UNCALIBRATED" if site["radius_class_mm"] is None else
+                "GROW" if result["area_delta_mm2"] > AREA_EPSILON_MM2 else "KEEP_CONSTRAINED")
         center = site["center"]
         decision = {
             "order": site_order, "source_id": source_id,
@@ -407,6 +425,8 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
             "source_sha256": inv["source_sha256"],
             "geometry_sha256": site["geometry_sha256"],
             "center_mm": [center.x, center.y], "original_radius_mm": site["radius_mm"],
+            "calibrated_org_radius_class_mm": site["radius_class_mm"],
+            "maximum_final_radius_mm": site["maximum_final_radius_mm"],
             "original_area_mm2": site["core"].area,
             "physical_component_id": site["component_id"],
             "component_member_count": len(component_records[site["component_number"]]["source_member_ids"]),
@@ -427,7 +447,7 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
             "final_effective_area_mm2": candidate.area,
             "added_area_mm2": result["area_delta_mm2"],
             "protected_core_loss_mm2": result["core_loss_mm2"],
-            "maximum_growth_reach_mm": MAX_GROWTH_REACH_MM,
+            "maximum_growth_reach_mm": site["growth_reach_mm"],
             "limiting_obstacles": result["limiting_obstacles"],
             "limiting_source_ids": [item["source_id"] for item in result["limiting_obstacles"]],
             "growth_cap_touched": result["growth_cap_touched"],
@@ -477,7 +497,7 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
             other_site = site_by_id[other_id]
             if dynamic_geometries[other_id].equals(other_site["core"]):
                 continue
-            if dynamic_geometries[other_id].distance(site_by_id[source_id]["core"]) <= MAX_GROWTH_REACH_MM + CONSTRUCTION_BUFFER_MM + ERROR_MM:
+            if dynamic_geometries[other_id].distance(site_by_id[source_id]["core"]) <= site_by_id[source_id]["growth_reach_mm"] + CONSTRUCTION_BUFFER_MM + ERROR_MM:
                 prior_neighbors.append(other_id)
         decision["prior_accepted_neighbor_ids"] = prior_neighbors
         decision["adapted_by_prior_acceptance"] = bool(
@@ -514,9 +534,10 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
                 "trace_corridor" if row["kind"] in ("segment", "arc") else "protected_copper")
             obstacle_rows.append((row["id"], obstacle, role))
         reservation_rows = [(pid, zone) for pid, zone in priority_reservations.items() if pid != target_id]
-        zones = {trace_id: port["geometry"] for trace_id in port["trace_ids"]}
+        zones = port["trace_zones"]
         replay = grow_in_available_space(site["core"], obstacle_rows,
-            port_zones=zones, priority_reservations=reservation_rows)["candidate"]
+            reach_mm=site["growth_reach_mm"], port_zones=zones,
+            priority_reservations=reservation_rows)["candidate"]
         recorded = dynamic_geometries[target_id]
         delta = recorded.symmetric_difference(replay).area
         counterfactuals.append({"target_source_id": target_id,
@@ -662,6 +683,7 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
         "dynamic_hard_gap_violations": gap_violations,
         "attached_trace_port_violations": port_contact_violations,
         "policy": {"maximum_growth_reach_mm": MAX_GROWTH_REACH_MM,
+            "calibrated_radius_limits_mm": {str(key): value for key, value in calibrated_radius_limits.items()},
             "hard_experimental_gap_mm": HARD_GAP_MM,
             "gap_tolerance_mm": GAP_TOLERANCE_MM,
             "construction_buffer_mm": CONSTRUCTION_BUFFER_MM,
@@ -671,10 +693,11 @@ def run(source: bytes, *, dynamic: bool = True) -> dict:
             "round_outline_tolerance_mm": ROUND_OUTLINE_TOLERANCE_MM,
             "curve_quadrant_segments": QUAD_SEGS,
             "viewport_selection": "complete supported filled F.Cu gr_circle occurrences whose full source geometry intersects fixed V; no minimum size threshold or inset write guard",
-            "write_domain": "union of each selected full ORG core buffered by shared 0.20 mm maximum reach; no truncation at viewport",
+            "write_domain": "union of complete source cores buffered only by their EDIT-calibrated source-radius-class reach; uncalibrated classes have zero reach",
             "influence_domain": "each complete write envelope expanded by 0.025 mm construction buffer plus 0.00001 mm inventory precision allowance; crossing full source objects retrieved by geometry intersection",
             "schedule": "priority sites first by component id; companions then ascending ORG centroid Y, X, stable source identity",
-            "EDIT_available_to_constructor": False,
+            "EDIT_geometry_available_to_constructor": False,
+            "EDIT_class_caps_frozen_from_separate_calibration": True,
             "smoothing": "none",
             "source_core_loss_tolerance_mm2": 1e-12},
         "shared_parser_and_kernel_qualification": "Same source inventory and Shapely kernel as prior T01; geometry-only internal evidence, not an independent parser/kernel check.",
@@ -717,7 +740,7 @@ def _real_space_control(sites, local_rows, site_ports, site_source_to_id,
                 continue
             current = dynamic_geometries.get(other_id, geom)
             distance = core.distance(current)
-            if distance <= MAX_GROWTH_REACH_MM + CONSTRUCTION_BUFFER_MM and distance > 1e-8:
+            if site["growth_reach_mm"] > 0 and distance <= site["growth_reach_mm"] + CONSTRUCTION_BUFFER_MM and distance > 1e-8:
                 candidate_obstacles.append((distance, row, current, other_id))
         if len(candidate_obstacles) < 1:
             continue
@@ -740,14 +763,14 @@ def _real_space_control(sites, local_rows, site_ports, site_source_to_id,
                 open_obstacles.append(entry)
         zones = port["trace_zones"]
         pr = [(pid, zone) for pid, zone in reservations.items() if pid != source_id]
-        crowded = grow_in_available_space(core, obstacles, port_zones=zones,
+        crowded = grow_in_available_space(core, obstacles, reach_mm=site["growth_reach_mm"], port_zones=zones,
                                            priority_reservations=pr)
-        open_result = grow_in_available_space(core, open_obstacles, port_zones=zones,
+        open_result = grow_in_available_space(core, open_obstacles, reach_mm=site["growth_reach_mm"], port_zones=zones,
                                                priority_reservations=pr)
         delta = open_result["candidate"].symmetric_difference(crowded["candidate"]).area
         if delta > EVENT_EPSILON_MM2:
             return {"status": "PASS", "source_id": source_id,
-                "held_fixed": ["same ORG core", "same 0.20 mm reach", "same 0.025 mm construction buffer", "same priority reservations", "same attachment ports", "all other real crop obstacles"],
+                "held_fixed": ["same ORG core", f"same calibrated {site['growth_reach_mm']:.5f} mm reach", "same 0.025 mm construction buffer", "same priority reservations", "same attachment ports", "all other real crop obstacles"],
                 "crowded_obstacle_source_id_removed_for_open_replay": closest[1]["id"],
                 "crowded_added_area_mm2": crowded["area_delta_mm2"],
                 "open_added_area_mm2": open_result["area_delta_mm2"],
