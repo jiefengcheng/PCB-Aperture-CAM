@@ -64,7 +64,19 @@ def publish(out):
     assert sha(out/'selection.json')==r['selection_sha256']
     assert a['status']=='PASS_SCOPED_FRESH_CROP_AUDIT' and a['report_sha256']==sha(out/'report.json')
     assert len(a['dynamic_cases'])==51 and all(not c['violations'] for c in a['dynamic_cases'])
-    if p.get('round_promotion'):require_round_diagnostics(r,a)
+    if p.get('round_promotion'):
+        require_round_diagnostics(r,a)
+        coverage=[]
+        for d in r['decisions']:
+            if not d['priority']:continue
+            size=d['size_class'];next_class=size['round_opportunity']['next_class_diameter_mm']
+            coverage.append({'key':d['key'],'source_id':d['source_id'],'allocated_diameter_mm':2*d['proposed_radius_mm'],
+                'local_desired_diameter_mm':size['desired_diameter_mm'],'individual_cap_diameter_mm':size['hard_cap_diameter_mm'],
+                'next_class_diameter_mm':next_class,'status':'NEXT_LOCAL_CLASS_TESTED_AND_REJECTED' if next_class is not None else 'AT_LOCAL_DESIRED_CLASS',
+                'larger_palette_classes_outside_local_desired':[v for v in size['admissible_classes_mm'] if v>size['desired_diameter_mm']]})
+        dump(out/'round_priority_coverage.json',{'report_sha256':sha(out/'report.json'),'audit_sha256':sha(out/'fresh_audit.json'),'total_round_priorities':len(coverage),
+            'tested_next_class':len(a['round_next_class_controls']),'at_local_desired_class':sum(row['next_class_diameter_mm'] is None for row in coverage),'sites':coverage,
+            'scope':'No feasible next-band promotion with existing other assignments, local desired classes and constraints held fixed. Not a global optimum or individual-cap maximality claim.'})
     assert r['same_policy_replay_equal'] is True and r['unique_sites']==51 and r['source_occurrences']==53
     g={}
     for name,h in r['geometry_sha256'].items():assert sha(out/(name+'.wkb'))==h;g[name+'.wkb']=from_wkb((out/(name+'.wkb')).read_bytes())
@@ -155,6 +167,9 @@ body{font:16px/1.5 system-ui;background:#eaf0f5;color:#152b40;margin:0}main{max-
     page+='<div class="grid"><article><h2>Before · original ORG copper</h2><img src="crop_original.svg" alt="Full frozen T01 crop before processing"><p>Original circles, pads and traces at the fixed crop coordinates.</p></article><article><h2>After · balanced capped result</h2><img id="whole-result" src="crop_dynamic.svg" alt="Full frozen T01 crop after balanced capped processing"><div class="controls"><button onclick="mode(\'dynamic\')">Effective copper</button><button onclick="mode(\'overlay\')">Show additions</button><button onclick="mode(\'priorities\')">Round priorities</button><button onclick="mode(\'sites\')">Site IDs</button><button onclick="mode(\'static\')">Frozen-neighbour control</button></div><p id="whole-caption">Single-colour effective copper. All source cores and traces remain; only admitted land additions change.</p></article></div>'
     if class_mode:
         page+=diameter_review(r,p,out,a)
+        if p.get('round_promotion'):
+            stops=[row for row in coverage if row['next_class_diameter_mm'] is None]
+            page+=f'<p><strong>Round-priority coverage: {len(coverage)} = {len(a["round_next_class_controls"])} tested next-size rejections + {len(stops)} local-target stop.</strong> '+''.join(f'{row["key"]} is already at its shared local target Ø {row["allocated_diameter_mm"]:.4f} mm; its individual ceiling is Ø {row["individual_cap_diameter_mm"]:.5f} mm. ' for row in stops)+'This does not claim a global optimum or growth to every individual cap. <a href="round_priority_coverage.json">Inspect all priority dispositions</a>.</p>'
     page+='<h2>Review one site</h2><p>Choose any of the 51 source-bound sites. Blue is its proposed circular envelope; gold is its derived square; red is the original core. The final contour may be clipped by local source or accepted copper.</p><select id="site" onchange="showSite(this.value)">'+options+'</select><p id="site-info"></p><div class="grid"><article><h2>Site · original</h2><img id="site-original" alt="Selected site original copper"></article><article><h2>Site · accepted scene</h2><img id="site-final" alt="Selected site accepted copper and construction"></article></div>'
     page+='<h2>Where this stands against T01</h2><table><tbody>'+''.join(f'<tr><th>{html.escape(k)}</th><td>{html.escape(v)}</td></tr>' for k,v in matrix)+'</tbody></table>'
     page+=diagnostic
@@ -172,6 +187,8 @@ body{font:16px/1.5 system-ui;background:#eaf0f5;color:#152b40;margin:0}main{max-
     pending=out/'.index.html.next';pending.write_text(page);pending.replace(out/'index.html')
     views={str(path.relative_to(out)):sha(path) for path in out.rglob('*.svg')}
     dump(out/'publication_receipt.json',{'report_sha256':sha(out/'report.json'),'audit_sha256':sha(out/'fresh_audit.json'),'selection_sha256':sha(out/'selection.json'),'renderer_sha256':sha(Path(__file__)),'index_sha256':sha(out/'index.html'),'svg_sha256':views,'owner_review':'PENDING','presentation':'Read-only REPLAY; controls do not execute editing.'})
+    if p.get('round_promotion'):
+        receipt=json.loads((out/'publication_receipt.json').read_bytes());receipt['round_priority_coverage_sha256']=sha(out/'round_priority_coverage.json');dump(out/'publication_receipt.json',receipt)
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('bundle',type=Path);publish(parser.parse_args().bundle.resolve())
