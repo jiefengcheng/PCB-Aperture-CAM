@@ -17,7 +17,7 @@
 > as `ACCEPTED_VISUAL_CROP`. T01 behavior remains `PARTIAL_0_OF_3`.
 >
 > T02 then ran against that exact frozen scene. The current deterministic real-
-> crop review is v5/v6: 76 source rectangles eligible and grown, five edge-
+> crop review is v7/v8: 76 source rectangles eligible and grown, five edge-
 > crossing rectangles preserved unchanged, 1.5× per-axis ceiling, and half-ORG
 > trace-growth reservations with a declared numerical tolerance. T02 remains an
 > experimental visual-review candidate, not owner-accepted engineering or
