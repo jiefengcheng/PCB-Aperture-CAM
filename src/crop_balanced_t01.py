@@ -170,7 +170,7 @@ def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=C
     decisions=[];events=[];failed=[];frozen_scene=None
     def companion_candidate(site,radius,obs):
         if site['source_id'] in square_guided_ids:
-            from src.crop_diameter_classes import square_guided_recess
+            from src.crop_square_recess import square_guided_recess
             return square_guided_recess(site,radius,obs,settings)
         return construct(site['core'],site['center'],radius,obs,square_enabled=False,settings=settings.kernel())['candidate'],[]
     for sid in order:

@@ -38,21 +38,21 @@ def main(out, *, policy_path=POLICY, policy_sha=POLICY_SHA):
     priorities,exceptions=choose_priorities(sites,initial)
     targets=None;size_records=None;square_guided_ids=set()
     if p['schema'].startswith('diameter-class-t01-trial-policy/'):
-        from src.crop_diameter_classes import select_targets
+        from src.crop_diameter_selection import select_targets
         square_guided_ids={s['source_id'] for i,s in enumerate(sites,1) if f'S{i:02d}' in p['square_guided_sites']}
         for component,sid in list(priorities.items()):
             if sid in square_guided_ids:
                 del priorities[component]
                 exceptions.append({'component_id':component,'source_id':sid,'reason':'OWNER_REQUESTED_SQUARE_GUIDED_RECESS','previous_round_priority':sid})
         if p.get('owner_review_application'):
-            from src.crop_diameter_classes import select_owner_review_targets
+            from src.crop_owner_review import select_owner_review_targets
             feedback=ROOT/p['owner_feedback_file'];assert sha(feedback)==p['owner_feedback_sha256']
             shutil.copy2(feedback,out/'owner_annotations.json')
             targets,size_records,groups,limits=select_owner_review_targets(ROOT,p,sites)
         else:
             targets,size_records,limits=select_targets(sites,groups,priorities,initial,settings,p['diameter_classes_mm'])
         if p.get('round_promotion'):
-            from src.crop_diameter_classes import promote_round_priorities
+            from src.crop_diameter_selection import promote_round_priorities
             promotions=promote_round_priorities(sites,groups,priorities,initial,settings,targets,size_records)
             limits.extend({'reason':'FEASIBLE_ROUND_CLASS_PROMOTION',**item} for item in promotions)
         round_factors={}
@@ -123,7 +123,7 @@ def main(out, *, policy_path=POLICY, policy_sha=POLICY_SHA):
         'runtime':{'python':platform.python_version(),'shapely':shapely.__version__,'geos':shapely.geos_version_string},
         'code_sha256':{name:sha(ROOT/name) for name in ['src/crop_balanced_t01.py','src/crop_balanced_capped_growth.py','src/crop_square_neighbor_experiment.py','src/native_inventory.py','tools/run_crop_balanced_t01.py','tools/audit_crop_balanced_t01.py','tools/render_crop_balanced_t01.py','src/crop_circle_sources.py']}}
     if targets is not None:
-        report['code_sha256'].update({name:sha(ROOT/name) for name in ['src/crop_diameter_classes.py','tools/run_crop_diameter_classes_t01.py']})
+        report['code_sha256'].update({name:sha(ROOT/name) for name in ['src/crop_diameter_classes.py','src/crop_diameter_selection.py','src/crop_square_recess.py','src/crop_owner_review.py','tools/run_crop_diameter_classes_t01.py']})
         report['sizing_mode']='SHARED_PHYSICAL_DIAMETER_CLASSES'
         report['diameter_classes_mm']=p['diameter_classes_mm']
         for d in report['decisions']:d['size_class']=size_records[d['source_id']]

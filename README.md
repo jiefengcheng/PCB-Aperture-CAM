@@ -13,6 +13,10 @@ For a new dataset with no existing qualified package recipe, start with the [gen
 
 This gate establishes file custody and identity only. It does not parse or qualify dataset contents or extract board objects. It seals a registration recipe so **+** can add the profile to the workbench; qualification remains a separate step and stays `NOT_RUN` until actually performed. Follow the [profiling-to-workbench steps](docs/okf/ingestion/general-profiling.md#continue-into-the-workbench) to verify the package, run the local server, and add the generated directory.
 
+## T01 implementation map
+
+The accepted crop pipeline now has a concise [code structure map](docs/crop_dynamic_tasks/T01_CODE_STRUCTURE.md), separating source discovery, target selection, recess construction, owner edits, orchestration, audit, and replay presentation.
+
 ## Current T01 review: owner corrections
 
 The [owner-correction guide](docs/crop_dynamic_tasks/T01_OWNER_CORRECTIONS.md)
