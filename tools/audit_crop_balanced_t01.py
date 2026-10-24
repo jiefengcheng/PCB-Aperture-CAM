@@ -55,7 +55,7 @@ def main(out):
         assert candidate.is_valid and not candidate.is_empty
         assert base.difference(candidate).area<=1e-10 and candidate.difference(envelope).area<=1e-10
         addition=candidate.difference(base);assert all(p.distance(base)<=1e-9 for p in parts(addition))
-        if addition.is_empty:return {'source_id':sid,'kind':kind,'full_source_records_scanned':len(rows),'gap_status':'NOT_APPLICABLE_NO_ADDITION','violations':[],'ports':0}
+        if addition.is_empty:return {'source_id':sid,'kind':kind,'full_source_records_scanned':0,'full_source_records_available':len(rows),'gap_status':'NOT_APPLICABLE_NO_ADDITION','violations':[],'ports':0}
         ax0,ay0,ax1,ay1=candidate.bounds;violations=[];port_count=0;relevant=0;minimum=math.inf
         for row in rows:
             source_id=row['id'];canonical=alias.get(source_id,source_id)
