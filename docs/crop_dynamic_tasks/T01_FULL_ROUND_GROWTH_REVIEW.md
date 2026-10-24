@@ -12,6 +12,10 @@ The previous allocator reduced both competing round reservations at once. After 
 
 This is a **maximal greedy allocation with other targets held fixed**, not a global optimum. It does not prove that jointly reallocating or shrinking other features could never satisfy a different preference. Desired shared physical diameters, the strict individual 1.5× ceiling and every original core remain protected. Companion contours are reprocessed against the larger round reservations, so some optional companion growth decreases.
 
+## Leave image feedback
+
+Use **Annotate image** near the page heading, click any board image, enter a comment, and choose **Save annotation**. Numbered pins and comments stay in this browser, bound to this exact saved report and image view. Use **Copy feedback** and paste it into the chat, or **Export feedback JSON**. Saving a note does not submit it automatically or alter engineering receipts or copper.
+
 ## Your new marks
 
 | Mark | Source site | Previous Ø mm | Current Ø mm | Why the next class is blocked |
