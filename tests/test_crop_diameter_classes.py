@@ -67,4 +67,32 @@ class MandatorySquareControlTests(unittest.TestCase):
                         'decisions':[{'key':'S31','source_id':'A','square_guided':True,'square_recesses':[{}]}]}]:
             with self.assertRaises((KeyError,AssertionError)):require_square_control(report)
 
+
+class RoundPromotionTests(unittest.TestCase):
+    def test_recovers_free_class_without_shrinking_neighbour(self):
+        from src.crop_diameter_classes import promote_round_priorities
+        sites,scene,_,_=fixture(((0,0),(2.8,0)));groups=local_groups(sites,['A','B']);priorities={'ca':'A','cb':'B'}
+        targets,records,_=select_targets(sites,groups,priorities,scene,CropSettings(),[2.2,2.6,2.9])
+        before=dict(targets)
+        events=promote_round_priorities(sites,groups,priorities,scene,CropSettings(),targets,records)
+        self.assertTrue(events)
+        self.assertTrue(all(targets[sid]>=radius for sid,radius in before.items()))
+        self.assertEqual(targets['A'],1.45)
+        self.assertTrue(all(radius<=1.5 for radius in targets.values()))
+
+    def test_true_source_blocker_prevents_round_promotion(self):
+        from src.crop_diameter_classes import promote_round_priorities
+        sites,scene,_,_=fixture(extra=(0,2.3));groups=local_groups(sites,['A','B']);priorities={'ca':'A'}
+        targets,records,_=select_targets(sites,groups,priorities,scene,CropSettings(),[2.2,2.6,2.9])
+        promote_round_priorities(sites,groups,priorities,scene,CropSettings(),targets,records)
+        self.assertEqual(targets['A'],1.1)
+        self.assertIn('ORIGINAL_COPPER_OR_SOURCE_PORT_CLEARANCE',[b['reason'] for b in records['A']['round_opportunity']['blockers']])
+
+class RoundDiagnosticPublicationTests(unittest.TestCase):
+    def test_missing_or_empty_next_class_proofs_cannot_publish(self):
+        from tools.render_crop_balanced_t01 import require_round_diagnostics
+        report={'decisions':[{'source_id':'A','priority':True,'size_class':{'round_opportunity':{'next_class_diameter_mm':2.9}}}]}
+        for audit in [{},{'round_next_class_controls':[]},{'round_next_class_controls':[{'source_id':'A','diameter_mm':2.9,'source_case':{'violations':[]},'round_blockers':[],'square_blockers':[]}]}]:
+            with self.assertRaises((KeyError,AssertionError)):require_round_diagnostics(report,audit)
+
 if __name__=='__main__':unittest.main()

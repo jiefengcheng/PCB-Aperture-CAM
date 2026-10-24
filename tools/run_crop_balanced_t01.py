@@ -37,7 +37,7 @@ def main(out, *, policy_path=POLICY, policy_sha=POLICY_SHA):
     groups=local_groups(sites,p['approved_pair'],settings.construction_gap)
     priorities,exceptions=choose_priorities(sites,initial)
     targets=None;size_records=None;square_guided_ids=set()
-    if p['schema']=='diameter-class-t01-trial-policy/1':
+    if p['schema'].startswith('diameter-class-t01-trial-policy/'):
         from src.crop_diameter_classes import select_targets
         square_guided_ids={s['source_id'] for i,s in enumerate(sites,1) if f'S{i:02d}' in p['square_guided_sites']}
         for component,sid in list(priorities.items()):
@@ -45,6 +45,10 @@ def main(out, *, policy_path=POLICY, policy_sha=POLICY_SHA):
                 del priorities[component]
                 exceptions.append({'component_id':component,'source_id':sid,'reason':'OWNER_REQUESTED_SQUARE_GUIDED_RECESS','previous_round_priority':sid})
         targets,size_records,limits=select_targets(sites,groups,priorities,initial,settings,p['diameter_classes_mm'])
+        if p.get('round_promotion'):
+            from src.crop_diameter_classes import promote_round_priorities
+            promotions=promote_round_priorities(sites,groups,priorities,initial,settings,targets,size_records)
+            limits.extend({'reason':'FEASIBLE_ROUND_CLASS_PROMOTION',**item} for item in promotions)
         round_factors={}
     else:
         factors,limits,round_factors=freeze_factors(sites,groups,priorities,initial,settings)

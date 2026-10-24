@@ -13,13 +13,27 @@ For a new dataset with no existing qualified package recipe, start with the [gen
 
 This gate establishes file custody and identity only. It does not parse or qualify dataset contents or extract board objects. It seals a registration recipe so **+** can add the profile to the workbench; qualification remains a separate step and stays `NOT_RUN` until actually performed. Follow the [profiling-to-workbench steps](docs/okf/ingestion/general-profiling.md#continue-into-the-workbench) to verify the package, run the local server, and add the generated directory.
 
-## Current T01 review: common physical diameters
+## Current T01 review: recover growth while keeping priorities round
+
+The [full-round growth review](docs/crop_dynamic_tasks/T01_FULL_ROUND_GROWTH_REVIEW.md)
+implements the owner's latest choice to keep all eight newly marked priorities
+fully round. A discrete promotion pass recovers free size-band capacity: three
+marks grow further, five retain reproduced next-band blockers. The UI shows
+rejected next-round proposals as diagnostics. The 1.5× cap and protections hold;
+T01 remains **PARTIAL**, with zero evolving-companion events.
+
+```bash
+.venv/bin/python tools/run_crop_diameter_classes_t01.py --round-priority-promotion --output out/crop_dynamic_tasks/t01_round_priority_promotion_replay_01
+.venv/bin/python -m http.server 8783 --bind 127.0.0.1 --directory out/crop_dynamic_tasks/t01_round_priority_promotion_20261024_v3
+```
+
+## Earlier T01 review: common physical diameters
 
 The [shared-diameter trial and review guide](docs/crop_dynamic_tasks/T01_DIAMETER_CLASS_REVIEW.md)
 adds discrete envelope sizes and the owner's case-6 square-guided recess. Six of
 eight marked sites gain more copper; marks 1 and 2 remain open. Hard 1.5× caps and
 local geometry checks pass. T01 remains **PARTIAL** (zero evolving-companion effects).
-The current replay is `out/crop_dynamic_tasks/t01_diameter_classes_20261024_v3/`;
+That earlier replay is `out/crop_dynamic_tasks/t01_diameter_classes_20261024_v3/`;
 the continuous-factor trial below is retained historical context.
 
 ```bash

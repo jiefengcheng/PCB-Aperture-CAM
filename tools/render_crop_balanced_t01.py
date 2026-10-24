@@ -10,7 +10,15 @@ from src import crop_circle_sources as base
 sha,dump=base.sha,base.dump
 POLICY_SHA='b7b2063cdeadac5ccb1fe44ab872a596428f7a2caaa7d2dacbcd72c392605f59'
 
-def diameter_review(r,p,out):
+def require_round_diagnostics(report,audit):
+    expected={d['source_id']:d['size_class']['round_opportunity']['next_class_diameter_mm'] for d in report['decisions'] if d['priority'] and d['size_class']['round_opportunity']['next_class_diameter_mm'] is not None}
+    controls=audit['round_next_class_controls']
+    assert len(controls)==len(expected) and {c['source_id'] for c in controls}==set(expected)
+    for control in controls:
+        assert control['diameter_mm']==expected[control['source_id']]
+        assert control['source_case']['violations'] or control['round_blockers'] or control['square_blockers']
+
+def diameter_review(r,p,out,audit):
     comparison=r['previous_comparison'];marked=sorted([c for c in comparison['sites'] if c['annotation_number']],key=lambda c:c['annotation_number'])
     content='<h2>Common sizes, with explicit exceptions</h2><p>Proposed envelope diameters (mm): <strong>'+', '.join(f'{d:.4f}' for d in p['diameter_classes_mm'])+'</strong>. These are provisional geometric bands derived from ORG size ranges, not manufacturing standards or sizes traced from EDIT. Recessed contours can differ; grey sites retain exact original geometry.</p>'
     from collections import Counter
@@ -19,28 +27,44 @@ def diameter_review(r,p,out):
     content+='<p>'+''.join(f'<span style="display:inline-block;margin:4px;padding:5px 9px;background:{colors[i]};color:#152b40;border-radius:5px">Ø {diameter:.4f} · {counts[diameter]} sites</span>' for i,diameter in enumerate(p['diameter_classes_mm']))+f'<span> · {counts[None]} exact source target KEEPs; {sum(d['size_class']['category_mm'] is not None and d['added_area_mm2']<=1e-10 for d in r['decisions'])} class proposals add no copper after clipping</span></p>'
     content+=f'<p>Added copper: {comparison["previous_effective_added_union_mm2"]:.6f} → {r["effective_added_union_mm2"]:.6f} mm². {comparison["sites_with_more_added_area"]} sites gain more than before; {comparison["sites_with_less_added_area"]} gain less. The trial prioritizes common sizes; it does not promise that every site grows more.</p>'
     improved=sum(c['net_area_change_mm2']>1e-8 for c in marked)
-    content+=f'<p><strong>{improved} of your {len(marked)} marked sites now gain more copper. Marks 1 and 2 remain limited by their full-round reservations; quantization makes them slightly smaller. Those two growth concerns remain open.</strong></p>'
+    content+=f'<p><strong>{improved} of your {len(marked)} marked sites now gain more copper. Any marked site with no area increase remains open; its full-round outline and protections are retained.</strong></p>'
     content+='<h2>Your eight marked locations</h2><p>Each card uses the same local frame as its saved source-bound site view. “Diameter” describes the envelope before recessing.</p>'
+    controls={c['source_id']:c for c in audit.get('round_next_class_controls',[])}
+    keyfor={d['source_id']:d['key'] for d in r['decisions']}
     for c in marked:
         d=next(d for d in r['decisions'] if d['source_id']==c['source_id'])
-        reason='Square-guided recess; original core retained. Exception to full-round reservation.' if d['square_guided'] else 'Full round priority; steps down whole classes where source/round reservations prevent growth.' if d['priority'] else 'Independent shared-class target; no longer inherits a partner’s smaller growth factor.'
+        reason='Square-guided recess; original core retained. Exception to full-round reservation.' if d['square_guided'] else 'Fully round priority at a verified physical size class; no new recess exception.' if d['priority'] else 'Independent shared-class target; no longer inherits a partner’s smaller growth factor.'
+        if d['size_class'].get('round_opportunity'):
+            opportunity=d['size_class']['round_opportunity']
+            names=sorted({item['reason'].replace('_',' ').lower() for item in opportunity['blockers']})
+            reason+=' Next class '+str(opportunity['next_class_diameter_mm'])+' mm: '+(', '.join(names) if names else 'desired class/cap reached')+'.'
         if d['square_guided']:
             control=next(control for control in r['square_disabled_controls'] if control['source_id']==d['source_id'])
             reason+=f' Square on/off changes {control["symmetric_difference_mm2"]:.6f} mm² with target size and input scene held fixed.'
-        content+=f'<details id="mark-{c["annotation_number"]}" {"open" if c["annotation_number"]==6 else ""}><summary>Mark {c["annotation_number"]} · {c["key"]} · Ø {c["old_diameter_mm"]:.4f} → {c["new_diameter_mm"]:.4f} mm · area change {c["net_area_change_mm2"]:+.6f} mm²</summary><p>{reason}</p><div class="grid"><article><h2>Previous result</h2><img src="focus/{c["key"]}_previous.svg" alt="Mark {c["annotation_number"]} previous result"></article><article><h2>Current result and construction</h2><img src="focus/{c["key"]}_final.svg" alt="Mark {c["annotation_number"]} revised result"></article></div><p><a href="report.json">Source identity, dimensions, limits and consumed square sides</a></p></details>'
+        control=controls.get(c['source_id'])
+        why=''
+        if control:
+            details=[]
+            if control['source_case']['violations']:details.append('original copper / fixed source-port clearance')
+            if control['round_blockers']:details.append('round reservations: '+', '.join(keyfor.get(b['source_id'],'source object')+f' (next-class gap {b["gap_mm"]:.6f} mm)' for b in control['round_blockers']))
+            if control['square_blockers']:details.append('auxiliary square-side bounds: '+', '.join(b['group_id'] for b in control['square_blockers']))
+            why=f'<h3>Why the next round size stops at Ø {control["diameter_mm"]:.4f} mm</h3><p>'+html.escape('; '.join(details))+f'.</p><img src="focus/{c["key"]}_next_round.svg" alt="Mark {c["annotation_number"]} rejected next round class"><p>Blue: rejected next circle. Green: selected round circle. Pink: new intrusion into the protected 0.020 mm gap. A square-side bound can reject a size without a visible copper collision. This is a rejected diagnostic, never accepted copper.</p>'
+        expanded=c['annotation_number']==(1 if p.get('round_promotion') else 6)
+        content+=f'<details id="mark-{c["annotation_number"]}" {"open" if expanded else ""}><summary>Mark {c["annotation_number"]} · {c["key"]} · Ø {c["old_diameter_mm"]:.4f} → {c["new_diameter_mm"]:.4f} mm · area change {c["net_area_change_mm2"]:+.6f} mm²</summary><p>{reason}</p><div class="grid"><article><h2>Previous result</h2><img src="focus/{c["key"]}_previous.svg" alt="Mark {c["annotation_number"]} previous result"></article><article><h2>Current result and construction</h2><img src="focus/{c["key"]}_final.svg" alt="Mark {c["annotation_number"]} revised result"></article></div><p><a href="report.json">Source identity, dimensions, limits and consumed square sides</a></p>{why}</details>'
     return content
 
 
 def publish(out):
     assert out.resolve().is_relative_to(ROOT/'out')
     r=json.loads((out/'report.json').read_bytes());p=json.loads((out/'policy.json').read_bytes());a=json.loads((out/'fresh_audit.json').read_bytes())
-    class_mode=p['schema']=='diameter-class-t01-trial-policy/1'
-    expected='c5605b67986dfb64a7cf1cf8400aa624547231e73145af0ea39e7fa1b9731397' if class_mode else POLICY_SHA
+    class_mode=p['schema'].startswith('diameter-class-t01-trial-policy/')
+    expected={'diameter-class-t01-trial-policy/1':'c5605b67986dfb64a7cf1cf8400aa624547231e73145af0ea39e7fa1b9731397','diameter-class-t01-trial-policy/2':'b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be'}.get(p['schema'],POLICY_SHA)
     assert sha(out/'policy.json')==r['policy_sha256']==expected
     assert sha(ROOT/p['source'])==r['source_sha256']==p['source_sha256']
     assert sha(out/'selection.json')==r['selection_sha256']
     assert a['status']=='PASS_SCOPED_FRESH_CROP_AUDIT' and a['report_sha256']==sha(out/'report.json')
     assert len(a['dynamic_cases'])==51 and all(not c['violations'] for c in a['dynamic_cases'])
+    if p.get('round_promotion'):require_round_diagnostics(r,a)
     assert r['same_policy_replay_equal'] is True and r['unique_sites']==51 and r['source_occurrences']==53
     g={}
     for name,h in r['geometry_sha256'].items():assert sha(out/(name+'.wkb'))==h;g[name+'.wkb']=from_wkb((out/(name+'.wkb')).read_bytes())
@@ -82,6 +106,15 @@ def publish(out):
         site_ui[key]={k:d[k] for k in ['source_id','factor','group_id','priority','decision','source_radius_mm','proposed_radius_mm','added_area_mm2','static_changed_area_mm2','center']}
         if class_mode:site_ui[key].update(class_mm=d['size_class']['category_mm'],square_guided=d['square_guided'],limits=d['size_class']['limits'])
         site_ui[key]['events']=sum(e['target_source_id']==d['source_id'] for e in r['events'])
+    for control in a.get('round_next_class_controls',[]):
+        d=byid[control['source_id']];cx,cy=d['center'];half=max(.13,1.5*d['source_radius_mm']+.10)
+        bounds=(cx-half,cy-half,cx+half,cy+half)
+        proof={}
+        for kind,entry in control['geometry'].items():
+            assert sha(out/entry['path'])==entry['sha256'];proof[kind]=from_wkb((out/entry['path']).read_bytes())
+        round_context=unary_union([context,*[g[other['geometry']['dynamic' if other['priority'] else 'core']] for other in decisions if other['source_id']!=d['source_id']]])
+        content=s(round_context,'#697686',opacity=.75)+s(proof['circle'],'#69aafa',opacity=.25)+s(g[d['geometry']['dynamic']],'#38d6a0',opacity=.8)+s(proof['circle'],'none','#69aafa',.003)+s(proof['intrusion'],'#f64cb6')
+        (focus/f'{d["key"]}_next_round.svg').write_text(svg(bounds,content,d['key']+' rejected next full-round class'))
     diagnostic=''
     if r['events']:
         event=max(r['events'],key=lambda e:e['changed_area_mm2'])
@@ -109,7 +142,7 @@ def publish(out):
     matrix=[('Source coverage','51 sites / 53 source occurrences'),('Hard 1.5× ceiling','PASS on proposed radii and accepted contours'),('Local group balance',f'{len(r["groups"])} small groups; one factor per group'),('Round priorities',f'{r["priority_count"]} preserved; one per original physical component'),('Assembled source / gap checks','PASS · fresh-process full-source audit'),('Same-policy replay','Identical saved geometry hashes'),('Grown priority reservation responses',f'{r["reservation_response_later_sites"]} companions; reservations also exist in static comparator'),('Evolving companion adaptation',f'{causal} distinct later sites / target ≥3 — {criterion}'),('Static-neighbour comparison',f'{r["static_comparison"]["changed_sites"]} changed sites; {static_bad} static assembled violating sites'),('Owner decision','PENDING · pair approval was tentative')]
     if class_mode:
         matrix[2]=('Local size agreement','Shared physical diameter class per pair; clearance exceptions descend independently')
-        matrix[3]=('Round priorities',f'{r["priority_count"]} round reservations; case 6 (S31) is an explicit square-guided recess exception')
+        matrix[3]=('Round priorities',f'{r["priority_count"]} round reservations; S31 (earlier case 6) is an explicit square-guided recess exception')
     desk='ChatGPT desk audit: NOT_RUN for this crop trial.'
     if (out/'chatgpt_desk_audit.json').exists():
         desk_audit=json.loads((out/'chatgpt_desk_audit.json').read_bytes());assert desk_audit['report_sha256']==sha(out/'report.json');desk='<a href="chatgpt_desk_audit.json">ChatGPT summary-only crop audit recorded</a>.'
@@ -121,7 +154,7 @@ body{font:16px/1.5 system-ui;background:#eaf0f5;color:#152b40;margin:0}main{max-
     page+=f'<div class="stats"><div><strong>{r["grown_sites"]} / 51</strong>sites gained copper</div><div><strong>{r["unchanged_sites"]}</strong>sites kept unchanged</div><div><strong>{r["priority_count"]}</strong>round priorities</div><div><strong>{causal}</strong>later sites affected by companion updates</div></div>'
     page+='<div class="grid"><article><h2>Before · original ORG copper</h2><img src="crop_original.svg" alt="Full frozen T01 crop before processing"><p>Original circles, pads and traces at the fixed crop coordinates.</p></article><article><h2>After · balanced capped result</h2><img id="whole-result" src="crop_dynamic.svg" alt="Full frozen T01 crop after balanced capped processing"><div class="controls"><button onclick="mode(\'dynamic\')">Effective copper</button><button onclick="mode(\'overlay\')">Show additions</button><button onclick="mode(\'priorities\')">Round priorities</button><button onclick="mode(\'sites\')">Site IDs</button><button onclick="mode(\'static\')">Frozen-neighbour control</button></div><p id="whole-caption">Single-colour effective copper. All source cores and traces remain; only admitted land additions change.</p></article></div>'
     if class_mode:
-        page+=diameter_review(r,p,out)
+        page+=diameter_review(r,p,out,a)
     page+='<h2>Review one site</h2><p>Choose any of the 51 source-bound sites. Blue is its proposed circular envelope; gold is its derived square; red is the original core. The final contour may be clipped by local source or accepted copper.</p><select id="site" onchange="showSite(this.value)">'+options+'</select><p id="site-info"></p><div class="grid"><article><h2>Site · original</h2><img id="site-original" alt="Selected site original copper"></article><article><h2>Site · accepted scene</h2><img id="site-final" alt="Selected site accepted copper and construction"></article></div>'
     page+='<h2>Where this stands against T01</h2><table><tbody>'+''.join(f'<tr><th>{html.escape(k)}</th><td>{html.escape(v)}</td></tr>' for k,v in matrix)+'</tbody></table>'
     page+=diagnostic
@@ -131,7 +164,7 @@ body{font:16px/1.5 system-ui;background:#eaf0f5;color:#152b40;margin:0}main{max-
         page=page.replace('balanced, capped circle growth','shared diameter classes').replace('After · balanced capped result','After · shared diameter classes')
         page=page.replace('round priorities</div>', 'round reservations + 1 recess exception</div>')
         page=page.replace('The balance groups are small disjoint neighbouring pairs plus singletons, not a transitive chain across the whole crop.', 'The size groups are small neighbouring pairs and singletons; common diameter is a preference, with explicit clearance exceptions.')
-        page=page.replace('Original physical components are tracked separately for round-priority ownership.', 'Original components are tracked separately; S31 has the owner-requested recess exception.')
+        page=page.replace('Original physical components are tracked separately for round-priority ownership.', 'Original components are tracked separately; S31 retains the earlier owner-requested recess exception.')
         page=page.replace('The reviewed pair is retained; crop-wide component reservations add constraints beyond that two-site illustration.', 'This is a new experimental sizing policy, not a fitted EDIT rule.')
         page=page.replace('<button onclick="mode(\'sites\')">Site IDs</button>', '<button onclick="mode(\'classes\')">Size classes</button><button onclick="mode(\'previous\')">Previous result</button><button onclick="mode(\'sites\')">Site IDs</button>')
     js=json.dumps(site_ui).replace('<','\\u003c')

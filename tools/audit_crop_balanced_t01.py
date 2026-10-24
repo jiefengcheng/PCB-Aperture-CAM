@@ -51,7 +51,8 @@ def main(out):
     r=json.loads((out/'report.json').read_bytes());policy=json.loads((out/'policy.json').read_bytes());selection=json.loads((out/'selection.json').read_bytes())
     assert sha(out/'policy.json')==r['policy_sha256'] and sha(out/'selection.json')==r['selection_sha256']
     expected_policies={'balanced-t01-crop-trial-policy/2':'b7b2063cdeadac5ccb1fe44ab872a596428f7a2caaa7d2dacbcd72c392605f59',
-                      'diameter-class-t01-trial-policy/1':'c5605b67986dfb64a7cf1cf8400aa624547231e73145af0ea39e7fa1b9731397'}
+                      'diameter-class-t01-trial-policy/1':'c5605b67986dfb64a7cf1cf8400aa624547231e73145af0ea39e7fa1b9731397',
+                      'diameter-class-t01-trial-policy/2':'b74681cec401ba54ca2e92fc0dc6d265a1373d21892be0e200993f7ca44d47be'}
     assert r['policy_sha256']==expected_policies[policy['schema']]
     assert policy['hard_factor']==1.5 and r['groups']==selection['groups']
     for name,h in r['code_sha256'].items():assert sha(out/'review_source'/name)==h
@@ -63,14 +64,14 @@ def main(out):
     sites={s['source_id']:s for s in selection['sites']};decisions={d['source_id']:d for d in r['decisions']}
     assert len(sites)==len(decisions)==51 and sum(len(s['aliases']) for s in sites.values())==53
     alias={a:sid for sid,s in sites.items() for a in s['aliases']};priority=set(selection['priorities_by_physical_component'].values())
-    if policy['schema']=='diameter-class-t01-trial-policy/1':
+    if policy['schema'].startswith('diameter-class-t01-trial-policy/'):
         assert len(priority)==25 and len(selection['priority_exceptions'])==1
         exception=selection['priority_exceptions'][0]
         assert exception['reason']=='OWNER_REQUESTED_SQUARE_GUIDED_RECESS'
         assert decisions[exception['source_id']]['key']=='S31' and decisions[exception['source_id']]['square_guided'] is True
         assert len({s['physical_contact_group'] for s in sites.values()})==26
     else:assert len(priority)==26 and not selection['priority_exceptions']
-    if policy['schema']=='diameter-class-t01-trial-policy/1':
+    if policy['schema'].startswith('diameter-class-t01-trial-policy/'):
         audit_diameter_contract(policy,selection,decisions)
         require_square_control(r)
         assert r['diameter_classes_mm']==policy['diameter_classes_mm']
@@ -115,13 +116,71 @@ def main(out):
                 assert port.equals_exact(from_wkb(bytes.fromhex(selection['ports'][sid][source_id])),0)
                 port_count+=1
                 assert base.intersection(original[source_id]).difference(candidate).area<=1e-10
-                assert addition.intersection(shape).difference(port).area<=1e-10
+                unexempted_contact=addition.intersection(shape).difference(port).area
+                if unexempted_contact>1e-10:violations.append({'source_id':canonical,'intrusion_mm2':unexempted_contact,'reason':'NEW_CONTACT_OUTSIDE_FIXED_PORT'})
             else:minimum=min(minimum,addition.distance(shape))
             forbidden=shape.buffer(.020,quad_segs=128)
             if port is not None:forbidden=forbidden.difference(port)
             intrusion=addition.intersection(forbidden).area
             if intrusion>1e-10:violations.append({'source_id':canonical,'intrusion_mm2':intrusion})
         return {'source_id':sid,'kind':kind,'full_source_records_scanned':len(rows),'gap_status':'PASS' if not violations else 'FAIL','violations':violations,'ports':port_count,'relevant_objects':relevant,'minimum_unexempted_gap_within_031_band_mm':minimum if math.isfinite(minimum) else None}
+    round_controls=[]
+    if policy.get('round_promotion'):
+        assert all(next(d for d in decisions.values() if d['key']==key)['priority'] for key in policy['marked_sites'])
+        assert all(not next(d for d in decisions.values() if d['key']==key)['square_guided'] for key in policy['marked_sites'])
+        round_scene={sid:geometries[sid] for sid in priority}
+        for sid in sorted(priority):
+            d=decisions[sid];s=sites[sid];size=selection['size_classes'][sid]
+            larger=[diameter for diameter in size['admissible_classes_mm'] if 2*d['proposed_radius_mm']<diameter<=size['desired_diameter_mm']]
+            opportunity=size['round_opportunity']
+            assert opportunity['next_class_diameter_mm']==(min(larger) if larger else None)
+            if not larger:continue
+            radius=min(larger)/2;assert radius<=1.5*s['radius']
+            next_circle=unary_union([core[sid],Point(*s['center']).buffer(radius,quad_segs=128)])
+            # The proposed radius differs from the selected envelope: check it
+            # against the independently built next envelope, not audit_one's
+            # selected-envelope containment predicate.
+            saved_envelope=saved[d['geometry']['envelope']]
+            saved[d['geometry']['envelope']]=next_circle
+            try:
+                source_case=audit_one(sid,next_circle,{},'rejected_next_round_class_source')
+                reserved_case=audit_one(sid,next_circle,round_scene,'rejected_next_round_class_with_reservations')
+            finally:saved[d['geometry']['envelope']]=saved_envelope
+            round_pairs=[];square_pairs=[]
+            for other in priority:
+                if other==sid:continue
+                gap=math.dist(s['center'],sites[other]['center'])-radius-decisions[other]['proposed_radius_mm']
+                if gap<policy['construction_gap']+policy['safety']:round_pairs.append({'source_id':other,'gap_mm':gap})
+            for group in selection['groups']:
+                if len(group['site_ids'])!=2:continue
+                aid,bid=group['square_anchor_id'],group['square_follower_id']
+                if sid not in (aid,bid):continue
+                a,b=sites[aid],sites[bid];ra=radius if aid==sid else decisions[aid]['proposed_radius_mm'];rb=radius if bid==sid else decisions[bid]['proposed_radius_mm']
+                h=ra/math.sqrt(2);theta=math.radians(policy['orientation']);cx,cy=a['center']
+                corners=[(cx+x*math.cos(theta)-y*math.sin(theta),cy+x*math.sin(theta)+y*math.cos(theta)) for x,y in [(-h,-h),(h,-h),(h,h),(-h,h)]]
+                normals=[]
+                for index in [1,2,3,0]:
+                    v,w=corners[index],corners[(index+1)%4];length=math.dist(v,w);n=((w[1]-v[1])/length,(v[0]-w[0])/length)
+                    normals.append(sum(n[j]*(b['center'][j]-a['center'][j]) for j in range(2)))
+                bound=max(normals)-policy['construction_gap']-policy['safety']-ra/math.sqrt(2)
+                if rb>max(b['radius'],bound):square_pairs.append({'group_id':group['group_id'],'follower_source_id':bid,'radius_bound_mm':bound})
+            assert source_case['violations'] or round_pairs or square_pairs,'FREE_FULL_ROUND_CLASS_REMAINS'
+            # Save the rejected hypothesis and its actual hard-gap intrusion.
+            source_ids={v['source_id'] for v in reserved_case['violations']}
+            blockers=unary_union([round_scene.get(alias.get(row['id'],row['id']),original[row['id']]) for row in rows if alias.get(row['id'],row['id']) in source_ids])
+            forbidden=[]
+            for row in rows:
+                canonical=alias.get(row['id'],row['id'])
+                if canonical not in source_ids:continue
+                band=round_scene.get(canonical,original[row['id']]).buffer(.020,quad_segs=128)
+                if row['id'] in selection['ports'][sid]:band=band.difference(from_wkb(bytes.fromhex(selection['ports'][sid][row['id']])))
+                forbidden.append(band)
+            intrusion=next_circle.difference(core[sid]).intersection(unary_union(forbidden))
+            diagnostics={}
+            for label,geometry in [('circle',next_circle),('blockers',blockers),('intrusion',intrusion)]:
+                path=out/'round_diagnostics'/(d['key']+'_'+label+'.wkb');path.parent.mkdir(exist_ok=True);path.write_bytes(to_wkb(geometry,byte_order=1))
+                diagnostics[label]={'path':str(path.relative_to(out)),'sha256':sha(path)}
+            round_controls.append({'key':d['key'],'source_id':sid,'diameter_mm':2*radius,'source_case':source_case,'reservation_case':reserved_case,'round_blockers':round_pairs,'square_blockers':square_pairs,'geometry':diagnostics})
     dynamic_cases=[audit_one(sid,geometries[sid],geometries,'dynamic_assembled') for sid in decisions]
     static_cases=[audit_one(sid,statics[sid],statics,'static_assembled_comparator') for sid in decisions]
     assert all(not c['violations'] for c in dynamic_cases),'ASSEMBLED_DYNAMIC_GAP_FAILURE'
@@ -193,6 +252,7 @@ def main(out):
         'priority_exceptions':selection['priority_exceptions'],
         'dynamic_cases':dynamic_cases,'static_comparator_cases':static_cases,'counterfactual_cases':event_cases,
         'square_disabled_controls':square_controls,
+        'round_next_class_controls':round_controls,
         'static_comparator_violating_sites':sum(bool(c['violations']) for c in static_cases),
         'verified_earlier_neighbor_response_sites':r['actual_adapted_later_sites'],
         'reservation_response_sites':r['reservation_response_later_sites'],

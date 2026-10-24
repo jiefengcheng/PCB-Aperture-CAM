@@ -125,3 +125,61 @@ def square_guided_recess(site, radius, obstacles, settings):
     # Square guides only optional recesses. Actual copper always sets hard gap.
     candidate,_=retain_attached(optional.intersection(result['candidate']),core,kernel)
     return candidate,consumed
+
+
+def promote_round_priorities(sites, groups, priorities, scene, settings, targets, records):
+    """Recover feasible discrete steps discarded by simultaneous demotions.
+
+    Greedy largest area gain, stable source-ID tie break; a maximal allocation,
+    not a global optimum. Never shrink another site or relax any constraint.
+    """
+    byid={s['source_id']:s for s in sites};priority_ids=sorted(priorities.values())
+    accepted=[]
+    def check(sid,radius):
+        s=byid[sid];candidate=unary_union([s['core'],Point(*s['center']).buffer(radius,quad_segs=settings.qsegs)])
+        source_check=verify_addition(s['core'],candidate,candidate,scene.obstacles(s,0),settings=settings.kernel())
+        blockers=[]
+        if not source_check['passed']:blockers.append({'reason':'ORIGINAL_COPPER_OR_SOURCE_PORT_CLEARANCE','verification':source_check})
+        for other in priority_ids:
+            if other==sid:continue
+            n=byid[other]
+            if math.dist(s['center'],n['center'])-radius-targets[other] < settings.construction_gap+settings.safety:
+                blockers.append({'reason':'OTHER_FULL_ROUND_RESERVATION','source_id':other,'diameter_mm':2*targets[other]})
+        for group in groups:
+            if len(group['site_ids'])!=2:continue
+            aid,bid=group['square_anchor_id'],group['square_follower_id']
+            if sid not in (aid,bid):continue
+            a,b=byid[aid],byid[bid];ra=radius if sid==aid else targets[aid];rb=radius if sid==bid else targets[bid]
+            side=facing_square_side(inscribed_square(a['center'],ra,orientation_degrees=settings.orientation),a['center'],b['center'])
+            bound=sum(side['normal'][j]*(b['center'][j]-a['center'][j]) for j in range(2))-settings.construction_gap-settings.safety-ra/math.sqrt(2)
+            if rb>max(b['radius'],bound):blockers.append({'reason':'A_SQUARE_ENVELOPE_BOUND','group_id':group['group_id'],'follower_source_id':bid,'radius_bound_mm':bound})
+        return blockers
+    while True:
+        options=[]
+        for sid in priority_ids:
+            larger=[d/2 for d in records[sid]['admissible_classes_mm'] if targets[sid]<d/2<=records[sid]['desired_diameter_mm']/2]
+            if not larger:continue
+            radius=min(larger)
+            if not check(sid,radius):options.append((math.pi*(radius**2-targets[sid]**2),sid,radius))
+        if not options:break
+        gain,sid,radius=sorted(options,key=lambda item:(-item[0],item[1]))[0]
+        accepted.append({'source_id':sid,'previous_diameter_mm':2*targets[sid],'diameter_mm':2*radius,'round_area_gain_mm2':gain})
+        targets[sid]=radius
+    # Freeze the stopping explanation for every source-bound round priority.
+    for sid in priority_ids:
+        larger=[d/2 for d in records[sid]['admissible_classes_mm'] if targets[sid]<d/2<=records[sid]['desired_diameter_mm']/2]
+        blockers=check(sid,min(larger)) if larger else []
+        assert not larger or blockers,'FREE_DISCRETE_ROUND_GROWTH_LEFT'
+        records[sid]['round_opportunity']={'next_class_diameter_mm':2*min(larger) if larger else None,
+            'blockers':blockers,'status':'BLOCKED_NEXT_CLASS' if larger else 'AT_DESIRED_CLASS_OR_CAP'}
+        records[sid].update(proposed_radius_mm=targets[sid],selected_diameter_mm=2*targets[sid],
+            category_mm=2*targets[sid] if targets[sid]>byid[sid]['radius'] else None,
+            original_keep=targets[sid]==byid[sid]['radius'])
+        assert targets[sid]<=1.5*byid[sid]['radius']
+    # Square bounds depend on the final enlarged A radius, not an earlier value.
+    for group in groups:
+        if len(group['site_ids'])!=2:continue
+        a,b=(byid[group[key]] for key in ['square_anchor_id','square_follower_id'])
+        side=facing_square_side(inscribed_square(a['center'],targets[a['source_id']],orientation_degrees=settings.orientation),a['center'],b['center'])
+        group['square_radius_bound_mm']=sum(side['normal'][j]*(b['center'][j]-a['center'][j]) for j in range(2))-settings.construction_gap-settings.safety-targets[a['source_id']]/math.sqrt(2)
+    return accepted
