@@ -1,0 +1,91 @@
+{
+  "kind": "handoff_file_manifest",
+  "authorization": "T01_ONLY_OWNER_APPROVAL_REQUIRED_BEFORE_T02",
+  "files": [
+    {
+      "path": "CHANGELOG_T01_REISSUE.md",
+      "bytes": 544,
+      "sha256": "6da98fff0ffb572832a92c22feb4e9324e3c0e68fda89c8adbf4b06f7cd2402a"
+    },
+    {
+      "path": "PASTE_TO_CODEX.md",
+      "bytes": 2263,
+      "sha256": "7fcf17ed9456e84ac6af4919835c4df8d520598b1a8abe9753a831942f8e084d"
+    },
+    {
+      "path": "PROVENANCE.md",
+      "bytes": 1619,
+      "sha256": "57f397e1b83359188cb4bd927aa42b6148f830e6d4a14df6ef33d218383f2f2c"
+    },
+    {
+      "path": "README.md",
+      "bytes": 20933,
+      "sha256": "5c1a39814ae17c87ad22f4131784f6ae1caf68b5c99a04535c69a7c7d3eb004a"
+    },
+    {
+      "path": "SCOPE_DECISION_T01_ONLY.md",
+      "bytes": 3075,
+      "sha256": "d606cd08463cbc0ee6319f53d883f605dbf84bae453ce7528f384c1223b738ee"
+    },
+    {
+      "path": "TASK_BOARD_TEMPLATE.json",
+      "bytes": 5751,
+      "sha256": "37f1fc5a22e7a7272b3e406f1c5e26449fe87c0ac979848bf2597f9be5b22ed0"
+    },
+    {
+      "path": "references/ORG_DYNAMIC_SHAPE_DECISIONS_ADDENDUM.md",
+      "bytes": 14576,
+      "sha256": "feab97c27dd4769206427a1a48b88428adb3eed24b0277ff6fdccac398d5205d"
+    },
+    {
+      "path": "references/ORG_FIVE_STAGE_TREATMENT_HANDOFF.md",
+      "bytes": 26230,
+      "sha256": "5624f3113cbcaa8eee158e641b2ce0ce1db1552783d7bb761210acb777bef9e6"
+    },
+    {
+      "path": "references/OWNER_REQUESTED_ORG_EDIT_CROP.png",
+      "bytes": 1051784,
+      "sha256": "cefaa35b2f5ffc13a791c4b3b79b46bae10264572eea40168dea4e3fec851b21"
+    },
+    {
+      "path": "tasks/T00_CROP_AND_CONTRACT.md",
+      "bytes": 3494,
+      "sha256": "e7f5498d8ab2e0ab53ada4228043edf5d2eeca3a845494c454117a30729c86cc"
+    },
+    {
+      "path": "tasks/T01_CIRCLES_AND_DYNAMIC_DECISIONS.md",
+      "bytes": 3595,
+      "sha256": "e83061008342f4ba1833e4709debc453120a5bfd5cf7c6e2aff491dce63b8453"
+    },
+    {
+      "path": "tasks/T02_OTHER_SHAPES_AND_DYNAMIC_DECISIONS.md",
+      "bytes": 2646,
+      "sha256": "f53888abb7c0d0d0e74326b8b0b80b6149cc18fcda06e9fe7c06d66d47b21b55"
+    },
+    {
+      "path": "tasks/T03_TRACE_PATHS_AND_DYNAMIC_DECISIONS.md",
+      "bytes": 2515,
+      "sha256": "b261730ad13a71f9bee6ad1130f15441282bb9e8a822f01473c2f22725413881"
+    },
+    {
+      "path": "tasks/T04_TRACE_WIDTHS_AND_DYNAMIC_DECISIONS.md",
+      "bytes": 2395,
+      "sha256": "8f4905dae80bc73c652da30e49c23b978862a19b63824d9cae2988c6b7559166"
+    },
+    {
+      "path": "tasks/T05_JUNCTIONS_AND_DYNAMIC_DECISIONS.md",
+      "bytes": 2186,
+      "sha256": "a1258c17904eafc953f5747964738ec54b4e849aae848213506036e4a1cc50b7"
+    },
+    {
+      "path": "tasks/T06_EXPORTED_VALIDATION_AND_FIT.md",
+      "bytes": 3368,
+      "sha256": "7a42fccfcd2f19e87617a02beac3721134f21111dfd9f746de3e12f55be04ddf"
+    },
+    {
+      "path": "tasks/T07_WORKBENCH_AND_CLOSURE.md",
+      "bytes": 3305,
+      "sha256": "8c0fc9c6dbeb432b1960da422640dfc19e850bc045935d56d912c328d6603f24"
+    }
+  ]
+}

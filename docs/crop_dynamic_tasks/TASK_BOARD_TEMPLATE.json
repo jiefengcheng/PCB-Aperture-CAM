@@ -1,0 +1,147 @@
+{
+  "kind": "PLANNING_TEMPLATE_NOT_EXECUTION_EVIDENCE",
+  "prepared": "2026-10-24",
+  "goal": "Crop-scale dynamic transformation of the neighborhood in the owner image",
+  "authority": "T01 ONLY. T00 prerequisites included; T02–T07 NOT AUTHORIZED pending separate owner approval.",
+  "scope_reference": "references/OWNER_REQUESTED_ORG_EDIT_CROP.png",
+  "not_the_scope": "Earlier G22 Member A/B/C reconstruction",
+  "routine_human_approval_required": true,
+  "tasks": [
+    {
+      "id": "T00",
+      "title": "Bind the owner crop and freeze the finite experiment",
+      "stages": "setup",
+      "depends_on": [],
+      "task_card": "tasks/T00_CROP_AND_CONTRACT.md",
+      "task_execution": "NOT_RUN",
+      "technical_checks": "NOT_RUN",
+      "visible_operation": "NOT_RUN",
+      "target_objective": "NOT_EVALUATED",
+      "receipt": null,
+      "next_on_success": "T01",
+      "on_local_failure": "Preserve evidence; bounded correction or isolate affected patch. Continue independent work; never fabricate PASS."
+    },
+    {
+      "id": "T01",
+      "title": "Adaptive circular growth in a live neighborhood",
+      "stages": "1 + 1.5",
+      "depends_on": [
+        "T00"
+      ],
+      "task_card": "tasks/T01_CIRCLES_AND_DYNAMIC_DECISIONS.md",
+      "task_execution": "NOT_RUN",
+      "technical_checks": "NOT_RUN",
+      "visible_operation": "NOT_RUN",
+      "target_objective": "NOT_EVALUATED",
+      "receipt": null,
+      "next_on_success": "STOP_OWNER_REVIEW; T02_REQUIRES_EXPLICIT_AUTHORIZATION",
+      "on_local_failure": "Preserve evidence; bounded correction or isolate affected patch. Continue independent work; never fabricate PASS."
+    },
+    {
+      "id": "T02",
+      "title": "Other-shape growth and directional shaping",
+      "stages": "2 + 2.5",
+      "depends_on": [
+        "T01"
+      ],
+      "task_card": "tasks/T02_OTHER_SHAPES_AND_DYNAMIC_DECISIONS.md",
+      "task_execution": "NOT_RUN",
+      "technical_checks": "NOT_RUN",
+      "visible_operation": "NOT_RUN",
+      "target_objective": "NOT_EVALUATED",
+      "receipt": null,
+      "next_on_success": "T03",
+      "on_local_failure": "Preserve evidence; bounded correction or isolate affected patch. Continue independent work; never fabricate PASS.",
+      "authorization": "NOT_AUTHORIZED_PLANNING_ONLY"
+    },
+    {
+      "id": "T03",
+      "title": "Adapt trace approaches and finite-width paths",
+      "stages": "3 + 3.5",
+      "depends_on": [
+        "T02"
+      ],
+      "task_card": "tasks/T03_TRACE_PATHS_AND_DYNAMIC_DECISIONS.md",
+      "task_execution": "NOT_RUN",
+      "technical_checks": "NOT_RUN",
+      "visible_operation": "NOT_RUN",
+      "target_objective": "NOT_EVALUATED",
+      "receipt": null,
+      "next_on_success": "T04",
+      "on_local_failure": "Preserve evidence; bounded correction or isolate affected patch. Continue independent work; never fabricate PASS.",
+      "authorization": "NOT_AUTHORIZED_PLANNING_ONLY"
+    },
+    {
+      "id": "T04",
+      "title": "Fit trace widths and local contours to the remaining space",
+      "stages": "4 + 4.5",
+      "depends_on": [
+        "T03"
+      ],
+      "task_card": "tasks/T04_TRACE_WIDTHS_AND_DYNAMIC_DECISIONS.md",
+      "task_execution": "NOT_RUN",
+      "technical_checks": "NOT_RUN",
+      "visible_operation": "NOT_RUN",
+      "target_objective": "NOT_EVALUATED",
+      "receipt": null,
+      "next_on_success": "T05",
+      "on_local_failure": "Preserve evidence; bounded correction or isolate affected patch. Continue independent work; never fabricate PASS.",
+      "authorization": "NOT_AUTHORIZED_PLANNING_ONLY"
+    },
+    {
+      "id": "T05",
+      "title": "Finish junctions and necks against the current scene",
+      "stages": "5 + 5.5",
+      "depends_on": [
+        "T04"
+      ],
+      "task_card": "tasks/T05_JUNCTIONS_AND_DYNAMIC_DECISIONS.md",
+      "task_execution": "NOT_RUN",
+      "technical_checks": "NOT_RUN",
+      "visible_operation": "NOT_RUN",
+      "target_objective": "NOT_EVALUATED",
+      "receipt": null,
+      "next_on_success": "T06",
+      "on_local_failure": "Preserve evidence; bounded correction or isolate affected patch. Continue independent work; never fabricate PASS.",
+      "authorization": "NOT_AUTHORIZED_PLANNING_ONLY"
+    },
+    {
+      "id": "T06",
+      "title": "Export, compare and complete the bounded experiment",
+      "stages": "integrated verification",
+      "depends_on": [
+        "T05"
+      ],
+      "task_card": "tasks/T06_EXPORTED_VALIDATION_AND_FIT.md",
+      "task_execution": "NOT_RUN",
+      "technical_checks": "NOT_RUN",
+      "visible_operation": "NOT_RUN",
+      "target_objective": "NOT_EVALUATED",
+      "receipt": null,
+      "next_on_success": "T07",
+      "on_local_failure": "Preserve evidence; bounded correction or isolate affected patch. Continue independent work; never fabricate PASS.",
+      "authorization": "NOT_AUTHORIZED_PLANNING_ONLY"
+    },
+    {
+      "id": "T07",
+      "title": "Deliver the full-crop replay and closure",
+      "stages": "delivery",
+      "depends_on": [
+        "T06"
+      ],
+      "task_card": "tasks/T07_WORKBENCH_AND_CLOSURE.md",
+      "task_execution": "NOT_RUN",
+      "technical_checks": "NOT_RUN",
+      "visible_operation": "NOT_RUN",
+      "target_objective": "NOT_EVALUATED",
+      "receipt": null,
+      "next_on_success": "STOP_INTEGRATED_GOAL_COMPLETE",
+      "on_local_failure": "Preserve evidence; bounded correction or isolate affected patch. Continue independent work; never fabricate PASS.",
+      "authorization": "NOT_AUTHORIZED_PLANNING_ONLY"
+    }
+  ],
+  "result_dimensions_are_separate": true,
+  "authorization_scope": "T00 setup as needed, T01 execution/validation only",
+  "required_stop_after": "T01",
+  "future_tasks_authorized": false
+}

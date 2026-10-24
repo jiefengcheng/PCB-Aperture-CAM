@@ -1,0 +1,11 @@
+# Paste to Codex — T01 only (revised owner instruction)
+
+Adopt `docs/crop_dynamic_tasks/SCOPE_DECISION_T01_ONLY.md` as the current owner authorization. It supersedes the earlier package's automatic progression from T01 to T02–T07; keep those tasks as **planning only**. Do not treat prior broad autonomy language in README, references, task cards, or task-board templates as permission to proceed beyond T01.
+
+**Do T01 now:** Verify or complete only the required T00 crop/frame/contract prerequisites, then execute `tasks/T01_CIRCLES_AND_DYNAMIC_DECISIONS.md` on the owner-uploaded full dense ORG crop, not isolated G22 A/B/C members. Implement ORG-only circular selection, nominal enlargement, current-scene neighbor-responsive fitting, accepted-revision updates and trace corridor reservations. Retain KEEP/ABSTAIN/unsupported states and prior source custody.
+
+For each changed site, retain nominal shape, accepted contour, source IDs, limiting neighbor, scene revision, constraints, and change explanation. Verify a real later decision uses an earlier *accepted enlargement*; compare same-policy static-neighbor and dynamic-neighbor baselines. Seek at least three actual neighbor-adaptation events, report exact count, but never invent/force one. Show the full crop and a focused interaction in the existing viewer. Test protected cores, fixed references, declared gaps/connections/ports, stale-index behavior, deterministic replay and source-only construction. Report technical PASS separately from visible outcome and provisional target fit.
+
+Retain an append-only audit receipt and the original unchanged evidence. Only local project code/owned test/evidence/visual changes are authorized. Commit owned implementation and documentation after tests; do not publish/push remotely without separate permission. Cursor unavailability is NOT_RUN and does not block local work.
+
+**MANDATORY STOP after T01**, whether PASS, PARTIAL or BLOCKED. Return commit, executed commands, tests, dynamic-vs-static evidence, screenshots or local workbench path, affected/kept/unsupported counts, remaining constraints, and recommended T02 entry conditions. Do not begin T02–T07 or an integrated T06 fit/export objective. Wait for owner review and separate authorization.
