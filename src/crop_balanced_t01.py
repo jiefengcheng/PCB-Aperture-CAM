@@ -163,13 +163,18 @@ def freeze_factors(sites,groups,priorities,scene,settings=CropSettings()):
     return factors,limits,round_factors
 
 
-def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=CropSettings(),counterfactuals=True):
+def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=CropSettings(),counterfactuals=True,targets=None,square_guided_ids=()):
     scene=WorkingScene(source,rows,shapes,sites,settings);byid=scene.sites
     groupfor={sid:g for g in groups for sid in g['site_ids']};priority_ids=set(priorities.values())
     order=sorted(priority_ids)+[s['source_id'] for s in sites if s['source_id'] not in priority_ids]
     decisions=[];events=[];failed=[];frozen_scene=None
+    def companion_candidate(site,radius,obs):
+        if site['source_id'] in square_guided_ids:
+            from src.crop_diameter_classes import square_guided_recess
+            return square_guided_recess(site,radius,obs,settings)
+        return construct(site['core'],site['center'],radius,obs,square_enabled=False,settings=settings.kernel())['candidate'],[]
     for sid in order:
-        s=byid[sid];group=groupfor[sid];radius=group['factor']*s['radius'];require_radius_cap(s['radius'],radius)
+        s=byid[sid];group=groupfor[sid];radius=targets[sid] if targets is not None else group['factor']*s['radius'];require_radius_cap(s['radius'],radius)
         if sid not in priority_ids and frozen_scene is None:
             frozen_scene=WorkingScene(source,rows,shapes,sites,settings)
             for pid in sorted(priority_ids):frozen_scene.commit(byid[pid],scene.accepted[pid],frozen_scene.revision)
@@ -179,9 +184,10 @@ def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=C
         # inscribed buffer polygon at the same analytic radius. Preserve the
         # exact immutable core; do not shave it or weaken the containment test.
         envelope=unary_union([s['core'],Point(*s['center']).buffer(radius,quad_segs=settings.qsegs)])
-        if group['factor']==1:candidate=s['core']
+        square_recesses=[]
+        if radius==s['radius']:candidate=s['core']
         elif sid in priority_ids:candidate=envelope
-        else:candidate=construct(s['core'],s['center'],radius,obs,square_enabled=False,settings=settings.kernel())['candidate']
+        else:candidate,square_recesses=companion_candidate(s,radius,obs)
         verification=verify_addition(s['core'],candidate,envelope,obs,settings=settings.kernel())
         if not verification['passed']:
             failed.append({'source_id':sid,'input_revision':context.revision,'candidate_sha256':geometry_hash(candidate),'candidate':candidate,'verification':verification})
@@ -195,7 +201,7 @@ def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=C
                 if earlier.difference(n['core']).area<=settings.event_epsilon:continue
                 if not any(r['source_id']==neighbor for r in obs):continue
                 cfobs=context.obstacles(s,context.revision,{neighbor:n['core']})
-                cf=construct(s['core'],s['center'],radius,cfobs,square_enabled=False,settings=settings.kernel())['candidate']
+                cf,_=companion_candidate(s,radius,cfobs)
                 area=candidate.symmetric_difference(cf).area
                 if area>settings.event_epsilon:
                     verified=verify_addition(s['core'],cf,envelope,cfobs,settings=settings.kernel())
@@ -203,8 +209,9 @@ def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=C
                     events.append(event);active.append(neighbor)
         scene.commit(s,candidate,rev)
         decisions.append({'source_id':sid,'aliases':s['aliases'],'center':s['center'],'source_radius_mm':s['radius'],'proposed_radius_mm':radius,
-            'factor':group['factor'],'group_id':group['group_id'],'physical_component':s['physical_contact_group'],'priority':sid in priority_ids,
+            'factor':group['factor'] if targets is None else radius/s['radius'],'group_id':group['group_id'],'physical_component':s['physical_contact_group'],'priority':sid in priority_ids,
             'decision':decision,'input_revision':rev,'context_revision':context.revision if not dynamic else rev,'output_revision':scene.revision,
             'added_area_mm2':candidate.difference(s['core']).area,'clipped_optional_area_mm2':envelope.difference(candidate).area,
             'active_earlier_neighbors':active,'candidate_sha256':geometry_hash(candidate),'verification':verification})
+        if targets is not None:decisions[-1].update(square_guided=sid in square_guided_ids,square_recesses=square_recesses)
     return {'scene':scene,'decisions':decisions,'events':events,'failed_patches':failed,'order':order}

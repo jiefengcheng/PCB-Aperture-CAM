@@ -6,6 +6,8 @@ No editing constructor, source-scene index or trial runner is imported.
 import hashlib,json,math,re,sys
 from pathlib import Path
 from shapely import from_wkb,to_wkb
+from shapely.geometry import Polygon,Point
+from shapely.ops import unary_union,nearest_points
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from src.native_inventory import inventory
 
@@ -17,10 +19,40 @@ def parts(g):
     return [g] if g.geom_type=='Polygon' else [p for p in getattr(g,'geoms',()) if p.geom_type=='Polygon']
 def vertices(g):return [v for p in parts(g) for v in p.exterior.coords]
 
+def audit_diameter_contract(policy,selection,decisions):
+    """Independent checks of physical classes, strict caps and source KEEPs."""
+    palette=policy['diameter_classes_mm'];assert palette==sorted(set(palette))
+    sites={s['source_id']:s for s in selection['sites']}
+    choices={sid:[d for d in palette if 2*s['radius']<d<=3*s['radius']] for sid,s in sites.items()}
+    for group in selection['groups']:
+        common=set(choices[group['site_ids'][0]])
+        for sid in group['site_ids'][1:]:common.intersection_update(choices[sid])
+        assert group['target_diameter_mm']==(max(common) if common else None)
+    for sid,s in sites.items():
+        d=decisions[sid];size=selection['size_classes'][sid];radius=d['proposed_radius_mm']
+        assert radius==size['proposed_radius_mm'] and s['radius']<=radius<=1.5*s['radius']
+        assert abs(radius-d['factor']*s['radius'])<=1e-15
+        assert choices[sid]==size['admissible_classes_mm']
+        if radius==s['radius']:
+            assert size['category_mm'] is None and size['original_keep'] is True
+        else:
+            assert 2*radius in choices[sid] and size['category_mm']==2*radius and size['original_keep'] is False
+
+def require_square_control(report):
+    controls=report['square_disabled_controls']
+    assert len(controls)==1 and controls[0]['key']=='S31'
+    decisions={d['source_id']:d for d in report['decisions']}
+    control=controls[0];d=decisions[control['source_id']]
+    assert d['key']=='S31' and d['square_guided'] and len(d['square_recesses'])==1
+    assert control['symmetric_difference_mm2']>1e-8
+
 def main(out):
     assert out.resolve().is_relative_to(ROOT/'out')
     r=json.loads((out/'report.json').read_bytes());policy=json.loads((out/'policy.json').read_bytes());selection=json.loads((out/'selection.json').read_bytes())
     assert sha(out/'policy.json')==r['policy_sha256'] and sha(out/'selection.json')==r['selection_sha256']
+    expected_policies={'balanced-t01-crop-trial-policy/2':'b7b2063cdeadac5ccb1fe44ab872a596428f7a2caaa7d2dacbcd72c392605f59',
+                      'diameter-class-t01-trial-policy/1':'c5605b67986dfb64a7cf1cf8400aa624547231e73145af0ea39e7fa1b9731397'}
+    assert r['policy_sha256']==expected_policies[policy['schema']]
     assert policy['hard_factor']==1.5 and r['groups']==selection['groups']
     for name,h in r['code_sha256'].items():assert sha(out/'review_source'/name)==h
     source=(ROOT/policy['source']).read_bytes();assert hashlib.sha256(source).hexdigest()==policy['source_sha256']==r['source_sha256']
@@ -31,17 +63,29 @@ def main(out):
     sites={s['source_id']:s for s in selection['sites']};decisions={d['source_id']:d for d in r['decisions']}
     assert len(sites)==len(decisions)==51 and sum(len(s['aliases']) for s in sites.values())==53
     alias={a:sid for sid,s in sites.items() for a in s['aliases']};priority=set(selection['priorities_by_physical_component'].values())
-    assert len(priority)==26 and not selection['priority_exceptions']
-    for group in selection['groups']:
-        assert len(group['site_ids']) in [1,2] and 1<=group['factor']<=1.5
-        for sid in group['site_ids']:assert decisions[sid]['factor']==group['factor']
+    if policy['schema']=='diameter-class-t01-trial-policy/1':
+        assert len(priority)==25 and len(selection['priority_exceptions'])==1
+        exception=selection['priority_exceptions'][0]
+        assert exception['reason']=='OWNER_REQUESTED_SQUARE_GUIDED_RECESS'
+        assert decisions[exception['source_id']]['key']=='S31' and decisions[exception['source_id']]['square_guided'] is True
+        assert len({s['physical_contact_group'] for s in sites.values()})==26
+    else:assert len(priority)==26 and not selection['priority_exceptions']
+    if policy['schema']=='diameter-class-t01-trial-policy/1':
+        audit_diameter_contract(policy,selection,decisions)
+        require_square_control(r)
+        assert r['diameter_classes_mm']==policy['diameter_classes_mm']
+        assert all(d['size_class']==selection['size_classes'][sid] for sid,d in decisions.items())
+    else:
+        for group in selection['groups']:
+            assert len(group['site_ids']) in [1,2] and 1<=group['factor']<=1.5
+            for sid in group['site_ids']:assert decisions[sid]['factor']==group['factor']
     geometries={sid:saved[d['geometry']['dynamic']] for sid,d in decisions.items()}
     statics={sid:saved[d['geometry']['static']] for sid,d in decisions.items()}
     core={sid:saved[d['geometry']['core']] for sid,d in decisions.items()}
     for sid,s in sites.items():
         d=decisions[sid];candidate=geometries[sid];radius=d['proposed_radius_mm']
         assert original[sid].equals_exact(core[sid],0)
-        assert 1<=d['factor']<=1.5 and radius==d['factor']*s['radius'] and radius<=1.5*s['radius']
+        assert 1<=d['factor']<=1.5 and abs(radius-d['factor']*s['radius'])<=1e-15 and radius<=1.5*s['radius']
         assert max(math.dist(s['center'],v) for v in vertices(candidate))<=1.5*s['radius']+1e-12
         if sid in priority:
             assert max(abs(math.dist(s['center'],v)-radius) for v in vertices(candidate))<=.00002
@@ -83,6 +127,50 @@ def main(out):
     assert all(not c['violations'] for c in dynamic_cases),'ASSEMBLED_DYNAMIC_GAP_FAILURE'
     event_cases=[]
     ordered=r['decisions']
+    square_controls=[]
+    for control in r.get('square_disabled_controls',[]):
+        sid=control['source_id'];d=decisions[sid];s=sites[sid]
+        assert d['square_guided'] and d['key']=='S31' and sid not in priority
+        assert control['input_revision']==d['input_revision']
+        prior={item['source_id']:geometries[item['source_id']] for item in ordered[:d['input_revision']]}
+        plain=saved[control['disabled_wkb']];delta=plain.symmetric_difference(geometries[sid]).area
+        assert delta>1e-8 and abs(delta-control['symmetric_difference_mm2'])<1e-12
+        case=audit_one(sid,plain,prior,'square_disabled_same_scene');assert not case['violations']
+        envelope=saved[d['geometry']['envelope']];optional=envelope.difference(core[sid]);exclusions={}
+        for row in rows:
+            canonical=alias.get(row['id'],row['id'])
+            if canonical==sid:continue
+            shape=prior.get(canonical,original[row['id']])
+            if shape.distance(envelope)>.031:continue
+            exclusion=shape.buffer(policy['construction_gap'],quad_segs=128)
+            if row['id'] in selection['ports'][sid]:exclusion=exclusion.difference(from_wkb(bytes.fromhex(selection['ports'][sid][row['id']])))
+            exclusions[canonical]=exclusion
+        conflicts=[(optional.intersection(exclusion).area,key,exclusion) for key,exclusion in exclusions.items() if optional.intersection(exclusion).area>policy['event_epsilon']]
+        area,neighbor,excluded=sorted(conflicts,key=lambda item:(-item[0],item[1]))[0]
+        point=nearest_points(Point(*s['center']),excluded)[1]
+        square=saved[d['geometry']['square']];corners=list(square.exterior.coords)[:4]
+        sides=[]
+        for index,label in [(1,'+X'),(2,'+Y'),(3,'-X'),(0,'-Y')]:
+            a,b=corners[index],corners[(index+1)%4];length=math.dist(a,b);normal=((b[1]-a[1])/length,(a[0]-b[0])/length)
+            score=normal[0]*(point.x-s['center'][0])+normal[1]*(point.y-s['center'][1])
+            sides.append((score,label,a,b,normal))
+        score,label,a,b,normal=max(enumerate(sides),key=lambda item:(item[1][0],-item[0]))[1]
+        recess=d['square_recesses'];assert len(recess)==1 and recess[0]['source_id']==neighbor and recess[0]['square_side']==label
+        assert abs(recess[0]['conflict_area_mm2']-area)<1e-12
+        assert math.dist(recess[0]['direction_point_mm'],(point.x,point.y))<1e-12
+        # Independent supporting half-plane for the selected enlarged-square side.
+        mx,my=(a[0]+b[0])/2,(a[1]+b[1])/2;nx,ny=normal;tx,ty=-ny,nx
+        margin=max(envelope.bounds[2]-envelope.bounds[0],envelope.bounds[3]-envelope.bounds[1],1.)
+        p1=(mx+margin*tx,my+margin*ty);p2=(mx-margin*tx,my-margin*ty)
+        half=Polygon([p1,p2,(p2[0]+2*margin*nx,p2[1]+2*margin*ny),(p1[0]+2*margin*nx,p1[1]+2*margin*ny)])
+        assert abs(optional.intersection(half).area-recess[0]['removed_optional_area_mm2'])<1e-12
+        forbidden=unary_union(list(exclusions.values()))
+        def attached(g):return unary_union([core[sid],*[part for part in parts(g) if part.area>1e-10 and part.distance(core[sid])<=1e-9]])
+        expected=attached(optional.difference(half).difference(forbidden))
+        expected_plain=attached(optional.difference(forbidden))
+        assert expected.symmetric_difference(geometries[sid]).area<=1e-10
+        assert expected_plain.symmetric_difference(plain).area<=1e-10
+        square_controls.append({'source_id':sid,'square_side':label,'verified_changed_area_mm2':delta,'control_gap_check':case})
     for event in r['events']:
         sid=event['target_source_id'];neighbor=event['neighbor_source_id'];revision=event['input_scene_revision']
         prior={d['source_id']:geometries[d['source_id']] for d in ordered[:revision]}
@@ -101,8 +189,10 @@ def main(out):
     assert r['same_policy_replay_equal'] is True
     result={'status':'PASS_SCOPED_FRESH_CROP_AUDIT','report_sha256':sha(out/'report.json'),'auditor_sha256':sha(Path(__file__)),
         'scope':'Same-author fresh-process verifier; shared native parser and geometry kernel. No constructor, trial runner, or source-scene spatial index imported.',
-        'coverage':{'unique_sites':51,'occurrences':53,'full_source_fcu_records':17849,'priority_sites':26},
+        'coverage':{'unique_sites':51,'occurrences':53,'full_source_fcu_records':17849,'priority_sites':len(priority)},
+        'priority_exceptions':selection['priority_exceptions'],
         'dynamic_cases':dynamic_cases,'static_comparator_cases':static_cases,'counterfactual_cases':event_cases,
+        'square_disabled_controls':square_controls,
         'static_comparator_violating_sites':sum(bool(c['violations']) for c in static_cases),
         'verified_earlier_neighbor_response_sites':r['actual_adapted_later_sites'],
         'reservation_response_sites':r['reservation_response_later_sites'],
@@ -110,6 +200,6 @@ def main(out):
         'dynamic_causality_criterion':'EVIDENCED_LOCALLY' if evolving_sites>=3 else 'NOT_MET',
         'owner_acceptance':'PENDING_USER_FULL_CROP_REVIEW','t01_overall':'PARTIAL_PENDING_OWNER_REVIEW' if evolving_sites>=3 else 'PARTIAL_INSUFFICIENT_ACTUAL_DYNAMIC_EVENTS'}
     (out/'fresh_audit.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
-    print(json.dumps({'status':result['status'],'dynamic_causality_criterion':result['dynamic_causality_criterion'],'actual_sites':r['actual_adapted_later_sites'],'static_violating_sites':result['static_comparator_violating_sites']},indent=2))
+    print(json.dumps({'status':result['status'],'dynamic_causality_criterion':result['dynamic_causality_criterion'],'evolving_companion_sites':evolving_sites,'reservation_response_sites':r['reservation_response_later_sites'],'static_violating_sites':result['static_comparator_violating_sites']},indent=2))
 
 if __name__=='__main__':main(Path(sys.argv[1]))

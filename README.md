@@ -13,6 +13,20 @@ For a new dataset with no existing qualified package recipe, start with the [gen
 
 This gate establishes file custody and identity only. It does not parse or qualify dataset contents or extract board objects. It seals a registration recipe so **+** can add the profile to the workbench; qualification remains a separate step and stays `NOT_RUN` until actually performed. Follow the [profiling-to-workbench steps](docs/okf/ingestion/general-profiling.md#continue-into-the-workbench) to verify the package, run the local server, and add the generated directory.
 
+## Current T01 review: common physical diameters
+
+The [shared-diameter trial and review guide](docs/crop_dynamic_tasks/T01_DIAMETER_CLASS_REVIEW.md)
+adds discrete envelope sizes and the owner's case-6 square-guided recess. Six of
+eight marked sites gain more copper; marks 1 and 2 remain open. Hard 1.5× caps and
+local geometry checks pass. T01 remains **PARTIAL** (zero evolving-companion effects).
+The current replay is `out/crop_dynamic_tasks/t01_diameter_classes_20261024_v3/`;
+the continuous-factor trial below is retained historical context.
+
+```bash
+.venv/bin/python tools/run_crop_diameter_classes_t01.py --output out/crop_dynamic_tasks/t01_diameter_classes_replay_01
+.venv/bin/python -m http.server 8783 --bind 127.0.0.1 --directory out/crop_dynamic_tasks/t01_diameter_classes_20261024_v3
+```
+
 ## T01 crop trial: balanced growth with a hard 1.5× ceiling
 
 The owner's tentative two-site approval is applied to all 51 circle sites in the
@@ -29,7 +43,7 @@ This is a local review experiment, not accepted CAM or manufacturing output.
 
 Use a fresh output directory for each execution. The saved review shows the full
 ORG crop, accepted effective copper, additions, component priorities, the fair
-static-neighbour comparator and all individual sites. The latest trial grows
+static-neighbour comparator and all individual sites. That earlier trial grows
 45 sites and preserves 26 round priorities. Fifteen companions respond to grown
 priority reservations, but **zero** respond to evolving companion updates; the
 fair static comparator is identical. Local geometry passes, while T01 remains

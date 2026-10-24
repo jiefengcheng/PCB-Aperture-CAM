@@ -23,12 +23,12 @@ def save_geometry(out,name,g,hashes):
     return name+'.wkb'
 
 
-def main(out):
+def main(out, *, policy_path=POLICY, policy_sha=POLICY_SHA):
     out=out.resolve()
     if not out.is_relative_to(ROOT/'out') or out.exists():raise ValueError('FRESH_PROJECT_OUT_DIRECTORY_REQUIRED')
-    assert sha(POLICY)==POLICY_SHA;p=json.loads(POLICY.read_bytes());assets=verify_assets()
+    assert sha(policy_path)==policy_sha;p=json.loads(policy_path.read_bytes());assets=verify_assets()
     source_path=ROOT/p['source'];assert sha(source_path)==p['source_sha256'];source=source_path.read_bytes()
-    out.mkdir(parents=True);shutil.copy2(POLICY,out/'policy.json');dump(out/'asset_integrity.json',assets)
+    out.mkdir(parents=True);shutil.copy2(policy_path,out/'policy.json');dump(out/'asset_integrity.json',assets)
     dump(out/'owner_scope.json',{'approval':'TENTATIVE_APPROVAL_OF_PAIR_PROCESS_ONLY','owner_text':p['owner_tentative_approval'],'balance_choice':p['owner_balance_choice'],'crop_acceptance':'PENDING_USER','hard_factor_ceiling':1.5})
     inv,rows,shapes,tree,sites=base.source_scene(source,p)
     assert len(sites)==51 and sum(len(s['aliases']) for s in sites)==53
@@ -36,18 +36,30 @@ def main(out):
     initial=WorkingScene(source,rows,shapes,sites,settings)
     groups=local_groups(sites,p['approved_pair'],settings.construction_gap)
     priorities,exceptions=choose_priorities(sites,initial)
-    factors,limits,round_factors=freeze_factors(sites,groups,priorities,initial,settings)
+    targets=None;size_records=None;square_guided_ids=set()
+    if p['schema']=='diameter-class-t01-trial-policy/1':
+        from src.crop_diameter_classes import select_targets
+        square_guided_ids={s['source_id'] for i,s in enumerate(sites,1) if f'S{i:02d}' in p['square_guided_sites']}
+        for component,sid in list(priorities.items()):
+            if sid in square_guided_ids:
+                del priorities[component]
+                exceptions.append({'component_id':component,'source_id':sid,'reason':'OWNER_REQUESTED_SQUARE_GUIDED_RECESS','previous_round_priority':sid})
+        targets,size_records,limits=select_targets(sites,groups,priorities,initial,settings,p['diameter_classes_mm'])
+        round_factors={}
+    else:
+        factors,limits,round_factors=freeze_factors(sites,groups,priorities,initial,settings)
     selection={'source_sha256':sha(source_path),'unique_sites':len(sites),'occurrences':sum(len(s['aliases']) for s in sites),
         'sites':[base.site_record(s) for s in sites],'groups':groups,'priorities_by_physical_component':priorities,
         'priority_exceptions':exceptions,'factor_limits':limits,'source_feasible_priority_factors':round_factors,
         'ports':{sid:{trace:to_wkb(zone,byte_order=1).hex() for trace,zone in ports.items()} for sid,ports in initial.ports.items()}}
+    if size_records is not None:selection['size_classes']=size_records
     # Freeze identities, groups, factors and component priorities before either scene run.
     dump(out/'selection.json',selection)
     print('Frozen selection:',len(sites),'sites,',len(groups),'local groups,',len(priorities),'round priorities',flush=True)
-    dynamic=execute(source,rows,shapes,sites,groups,priorities,settings=settings)
+    dynamic=execute(source,rows,shapes,sites,groups,priorities,settings=settings,targets=targets,square_guided_ids=square_guided_ids)
     print('Dynamic construction:',dict(Counter(r['decision'] for r in dynamic['decisions'])),'events:',len(dynamic['events']),flush=True)
-    static=execute(source,rows,shapes,sites,groups,priorities,dynamic=False,settings=settings,counterfactuals=False)
-    replay=execute(source,rows,shapes,sites,groups,priorities,settings=settings,counterfactuals=False)
+    static=execute(source,rows,shapes,sites,groups,priorities,dynamic=False,settings=settings,counterfactuals=False,targets=targets,square_guided_ids=square_guided_ids)
+    replay=execute(source,rows,shapes,sites,groups,priorities,settings=settings,counterfactuals=False,targets=targets,square_guided_ids=square_guided_ids)
     replay_equal=all(geometry_hash(dynamic['scene'].accepted[s['source_id']])==geometry_hash(replay['scene'].accepted[s['source_id']]) for s in sites)
     hashes={};sitekeys={s['source_id']:f'S{i+1:02d}' for i,s in enumerate(sites)}
     for s in sites:
@@ -79,7 +91,7 @@ def main(out):
     for name,g in [('context',context),('original_effective',original),('dynamic_effective',dyn_effective),('static_effective',sta_effective),('write_domain_caps',cap_union),('additions',dyn_effective.difference(original))]:save_geometry(out,name,g,hashes)
     adapted_sites=sorted({e['target_source_id'] for e in events});companion_events=[e for e in events if e['neighbor_role']=='earlier accepted companion']
     counts=dict(Counter(r['decision'] for r in dynamic['decisions']));grown=sum(r['added_area_mm2']>1e-10 for r in dynamic['decisions'])
-    report={'schema':'balanced-t01-crop-result/1','status':'CROP_TRIAL_PENDING_FRESH_AUDIT','policy_sha256':POLICY_SHA,'selection_sha256':sha(out/'selection.json'),
+    report={'schema':'balanced-t01-crop-result/1','status':'CROP_TRIAL_PENDING_FRESH_AUDIT','policy_sha256':policy_sha,'selection_sha256':sha(out/'selection.json'),
         'source_sha256':sha(source_path),'source_fcu_records':len(rows),'unsupported_fcu_records':0,'viewport_mm':p['viewport_mm'],
         'unique_sites':51,'source_occurrences':53,'groups':groups,'priority_count':len(priorities),'priority_exceptions':exceptions,
         'counts':counts,'grown_sites':grown,'unchanged_sites':51-grown,'decisions':dynamic['decisions'],'events':events,
@@ -99,6 +111,51 @@ def main(out):
         'acceptance_status':'PARTIAL_PENDING_GEOMETRY_AND_OWNER_REVIEW','cursor_review':'NOT_RUN: CHANNEL_UNAVAILABLE',
         'runtime':{'python':platform.python_version(),'shapely':shapely.__version__,'geos':shapely.geos_version_string},
         'code_sha256':{name:sha(ROOT/name) for name in ['src/crop_balanced_t01.py','src/crop_balanced_capped_growth.py','src/crop_square_neighbor_experiment.py','src/native_inventory.py','tools/run_crop_balanced_t01.py','tools/audit_crop_balanced_t01.py','tools/render_crop_balanced_t01.py','src/crop_circle_sources.py']}}
+    if targets is not None:
+        report['code_sha256'].update({name:sha(ROOT/name) for name in ['src/crop_diameter_classes.py','tools/run_crop_diameter_classes_t01.py']})
+        report['sizing_mode']='SHARED_PHYSICAL_DIAMETER_CLASSES'
+        report['diameter_classes_mm']=p['diameter_classes_mm']
+        for d in report['decisions']:d['size_class']=size_records[d['source_id']]
+        controls=[]
+        from src.crop_square_neighbor_experiment import construct
+        for d in report['decisions']:
+            if not d['square_guided']:continue
+            sid=d['source_id'];site=next(s for s in sites if s['source_id']==sid)
+            control_scene=WorkingScene(source,rows,shapes,sites,settings)
+            for prior in report['decisions'][:d['input_revision']]:
+                control_scene.commit(control_scene.sites[prior['source_id']],dynamic['scene'].accepted[prior['source_id']],control_scene.revision)
+            obs=control_scene.obstacles(site,control_scene.revision)
+            plain=construct(site['core'],site['center'],d['proposed_radius_mm'],obs,square_enabled=False,settings=settings.kernel())['candidate']
+            control_path=save_geometry(out,'square_control/'+d['key']+'_disabled',plain,hashes)
+            controls.append({'source_id':sid,'key':d['key'],'input_revision':d['input_revision'],'disabled_wkb':control_path,
+                'symmetric_difference_mm2':plain.symmetric_difference(dynamic['scene'].accepted[sid]).area,
+                'held_fixed':'same target, source, scene revision, ports and ordinary clipping; only square-guided optional recess disabled'})
+        report['square_disabled_controls']=controls
+        previous=ROOT/p['previous_bundle'];assert sha(previous/'report.json')==p['previous_report_sha256']
+        old=json.loads((previous/'report.json').read_bytes());assert old['source_sha256']==report['source_sha256']
+        oldbyid={d['source_id']:d for d in old['decisions']};comparison=[]
+        from shapely import from_wkb
+        for d in report['decisions']:
+            oldd=oldbyid[d['source_id']];oldpath=previous/oldd['geometry']['dynamic']
+            assert sha(oldpath)==old['geometry_sha256'][oldd['geometry']['dynamic'][:-4]]
+            previous_shape=from_wkb(oldpath.read_bytes());new=dynamic['scene'].accepted[d['source_id']]
+            comparison.append({'key':d['key'],'source_id':d['source_id'],'center':d['center'],
+                'annotation_number':p['marked_sites'].index(d['key'])+1 if d['key'] in p['marked_sites'] else None,
+                'old_diameter_mm':2*oldd['proposed_radius_mm'],'new_diameter_mm':2*d['proposed_radius_mm'],
+                'old_added_area_mm2':oldd['added_area_mm2'],'new_added_area_mm2':d['added_area_mm2'],
+                'net_area_change_mm2':new.area-previous_shape.area,
+                'gained_relative_to_previous_mm2':new.difference(previous_shape).area,
+                'removed_previous_optional_mm2':previous_shape.difference(new).area,
+                'priority':d['priority'],'square_guided':d['square_guided'],
+                'class_mm':size_records[d['source_id']]['category_mm'],
+                'limits':size_records[d['source_id']]['limits']})
+        report['previous_comparison']={'previous_report_sha256':sha(previous/'report.json'),
+            'previous_effective_added_union_mm2':old['effective_added_union_mm2'],
+            'sites_with_more_added_area':sum(c['net_area_change_mm2']>1e-8 for c in comparison),
+            'sites_with_less_added_area':sum(c['net_area_change_mm2']<-1e-8 for c in comparison),'sites':comparison}
+        oldpath=previous/'dynamic_effective.wkb';assert sha(oldpath)==old['geometry_sha256']['dynamic_effective']
+        save_geometry(out,'previous_effective',from_wkb(oldpath.read_bytes()),hashes)
+        report['geometry_sha256']=hashes
     dump(out/'report.json',report)
     for name in report['code_sha256']:
         dest=out/'review_source'/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(ROOT/name,dest)
