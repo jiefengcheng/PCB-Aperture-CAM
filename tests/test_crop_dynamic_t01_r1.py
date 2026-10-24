@@ -8,11 +8,29 @@ from src.crop_dynamic_t01_r1 import (
     MAX_GROWTH_REACH_MM,
     _port_zone,
     _priority_outline,
+    _nearest_spacing_bound,
     grow_in_available_space,
 )
 
 
 class CropDynamicT01R1GeometryTests(unittest.TestCase):
+    def test_growth_reach_tracks_nearest_neighbor_spacing_not_seed_radius(self):
+        core = Point(0, 0).buffer(0.10, quad_segs=64)
+        near = Point(0.26, 0).buffer(0.10, quad_segs=64)
+        far = Point(0.50, 0).buffer(0.10, quad_segs=64)
+        reach, source_id, spacing = _nearest_spacing_bound(core,
+            [("far", far), ("near", near)])
+
+        self.assertEqual(source_id, "near")
+        self.assertAlmostEqual(spacing, 0.06, places=6)
+        self.assertAlmostEqual(reach, 0.04, places=6)
+
+        adapted_neighbor = Point(0.23, 0).buffer(0.10, quad_segs=64)
+        adapted_reach, adapted_id, _ = _nearest_spacing_bound(core,
+            [("near", adapted_neighbor), ("far", far)])
+        self.assertEqual(adapted_id, "near")
+        self.assertLess(adapted_reach, reach)
+
     def test_same_seed_uses_more_space_when_neighbor_is_removed(self):
         core = Point(0, 0).buffer(0.10, quad_segs=64)
         obstacle = Point(0.26, 0).buffer(0.12, quad_segs=64)
@@ -81,7 +99,7 @@ class CropDynamicT01R1GeometryTests(unittest.TestCase):
         self.assertAlmostEqual(HARD_GAP_MM, 0.020)
         self.assertGreater(CONSTRUCTION_BUFFER_MM, HARD_GAP_MM)
 
-    def test_uncalibrated_site_has_zero_growth_reach(self):
+    def test_zero_reach_keeps_the_source_core(self):
         core = Point(0, 0).buffer(0.03, quad_segs=64)
         result = grow_in_available_space(core, [], reach_mm=0.0)
         self.assertEqual(result["area_delta_mm2"], 0.0)
