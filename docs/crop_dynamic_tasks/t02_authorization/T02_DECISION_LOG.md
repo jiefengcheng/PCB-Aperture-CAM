@@ -85,3 +85,13 @@ The checkpoint section “Post-commit v7/v8 replay” supersedes the preceding r
 ## Current final bundle — 2026-10-25
 
 The “Full-census disposition repair and final review bundle” section in [`T02_PROGRESS_CHECKPOINT_20261025.md`](T02_PROGRESS_CHECKPOINT_20261025.md) supersedes v7/v8 as the current T02 review artifact. Final run/replay are v9/v10 and composition audit v6. The reporting fix preserves all 1,032 crop-intersecting source dispositions and explicitly protects the two unresolved crop-crossing polygon contours; no geometry policy or frozen T01 result changed. T02 remains experimental and pending owner judgment. The T02-only handoff still requires stopping before T03.
+
+## Owner direction: deferred trace overlap recording — 2026-10-25
+
+Straight side-by-side trace spacing is measured from the trace centerline with a 0.02002 mm minimum. At non-side/corner interactions, candidate rectangles may reach or slightly overlap traces, but T02 leaves traces unchanged and records every positive-area overlap for a future trace task. See the “Centerline spacing and deferred trace-overlap ledger” section of `T02_PROGRESS_CHECKPOINT_20261025.md` for v29/v30, audit evidence, and the unresolved quantitative meaning of “slight.” This diagnostic does not accept T02, authorize trace editing/T03, or establish manufacturing validity.
+
+## Supplemental owner direction and overlap accounting — 2026-10-25
+
+Policy v8 supersedes the v7 diagnostic ledger: record all positive-area addition/trace-copper intersections, including side-by-side physical copper overlaps even when centerline standoff passes. Report pairwise and unique T02-added overlap separately. The latest v31/v32 review, audit metrics, and summary-only audit disposition are in `T02_PROGRESS_CHECKPOINT_20261025.md`. Trace geometry remains unchanged in T02; overlaps are future-trace work items. The word “slight” still has no numeric bound, so no overlap is accepted by this record.
+
+The summary-only v31/v32 audit returned `PASS_REPORTED` for deterministic overlap accounting and `UNRESOLVED` for overlap acceptability. It calls out the 13 side-by-side physical copper intersections, the 12.43% unique overlap fraction, shared-kernel limitations, and the need for penetration/trace-width review plus owner interpretation of “slight.” See the latest checkpoint addenda for exact metrics and limits. This is not T02 owner acceptance or T03 authorization.

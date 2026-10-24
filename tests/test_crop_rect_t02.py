@@ -8,6 +8,7 @@ from src.crop_rect_t02 import (
     RectGrowthPolicy,
     bind_source_dispositions,
     execute,
+    limiting_constraints,
     rectangular_feature,
     validate_accepted_t01_baseline,
 )
@@ -21,6 +22,42 @@ def row_for(geom, identity='source-id'):
 
 
 class CropRectT02Tests(unittest.TestCase):
+    def test_limiting_constraints_name_the_source_trace_and_prior_scene_geometry(self):
+        addition = box(0, 0, 1, 1)
+        result = limiting_constraints(
+            addition,
+            target_source_id="target",
+            source_geometries={"target": box(0, 0, 0.5, 0.5), "source": box(1.03, 0, 2, 1)},
+            source_metadata={"source": {"kind": "gr_poly", "source_span": [10, 20]}},
+            prior_t02_additions={"prior": box(-0.06, 0, -0.03, 1)},
+            trace_reservations=[{"source_id": "trace", "source_kind": "segment",
+                                 "source_span": [30, 40], "org_surface_gap_mm": 0.07,
+                                 "required_retained_gap_mm": 0.035}],
+            trace_geometries={"trace": box(0, 1.04, 1, 2)},
+            hard_gap_mm=0.02,
+            construction_gap_mm=0.02002,
+            tolerance_mm=0.00001,
+        )
+
+        self.assertEqual(result["nearest_original_protected_source"]["source_id"], "source")
+        self.assertAlmostEqual(result["nearest_original_protected_source"]["measured_gap_mm"], 0.03)
+        self.assertEqual(result["nearest_prior_t02_addition"]["source_id"], "prior")
+        self.assertEqual(result["trace_reservations"][0]["source_id"], "trace")
+        self.assertAlmostEqual(result["trace_reservations"][0]["measured_final_gap_mm"], 0.04)
+        self.assertEqual(result["tightest_recorded_constraint"]["source_id"], "trace")
+        self.assertEqual(result["tightest_recorded_constraint"]["constraint_type"],
+                         "deferred_non_side_trace_interaction")
+
+    def test_limiting_constraints_fail_closed_when_reserved_trace_is_missing(self):
+        with self.assertRaisesRegex(ValueError, "T02_TRACE_RESERVATION_SOURCE_MISSING:missing"):
+            limiting_constraints(
+                box(0, 0, 1, 1), target_source_id="target", source_geometries={},
+                source_metadata={}, prior_t02_additions={},
+                trace_reservations=[{"source_id": "missing", "required_retained_gap_mm": 0.02}],
+                trace_geometries={}, hard_gap_mm=0.02, construction_gap_mm=0.02002,
+                tolerance_mm=0.00001,
+            )
+
     def test_source_dispositions_preserve_inventory_classes_and_bind_target_outcomes(self):
         inventory = [
             {"source_id": "rect", "source_sha256": "src", "source_span": [1, 2],
@@ -181,43 +218,93 @@ class CropRectT02Tests(unittest.TestCase):
         self.assertLessEqual(decision['added_area_mm2'],RectGrowthPolicy().area_epsilon_mm2)
         self.assertTrue(all(decision['verification'].values()))
 
-    def test_side_trace_reserves_half_of_its_original_gap(self):
+    def test_corner_trace_overlap_is_recorded_for_future_trace_session(self):
         row,payloads=row_for(box(0,0,1,1),'rect')
         feature=rectangular_feature(row,payloads,box(-2,-2,4,4))
         trace={'source_id':'trace-1','source_kind':'segment','source_span':[40,60],
-               'geometry':box(1.2,-1,1.21,2)}
-        result=execute([feature],[trace['geometry']],box(-2,-2,4,4),side_traces=[trace])
+               'geometry':box(1.05,1.05,1.06,1.06)}
+        result=execute([feature],[],box(-2,-2,4,4), side_traces=[trace])
         decision=result['decisions'][0]
         reservation=decision['trace_gap_reservations'][0]
         candidate=result['candidates_by_source']['rect']
-        self.assertAlmostEqual(reservation['org_surface_gap_mm'],0.2,places=9)
-        self.assertAlmostEqual(reservation['required_retained_gap_mm'],0.1,places=9)
-        self.assertAlmostEqual(candidate.difference(feature['geometry']).distance(trace['geometry']),0.1,places=7)
-        self.assertTrue(decision['verification']['half_org_side_trace_gap_preserved'])
+        self.assertFalse(reservation['side_by_side_classification'])
+        self.assertAlmostEqual(reservation['org_surface_gap_mm'],2**0.5*0.05,places=9)
+        self.assertEqual(reservation['required_retained_gap_mm'],0.0)
+        self.assertTrue(decision['future_trace_overlap_records'])
+        self.assertEqual(decision['future_trace_overlap_records'][0]['trace_source_id'],'trace-1')
+        self.assertEqual(decision['future_trace_overlap_records'][0]['disposition'],'DEFERRED_TO_FUTURE_TRACE_SESSION')
+        self.assertFalse(decision['future_trace_overlap_records'][0]['trace_changed_in_t02'])
         self.assertEqual(decision['orientation_radians'],feature['orientation_radians'])
-        self.assertEqual(sorted(decision['accepted_size_mm_in_source_axes']),[1.35,1.5])
 
-    def test_attached_trace_uses_construction_floor_for_future_growth(self):
+    def test_side_by_side_trace_uses_centerline_minimum_gap(self):
+        row,payloads=row_for(box(0,0,1,1),'rect')
+        feature=rectangular_feature(row,payloads,box(-2,-2,4,4))
+        trace={'source_id':'trace-side','source_kind':'segment','source_span':[91,110],
+               'geometry':box(1.13,-1,1.14,2),
+               'centerline_geometry':__import__('shapely.geometry',fromlist=['LineString']).LineString([(1.135,-1),(1.135,2)])}
+        result=execute([feature],[],box(-2,-2,4,4),side_traces=[trace])
+        decision=result['decisions'][0]
+        growth=result['candidates_by_source']['rect'].difference(feature['geometry'])
+        reservation=decision['trace_gap_reservations'][0]
+        self.assertTrue(reservation['side_by_side_classification'])
+        self.assertEqual(reservation['required_centerline_gap_mm'],RectGrowthPolicy().construction_gap_mm)
+        self.assertGreaterEqual(growth.distance(trace['centerline_geometry']) + RectGrowthPolicy().geometry_tolerance_mm,
+                                reservation['required_centerline_gap_mm'])
+
+    def test_side_by_side_copper_intersection_is_logged_even_when_centerline_rule_passes(self):
+        row,payloads=row_for(box(0,0,1,1),'rect-wide-trace')
+        feature=rectangular_feature(row,payloads,box(-2,-2,4,4))
+        trace={'source_id':'wide-trace','source_kind':'segment','source_span':[111,130],
+               'geometry':box(1.08,-1,1.18,2),
+               'centerline_geometry':__import__('shapely.geometry',fromlist=['LineString']).LineString([(1.13,-1),(1.13,2)]),
+               'geometry_sha256':'wide-trace-shape'}
+        result=execute([feature],[],box(-2,-2,4,4),side_traces=[trace])
+        decision=result['decisions'][0]
+        candidate=result['candidates_by_source']['rect-wide-trace']
+        self.assertGreater(candidate.difference(feature['geometry']).intersection(trace['geometry']).area,0)
+        self.assertAlmostEqual(candidate.distance(trace['centerline_geometry']),
+                               RectGrowthPolicy().construction_gap_mm,places=6)
+        record=decision['future_trace_overlap_records'][0]
+        self.assertEqual(record['interaction_class'],'SIDE_BY_SIDE_CENTERLINE_CONSTRAINED')
+        self.assertEqual(record['trace_source_id'],'wide-trace')
+
+    def test_attached_corner_trace_overlap_is_deferred(self):
         row,payloads=row_for(box(0,0,1,1),'rect')
         feature=rectangular_feature(row,payloads,box(-2,-2,4,4))
         trace={'source_id':'trace-touch','source_kind':'segment','source_span':[70,90],
                'geometry':box(1,0.4,2,0.6)}
-        result=execute([feature],[trace['geometry']],box(-2,-2,4,4),side_traces=[trace])
+        result=execute([feature],[],box(-2,-2,4,4),side_traces=[trace])
         decision=result['decisions'][0]
         reservation=decision['trace_gap_reservations'][0]
         growth=result['candidates_by_source']['rect'].difference(feature['geometry'])
         self.assertEqual(reservation['org_surface_gap_mm'],0)
-        self.assertEqual(reservation['required_retained_gap_mm'],RectGrowthPolicy().construction_gap_mm)
-        self.assertGreaterEqual(growth.distance(trace['geometry']) + RectGrowthPolicy().geometry_tolerance_mm,
-                                reservation['required_retained_gap_mm'])
+        self.assertEqual(reservation['required_retained_gap_mm'],0)
+        self.assertTrue(decision['future_trace_overlap_records'])
 
     def test_policy_rejects_looser_factor_or_gap(self):
-        with self.assertRaisesRegex(ValueError,'T02_FACTOR_MUST_BE_1_5'):
+        with self.assertRaisesRegex(ValueError,'T02_FACTOR_OUT_OF_AUTHORIZED_RANGE'):
             RectGrowthPolicy(max_axis_factor=1.6).validate()
         with self.assertRaisesRegex(ValueError,'CONSTRUCTION_GAP_BELOW_HARD_GAP'):
             RectGrowthPolicy(construction_gap_mm=.01).validate()
-        with self.assertRaisesRegex(ValueError,'T02_SIDE_TRACE_GAP_FRACTION_MUST_BE_ONE_HALF'):
-            RectGrowthPolicy(side_trace_gap_fraction_of_org=.4).validate()
+        with self.assertRaisesRegex(ValueError,'T02_SIDE_TRACE_GAP_FRACTION_OUT_OF_RANGE'):
+            RectGrowthPolicy(side_trace_gap_fraction_of_org=1.1).validate()
+
+    def test_neighboring_round_copper_limits_axis_but_cannot_recess_rectangle(self):
+        row,payloads=row_for(box(0,0,1,1),'rect')
+        feature=rectangular_feature(row,payloads,box(-2,-2,4,4))
+        circle=affinity.translate(affinity.scale(box(-.2,-.2,.2,.2).buffer(1,quad_segs=32),.25,.25),xoff=1.3,yoff=.5)
+        result=execute([feature],[circle],box(-2,-2,4,4))
+        decision=result['decisions'][0]
+        candidate=result['candidates_by_source']['rect']
+        self.assertTrue(decision['verification']['candidate_is_full_rectangle_without_recess'])
+        self.assertEqual(len(candidate.exterior.coords),5)
+        self.assertEqual(len(candidate.interiors),0)
+        self.assertTrue(candidate.covers(feature['geometry']))
+        self.assertGreaterEqual(candidate.difference(feature['geometry']).distance(circle) +
+                                RectGrowthPolicy().geometry_tolerance_mm,
+                                RectGrowthPolicy().construction_gap_mm)
+        self.assertLessEqual(candidate.difference(affinity.scale(feature['geometry'],1.25,1.25,origin=(.5,.5))).area,
+                             RectGrowthPolicy().area_epsilon_mm2)
 
 
 if __name__=='__main__':

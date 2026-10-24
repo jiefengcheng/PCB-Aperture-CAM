@@ -4,9 +4,19 @@ sys.dont_write_bytecode = True
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 REGISTRATION=ROOT/'out/crop_dynamic_tasks/t02_crop_registration_20261024'
-POLICY_PATH=ROOT/'contracts/crop_rect_t02_policy_v2.json'
-INVENTORY_PATH=ROOT/'out/crop_dynamic_tasks/t02_org_inventory_20261025_v2'
-OUT=ROOT/'out/crop_dynamic_tasks/t02_rectangles_crop_20261025_v5'
+POLICY_PATH=ROOT/'contracts/crop_rect_t02_policy_v8.json'
+INVENTORY_PATH=ROOT/'out/crop_dynamic_tasks/t02_org_inventory_20261025_v9'
+OUT=ROOT/'out/crop_dynamic_tasks/t02_rectangles_crop_20261025_v31'
+if '--policy' in sys.argv:
+    i=sys.argv.index('--policy')
+    try: POLICY_PATH=(ROOT/sys.argv[i+1]).resolve()
+    except IndexError: raise SystemExit('--policy requires a checkout-relative path')
+    del sys.argv[i:i+2]
+if '--inventory' in sys.argv:
+    i=sys.argv.index('--inventory')
+    try: INVENTORY_PATH=(ROOT/sys.argv[i+1]).resolve()
+    except IndexError: raise SystemExit('--inventory requires a checkout-relative path')
+    del sys.argv[i:i+2]
 if '--output' in sys.argv:
     arg_index=sys.argv.index('--output')
     try: OUT=Path(sys.argv[arg_index+1]).resolve()
@@ -15,11 +25,15 @@ if '--output' in sys.argv:
 import hashlib,json,platform
 from collections import Counter
 from shapely import wkb
-from shapely.geometry import box
+from shapely.geometry import box,LineString
 from shapely.ops import unary_union
+from sexpdata import loads
 from src.crop_circle_sources import verify_assets
 from src.org_edit_target_map import _inventory_side,_row_geometry,_svg_path
-from src.crop_rect_t02 import (RectGrowthPolicy,rectangular_feature,execute,
+from src.native_reference import one
+from src.native_inventory import arc_points
+from src.crop_rect_t02 import (RectGrowthPolicy,rectangular_feature,execute,limiting_constraints,
+                               envelope_constraint_records,
                                validate_accepted_t01_baseline,bind_source_dispositions)
 from tools.build_copper_group_review import _mask_keypoints,_fit_translation_from_anchors
 sha=lambda b:hashlib.sha256(b).hexdigest()
@@ -124,13 +138,15 @@ for row in side['rows']:
         source_shapes_by_id[row['id']]=geom
         all_shapes.append(geom)
         if geom.intersects(crop):fcu.append(geom)
-        feature=rectangular_feature(row,side['payloads'],crop)
+        feature=rectangular_feature(row,side['payloads'],crop,max_axis_factor=float(policy_doc['factor_per_axis']))
         if feature:
             features.append(feature);target_ids.add(row['id'])
             dispositions.append({'source_id':row['id'],'source_sha256':row['source_sha256'],'source_span':row['source_span'],'source_geometry_sha256':row['geometry_sha256'],'source_kind':row['kind'],'source_layer':'F.Cu','source_geometry_role':row['geometry_role'],'geometric_class':'axis-aligned filled rectangle','net_name':row.get('net_name'),'footprint_reference':row.get('reference'),'disposition':'TREAT','reason':'Exact source-bound filled rectangle; geometry-derived eligibility. No pad/net identity inferred.'})
         elif geom.intersects(crop):
-            rect_without_cap_gate=rectangular_feature(row,side['payloads'],crop,enforce_full_cap_in_crop=False)
-            boundary_reason=('Exact rectangle withheld: its complete 1.5x growth envelope crosses the selected crop boundary; preserve the entire source shape unchanged.'
+            rect_without_cap_gate=rectangular_feature(
+                row,side['payloads'],crop,enforce_full_cap_in_crop=False,
+                max_axis_factor=float(policy_doc['factor_per_axis']))
+            boundary_reason=(f'Exact rectangle withheld: its complete {float(policy_doc["factor_per_axis"]):.2f}x growth envelope crosses the selected crop boundary; preserve the entire source shape unchanged.'
                              if rect_without_cap_gate else
                              'Non-target source copper retained unchanged; may include circles, routed primitives, and two other polygon contours.')
             dispositions.append({'source_id':row['id'],'source_sha256':row['source_sha256'],'source_span':row['source_span'],'source_geometry_sha256':row['geometry_sha256'],'source_kind':row['kind'],'source_layer':'F.Cu','source_geometry_role':row['geometry_role'],'bounds_mm':row['bounds_mm'],'net_name':row.get('net_name'),'footprint_reference':row.get('reference'),'disposition':'KEEP_PROTECTED','reason':boundary_reason})
@@ -145,13 +161,23 @@ policy=RectGrowthPolicy(
     hard_gap_mm=float(policy_doc['hard_experimental_gap_mm']),
     geometry_tolerance_mm=float(policy_doc['geometry_tolerance_mm']),
     quad_segs=int(policy_doc['quad_segs']),
-    side_trace_gap_fraction_of_org=float(policy_doc['side_trace_gap_reservation']['fraction_of_original_surface_gap']),
 )
 policy.validate()
-protected=[g for row in side['rows'] if 'F.Cu' in row.get('layers',[]) and row.get('id') not in target_ids and (g:=source_shapes_by_id.get(row['id'])) is not None]
+trace_source_ids={row['id'] for row in side['rows']
+                  if row.get('kind') in policy_doc['trace_interactions']['trace_source_kinds']
+                  and 'F.Cu' in row.get('layers',[])}
+protected=[g for row in side['rows'] if 'F.Cu' in row.get('layers',[]) and row.get('id') not in target_ids|trace_source_ids and (g:=source_shapes_by_id.get(row['id'])) is not None]
+def native_trace_centerline(row):
+    node=loads(raw[row['source_span'][0]:row['source_span'][1]].decode('utf-8'))
+    xy=lambda key:tuple(map(float,one(node,key)))
+    start,end=xy('start'),xy('end')
+    points=arc_points(start,xy('mid'),end) if row['kind']=='arc' else [start,end]
+    return LineString(points)
 side_traces=[{'source_id':row['id'],'source_kind':row['kind'],'source_span':row['source_span'],
-              'geometry':source_shapes_by_id[row['id']]}
-             for row in side['rows'] if row.get('kind') in policy_doc['side_trace_gap_reservation']['native_source_kinds']
+              'geometry':source_shapes_by_id[row['id']],
+              'centerline_geometry':native_trace_centerline(row),
+              'geometry_sha256':row.get('geometry_sha256')}
+              for row in side['rows'] if row.get('kind') in policy_doc['trace_interactions']['trace_source_kinds']
              and 'F.Cu' in row.get('layers',[]) and row['id'] in source_shapes_by_id]
 # Reconstruct the accepted scene from its exact owner-bound WKB, then add its
 # positive contribution to protected geometry for every T02 proposal.
@@ -183,6 +209,18 @@ source_index_to_id=all_source_ids
 added_by_source=result['accepted_additions_by_source']
 added_ids=list(added_by_source);added_geoms=[added_by_source[i] for i in added_ids]
 added_tree=STRtree(added_geoms) if added_geoms else None
+source_meta_by_id={row['id']:row for row in side['rows'] if row['id'] in source_shapes_by_id}
+accepted_t01_constraint_id=f"T01_SCENE:{owner['decision_id']}"
+limiting_source_geometries=dict(source_shapes_by_id)
+limiting_source_metadata=dict(source_meta_by_id)
+if not t01_additions.is_empty:
+    limiting_source_geometries[accepted_t01_constraint_id]=t01_additions
+    limiting_source_metadata[accepted_t01_constraint_id]={
+        'kind':'accepted_T01_scene_addition', 'source_span':[],
+        'geometry_sha256':sha(t01_scene_bytes),
+    }
+trace_by_id={t['source_id']:t['centerline_geometry'] for t in side_traces}
+prior_t02_source_ids=[]
 for d in result['decisions']:
     sid=d['source_id'];f=by_id[sid]
     candidate=wkb.loads((OUT/d['candidate_wkb_file']).read_bytes())
@@ -190,22 +228,44 @@ for d in result['decisions']:
     cap=__import__('shapely.affinity',fromlist=['scale']).scale(f['geometry'],xfact=policy.max_axis_factor,yfact=policy.max_axis_factor,origin=tuple(f['center_mm']))
     assert candidate.difference(cap).area<=policy.area_epsilon_mm2
     query=candidate.buffer(policy.hard_gap_mm+policy.geometry_tolerance_mm)
-    other=[source_shapes_by_id[source_index_to_id[int(i)]] for i in sorted(source_tree.query(query)) if source_index_to_id[int(i)]!=sid]
+    other=[source_shapes_by_id[source_index_to_id[int(i)]] for i in sorted(source_tree.query(query)) if source_index_to_id[int(i)]!=sid and source_index_to_id[int(i)] not in trace_source_ids]
     if added_tree is not None:
         other.extend(added_geoms[int(i)] for i in sorted(added_tree.query(query)) if added_ids[int(i)]!=sid)
     blockers=unary_union(other) if other else crop.difference(crop)
     if not t01_additions.is_empty:
         blockers=unary_union([blockers,t01_additions])
     growth=candidate.difference(f['geometry'])
+    d['limiting_constraints']=limiting_constraints(
+        growth,
+        target_source_id=sid,
+        source_geometries=limiting_source_geometries,
+        source_metadata=limiting_source_metadata,
+        prior_t02_additions={prior_id:added_by_source[prior_id] for prior_id in prior_t02_source_ids},
+        trace_reservations=d['trace_gap_reservations'],
+        trace_geometries=trace_by_id,
+        hard_gap_mm=policy.hard_gap_mm,
+        construction_gap_mm=policy.construction_gap_mm,
+        tolerance_mm=policy.geometry_tolerance_mm,
+    )
+    d['limiting_constraints'].update(envelope_constraint_records(
+        candidate, cap, crop,
+        accepted_size_mm=d['accepted_size_mm_in_source_axes'],
+        maximum_size_mm=d['maximum_size_mm'],
+        policy_sha256=policy_hash,
+        tolerance_mm=policy.geometry_tolerance_mm,
+        area_epsilon_mm2=policy.area_epsilon_mm2,
+    ))
     assert growth.is_empty or growth.distance(blockers)+policy.geometry_tolerance_mm>=policy.hard_gap_mm
-    trace_by_id={t['source_id']:t['geometry'] for t in side_traces}
     for reservation in d['trace_gap_reservations']:
-        trace=trace_by_id[reservation['source_id']]
-        assert abs(f['geometry'].distance(trace)-reservation['org_surface_gap_mm'])<=policy.geometry_tolerance_mm
-        assert growth.distance(trace)+policy.geometry_tolerance_mm>=reservation['required_retained_gap_mm']
+        trace=next(t for t in side_traces if t['source_id']==reservation['source_id'])
+        assert abs(f['geometry'].distance(trace['geometry'])-reservation['org_surface_gap_mm'])<=policy.geometry_tolerance_mm
+        if reservation['side_by_side_classification']:
+            assert growth.is_empty or growth.distance(trace['centerline_geometry'])+policy.geometry_tolerance_mm>=reservation['required_centerline_gap_mm']
     d['verification']['saved_trace_gap_reservations_pass']=True
     assert candidate.is_valid
     assert sha(candidate.wkb)==d['candidate_geometry_sha256']
+    if d['decision']=='GROW':
+        prior_t02_source_ids.append(sid)
 bound_dispositions=bind_source_dispositions(
     inventory_dispositions['dispositions'],dispositions,result['decisions'])
 source_disposition_counts=Counter(d['disposition'] for d in bound_dispositions)
@@ -229,7 +289,20 @@ rows=[]
 for d in result['decisions']:
     q={k:v for k,v in d.items() if k!='candidate_wkb_file'}
     rows.append(q)
-save('t02_decisions.json',{'schema':'crop-t02-decisions/2','policy':{'max_axis_factor':policy.max_axis_factor,'construction_gap_mm':policy.construction_gap_mm,'hard_gap_mm':policy.hard_gap_mm,'geometry_tolerance_mm':policy.geometry_tolerance_mm,'quad_segs':policy.quad_segs,'side_trace_gap_fraction_of_org':policy.side_trace_gap_fraction_of_org},'policy_sha256':policy_hash,'inventory_manifest_sha256':inventory_hash,'source_sha256':source_hash,'target_set_sha256':sha('\n'.join(sorted(target_ids)).encode()),'decision_count':len(rows),'counts':dict(Counter(d['decision'] for d in rows)),'decisions':rows})
+future_trace_items=[{'rectangle_source_id':d['source_id'],'rectangle_source_span':d['source_span'],**item}
+                    for d in rows for item in d.get('future_trace_overlap_records',[])]
+trace_copper_union=unary_union([t['geometry'] for t in side_traces]) if side_traces else crop.difference(crop)
+unique_t02_trace_overlap=add.intersection(trace_copper_union)
+save('future_trace_work_items.json',{
+    'schema':'t02-future-trace-work-items/1','task':'T02_ONLY','status':'RECORDED_FOR_FUTURE_TRACE_TASK',
+    'source_sha256':source_hash,'policy_sha256':policy_hash,'t01_scene_sha256':sha(t01_scene_bytes),
+    'trace_changed_in_t02':False,'count':len(future_trace_items),
+    'pairwise_overlap_area_total_mm2':sum(item['overlap_area_mm2'] for item in future_trace_items),
+    'unique_t02_added_copper_overlap_area_mm2':unique_t02_trace_overlap.area,
+    'unique_overlap_fraction_of_t02_added_area':unique_t02_trace_overlap.area/add.area if add.area else 0.0,
+    'items':future_trace_items,
+})
+save('t02_decisions.json',{'schema':'crop-t02-decisions/3','policy':{'max_axis_factor':policy.max_axis_factor,'construction_gap_mm':policy.construction_gap_mm,'hard_gap_mm':policy.hard_gap_mm,'geometry_tolerance_mm':policy.geometry_tolerance_mm,'quad_segs':policy.quad_segs},'policy_sha256':policy_hash,'inventory_manifest_sha256':inventory_hash,'source_sha256':source_hash,'target_set_sha256':sha('\n'.join(sorted(target_ids)).encode()),'decision_count':len(rows),'counts':dict(Counter(d['decision'] for d in rows)),'decisions':rows})
 (OUT/'t02_additions.wkb').write_bytes(add.wkb)
 (OUT/'t01_accepted_plus_t02.wkb').write_bytes(combined.wkb)
 basepath=REGISTRATION/'org_crop.wkb'
@@ -246,6 +319,6 @@ def ring_data(g):
 for name,g in [('org',org_region),('accepted_t01',t01_scene),('t01_plus_t02',combined),('t02_delta',add)]:
     save(name+'_render_rings.json',ring_data(g))
 causal_events=[{'target_source_id':d['source_id'],'neighbor':n} for d in rows for n in d['causal_prior_t02_neighbors']]
-summary={'task':'T02_ONLY','status':'EXPERIMENTAL_REAL_CROP_EXECUTED','accepted_T01_decision_id':owner['decision_id'],'accepted_T01_status':'ACCEPTED_VISUAL_CROP','accepted_T01_scene_sha256':sha(t01_scene_bytes),'accepted_T01_scene_area_mm2':t01_scene.area,'accepted_T01_policy_sha256':sha(t01_policy_bytes),'accepted_T01_selection_sha256':sha(t01_selection_bytes),'accepted_T01_square_recess_policy':t01_policy.get('square_guided_recess'),'accepted_T01_owner_correction':t01_policy.get('owner_marked_area_correction'),'source_sha256':source_hash,'policy_sha256':policy_hash,'org_inventory_manifest_sha256':inventory_hash,'crop_bounds_mm':report['crop_bounds_org_mm'],'target_set_count':len(features),'target_set_sha256':sha('\n'.join(sorted(target_ids)).encode()),'decision_counts':dict(Counter(d['decision'] for d in rows)),'source_disposition_counts':dict(source_disposition_counts),'source_class_counts':dict(source_class_counts),'added_area_mm2':add.area,'accepted_union_area_mm2':combined.area,'all_per_target_checks_pass':all(all(d['verification'].values()) for d in rows),'current_neighbor_events':len(causal_events),'current_neighbor_causal_pairs':causal_events,'side_trace_reservation_fraction_of_org_gap':policy.side_trace_gap_fraction_of_org,'side_trace_reservation_count':sum(len(d['trace_gap_reservations']) for d in rows),'edit_access_in_constructor':False,'native_export':'NOT_RUN','electrical_status':'NOT_ESTABLISHED','manufacturing_status':'NOT_ESTABLISHED','EDIT_equivalence':'NOT_ESTABLISHED','environment':{'python':platform.python_version()},'limitations':['Standalone F.Cu geometry records contain no pad/net identity; TREAT denotes a source-owned geometric rectangle only.','Native segment/arc proximity is geometric; it does not infer same-net or attachment intent.','EDIT was used only to locate the displayed viewport and was not read by proposal generation.','Screenshot crop edge estimate uncertainty is at least 0.0223 mm; source geometry uses exact native units.','The shared 1.5x per-axis ceiling and half-ORG trace corridor are experimental guardrails, not manufacturing rules.']}
+summary={'task':'T02_ONLY','status':'EXPERIMENTAL_REAL_CROP_EXECUTED','accepted_T01_decision_id':owner['decision_id'],'accepted_T01_status':'ACCEPTED_VISUAL_CROP','accepted_T01_scene_sha256':sha(t01_scene_bytes),'accepted_T01_scene_area_mm2':t01_scene.area,'accepted_T01_policy_sha256':sha(t01_policy_bytes),'accepted_T01_selection_sha256':sha(t01_selection_bytes),'accepted_T01_square_recess_policy':t01_policy.get('square_guided_recess'),'accepted_T01_owner_correction':t01_policy.get('owner_marked_area_correction'),'source_sha256':source_hash,'policy_sha256':policy_hash,'org_inventory_manifest_sha256':inventory_hash,'crop_bounds_mm':report['crop_bounds_org_mm'],'target_set_count':len(features),'target_set_sha256':sha('\n'.join(sorted(target_ids)).encode()),'decision_counts':dict(Counter(d['decision'] for d in rows)),'source_disposition_counts':dict(source_disposition_counts),'source_class_counts':dict(source_class_counts),'added_area_mm2':add.area,'accepted_union_area_mm2':combined.area,'all_per_target_checks_pass':all(all(d['verification'].values()) for d in rows),'current_neighbor_events':len(causal_events),'current_neighbor_causal_pairs':causal_events,'side_by_side_centerline_gap_mm':policy.construction_gap_mm,'side_trace_reservation_count':sum(len(d['trace_gap_reservations']) for d in rows),'future_trace_overlap_count':len(future_trace_items),'future_trace_overlap_pairwise_area_total_mm2':sum(item['overlap_area_mm2'] for item in future_trace_items),'future_trace_overlap_unique_area_mm2':unique_t02_trace_overlap.area,'future_trace_overlap_unique_fraction_of_additions':unique_t02_trace_overlap.area/add.area if add.area else 0.0,'future_trace_work_items':'future_trace_work_items.json','trace_changed_in_t02':False,'edit_access_in_constructor':False,'native_export':'NOT_RUN','electrical_status':'NOT_ESTABLISHED','manufacturing_status':'NOT_ESTABLISHED','EDIT_equivalence':'NOT_ESTABLISHED','environment':{'python':platform.python_version()},'limitations':['Standalone F.Cu geometry records contain no pad/net identity; TREAT denotes a source-owned geometric rectangle only.','Native segment/arc proximity is geometric; it does not infer same-net or attachment intent.','EDIT was used only to locate the displayed viewport and was not read by proposal generation.','Screenshot crop edge estimate uncertainty is at least 0.0223 mm; source geometry uses exact native units.','The 1.25x per-axis ceiling, intact rectangle rule, and circle occupancy plus construction gap are experimental guardrails, not manufacturing rules.','Straight side-by-side spacing is a centerline standoff, not guaranteed surface clearance. Every positive-area T02-addition/trace-copper overlap is recorded; traces remain unchanged. Pairwise and unique overlap metrics are separately reported. The owner has not yet numerically bounded slight overlap.']}
 save('t02_result.json',summary)
 print(json.dumps(summary,indent=2))

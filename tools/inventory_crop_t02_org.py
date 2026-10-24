@@ -37,7 +37,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--policy",
-        default="contracts/crop_rect_t02_policy_v2.json",
+        default="contracts/crop_rect_t02_policy_v8.json",
         help="frozen source and eligibility policy relative to the checkout",
     )
     args = parser.parse_args()
@@ -104,7 +104,8 @@ def main() -> int:
             continue
 
         intersecting_counts[row["kind"]] += 1
-        rect = rectangular_feature(row, payloads, crop)
+        rect = rectangular_feature(row, payloads, crop,
+                                   max_axis_factor=float(policy["factor_per_axis"]))
         if row["kind"] == "gr_poly":
             if geom.geom_type == "Polygon":
                 polygon_shapes[f"Polygon/{len(geom.exterior.coords)-1}vertices/{len(geom.interiors)}holes"] += 1
@@ -123,7 +124,9 @@ def main() -> int:
             size = rect["source_size_mm"]
         else:
             vertex_count = len(geom.exterior.coords) - 1 if geom.geom_type == "Polygon" else None
-            rect_without_cap_gate = rectangular_feature(row, payloads, crop, enforce_full_cap_in_crop=False)
+            rect_without_cap_gate = rectangular_feature(
+                row, payloads, crop, enforce_full_cap_in_crop=False,
+                max_axis_factor=float(policy["factor_per_axis"]))
             if rect_without_cap_gate is not None:
                 reason = (
                     "Exact ORG source rectangle withheld unchanged because its complete 1.5x per-axis "

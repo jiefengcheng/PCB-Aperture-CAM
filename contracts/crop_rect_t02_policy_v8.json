@@ -1,0 +1,39 @@
+{
+  "schema": "crop-rect-t02-policy/8",
+  "task": "T02_ONLY",
+  "purpose": "ORG-derived experimental growth of standalone filled rectangles with intact contours, circle keep-out, a hard 1.25x per-axis ceiling, trace-centerline clearance on straight side-by-side interactions, and a source-bound deferred-work log for any permitted corner trace overlap.",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "crop_bounds_org_mm": [16.44342222222222, -16.556731666666664, 27.198977777777777, -8.645620555555553],
+  "edit_source_sha256_for_crop_location_only": "ec141305a9d93db87709124ba5aa9378135485ae5458f019e47a342d099496a5",
+  "eligibility": "Standalone filled F.Cu source polygon with exact supported geometry, four unique vertices, adjacent perpendicular edges, and equal opposing sides. The complete 1.25x per-axis growth envelope must fit inside the registered crop; otherwise preserve the whole source shape unchanged. Retain exact source spans and do not infer pad or net identity.",
+  "factor_per_axis": 1.25,
+  "factor_basis": "Owner-directed hard 1.25x ceiling on each source-local axis; not a manufacturing sizing rule.",
+  "construction_gap_mm": 0.02002,
+  "hard_experimental_gap_mm": 0.02,
+  "geometry_tolerance_mm": 0.00001,
+  "quad_segs": 128,
+  "contour_rule": "Every proposal remains one complete rectangle in the source-local axes. Original and T01 circle occupancy plus the 0.02002 mm construction gap is protected; neighboring copper may limit either growth axis, but must never carve, recess, notch, or round a rectangular contour.",
+  "trace_interactions": {
+    "trace_source_kinds": ["segment", "arc"],
+    "side_by_side_rule": "For a straight native segment running alongside the central portion of a rectangle side within 15 degrees, keep the complete grown rectangle at least 0.02002 mm from the segment centerline. The trace width is not included in this centerline measurement.",
+    "corner_rule": "At non-side-by-side corner interactions, T02 may propose rectangle growth through trace copper. T02 never changes or removes trace geometry. This is experimental; the owner has not supplied a numeric maximum overlap beyond the rectangle's hard 1.25x per-axis ceiling.",
+    "deferred_record": "Every positive-area overlap between a T02 rectangle addition and native trace copper is recorded with rectangle and trace source IDs/spans, source geometry hash, overlap area, and overlap-geometry hash in future_trace_work_items.json. This includes side-by-side segments that meet the centerline standoff but whose copper width still intersects the candidate. Disposition is DEFERRED_TO_FUTURE_TRACE_SESSION; trace_changed_in_t02 is false. Report cumulative pairwise overlap area separately from the unique union of T02 additions intersecting the union of trace copper.",
+    "future_trace_scope": "A later trace task may review recorded local interactions and decide whether to reroute, bend, narrow, or leave a trace unchanged. T02 makes no such edit, and does not imply every recorded interaction needs adjustment."
+  },
+  "scene_update": "Deterministic source-center Y, X, then source-identity order. Each proposal sees all original F.Cu except that trace copper is separately classified: side-by-side segments constrain growth by centerline distance; every trace-copper intersection is recorded and deferred without modification. All other source copper, the accepted T01 scene, and earlier T02 additions remain protected.",
+  "protected": [
+    "all ORG F.Cu source contributions other than separately classified traces",
+    "the complete accepted T01 scene and its round priorities",
+    "accepted T01 square-recess or negative geometry when explicitly represented; otherwise its accepted neighborhood remains no-write protected",
+    "overlapping source support",
+    "the two nonrectangular source polygons"
+  ],
+  "limitations": [
+    "Source graphics do not supply a native pad/net identity or prove a trace-to-land electrical relationship.",
+    "The selected crop uses a screenshot locator with at least 0.0223 mm raster uncertainty.",
+    "No electrical, native-export, manufacturing, or EDIT-equivalence claim is made.",
+    "Straight side-by-side spacing is a centerline standoff, not guaranteed surface clearance. Pairwise overlap area can double-count copper; unique added-copper overlap is reported separately.",
+    "The owner has not numerically bounded the word slight for trace overlap; actual overlap magnitudes must be reviewed before this experimental candidate is treated as accepted."
+  ]
+}

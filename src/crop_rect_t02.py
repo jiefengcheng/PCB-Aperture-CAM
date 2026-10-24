@@ -129,7 +129,7 @@ def bind_source_dispositions(
 
 @dataclass(frozen=True)
 class RectGrowthPolicy:
-    max_axis_factor: float = 1.5
+    max_axis_factor: float = 1.25
     construction_gap_mm: float = 0.02002
     hard_gap_mm: float = 0.020
     geometry_tolerance_mm: float = 0.00001
@@ -138,19 +138,20 @@ class RectGrowthPolicy:
     side_trace_gap_fraction_of_org: float = 0.5
 
     def validate(self) -> None:
-        if self.max_axis_factor != 1.5:
-            raise ValueError("T02_FACTOR_MUST_BE_1_5")
+        if not 1.0 <= self.max_axis_factor <= 1.5:
+            raise ValueError("T02_FACTOR_OUT_OF_AUTHORIZED_RANGE")
         if self.construction_gap_mm < self.hard_gap_mm:
             raise ValueError("CONSTRUCTION_GAP_BELOW_HARD_GAP")
         if self.quad_segs != 128:
             raise ValueError("T02_CURVE_SETTING_MUST_BE_128")
-        if self.side_trace_gap_fraction_of_org != 0.5:
-            raise ValueError("T02_SIDE_TRACE_GAP_FRACTION_MUST_BE_ONE_HALF")
+        if not 0.0 <= self.side_trace_gap_fraction_of_org <= 1.0:
+            raise ValueError("T02_SIDE_TRACE_GAP_FRACTION_OUT_OF_RANGE")
 
 
 def rectangular_feature(row: dict[str, Any], payloads: dict[str, bytes], crop,
-                        *, enforce_full_cap_in_crop: bool = True) -> dict[str, Any] | None:
-    """Accept only a source-bound rectangle whose full 1.5x envelope fits the crop."""
+                        *, enforce_full_cap_in_crop: bool = True,
+                        max_axis_factor: float = 1.5) -> dict[str, Any] | None:
+    """Accept only a source-bound rectangle whose full configured cap fits the crop."""
     if row.get("kind") != "gr_poly" or "F.Cu" not in row.get("layers", []):
         return None
     if row.get("coverage") != "GEOMETRY_AVAILABLE" or row.get("geometry_role") != "nominal native shape":
@@ -175,7 +176,7 @@ def rectangular_feature(row: dict[str, Any], payloads: dict[str, bytes], crop,
     if not math.isclose(geom.area, lengths[0] * lengths[1], rel_tol=0, abs_tol=1e-9):
         return None
     cx, cy = geom.centroid.x, geom.centroid.y
-    if enforce_full_cap_in_crop and not crop.covers(scale(geom, xfact=1.5, yfact=1.5, origin=(cx, cy))):
+    if enforce_full_cap_in_crop and not crop.covers(scale(geom, xfact=max_axis_factor, yfact=max_axis_factor, origin=(cx, cy))):
         return None
     lengths_mm = [lengths[0], lengths[1]]
     return {"source_id": row["id"], "source_span": list(row["source_span"]),
@@ -210,6 +211,266 @@ def _projected_size(geometry, center, orientation_radians):
     return [local.bounds[2] - local.bounds[0], local.bounds[3] - local.bounds[1]]
 
 
+def _scaled_rectangle(core, center, orientation_radians, xfactor, yfactor):
+    """Scale a rectangle along its own axes and preserve its four straight sides."""
+    from shapely.affinity import rotate
+    local = rotate(core, -math.degrees(orientation_radians), origin=tuple(center))
+    local = scale(local, xfact=xfactor, yfact=yfactor, origin=tuple(center))
+    return rotate(local, math.degrees(orientation_radians), origin=tuple(center))
+
+
+def is_side_by_side_trace(core, center, orientation_radians, trace, source_kind,
+                          angular_tolerance_degrees=15.0):
+    """Identify a straight native trace running alongside a rectangle side.
+
+    Curved arcs and corner-only contacts remain in the non-side-by-side class.
+    This geometric label does not infer electrical attachment.
+    """
+    if source_kind != "segment" or trace.is_empty:
+        return False
+    if trace.geom_type != "LineString":
+        return False
+    try:
+        coords = list(trace.coords)
+        edges = [(coords[i + 1][0] - coords[i][0], coords[i + 1][1] - coords[i][1])
+                 for i in range(len(coords) - 1)]
+        longest = max(edges, key=lambda edge: math.hypot(*edge))
+        length = math.hypot(*longest)
+        if length <= 1e-12:
+            return False
+        tx, ty = longest[0] / length, longest[1] / length
+        ux, uy = math.cos(orientation_radians), math.sin(orientation_radians)
+        vx, vy = -uy, ux
+        alignment = math.cos(math.radians(angular_tolerance_degrees))
+        trace_points = coords
+        local_points = [((x - center[0]) * ux + (y - center[1]) * uy,
+                         (x - center[0]) * vx + (y - center[1]) * vy)
+                        for x, y in trace_points]
+        tx_min, tx_max = min(p[0] for p in local_points), max(p[0] for p in local_points)
+        ty_min, ty_max = min(p[1] for p in local_points), max(p[1] for p in local_points)
+        size_x, size_y = _projected_size(core, center, orientation_radians)
+        half_x, half_y = size_x / 2.0, size_y / 2.0
+        if abs(tx * ux + ty * uy) >= alignment:
+            beside_top = ty_min >= half_y and min(tx_max, half_x * 0.8) > max(tx_min, -half_x * 0.8)
+            beside_bottom = ty_max <= -half_y and min(tx_max, half_x * 0.8) > max(tx_min, -half_x * 0.8)
+            return beside_top or beside_bottom
+        if abs(tx * vx + ty * vy) >= alignment:
+            beside_right = tx_min >= half_x and min(ty_max, half_y * 0.8) > max(ty_min, -half_y * 0.8)
+            beside_left = tx_max <= -half_x and min(ty_max, half_y * 0.8) > max(ty_min, -half_y * 0.8)
+            return beside_right or beside_left
+    except (AttributeError, ValueError, ZeroDivisionError):
+        return False
+    return False
+
+
+def future_trace_overlap_records(candidate, core, trace_rows):
+    """Record T02 corner/non-side trace overlaps as deferred future-trace work.
+
+    Trace copper is deliberately not modified here. Each record binds the
+    interaction to the ORG trace identity and reports the candidate overlap so
+    a later, separately authorized trace task can assess it.
+    """
+    growth = candidate.difference(core)
+    records = []
+    for trace in trace_rows:
+        copper = trace.get("geometry")
+        if copper is None or copper.is_empty:
+            continue
+        intersection = growth.intersection(copper)
+        if intersection.is_empty or intersection.area <= 1e-12:
+            continue
+        records.append({
+            "trace_source_id": trace["source_id"],
+            "trace_source_kind": trace["source_kind"],
+            "trace_source_span": list(trace["source_span"]),
+            "trace_geometry_sha256": trace.get("geometry_sha256"),
+            "interaction_class": ("SIDE_BY_SIDE_CENTERLINE_CONSTRAINED"
+                                  if trace.get("side_by_side") else "NON_SIDE_DEFERRED"),
+            "overlap_area_mm2": intersection.area,
+            "growth_trace_copper_intersection_wkb_sha256": hashlib.sha256(intersection.wkb).hexdigest(),
+            "disposition": "DEFERRED_TO_FUTURE_TRACE_SESSION",
+            "trace_changed_in_t02": False,
+        })
+    return records
+
+
+def _largest_clear_rectangle(core, center, orientation_radians, max_factor,
+                              obstacles, trace_limits, gap, epsilon):
+    """Deterministically maximize rectangle area using bounded axis searches.
+
+    The candidate is always a single scaled rectangle. Nearby copper can limit an
+    axis, but cannot carve a recess or create a circle-shaped bite in the contour.
+    """
+    def feasible(sx, sy):
+        candidate = _scaled_rectangle(core, center, orientation_radians, sx, sy)
+        growth = candidate.difference(core)
+        if growth.is_empty:
+            return True
+        if not obstacles.is_empty and growth.distance(obstacles) + 1e-12 < gap:
+            return False
+        return all(growth.distance(trace) + 1e-12 >= required
+                   for trace, required in trace_limits)
+
+    def maximize_axis(fixed, variable_axis):
+        low, high = 1.0, max_factor
+        for _ in range(28):
+            mid = (low + high) / 2.0
+            pair = (mid, fixed) if variable_axis == 0 else (fixed, mid)
+            if feasible(*pair):
+                low = mid
+            else:
+                high = mid
+        return low
+
+    solutions = []
+    for first_axis in (0, 1):
+        sx = sy = 1.0
+        for _ in range(4):
+            if first_axis == 0:
+                sx = maximize_axis(sy, 0)
+                sy = maximize_axis(sx, 1)
+            else:
+                sy = maximize_axis(sx, 1)
+                sx = maximize_axis(sy, 0)
+        if feasible(sx, sy):
+            solutions.append((sx * sy, sx + sy, sx, sy))
+    if not solutions:
+        factors = (1.0, 1.0)
+    else:
+        _, _, sx, sy = max(solutions)
+        factors = (sx, sy)
+    return _scaled_rectangle(core, center, orientation_radians, *factors), factors
+
+
+def limiting_constraints(
+    addition,
+    *,
+    target_source_id: str,
+    source_geometries: dict[str, Any],
+    source_metadata: dict[str, dict[str, Any]],
+    prior_t02_additions: dict[str, Any],
+    trace_reservations: list[dict[str, Any]],
+    trace_geometries: dict[str, Any],
+    hard_gap_mm: float,
+    construction_gap_mm: float,
+    tolerance_mm: float,
+) -> dict[str, Any]:
+    """Name the nearest source objects and tightest recorded clearance margins.
+
+    This is reporting over the already-constructed addition; it does not alter or
+    accept geometry. Source identities come from the frozen ORG census and T02
+    prior-addition identities come from the deterministic accepted-scene order.
+    """
+    if addition.is_empty:
+        return {
+            "nearest_original_protected_source": None,
+            "nearest_prior_t02_addition": None,
+            "trace_reservations": [],
+            "tightest_recorded_constraint": None,
+        }
+
+    def nearest(candidates, threshold, constraint_type):
+        rows = []
+        for source_id, geometry in candidates.items():
+            gap = float(addition.distance(geometry))
+            meta = source_metadata.get(source_id, {})
+            rows.append({
+                "constraint_type": constraint_type,
+                "source_id": source_id,
+                "source_kind": meta.get("kind"),
+                "source_span": list(meta.get("source_span", [])),
+                "source_geometry_sha256": meta.get("geometry_sha256"),
+                "measured_gap_mm": gap,
+                "required_gap_mm": threshold,
+                "margin_mm": gap - threshold,
+                "passes_tolerance": gap + tolerance_mm >= threshold,
+            })
+        return min(rows, key=lambda row: (row["margin_mm"], row["source_id"])) if rows else None
+
+    original_sources = {
+        sid: geom for sid, geom in source_geometries.items()
+        if sid != target_source_id
+    }
+    nearest_source = nearest(original_sources, construction_gap_mm,
+                             "original_protected_source_construction_gap")
+    nearest_prior = nearest(prior_t02_additions, construction_gap_mm, "prior_t02_addition_construction_gap")
+    trace_rows = []
+    for reservation in trace_reservations:
+        source_id = reservation["source_id"]
+        geometry = trace_geometries.get(source_id)
+        if geometry is None:
+            raise ValueError(f"T02_TRACE_RESERVATION_SOURCE_MISSING:{source_id}")
+        gap = float(addition.distance(geometry))
+        required = float(reservation.get("required_centerline_gap_mm")
+                         if reservation.get("side_by_side_classification")
+                         else reservation["required_retained_gap_mm"])
+        trace_rows.append({
+            **reservation,
+            "source_geometry_sha256": source_metadata.get(source_id, {}).get("geometry_sha256"),
+            "measured_final_centerline_gap_mm" if reservation.get("side_by_side_classification")
+                else "measured_final_gap_mm": gap,
+            "clearance_margin_mm": gap - required,
+            "passes_tolerance": gap + tolerance_mm >= required,
+        })
+    tightest = min(
+        [row for row in [nearest_source, nearest_prior] if row is not None]
+        + [{
+            "constraint_type": ("side_by_side_trace_centerline_minimum_gap"
+                                if row.get("side_by_side_classification")
+                                else "deferred_non_side_trace_interaction"),
+            "source_id": row["source_id"],
+            "source_kind": row["source_kind"],
+            "source_span": row["source_span"],
+            "source_geometry_sha256": row.get("source_geometry_sha256"),
+            "measured_gap_mm": row.get("measured_final_centerline_gap_mm", row.get("measured_final_gap_mm")),
+            "required_gap_mm": row.get("required_centerline_gap_mm", row.get("required_retained_gap_mm")),
+            "margin_mm": row["clearance_margin_mm"],
+            "passes_tolerance": row["passes_tolerance"],
+        } for row in trace_rows],
+        key=lambda row: (row["margin_mm"], row["source_id"]),
+    ) if (nearest_source or nearest_prior or trace_rows) else None
+    return {
+        "nearest_original_protected_source": nearest_source,
+        "nearest_prior_t02_addition": nearest_prior,
+        "trace_reservations": trace_rows,
+        "tightest_recorded_constraint": tightest,
+    }
+
+
+def envelope_constraint_records(candidate, cap, crop, *, accepted_size_mm, maximum_size_mm,
+                                policy_sha256: str, tolerance_mm: float,
+                                area_epsilon_mm2: float) -> dict[str, Any]:
+    """Record the separately checked growth-cap and review-crop boundaries."""
+    accepted = [float(value) for value in accepted_size_mm]
+    maximum = [float(value) for value in maximum_size_mm]
+    active_axes = [axis for axis, (value, limit) in enumerate(zip(accepted, maximum))
+                   if abs(value - limit) <= tolerance_mm]
+    outside_cap_area = float(candidate.difference(cap).area)
+    outside_crop_area = float(cap.difference(crop).area)
+    crop_clearance = float(cap.distance(crop.boundary)) if outside_crop_area <= area_epsilon_mm2 else 0.0
+    return {
+        "policy_cap": {
+            "source_id": f"T02_POLICY:{policy_sha256}",
+            "source_kind": "maximum_per_axis_growth_envelope",
+            "policy_sha256": policy_sha256,
+            "maximum_size_mm": maximum,
+            "accepted_size_mm": accepted,
+            "active_axes": active_axes,
+            "outside_cap_area_mm2": outside_cap_area,
+            "passes": outside_cap_area <= area_epsilon_mm2,
+        },
+        "crop_boundary": {
+            "source_id": "T02_REVIEW_CROP",
+            "source_kind": "full_cap_envelope_review_boundary",
+            "crop_bounds_mm": list(crop.bounds),
+            "full_cap_inside_crop": outside_crop_area <= area_epsilon_mm2,
+            "cap_to_crop_boundary_mm": crop_clearance,
+            "passes": outside_crop_area <= area_epsilon_mm2,
+            "active": crop_clearance <= tolerance_mm,
+        },
+    }
+
+
 def execute(features: list[dict[str, Any]], protected_geometries: list, crop,
             policy: RectGrowthPolicy | None = None,
             side_traces: list[dict[str, Any]] | None = None) -> dict[str, Any]:
@@ -236,80 +497,99 @@ def execute(features: list[dict[str, Any]], protected_geometries: list, crop,
         # Other original features and accepted earlier additions remain protected.
         local_query = envelope.buffer(policy.construction_gap_mm, quad_segs=policy.quad_segs)
         relevant_traces = []
-        trace_keepouts = []
+        trace_limits = []
+        side_trace_by_id = {trace["source_id"]: trace["geometry"] for trace in side_traces}
         for trace in side_traces:
             trace_geometry = trace["geometry"]
-            if trace_geometry is None or trace_geometry.is_empty or not trace_geometry.intersects(local_query):
+            if trace_geometry is None or trace_geometry.is_empty:
                 continue
             org_gap = core.distance(trace_geometry)
-            required_gap = max(policy.construction_gap_mm,
-                               policy.side_trace_gap_fraction_of_org * org_gap)
+            side_by_side = is_side_by_side_trace(
+                core, (cx, cy), feature["orientation_radians"],
+                trace.get("centerline_geometry", trace_geometry),
+                trace["source_kind"])
+            # The owner-defined side rule is measured to the native trace
+            # centerline. Non-side interactions may overlap and are recorded
+            # for a later trace task; T02 never edits trace geometry.
+            centerline = trace.get("centerline_geometry", trace_geometry)
+            required_gap = policy.construction_gap_mm if side_by_side else 0.0
+            # A trace only constrains this candidate if the maximum envelope
+            # could reduce its original surface gap below the required gap.
+            # Buffering by the full ORG gap would incorrectly mark nearly every
+            # distant trace as relevant and can flood the receipt with records.
+            envelope_trace_distance = trace_geometry.distance(envelope)
+            if ((side_by_side and envelope_trace_distance + policy.geometry_tolerance_mm >= required_gap)
+                    or (not side_by_side and envelope_trace_distance > policy.geometry_tolerance_mm)):
+                continue
             relevant_traces.append({
                 "source_id": trace["source_id"],
                 "source_kind": trace["source_kind"],
                 "source_span": list(trace["source_span"]),
                 "org_surface_gap_mm": org_gap,
                 "required_retained_gap_mm": required_gap,
+                "required_centerline_gap_mm": required_gap if side_by_side else None,
+                "side_by_side_classification": side_by_side,
             })
-            trace_keepouts.append(trace_geometry.buffer(required_gap, quad_segs=policy.quad_segs))
-        trace_reservation = _union_or_empty(trace_keepouts, crop.difference(crop))
+            if side_by_side:
+                trace_limits.append((centerline, required_gap))
         obstacle_parts = []
         if protected_tree is not None:
             obstacle_parts.extend(protected_geometries[int(i)] for i in sorted(protected_tree.query(local_query)))
         if target_tree is not None:
             obstacle_parts.extend(originals[int(i)] for i in sorted(target_tree.query(local_query)) if originals[int(i)] is not core)
         base_obstacles = unary_union(obstacle_parts) if obstacle_parts else crop.difference(crop)
-        baseline_blocked = _union_or_empty([
-            base_obstacles.buffer(policy.construction_gap_mm, quad_segs=policy.quad_segs),
-            trace_reservation,
-        ], crop.difference(crop))
         prior_neighbors = {sid:g for sid,g in accepted_by_source.items() if g.intersects(local_query)}
         obstacle_parts.extend(prior_neighbors.values())
         obstacles = unary_union(obstacle_parts) if obstacle_parts else crop.difference(crop)
-        buffered = _union_or_empty([
-            obstacles.buffer(policy.construction_gap_mm, quad_segs=policy.quad_segs),
-            trace_reservation,
-        ], crop.difference(crop))
-        permitted = optional.difference(buffered)
-        baseline_permitted = optional.difference(baseline_blocked)
+        empty = crop.difference(crop)
+        obstacle_union = unary_union(obstacles) if obstacles else empty
+        candidate, factors = _largest_clear_rectangle(
+            core, (cx, cy), feature["orientation_radians"], policy.max_axis_factor,
+            obstacle_union, trace_limits, policy.construction_gap_mm,
+            policy.geometry_tolerance_mm)
         causal_neighbors = []
         for neighbor_id in prior_neighbors:
             cf_obstacles = [base_obstacles, *(g for key,g in prior_neighbors.items() if key != neighbor_id)]
-            cf_union = unary_union(cf_obstacles)
-            cf_blocked = _union_or_empty([
-                cf_union.buffer(policy.construction_gap_mm, quad_segs=policy.quad_segs),
-                trace_reservation,
-            ], crop.difference(crop))
-            cf_permitted = optional.difference(cf_blocked)
-            changed_area = cf_permitted.difference(permitted).area
+            cf_union = unary_union([g for g in cf_obstacles if not g.is_empty]) if any(not g.is_empty for g in cf_obstacles) else empty
+            counterfactual_candidate, _ = _largest_clear_rectangle(
+                core, (cx, cy), feature["orientation_radians"], policy.max_axis_factor,
+                cf_union, trace_limits, policy.construction_gap_mm,
+                policy.geometry_tolerance_mm)
+            changed_area = counterfactual_candidate.difference(candidate).area
             if changed_area > policy.area_epsilon_mm2:
                 causal_neighbors.append({"source_id":neighbor_id,"removed_only_this_prior_addition_area_mm2":changed_area})
-        prior_clipped_area = baseline_permitted.difference(permitted).area
-        connected, detached = _connected_growth(permitted, core, policy.geometry_tolerance_mm)
-        addition = connected.difference(core)
-        candidate = core.union(addition)
+        addition = candidate.difference(core)
+        detached = []
+        prior_clipped_area = max(0.0, (candidate.area - core.area))
         # Exact post-assembly invariants.
         lost_core = core.difference(candidate).area
         outside_cap = candidate.difference(envelope).area
         min_gap = addition.distance(obstacles) if not addition.is_empty and not obstacles.is_empty else None
         trace_gap_checks = [
-            addition.distance(trace["geometry"]) + policy.geometry_tolerance_mm
-                >= reservation["required_retained_gap_mm"]
+            addition.is_empty or
+            addition.distance(next(t.get("centerline_geometry", t["geometry"]) for t in side_traces
+                                   if t["source_id"] == reservation["source_id"]))
+                + policy.geometry_tolerance_mm >= reservation["required_centerline_gap_mm"]
             for reservation in relevant_traces
-            for trace in side_traces
-            if trace["source_id"] == reservation["source_id"]
+            if reservation["side_by_side_classification"]
         ]
-        min_trace_gap = min((addition.distance(trace["geometry"])
-                             for reservation in relevant_traces
-                             for trace in side_traces
-                             if trace["source_id"] == reservation["source_id"]), default=None)
+        min_trace_gap = min((addition.distance(next(t.get("centerline_geometry", t["geometry"]) for t in side_traces
+                                                   if t["source_id"] == reservation["source_id"]))
+                             for reservation in relevant_traces if reservation["side_by_side_classification"]),
+                            default=None) if not addition.is_empty else None
+        deferred_overlaps = future_trace_overlap_records(candidate, core, [
+            {**trace, "side_by_side": next((r["side_by_side_classification"] for r in relevant_traces
+                                             if r["source_id"] == trace["source_id"]), False)}
+            for trace in side_traces
+        ])
         checks = {
             "source_core_preserved": lost_core <= policy.area_epsilon_mm2,
-            "inside_1_5x_axis_envelope": outside_cap <= policy.area_epsilon_mm2,
+            "inside_configured_per_axis_envelope": outside_cap <= policy.area_epsilon_mm2,
             "construction_gap_from_protected_objects": min_gap is None or min_gap + policy.geometry_tolerance_mm >= policy.hard_gap_mm,
             "valid_geometry": candidate.is_valid,
+            "candidate_is_full_rectangle_without_recess": len(candidate.exterior.coords) == 5 and not candidate.interiors,
             "addition_connected_to_source": all(part.distance(core) <= policy.geometry_tolerance_mm for part in ([addition] if not addition.is_empty else [])),
-            "half_org_side_trace_gap_preserved": all(trace_gap_checks),
+            "side_by_side_trace_centerline_gap_preserved": all(trace_gap_checks),
         }
         accepted = all(checks.values())
         if accepted and not addition.is_empty:
@@ -329,11 +609,13 @@ def execute(features: list[dict[str, Any]], protected_geometries: list, crop,
             "maximum_size_mm": [x * policy.max_axis_factor for x in feature["source_size_mm"]],
             "orientation_radians": feature["orientation_radians"],
             "accepted_size_mm_in_source_axes": _projected_size(candidate, feature["center_mm"], feature["orientation_radians"]),
+            "accepted_axis_scale_factors": list(factors),
             "accepted_bounds_mm": list(candidate.bounds), "added_area_mm2": addition.area,
             "candidate_geometry_sha256": hashlib.sha256(candidate.wkb).hexdigest(),
             "discarded_detached_piece_count": len(detached), "minimum_gap_to_original_protected_copper_mm": min_gap,
             "minimum_gap_to_nearby_org_side_traces_mm": min_trace_gap,
             "trace_gap_reservations": relevant_traces,
+            "future_trace_overlap_records": deferred_overlaps,
             "prior_t02_neighbor_clipped_area_mm2": prior_clipped_area,
             "causal_prior_t02_neighbors": causal_neighbors,
             "verification": checks,
