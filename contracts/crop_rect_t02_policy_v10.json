@@ -1,0 +1,62 @@
+{
+  "schema": "crop-rect-t02-policy/10",
+  "task": "T02_ONLY",
+  "purpose": "Owner-reopened T02: surface side-gap priority, original component preservation, explicit future trace issues, and embedded fully covered round-circle categories.",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "crop_bounds_org_mm": [
+    16.44342222222222,
+    -16.556731666666664,
+    27.198977777777777,
+    -8.645620555555553
+  ],
+  "edit_source_sha256_for_crop_location_only": "ec141305a9d93db87709124ba5aa9378135485ae5458f019e47a342d099496a5",
+  "eligibility": "Standalone filled F.Cu source polygon with exact supported geometry, four unique vertices, adjacent perpendicular edges, and equal opposing sides. The complete 1.25x per-axis growth envelope must fit inside the registered crop; otherwise preserve the whole source shape unchanged. Retain exact source spans and do not infer pad or net identity.",
+  "factor_per_axis": 1.25,
+  "factor_basis": "Owner-directed hard 1.25x ceiling on each source-local axis; not a manufacturing sizing rule.",
+  "construction_gap_mm": 0.02002,
+  "hard_experimental_gap_mm": 0.02,
+  "geometry_tolerance_mm": 1e-05,
+  "quad_segs": 128,
+  "contour_rule": "Every proposal remains one complete rectangle in the source-local axes. Original and T01 circle occupancy plus the 0.02002 mm construction gap is protected; neighboring copper may limit either growth axis, but must never carve, recess, notch, or round a rectangular contour.",
+  "trace_interactions": {
+    "trace_source_kinds": [
+      "segment",
+      "arc"
+    ],
+    "side_by_side_rule": "Copper-surface gap takes priority over corner permission. Classify the full capped side span including short segments, locally parallel arc sections, and disconnected oblique side approaches. Enforce 0.02002 mm to the actual side copper region (0.02000 mm experimental hard floor, declared tolerance). Existing source violations remain immutable and explicit open issues; do not introduce or worsen them.",
+    "corner_rule": "Corner interaction never overrides a side constraint or the original whole-board F.Cu physical component partition. Keep 0.02002 mm from foreign-component trace copper even at a corner. Source-connected corner attachment overlap can remain diagnostic, with overlap and sub-minimum-gap issues deferred for a later trace task. For a same-component but originally unattached trace, retain a 0.00002 mm numerical no-contact guard and record the remaining sub-minimum gap as an OPEN issue. This numerical guard is not a safe-clearance acceptance claim. Original attachment extensions are separately recorded.",
+    "deferred_record": "Record all positive-area overlaps plus zero-area corner near-gap and baseline side-gap violations with source IDs/spans, hashes, actual distances, component labels, issue type, and OPEN_FUTURE_TRACE_SESSION disposition; do not presume a repair choice or modify traces.",
+    "future_trace_scope": "A later trace task may review recorded local interactions and decide whether to reroute, bend, narrow, or leave a trace unchanged. T02 makes no such edit, and does not imply every recorded interaction needs adjustment.",
+    "rule_mode": "surface_side_priority_v9",
+    "corner_contact_separation_mm": 2e-05
+  },
+  "scene_update": "Source-center Y,X,ID order. Whole-board ORG contact-component labels are frozen before growth. Side-copper reservations and all foreign-component source copper constrain every rectangle; no new component connection is permitted. Covered support within the target core is redundant and does not obstruct its parent. All other protected copper and earlier T02 changes constrain each proposal.",
+  "protected": [
+    "all ORG F.Cu source contributions other than separately classified traces",
+    "the complete accepted T01 scene and its round priorities",
+    "accepted T01 square-recess or negative geometry when explicitly represented; otherwise its accepted neighborhood remains no-write protected",
+    "overlapping source support",
+    "the two nonrectangular source polygons"
+  ],
+  "limitations": [
+    "Uses the existing native parser and Shapely; source contact connectivity is not electrical net intent.",
+    "Original sub-minimum source gaps cannot be repaired by additive rectangle growth and remain explicit open issues for the future trace task.",
+    "Corner attachment interactions are recorded without a claim that their severity is accepted.",
+    "Full manufacturing/electrical/native export/EDIT equivalence acceptance is outside this T02 experiment."
+  ],
+  "physical_component_rule": "Preserve whole-board original F.Cu source contact partition including zero-area point contacts. All original contributions remain unchanged and each addition stays attached to its parent source. Audit all additions against every original component and other additions. Source contact components are not electrical nets or T01 envelope groups. Preserve original local source-contact adjacencies too: no new rectangle-to-trace contact pair, even within an already connected physical component.",
+  "embedded_covered_circle_pass": {
+    "diameter_classes_mm": [
+      0.038,
+      0.0761,
+      0.2749,
+      0.2999,
+      0.3374,
+      0.3749,
+      0.4499
+    ],
+    "max_radius_factor": 1.5,
+    "rule": "Within T02, recognize single-source-primitive exact coverage excluding aliases; each covered source circle is treated as individually round, center fixed, and promoted to its largest admitted shared diameter class fully covered by the same parent final geometry and inside the crop. No combining parent unions to infer coverage. Preserve source core exactly. No exposed copper delta from contained growth; show latent contours explicitly."
+  }
+}

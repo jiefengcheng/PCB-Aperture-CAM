@@ -25,13 +25,15 @@ attached to the earlier report; fresh annotations bind this result.
 exceptions. Total added copper decreases from 1.378447 to 1.371317 mm² because
 undo is intentional. This is not a maximal-growth claim.
 
-T01 remains **PARTIAL**: 18 reservation-response sites are separate from zero
-true evolving-companion response sites (target at least three). Owner acceptance
-is pending. Fresh-process checks share the author, parser and geometry kernel;
-they are not independent electrical, manufacturing or EDIT-rule qualification.
-Frozen rejected T01-R1 records and native boards remain unchanged. Cursor review:
+The owner accepted this saved crop visually after review. T01 remains
+**PARTIAL**: 18 reservation-response sites are separate from zero true
+evolving-companion response sites (target at least three). Fresh-process checks
+share the author, parser and geometry kernel; they are not independent
+electrical, manufacturing or EDIT-rule qualification. Frozen rejected T01-R1
+records and native boards remain unchanged. Cursor review:
 `NOT_RUN: CHANNEL_UNAVAILABLE`.
 
-ChatGPT summary audit: `NOT_RUN: EXISTING_THREAD_BUSY`. The original thread
-is generating the owner-requested ABI handoff; it was not interrupted and no
-new thread was opened. Do not interpret local verification as that audit.
+The owner decision is captured separately in
+`contracts/agent_abi/v0_1/owner_decisions.json` and bound to this run's source,
+scene, policy, report and audit hashes. The historical report and publication
+receipt retain their original pre-review status fields.

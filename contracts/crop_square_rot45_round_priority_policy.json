@@ -1,0 +1,29 @@
+{
+  "angle_convention": "Mathematical CCW-positive; -45 degrees is clockwise. A square at +45 has the same physical shape.",
+  "area_event_tolerance_mm2": 1e-08,
+  "construction_exclusion_mm": 0.025,
+  "curve_quadrant_segments": 128,
+  "hard_experimental_gap_mm": 0.02,
+  "orientation_degrees": -45.0,
+  "owner_request": "Rotate both squares about 45 degrees; retain one round circle and use the near side to stop the other. Update cases 2, 3 and applicable remaining cases for total review.",
+  "port_reference": "Fixed ORG-derived attachment zones using each site 1.5x radius ceiling, held unchanged between 0 and 45 degree comparisons.",
+  "radius_multiplier": 1.5,
+  "recess_rule": "B derives its square from its own pre-clipping 1.5x circle. Use the actual rotated side facing accepted round A to remove that optional lobe, then enforce all surrounding copper constraints.",
+  "recess_source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540482:1540606",
+  "rotation_comparison": "Hold source pair, accepted round A, proposed B radius, attachment zones and obstacles fixed; compare 0 versus -45 degrees without selecting angle from EDIT.",
+  "round_priority_rule": "Same lower-left A as prior pair. Find largest feasible complete circle at or below 1.5x source radius, then back off 0.00002 mm from an obstacle-limited radius. Never clip its round outline.",
+  "round_priority_source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1539974:1540098",
+  "round_radius_safety_mm": 2e-05,
+  "round_radius_search_steps": 40,
+  "schema": "square-rot45-round-priority-policy/1",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_pair_report_sha256": "8d0bbd0e818f927af0366c3e3a07774bbc03aced8e0842ed726196fa6bccaba1",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "status": "OWNER_REQUESTED_45_DEGREE_REVISION_SIZE_NOT_QUALIFIED",
+  "viewport_mm": [
+    1.2858444444444446,
+    -15.687077777777787,
+    4.508066666666666,
+    -12.975966666666665
+  ]
+}

@@ -3,10 +3,12 @@ import argparse
 import hashlib
 import html
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 FILES = ("feature_dispositions.json", "t02_decisions.json", "t02_result.json",
          "t02_additions.wkb", "t01_accepted_plus_t02.wkb", "accepted_t01_crop.svg",
          "t01_plus_t02.svg", "t02_delta.svg", "t02_policy.json",
@@ -42,9 +44,12 @@ def target_details_html(decisions_doc, max_factor=1.5):
                            f"{html.escape(str(tightest.get('source_kind') or 'prior addition'))} "
                            f"{limit_span[0]}–{limit_span[1]}" if len(limit_span) == 2 else
                            f"{html.escape(str(tightest.get('constraint_type', '')))} · {limit_id}")
-            limit_gap = (f"{float(tightest['measured_gap_mm']):.8f} / "
-                         f"{float(tightest['required_gap_mm']):.8f} mm required")
-            limit_state = "PASS tolerance" if tightest.get("passes_tolerance") else "FAIL"
+            required = tightest.get("required_gap_mm")
+            limit_gap = (f"{float(tightest['measured_gap_mm']):.8f} / {float(required):.8f} mm required"
+                         if required is not None else
+                         f"{float(tightest['measured_gap_mm']):.8f} mm · deferred interaction (no T02 gap target)")
+            limit_state = ("MEETS REQUIRED GAP" if tightest.get("meets_required_gap_exact") else
+                           "BELOW REQUIRED GAP · OPEN")
             limit_hash = html.escape(str(tightest.get("source_geometry_sha256") or "")[:12])
             limit = (f"<span title=\"{limit_id}\">{limit_label}</span><br><small>{limit_id} "
                      f"{limit_hash}</small><br>{limit_gap}<br>{limit_state}")
@@ -79,11 +84,21 @@ def target_details_html(decisions_doc, max_factor=1.5):
 def finalize(run, repeat, audit):
     result = json.loads((run / "t02_result.json").read_bytes())
     policy = json.loads((run / "t02_policy.json").read_bytes())
+    reopened = policy.get("trace_interactions", {}).get("rule_mode") == "surface_side_priority_v15"
+    if not reopened:
+        raise ValueError("T02_FINALIZATION_REQUIRES_SURFACE_GAP_POLICY_V15")
     inventory_binding = json.loads((run / "org_inventory_binding.json").read_bytes())
     inventory_report = json.loads((ROOT / inventory_binding["inventory_directory"] / "inventory_report.json").read_bytes())
-    audit_doc = json.loads((audit / "t02_composition_audit.json").read_bytes()) if audit else None
+    audit_filename = "audit.json" if reopened else "t02_composition_audit.json"
+    audit_doc = json.loads((audit / audit_filename).read_bytes()) if audit else None
     comparisons = {}
-    for name in FILES:
+    replay_files = list(FILES)
+    if reopened:
+        replay_files += ["component_preservation.json", "physical_component_membership.json",
+                         "embedded_covered_circles.json", "rejected_v31_component_negative_control.json"]
+        replay_files += sorted(p.relative_to(run).as_posix() for folder in ["t02_candidates", "t02_embedded_circles", "implementation_sources"]
+                               for p in (run / folder).rglob("*") if p.is_file())
+    for name in replay_files:
         a, b = run / name, repeat / name
         ah, bh = digest(a), digest(b)
         comparisons[name] = {"equal": ah == bh, "run_sha256": ah, "repeat_sha256": bh}
@@ -107,18 +122,29 @@ def finalize(run, repeat, audit):
                "all_per_target_checks_pass":result["all_per_target_checks_pass"],
                "repeat_determinism_receipt_sha256":digest(run/"determinism_receipt.json"),
                "current_neighbor_causal_pairs":len(result["current_neighbor_causal_pairs"]),
-               "side_by_side_centerline_gap_mm":result["side_by_side_centerline_gap_mm"],
                "side_trace_reservation_count":result["side_trace_reservation_count"],
                "future_trace_overlap_count":result["future_trace_overlap_count"],
                "future_trace_overlap_pairwise_area_total_mm2":result["future_trace_overlap_pairwise_area_total_mm2"],
                "future_trace_overlap_unique_area_mm2":result["future_trace_overlap_unique_area_mm2"],
                "future_trace_work_items_sha256":digest(run/"future_trace_work_items.json"),
                "trace_changed_in_t02":False,
-               "composition_audit_sha256":digest(audit/"t02_composition_audit.json") if audit else None,
+               "composition_audit_sha256":digest(audit/audit_filename) if audit else None,
                "edit_geometry_used_for_construction":False, "native_export":result["native_export"],
                "electrical_status":result["electrical_status"],
                "manufacturing_status":result["manufacturing_status"]}
     (run / "t02_execution_receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True)+"\n")
+    if reopened:
+        from tools.render_t02_owner_reopening import render_review
+        receipt.update({"trace_rule_mode":result["trace_rule_mode"],
+                        "component_preservation_sha256":digest(run/"component_preservation.json"),
+                        "embedded_covered_circles_sha256":digest(run/"embedded_covered_circles.json"),
+                        "future_trace_clearance_issue_count":result["future_trace_clearance_issue_count"],
+                        "owner_review":"PENDING_USER"})
+        (run / "t02_execution_receipt.json").write_text(json.dumps(receipt,indent=2,sort_keys=True)+"\n")
+        render_review(run, audit)
+        entries=[f"{digest(p)}  {p.relative_to(run).as_posix()}" for p in sorted(run.rglob("*")) if p.is_file() and p.name!="SHA256SUMS.txt"]
+        (run/"SHA256SUMS.txt").write_text("\n".join(entries)+"\n")
+        return
     disposition_doc=json.loads((run/"feature_dispositions.json").read_bytes())
     decisions_doc=json.loads((run/"t02_decisions.json").read_bytes())
     dispositions=disposition_doc["dispositions"]
@@ -139,10 +165,9 @@ def finalize(run, repeat, audit):
                     f"{max((float(x['overlap_area_mm2']) for x in json.loads((run/'future_trace_work_items.json').read_bytes())['items']), default=0.0):.6f} mm² largest) "
                     "are deferred to a future trace session. The owner has not numerically bounded ‘slight’, "
                     "so this is a review diagnostic and not an accepted overlap magnitude.")
-    corridor_note = (f"Side-by-side straight segments keep at least "
-                     f"{result['side_by_side_centerline_gap_mm']:.5f} mm centerline standoff. This is not guaranteed physical copper clearance. "
-                     f"Trace copper may still be intersected by a proposed rectangle; "
-                     f"traces remain unchanged in T02. {overlap_note}")
+    corridor_note = (f"Side-by-side rectangle growth must keep at least {float(policy['construction_gap_mm']):.5f} mm from trace copper. "
+                     "Corner-only sub-floor interactions remain OPEN and cannot create new source contacts or component joins. "
+                     f"Traces remain unchanged in T02. {overlap_note}")
     kind_counts=inventory_report['intersecting_supported_fcu_counts_by_kind']
     census = (f"ORG source census: {inventory_report['source_record_count']} board records enumerated; "
               f"{inventory_report['intersecting_supported_fcu_count']} supported F.Cu contributions intersect the crop "
@@ -158,7 +183,7 @@ def finalize(run, repeat, audit):
     growth=result['decision_counts'].get('GROW',0)
     kept=result['decision_counts'].get('KEEP',0)
     details_html=target_details_html(decisions_doc, float(policy["factor_per_axis"]))
-    html=f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>T02 rectangle-preserving crop review</title><style>body{{font:16px/1.5 system-ui,sans-serif;margin:0;background:#eef3f7;color:#17283a}}main{{max-width:1500px;margin:auto;padding:28px}}header,article{{background:white;border:1px solid #cad6e0;border-radius:16px;padding:22px;margin:0 0 22px}}h1,h2{{margin:0 0 8px}}img{{display:block;width:100%;height:auto;border:1px solid #b8c7d4;border-radius:8px;background:#071522}}.stats{{display:flex;gap:20px;flex-wrap:wrap}}.stats div{{padding:10px 14px;background:#f3f7fa;border-radius:10px}}.small{{font-size:.9rem;color:#405366}}.notice{{background:#fff4d7;border-left:5px solid #dc8c00;padding:12px 16px}}a{{color:#075ea8}}.tablewrap{{overflow:auto;max-height:65vh;margin-top:12px}}table{{border-collapse:collapse;width:100%;font-size:.85rem}}th,td{{border:1px solid #cad6e0;padding:7px;text-align:left;vertical-align:top}}th{{position:sticky;top:0;background:#f3f7fa}}details{{margin:18px 0;padding:12px;border:1px solid #cad6e0;border-radius:10px}}summary{{cursor:pointer;font-weight:650}}</style><main><header><h1>T02 · Rectangle-preserving growth on the frozen T01 crop</h1><p>Four same-scale views of the registered ORG crop. Proposals stay complete rectangles: nearby circles and other non-trace copper can limit X/Y growth but cannot carve, notch, or round a rectangular contour. The {float(policy['factor_per_axis']):.2f}× per-axis ceiling is hard; rectangles whose complete capped envelope crosses the review boundary stay unchanged. Traces remain unchanged in T02.</p><p>{corridor_note}</p><p class="notice"><b>Deferred trace issues:</b> {overlap_note} <a href="future_trace_work_items.json">Open the source-bound overlap ledger</a>.</p><p class="small">{census}</p><p class="small">{disposition_note}</p><div class="stats"><div><b>Eligible rectangles</b><br>{result['target_set_count']}</div><div><b>Grown</b><br>{growth}</div><div><b>Eligible targets kept unchanged</b><br>{kept}</div><div><b>Edge rectangles withheld</b><br>{withheld}</div><div><b>Nonrect edge polygons protected</b><br>{crossing_polygons}</div><div><b>Other protected contributions</b><br>{protected_other}</div><div><b>Added copper</b><br>{result['added_area_mm2']:.6f} mm²</div><div><b>Side centerline checks</b><br>{result['side_trace_reservation_count']}</div><div><b>Trace copper overlap pairs</b><br>{result['future_trace_overlap_count']}</div><div><b>Cumulative pairwise overlap area</b><br>{result['future_trace_overlap_pairwise_area_total_mm2']:.6f} mm²</div><div><b>Unique added-copper overlap</b><br>{result['future_trace_overlap_unique_area_mm2']:.6f} mm²</div><div><b>Neighbor responses</b><br>{len(result['current_neighbor_causal_pairs'])} counterfactual pairs</div><div><b>Replay</b><br>byte-identical</div></div>{details_html}<p class="small">Geometric experiment only. Future trace reroute, bend, narrowing or no-change decisions are not applied or presumed. Trace proximity is geometric and does not infer electrical attachment. Electrical identity, EDIT equivalence, native export and manufacturing approval remain NOT ESTABLISHED.</p><p><a href="t02_result.json">Run summary</a> · <a href="t02_decisions.json">Decisions</a> · <a href="feature_dispositions.json">Full source dispositions</a> · <a href="future_trace_work_items.json">Future trace work items</a> · <a href="determinism_receipt.json">Replay receipt</a></p>{audit_link}</header><article><h2>ORG · original crop</h2><img src="org_crop.svg" alt="ORG crop"></article><article><h2>T01 · accepted frozen scene</h2><img src="accepted_t01_crop.svg" alt="accepted T01 crop"></article><article><h2>T01 + T02 · resulting crop</h2><img src="t01_plus_t02.svg" alt="combined crop"></article><article><h2>T02 · additions only</h2><img src="t02_delta.svg" alt="T02 additions"></article></main></html>'''
+    html=f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>T02 rectangle-preserving crop review</title><style>body{{font:16px/1.5 system-ui,sans-serif;margin:0;background:#eef3f7;color:#17283a}}main{{max-width:1500px;margin:auto;padding:28px}}header,article{{background:white;border:1px solid #cad6e0;border-radius:16px;padding:22px;margin:0 0 22px}}h1,h2{{margin:0 0 8px}}img{{display:block;width:100%;height:auto;border:1px solid #b8c7d4;border-radius:8px;background:#071522}}.stats{{display:flex;gap:20px;flex-wrap:wrap}}.stats div{{padding:10px 14px;background:#f3f7fa;border-radius:10px}}.small{{font-size:.9rem;color:#405366}}.notice{{background:#fff4d7;border-left:5px solid #dc8c00;padding:12px 16px}}a{{color:#075ea8}}.tablewrap{{overflow:auto;max-height:65vh;margin-top:12px}}table{{border-collapse:collapse;width:100%;font-size:.85rem}}th,td{{border:1px solid #cad6e0;padding:7px;text-align:left;vertical-align:top}}th{{position:sticky;top:0;background:#f3f7fa}}details{{margin:18px 0;padding:12px;border:1px solid #cad6e0;border-radius:10px}}summary{{cursor:pointer;font-weight:650}}</style><main><header><h1>T02 · Rectangle-preserving growth on the frozen T01 crop</h1><p>Four same-scale views of the registered ORG crop. Proposals stay complete rectangles: nearby circles and other non-trace copper can limit X/Y growth but cannot carve, notch, or round a rectangular contour. The {float(policy['factor_per_axis']):.2f}× per-axis ceiling is hard; rectangles whose complete capped envelope crosses the review boundary stay unchanged. Traces remain unchanged in T02.</p><p>{corridor_note}</p><p class="notice"><b>Deferred trace issues:</b> {overlap_note} <a href="future_trace_work_items.json">Open the source-bound overlap ledger</a>.</p><p class="small">{census}</p><p class="small">{disposition_note}</p><div class="stats"><div><b>Eligible rectangles</b><br>{result['target_set_count']}</div><div><b>Grown</b><br>{growth}</div><div><b>Eligible targets kept unchanged</b><br>{kept}</div><div><b>Edge rectangles withheld</b><br>{withheld}</div><div><b>Nonrect edge polygons protected</b><br>{crossing_polygons}</div><div><b>Other protected contributions</b><br>{protected_other}</div><div><b>Added copper</b><br>{result['added_area_mm2']:.6f} mm²</div><div><b>Side trace checks</b><br>{result['side_trace_reservation_count']}</div><div><b>Trace copper overlap pairs</b><br>{result['future_trace_overlap_count']}</div><div><b>Cumulative pairwise overlap area</b><br>{result['future_trace_overlap_pairwise_area_total_mm2']:.6f} mm²</div><div><b>Unique added-copper overlap</b><br>{result['future_trace_overlap_unique_area_mm2']:.6f} mm²</div><div><b>Neighbor responses</b><br>{len(result['current_neighbor_causal_pairs'])} counterfactual pairs</div><div><b>Replay</b><br>byte-identical</div></div>{details_html}<p class="small">Geometric experiment only. T02 does not edit traces. Any later trace edit must preserve or increase ORG width throughout each changed route. Trace proximity is geometric and does not infer electrical attachment. Electrical identity, EDIT equivalence, native export and manufacturing approval remain NOT ESTABLISHED.</p><p><a href="t02_result.json">Run summary</a> · <a href="t02_decisions.json">Decisions</a> · <a href="feature_dispositions.json">Full source dispositions</a> · <a href="future_trace_work_items.json">Future trace work items</a> · <a href="determinism_receipt.json">Replay receipt</a></p>{audit_link}</header><article><h2>ORG · original crop</h2><img src="org_crop.svg" alt="ORG crop"></article><article><h2>T01 · accepted frozen scene</h2><img src="accepted_t01_crop.svg" alt="accepted T01 crop"></article><article><h2>T01 + T02 · resulting crop</h2><img src="t01_plus_t02.svg" alt="combined crop"></article><article><h2>T02 · additions only</h2><img src="t02_delta.svg" alt="T02 additions"></article></main></html>'''
     (run/"index.html").write_text(html)
     entries=[f"{digest(p)}  {p.relative_to(run).as_posix()}" for p in sorted(run.rglob("*")) if p.is_file() and p.name!="SHA256SUMS.txt"]
     (run/"SHA256SUMS.txt").write_text("\n".join(entries)+"\n")

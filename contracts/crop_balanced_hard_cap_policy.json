@@ -1,0 +1,30 @@
+{
+  "angle_convention": "Mathematical CCW-positive; -45 degrees is clockwise. A square at +45 has the same physical shape.",
+  "area_event_tolerance_mm2": 1e-08,
+  "construction_exclusion_mm": 0.02002,
+  "curve_quadrant_segments": 128,
+  "hard_experimental_gap_mm": 0.02,
+  "hard_radius_factor": 1.5,
+  "orientation_degrees": -45.0,
+  "owner_clarification": "A square side facing B.",
+  "owner_request": "Rotate both squares about 45 degrees; retain one round circle and use the near side to stop the other. Update cases 2, 3 and applicable remaining cases for total review.",
+  "owner_rule": "Both sites use the same enlargement factor; proposed radius must never exceed 1.5 times its own source radius.",
+  "port_reference": "Keep earlier 1.5x source-derived trace ports fixed; 1.5x is no longer a growth radius cap.",
+  "previous_over_cap_disposition": "Rejected under owner hard 1.5x ceiling; preserve as historical experiment, not acceptable growth.",
+  "radius_multiplier": 1.5,
+  "recess_source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540482:1540606",
+  "round_priority_source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1539974:1540098",
+  "round_radius_search_steps": 40,
+  "safety_mm": 2e-05,
+  "schema": "balanced-hard-capped-pair-policy/1",
+  "shared_factor_rule": "min(1.5, source-feasible complete-round A factor, coupled A-square/B-envelope gap factor). Same selected factor for both sites. B final copper may recess for existing source obstacles.",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "status": "OWNER_BALANCE_AND_HARD_CAP_REVISION_PENDING_REVIEW",
+  "viewport_mm": [
+    1.2858444444444446,
+    -15.687077777777787,
+    4.508066666666666,
+    -12.975966666666665
+  ]
+}

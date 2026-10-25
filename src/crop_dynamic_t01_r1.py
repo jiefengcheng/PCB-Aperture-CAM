@@ -105,6 +105,21 @@ def _nearest_spacing_bound(core, neighbors, *, clearance_mm=HARD_GAP_MM):
     return max(0.0, distance - clearance_mm), source_id, distance
 
 
+def _site_schedule(sites, priorities, order_policy):
+    """Return a deterministic priority-first schedule under an allowed policy."""
+    priority_ids = [site_id for _, site_id in sorted(priorities.items())]
+    priority_set = set(priority_ids)
+    companions = [site for site in sites if site["site_id"] not in priority_set]
+    if order_policy == "source_yx":
+        companions.sort(key=lambda site: (site["center"].y, site["center"].x,
+                                          site["site_id"]))
+    elif order_policy == "roomiest_first":
+        companions.sort(key=lambda site: (-site["growth_reach_mm"], site["site_id"]))
+    else:
+        raise ValueError(f"UNSUPPORTED_ORDER_POLICY:{order_policy}")
+    return priority_ids + [site["site_id"] for site in companions]
+
+
 def grow_in_available_space(core, obstacle_rows, *, reach_mm=MAX_GROWTH_REACH_MM,
                             construction_buffer_mm=CONSTRUCTION_BUFFER_MM,
                             port_zones=None, priority_reservations=None):
@@ -220,7 +235,8 @@ def _area_summary(decisions, geometries):
 
 
 def run(source: bytes, *, dynamic: bool = True,
-        calibrated_radius_limits) -> dict:
+        calibrated_radius_limits,
+        order_policy: str = "source_yx") -> dict:
     """Run ORG-only construction with nearest-target spacing bounds.
 
     ``calibrated_radius_limits`` is retained only for descriptive class labels;
@@ -387,10 +403,9 @@ def run(source: bytes, *, dynamic: bool = True,
         zone = _priority_outline(site["core"], site_ports[site_id]["geometry"])
         priority_reservations[site_id] = zone
 
-    # A shared frozen schedule: all selected priorities first, then remaining
-    # source sites by Y, X, identity.  No EDIT or screenshot geometry participates.
-    order = [site_id for component_id, site_id in sorted(priorities.items())]
-    order += [site["site_id"] for site in sites if site["site_id"] not in set(order)]
+    # Keep the default frozen schedule; one bounded alternative is available
+    # for a source-only order diagnostic. Neither order uses EDIT geometry.
+    order = _site_schedule(sites, priorities, order_policy)
     accepted = {}
     decisions_by_id = {}
     scene = 0
@@ -736,7 +751,10 @@ def run(source: bytes, *, dynamic: bool = True,
             "viewport_selection": "complete supported filled F.Cu gr_circle occurrences whose full source geometry intersects fixed V; no minimum size threshold or inset write guard",
             "write_domain": "union of every complete supported ORG target core buffered by its nearest-other-target edge spacing minus the 0.020 mm hard gap (floor zero); EDIT class labels do not set reach",
             "influence_domain": "each complete write envelope expanded by 0.025 mm construction buffer plus 0.00001 mm inventory precision allowance; crossing full source objects retrieved by geometry intersection",
-            "schedule": "priority sites first by component id; companions then ascending ORG centroid Y, X, stable source identity",
+            "decision_order_policy": order_policy,
+            "schedule": ("priority sites first by component id; companions then ascending ORG centroid Y, X, stable source identity"
+                if order_policy == "source_yx" else
+                "priority sites first by component id; companions by descending ORG-only nearest-target spacing reach, then stable source identity"),
             "EDIT_geometry_available_to_constructor": False,
             "EDIT_class_caps_frozen_from_separate_calibration": True,
             "smoothing": "none",

@@ -1,0 +1,26 @@
+{
+  "schema": "crop-rect-t02-policy/3",
+  "task": "T02_ONLY",
+  "purpose": "ORG-derived experimental growth of standalone filled rectangular copper contributions, without contour recesses, while reserving the full original gap to nearby native traces.",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "crop_bounds_org_mm": [16.44342222222222, -16.556731666666664, 27.198977777777777, -8.645620555555553],
+  "edit_source_sha256_for_crop_location_only": "ec141305a9d93db87709124ba5aa9378135485ae5458f019e47a342d099496a5",
+  "eligibility": "Standalone filled F.Cu source polygon with exact supported geometry, four unique vertices, adjacent perpendicular edges, and equal opposing sides. The complete 1.5x per-axis growth envelope must fit inside the registered crop; otherwise preserve the whole source shape unchanged. Retain exact source spans and do not infer pad or net identity.",
+  "factor_per_axis": 1.5,
+  "factor_basis": "Bounded experiment using the owner's hard 1.5x growth ceiling; not a manufacturing sizing rule.",
+  "construction_gap_mm": 0.02002,
+  "hard_experimental_gap_mm": 0.020,
+  "geometry_tolerance_mm": 0.00001,
+  "quad_segs": 128,
+  "contour_rule": "Every proposal remains one complete rectangle in the source-local axes. Neighboring copper may limit either growth axis, but must never carve, recess, notch, or round the rectangular contour.",
+  "side_trace_gap_reservation": {
+    "native_source_kinds": ["segment", "arc"],
+    "fraction_of_original_surface_gap": 1.0,
+    "minimum_retained_gap_mm": 0.02002,
+    "definition": "For each ORG rectangle and nearby native F.Cu segment/arc within the complete maximum-growth envelope, measure Euclidean surface-to-surface gap from the original rectangle. Reserve max(minimum_retained_gap_mm, 1.0 * measured_ORG_gap) for future trace work. T02 does not modify trace geometry or infer electrical connectivity."
+  },
+  "scene_update": "Deterministic source-center Y, X, then source-identity order. Each proposal sees all original F.Cu, the complete accepted T01 scene, prior accepted T02 additions, and trace reservations. Original source copper remains unchanged.",
+  "protected": ["all ORG F.Cu source contributions", "the complete accepted T01 scene and its round priorities", "accepted T01 square-recess or negative geometry when explicitly represented; otherwise its accepted neighborhood remains no-write protected", "overlapping source support", "all trace and circle geometry", "the two nonrectangular source polygons"],
+  "limitations": ["Source graphics do not supply a native pad/net identity or prove a trace-to-land electrical relationship.", "The selected crop uses a screenshot locator with at least 0.0223 mm raster uncertainty.", "No electrical, native-export, manufacturing, or EDIT-equivalence claim is made.", "The retained ORG trace gap is a conservative geometric reservation, not proof of a qualified future trace-width/clearance envelope."]
+}

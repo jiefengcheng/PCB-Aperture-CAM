@@ -221,52 +221,53 @@ class CropRectT02Tests(unittest.TestCase):
     def test_corner_trace_overlap_is_recorded_for_future_trace_session(self):
         row,payloads=row_for(box(0,0,1,1),'rect')
         feature=rectangular_feature(row,payloads,box(-2,-2,4,4))
+        line=__import__('shapely.geometry',fromlist=['LineString']).LineString([(1.05,1.05),(1.06,1.06)])
         trace={'source_id':'trace-1','source_kind':'segment','source_span':[40,60],
-               'geometry':box(1.05,1.05,1.06,1.06)}
+               'geometry':line.buffer(.001,quad_segs=128),'trace_path_geometry':line,'width_mm':.002}
         result=execute([feature],[],box(-2,-2,4,4), side_traces=[trace])
         decision=result['decisions'][0]
         reservation=decision['trace_gap_reservations'][0]
         candidate=result['candidates_by_source']['rect']
         self.assertFalse(reservation['side_by_side_classification'])
-        self.assertAlmostEqual(reservation['org_surface_gap_mm'],2**0.5*0.05,places=9)
-        self.assertEqual(reservation['required_retained_gap_mm'],0.0)
-        self.assertTrue(decision['future_trace_overlap_records'])
-        self.assertEqual(decision['future_trace_overlap_records'][0]['trace_source_id'],'trace-1')
-        self.assertEqual(decision['future_trace_overlap_records'][0]['disposition'],'DEFERRED_TO_FUTURE_TRACE_SESSION')
-        self.assertFalse(decision['future_trace_overlap_records'][0]['trace_changed_in_t02'])
+        self.assertAlmostEqual(reservation['org_surface_gap_mm'],2**0.5*0.05-.001,places=9)
+        self.assertEqual(reservation['required_retained_gap_mm'],RectGrowthPolicy().corner_contact_separation_mm)
+        self.assertFalse(decision['future_trace_overlap_records'])
+        self.assertTrue(any(item['trace_source_id']=='trace-1' and
+                            item['status']=='OPEN_FUTURE_TRACE_SESSION' and
+                            item['disposition']=='DEFERRED_TO_FUTURE_TRACE_SESSION'
+                            for item in decision['future_trace_clearance_work_items']))
         self.assertEqual(decision['orientation_radians'],feature['orientation_radians'])
 
-    def test_side_by_side_trace_uses_centerline_minimum_gap(self):
+    def test_side_by_side_trace_uses_finite_width_surface_gap(self):
         row,payloads=row_for(box(0,0,1,1),'rect')
         feature=rectangular_feature(row,payloads,box(-2,-2,4,4))
         trace={'source_id':'trace-side','source_kind':'segment','source_span':[91,110],
-               'geometry':box(1.13,-1,1.14,2),
-               'centerline_geometry':__import__('shapely.geometry',fromlist=['LineString']).LineString([(1.135,-1),(1.135,2)])}
+               'trace_path_geometry':__import__('shapely.geometry',fromlist=['LineString']).LineString([(1.135,-1),(1.135,2)]),
+               'width_mm':.01}
+        trace['geometry']=trace['trace_path_geometry'].buffer(trace['width_mm']/2,quad_segs=128)
         result=execute([feature],[],box(-2,-2,4,4),side_traces=[trace])
         decision=result['decisions'][0]
         growth=result['candidates_by_source']['rect'].difference(feature['geometry'])
         reservation=decision['trace_gap_reservations'][0]
         self.assertTrue(reservation['side_by_side_classification'])
-        self.assertEqual(reservation['required_centerline_gap_mm'],RectGrowthPolicy().construction_gap_mm)
-        self.assertGreaterEqual(growth.distance(trace['centerline_geometry']) + RectGrowthPolicy().geometry_tolerance_mm,
-                                reservation['required_centerline_gap_mm'])
+        self.assertEqual(reservation['required_surface_gap_mm'],RectGrowthPolicy().construction_gap_mm)
+        self.assertGreaterEqual(growth.distance(trace['geometry']) + RectGrowthPolicy().geometry_tolerance_mm,
+                                reservation['required_surface_gap_mm'])
 
-    def test_side_by_side_copper_intersection_is_logged_even_when_centerline_rule_passes(self):
+    def test_side_by_side_copper_gap_prevents_new_trace_intersection(self):
         row,payloads=row_for(box(0,0,1,1),'rect-wide-trace')
         feature=rectangular_feature(row,payloads,box(-2,-2,4,4))
+        path=__import__('shapely.geometry',fromlist=['LineString']).LineString([(1.13,-1),(1.13,2)])
         trace={'source_id':'wide-trace','source_kind':'segment','source_span':[111,130],
-               'geometry':box(1.08,-1,1.18,2),
-               'centerline_geometry':__import__('shapely.geometry',fromlist=['LineString']).LineString([(1.13,-1),(1.13,2)]),
-               'geometry_sha256':'wide-trace-shape'}
+               'geometry':path.buffer(.05,quad_segs=128),'trace_path_geometry':path,
+               'width_mm':.1,'geometry_sha256':'wide-trace-shape'}
         result=execute([feature],[],box(-2,-2,4,4),side_traces=[trace])
         decision=result['decisions'][0]
         candidate=result['candidates_by_source']['rect-wide-trace']
-        self.assertGreater(candidate.difference(feature['geometry']).intersection(trace['geometry']).area,0)
-        self.assertAlmostEqual(candidate.distance(trace['centerline_geometry']),
+        self.assertLess(candidate.difference(feature['geometry']).intersection(trace['geometry']).area,1e-12)
+        self.assertAlmostEqual(candidate.distance(trace['geometry']),
                                RectGrowthPolicy().construction_gap_mm,places=6)
-        record=decision['future_trace_overlap_records'][0]
-        self.assertEqual(record['interaction_class'],'SIDE_BY_SIDE_CENTERLINE_CONSTRAINED')
-        self.assertEqual(record['trace_source_id'],'wide-trace')
+        self.assertFalse(decision['future_trace_overlap_records'])
 
     def test_attached_corner_trace_overlap_is_deferred(self):
         row,payloads=row_for(box(0,0,1,1),'rect')

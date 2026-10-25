@@ -1,0 +1,29 @@
+{
+  "angle_convention": "Mathematical CCW-positive; -45 degrees is clockwise. A square at +45 has the same physical shape.",
+  "area_event_tolerance_mm2": 1e-08,
+  "construction_exclusion_mm": 0.02002,
+  "curve_quadrant_segments": 128,
+  "hard_experimental_gap_mm": 0.02,
+  "interpretation": "A own square cannot be B final stop because it lies inside retained round A. Evaluate A square as B proposed circular-envelope bound, then recess B around actual A; not owner-approved as exact intent.",
+  "orientation_degrees": -45.0,
+  "owner_clarification": "A square side facing B.",
+  "owner_request": "Rotate both squares about 45 degrees; retain one round circle and use the near side to stop the other. Update cases 2, 3 and applicable remaining cases for total review.",
+  "port_reference": "Keep earlier 1.5x source-derived trace ports fixed; 1.5x is no longer a growth radius cap.",
+  "prior_report": "out/crop_dynamic_tasks/square_neighbor_rot45_round_priority_20261024_v2/report.json",
+  "radius_multiplier": 1.5,
+  "radius_rule": "A source-feasible complete round search up to B source-core clearance bound. B radius = signed distance from B center to facing side of A enlarged-circle square minus construction gap and safety.",
+  "recess_source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540482:1540606",
+  "round_priority_source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1539974:1540098",
+  "round_radius_search_steps": 40,
+  "safety_mm": 2e-05,
+  "schema": "earlier-square-envelope-bound-policy/1",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "status": "PROPOSED_INTERPRETATION_PENDING_OWNER_REVIEW",
+  "viewport_mm": [
+    1.2858444444444446,
+    -15.687077777777787,
+    4.508066666666666,
+    -12.975966666666665
+  ]
+}

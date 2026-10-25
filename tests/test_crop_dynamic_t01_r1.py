@@ -9,11 +9,29 @@ from src.crop_dynamic_t01_r1 import (
     _port_zone,
     _priority_outline,
     _nearest_spacing_bound,
+    _site_schedule,
     grow_in_available_space,
 )
 
 
 class CropDynamicT01R1GeometryTests(unittest.TestCase):
+    def test_roomiest_first_is_one_deterministic_source_only_alternative(self):
+        sites = [
+            {"site_id": "west", "center": Point(0, 2), "growth_reach_mm": 0.2},
+            {"site_id": "east", "center": Point(2, 1), "growth_reach_mm": 0.8},
+            {"site_id": "north", "center": Point(1, 0), "growth_reach_mm": 0.5},
+            {"site_id": "priority", "center": Point(3, 3), "growth_reach_mm": 0.0},
+        ]
+        priorities = {"component-1": "priority"}
+
+        self.assertEqual(_site_schedule(sites, priorities, "source_yx"),
+                         ["priority", "north", "east", "west"])
+        expected_roomiest = ["priority", "east", "north", "west"]
+        self.assertEqual(_site_schedule(sites, priorities, "roomiest_first"),
+                         expected_roomiest)
+        self.assertEqual(_site_schedule(sites, priorities, "roomiest_first"),
+                         expected_roomiest)
+
     def test_growth_reach_tracks_nearest_neighbor_spacing_not_seed_radius(self):
         core = Point(0, 0).buffer(0.10, quad_segs=64)
         near = Point(0.26, 0).buffer(0.10, quad_segs=64)

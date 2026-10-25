@@ -17,12 +17,18 @@ This gate establishes file custody and identity only. It does not parse or quali
 
 The accepted crop pipeline now has a concise [code structure map](docs/crop_dynamic_tasks/T01_CODE_STRUCTURE.md), separating source discovery, target selection, recess construction, owner edits, orchestration, audit, and replay presentation.
 
+## Local CAM Agent boundary
+
+The first [CAM Agent ABI v0.1](docs/agent_abi/README.md) is a strict, hash-bound local JSON interface for describing capabilities, inspecting and comparing registered results, composing an immutable plan, and retrieving review evidence. `cam_run` and `cam_verify` are explicitly unavailable; this boundary does not execute geometry or elevate T01's partial behavior status.
+
 ## Current T01 review: owner corrections
 
 The [owner-correction guide](docs/crop_dynamic_tasks/T01_OWNER_CORRECTIONS.md)
 records the exact undo of S38/S22 and the larger S08 envelope with a recess toward
 S12. Other target radii remain frozen. Geometry checks pass; T01 remains
-**PARTIAL**, awaiting owner review and with zero evolving-companion events.
+**PARTIAL** on evolving-companion behavior (0 of 3 required events). The owner
+accepted the saved crop visually; this does not establish engineering or
+manufacturing acceptance.
 
 ```bash
 .venv/bin/python tools/run_crop_diameter_classes_t01.py --apply-owner-review --output out/crop_dynamic_tasks/t01_owner_review_replay_01

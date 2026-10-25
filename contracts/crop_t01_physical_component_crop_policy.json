@@ -1,0 +1,39 @@
+{
+  "schema": "t01-multicircle-crop-policy/2",
+  "source": "dataset/szu-comm_3020301113B_intake_ready_20261021_v2/raw/ORG/top.kicad_pcb",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "viewport_mm": [
+    16.44342222222222,
+    -16.556731666666664,
+    27.198977777777777,
+    -8.645620555555553
+  ],
+  "registered_edit_source_sha256_for_viewport_only": "ec141305a9d93db87709124ba5aa9378135485ae5458f019e47a342d099496a5",
+  "source_image_sha256_for_viewport_only": "cb1d008e1d6cb5e0271b3aeef035133c7cc192da422b5f257a683fde90df764f",
+  "expected_unique_circle_sites": 87,
+  "expected_circle_occurrences": 96,
+  "max_growth_factor": 1.5,
+  "construction_gap_mm": 0.02002,
+  "hard_gap_mm": 0.02,
+  "safety_mm": 2e-05,
+  "orientation_degrees": -45,
+  "quad_segs": 128,
+  "area_epsilon_mm2": 1e-10,
+  "event_epsilon_mm2": 1e-08,
+  "diameter_classes_mm": [
+    0.038,
+    0.0761,
+    0.2749,
+    0.2999,
+    0.3374,
+    0.3749,
+    0.4499
+  ],
+  "component_definition": "Use each filled F.Cu gr_circle source feature physical_contact_group from crop_circle_sources.source_scene. This is the connected component of original same-layer F.Cu source geometries under exact geometry intersects across the full ORG board; it is a geometric copper-contact relation, not an electrical-net or component-package identity. Count only unique filled circles intersecting the fixed review viewport as group members.",
+  "singleton_rule": "A circle whose original whole-board F.Cu physical-contact component contains only that one in-viewport unique circle remains its exact source core, round and unchanged.",
+  "multi_circle_rule": "Run the T01 shared-diameter-class process only on in-viewport circles belonging to an original physical-contact component containing at least two in-viewport unique circles. Select the largest source-radius circle in each component, stable source-ID tie-break, as that component round priority. Other members are circular growth candidates clipped by actual ORG copper and accepted earlier candidates.",
+  "construction_order": "All round priorities first in source-ID order, then remaining selected circles in crop source centroid Y,X,ID order. Dynamic and frozen-neighbor controls share the same targets and priorities.",
+  "square_guided_recess": "None designated for this crop. Do not transfer old-crop site annotations or infer a recess rule from EDIT.",
+  "status": "NEW_EXPERIMENTAL_CROP_CANDIDATE_PENDING_OWNER_REVIEW",
+  "component_basis": "physical_contact_group"
+}
