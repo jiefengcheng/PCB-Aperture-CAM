@@ -1,0 +1,37 @@
+[
+  {
+    "stage": "ORG",
+    "label": "Original source",
+    "geometry_sha256": "9d56f978a943e3268670868524f7518cef1a536968c806f6acab57040ac7664a",
+    "added_area_mm2": 0.0,
+    "removed_area_mm2": 0.0
+  },
+  {
+    "stage": "T01",
+    "label": "After T01; T03 recheck passes without route change",
+    "geometry_sha256": "ad9ffba4aa33934a51d145b6f5583911135e2c9d0b3082f4f9c3a315028bdfc1",
+    "added_area_mm2": 2.9691055525248706,
+    "removed_area_mm2": 0.0
+  },
+  {
+    "stage": "T04",
+    "label": "After T04 uniform trace widths",
+    "geometry_sha256": "384e6dafaf775d7dcfa3dab039bb750e384ee30b01ba1d12b571fb5b06c01a5d",
+    "added_area_mm2": 2.4891905299362174,
+    "removed_area_mm2": 7.247713450441595e-18
+  },
+  {
+    "stage": "T02",
+    "label": "After T02 rectangles and inclusive fills",
+    "geometry_sha256": "dec1d1dd4dcd600e563870eaa82b44968536fd9b7af39ac957630509b48a86e6",
+    "added_area_mm2": 3.086444917390906,
+    "removed_area_mm2": 0.0
+  },
+  {
+    "stage": "T05",
+    "label": "After T05 spindle junctions",
+    "geometry_sha256": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323",
+    "added_area_mm2": 0.9642649106704824,
+    "removed_area_mm2": 0.0
+  }
+]

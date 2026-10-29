@@ -1,0 +1,26 @@
+{
+  "T02": "NOT_RUN",
+  "T03": "NOT_RUN",
+  "T04": "NOT_RUN",
+  "added_crop_area_mm2": 2.9691055525248706,
+  "after_sha256": "ad9ffba4aa33934a51d145b6f5583911135e2c9d0b3082f4f9c3a315028bdfc1",
+  "asset_integrity": {
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c",
+    "status": "PASS"
+  },
+  "final_joint_checks": 153,
+  "geometry_check_model": "SOURCE_VISIBLE_SURFACES",
+  "keep_targets": 32,
+  "positive_targets": 121,
+  "registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "rejected_trials": 273,
+  "removed_crop_area_mm2": 0.0,
+  "round_shape": "ALL_RETAINED",
+  "scope_limit": "Supported source-circle scope only; complete C03 land-stage acceptance/T02 not established; no C02 acceptance inheritance",
+  "scope_sha256": "77c4471d3e792b8817c01409836de6c73a43520b00861b9617cd5aaafae3e8d6",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "status": "C03_SUPPORTED_ROUND_CLASS_T01_PROPOSAL_LOCAL_PASS_NOT_FROZEN",
+  "target_count": 153,
+  "unresolved_class_source_count": 0
+}

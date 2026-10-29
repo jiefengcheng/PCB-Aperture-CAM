@@ -1,0 +1,16 @@
+{
+  "status": "PINNED_EXISTING_C03_T01_FOR_AUTHORIZED_SEQUENCE_NOT_OWNER_FREEZE",
+  "source_run": "out/crop_dynamic_tasks/c03_visible_round_stage_20261029_161",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "cumulative_sha256": "ad9ffba4aa33934a51d145b6f5583911135e2c9d0b3082f4f9c3a315028bdfc1",
+  "scope_sha256": "77c4471d3e792b8817c01409836de6c73a43520b00861b9617cd5aaafae3e8d6",
+  "circle_targets": 153,
+  "positive": 121,
+  "KEEP": 32,
+  "original_trace_routes_and_widths": "UNCHANGED",
+  "T02": "NOT_APPLIED",
+  "registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "C01_C02": "Separate accepted results remain frozen; no acceptance inheritance; C03 viewport overlaps C01 and is an independent crop experiment",
+  "authorization": "Owner starts C03 T01 \u2192 T03 \u2192 T04 \u2192 T02 \u2192 T05",
+  "owner_acceptance": "PENDING_USER"
+}

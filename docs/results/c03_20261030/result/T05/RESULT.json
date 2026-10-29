@@ -1,0 +1,32 @@
+{
+  "status": "C03_T01_T03_T04_T02_T05_LOCAL_CUMULATIVE_PROPOSAL",
+  "asset_integrity": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "sequence": [
+    "T01",
+    "T03_NO_ROUTE_CHANGE",
+    "T04",
+    "T02",
+    "T05"
+  ],
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "scope_sha256": "77c4471d3e792b8817c01409836de6c73a43520b00861b9617cd5aaafae3e8d6",
+  "predecessor_sha256": "dec1d1dd4dcd600e563870eaa82b44968536fd9b7af39ac957630509b48a86e6",
+  "after_sha256": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323",
+  "routes_evaluated": 97,
+  "grown_routes": 85,
+  "keep_routes": 12,
+  "land_contact_incidences": 162,
+  "rectangle_contact_incidences": 24,
+  "covered_lands_skipped": 84,
+  "added_area_mm2": 0.9642649106704824,
+  "protected_T01_T04_T02_parts": 675,
+  "protected_parts": "ALL_BYTE_IDENTICAL",
+  "source_registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "C01_C02": "ACCEPTED_FROZEN_RESULTS_UNMODIFIED_SEPARATE_CROP_LINEAGES",
+  "owner_acceptance": "PENDING_USER",
+  "independent_native_electrical_manufacturing": "NOT_ESTABLISHED"
+}

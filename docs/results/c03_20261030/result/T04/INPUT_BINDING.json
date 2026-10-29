@@ -1,0 +1,19 @@
+{
+  "asset_integrity": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "land_predecessor_sha256": "ad9ffba4aa33934a51d145b6f5583911135e2c9d0b3082f4f9c3a315028bdfc1",
+  "definition_sha256": "26c4843f65d49fe1a55203eed1d354b391918429fc72c9d014ba73fbcc3bf1d6",
+  "groups_sha256": "a26d5087d56726545c585fbd0b6bce7259df82f2e985b3819917c474cfeb70d9",
+  "freeze_receipt_sha256": "4756317fd94f0f5e7cee164d7bcaad9708eae05145b7079e0e6af725282f8d07",
+  "visible_complete_routes": 97,
+  "group_count": 64,
+  "source_primitives": 475,
+  "fixed_source_objects": 17374,
+  "all_source_objects": 17849,
+  "route_change": "NONE",
+  "nominal_geometry_family": "fixed-source-uniform-offset-verification-envelope/1"
+}

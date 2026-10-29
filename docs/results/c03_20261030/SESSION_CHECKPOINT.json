@@ -1,0 +1,63 @@
+{
+  "status": "C03_CUMULATIVE_LOCAL_CANDIDATE_SOURCE_REPLAY_PASS",
+  "consolidation_commit_pushed": "95f88b24aeb33a9e4326d2f8a479199651fa1ce0",
+  "sequence": [
+    "T01",
+    "T03_NO_ROUTE_CHANGE",
+    "T04",
+    "T02",
+    "T05"
+  ],
+  "run": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/crop_dynamic_tasks/c03_sequence_20261030_269",
+  "review": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/crop_dynamic_tasks/c03_sequence_20261030_269/review/index.html",
+  "focused_tests": "53 PASS",
+  "replay": {
+    "status": "PASS_SAME_ASSISTANT_C03_FINAL_SOURCE_SEQUENCE_REPLAY",
+    "asset_integrity": {
+      "status": "PASS",
+      "files": 70,
+      "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+    },
+    "T01_circles": 153,
+    "T03_route_changes": 0,
+    "T04_routes": 97,
+    "T04_source_parts": 475,
+    "T04_scales_and_source_parts": "RECONSTRUCTED_EXACTLY_FULL_FINAL_NOMINAL_AND_ENVELOPE_CHECKS_PASS",
+    "T04_search_history": "Every saved check file hash verified; all failed candidate geometries not freshly rerun",
+    "T02_rectangles": 46,
+    "T02_inclusive_merges": 6,
+    "T05_reconstructed_patches": 85,
+    "T05_minimum_added_foreign_gap_mm": 0.02010802221688429,
+    "after_sha256": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323",
+    "protected_accepted_crops": [
+      {
+        "crop": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261",
+        "unchanged": true,
+        "verified_files": 90
+      },
+      {
+        "crop": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266",
+        "unchanged": true,
+        "verified_files": 881
+      }
+    ],
+    "registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+    "owner_acceptance": "PENDING_USER",
+    "independent_native_electrical_manufacturing": "NOT_ESTABLISHED"
+  },
+  "source_code_hashes": {
+    "tools/build_c03_sequence_review.py": "296195ab2c10e09bd0880a8852ed3cab91a0e76e9de29abe9264e365fff1177c",
+    "tools/c03_sequence_scene.py": "63a6b3b0ceb0e9a5ce46d4ce38207ad9144aac22b8ff49df129767a14f152632",
+    "tools/verify_c03_sequence.py": "dbfed681d59ba270864a87e6948aa43e317422fc5bedf6ad22d6460ae66459bb",
+    "tools/run_c03_junction_stage.py": "9b66d045a86e891448d64836028ba2a770598d3afc46dc7db6aa3294a49237ba",
+    "tools/run_c03_trace_first_rectangles.py": "2570ff47f1170a32fddf18d5b0487943286d828656f4249284c4b74e6fa46886",
+    "tools/render_c03_width_checkpoint.py": "611948e8fe5885ede5633442d67504d7b3da9abb05abf2cdac65be29dedc977f",
+    "src/resumed_width_solver.py": "446dfe1256728c51008735c91218a4cec53fdbe385c53d6916cf509eff1fa3c7",
+    "tests/test_c03_sequence_bindings.py": "38a1e0139782ae3c96ba8ced30763e61bbe85e0f42313d66cdd79542cf3c65c6",
+    "tests/test_resumed_width_solver.py": "70d32d7f98d7b5ab3d1bb7c75e665c59b193451cbd4ed6d597197dfa49c0a6f3"
+  },
+  "corrected_attempt": "268 preserved; bulk-boundary growth rejected and fixed roles rebound in 269",
+  "warm_start": "seed rejected; only freshly checked hints reused",
+  "accepted": false,
+  "next": "Review saved C03 cumulative visuals; preserve C01/C02 frozen results"
+}

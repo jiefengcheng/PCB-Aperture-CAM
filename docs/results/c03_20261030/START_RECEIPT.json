@@ -1,0 +1,31 @@
+{
+  "status": "C03_SEQUENCE_CONTINUES_WITH_CORRECTED_LOCAL_BULK_ROLES",
+  "consolidation_commit": "95f88b2",
+  "consolidation_push": "origin/main verified",
+  "sequence": [
+    "T01",
+    "T03",
+    "T04",
+    "T02",
+    "T05"
+  ],
+  "source_registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "protected_accepted_crops": [
+    {
+      "path": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261",
+      "receipt_sha256": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013",
+      "after_sha256": "587d10f5855c4b7afe2f37130277d3c0bdc711b84b74c0dd8c69f6d4ff932966"
+    },
+    {
+      "path": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266",
+      "receipt_sha256": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627",
+      "after_sha256": "60f60b0012277f28fad494df16e14957fa8196fcd11475a5cafb42500918040a"
+    }
+  ],
+  "T01": "EXISTING161_REUSED_EXACT",
+  "historical_T02_163": "NOT_USED_WRONG_STAGE_ORDER",
+  "T03_T04_T02_T05": "PENDING",
+  "prior_run_preserved": "out/crop_dynamic_tasks/c03_sequence_20261030_268",
+  "T04": "RESUME_COMPATIBLE_CHECKED_SCALES_AFTER_ROLE_CORRECTION",
+  "new_source_role_policy": "Only background fields fixed; no geometry or clearance exemptions"
+}

@@ -1,0 +1,34 @@
+{
+  "status": "PASS_SAME_ASSISTANT_C03_FINAL_SOURCE_SEQUENCE_REPLAY",
+  "asset_integrity": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "T01_circles": 153,
+  "T03_route_changes": 0,
+  "T04_routes": 97,
+  "T04_source_parts": 475,
+  "T04_scales_and_source_parts": "RECONSTRUCTED_EXACTLY_FULL_FINAL_NOMINAL_AND_ENVELOPE_CHECKS_PASS",
+  "T04_search_history": "Every saved check file hash verified; all failed candidate geometries not freshly rerun",
+  "T02_rectangles": 46,
+  "T02_inclusive_merges": 6,
+  "T05_reconstructed_patches": 85,
+  "T05_minimum_added_foreign_gap_mm": 0.02010802221688429,
+  "after_sha256": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323",
+  "protected_accepted_crops": [
+    {
+      "crop": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261",
+      "unchanged": true,
+      "verified_files": 90
+    },
+    {
+      "crop": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266",
+      "unchanged": true,
+      "verified_files": 881
+    }
+  ],
+  "registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "owner_acceptance": "PENDING_USER",
+  "independent_native_electrical_manufacturing": "NOT_ESTABLISHED"
+}

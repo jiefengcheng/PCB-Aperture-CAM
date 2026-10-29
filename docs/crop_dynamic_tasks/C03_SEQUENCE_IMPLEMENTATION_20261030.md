@@ -1,0 +1,15 @@
+# C03 trace-first sequence implementation
+
+Consolidation commit `95f88b2` was pushed to origin/main before C03 execution. New C03 implementation is subsequent local work.
+
+Current reproducible run: `out/crop_dynamic_tasks/c03_sequence_20261030_269/`; cumulative review: `review/index.html`; exact source reconstruction receipt: `verification/REPLAY.json`; code hashes and resume state: `SESSION_CHECKPOINT.json`.
+
+The existing 153-circle T01 result161 is reused byte-for-byte. Growth-only T03 checks pass without route replacement. T04 evaluates97 complete routes in64 shared-scale groups:63 grow,46 reach1.5x,one remains unchanged. T02 runs afterward:45 rectangle grows,one covered skip,six inclusive rectangle fills under the20percent shortage ceiling. T05 adds85 route spindle blends with162 land incidences including24 rectangle incidences;12 routes remain unchanged.
+
+The first width attempt268 is preserved and superseded after visual inspection exposed forbidden bulk-background growth. Run269 binds three actual original copper background regions to fixed source roles. Those roles provide no electrical or clearance exemption. The old width vector failed the fresh corrected-context seed check; individual hints and every upper bracket were checked again. The resumed solver does not change the frozen original solver or its acceptance rules.
+
+The source-scene adapter, post-width rectangle adapter, spindle adapter, separate source reconstructor and cumulative renderer live in tools/c03_sequence_scene.py, tools/run_c03_trace_first_rectangles.py, tools/run_c03_junction_stage.py, tools/verify_c03_sequence.py and tools/build_c03_sequence_review.py. The reusable bounded warm-start solver lives in src/resumed_width_solver.py. All53 selected tests pass. Final nominal and conservative width checks, rectangle checks, exact spindle reconstruction and simultaneous final additions pass locally.
+
+All971 frozen C01/C02 files and both acceptance receipts were rehashed unchanged. C03 is a separate overlapping crop experiment, not a merged whole-board result. Original assets70/70 pass. C03 screenshot localization remains provisional: IoU0.964868 below0.970000. Source-native geometry is bound; no exact EDIT registration, independent, native-semantic, electrical or manufacturing acceptance is claimed. C03 owner acceptance remains PENDING_USER. ABI remains design-only.
+
+Owner subsequently accepted the displayed result and authorized freeze/commit/push. Freeze270 records FROZEN_C03_FINAL_SO_FAR_OWNER_ACCEPTED without changing run269 or its historical PENDING_USER labels. Local freeze includes the full retained run and exact implementation snapshots. Git delivery docs/results/c03_20261030 includes generated stage geometry, replacement parts, decisions, source replay and rendered reviews; original board/cache, intermediate search checks and duplicate SVGs are omitted explicitly. Delivery verification passes1100 files/46links. Owner acceptance does not waive provisional screenshot registration or establish independent/native/electrical/manufacturing qualification.

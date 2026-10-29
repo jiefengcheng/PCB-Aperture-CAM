@@ -1,0 +1,29 @@
+{
+  "status": "C03_TRACE_FIRST_T02_LOCAL_PROPOSAL",
+  "asset_integrity": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "predecessor_sha256": "384e6dafaf775d7dcfa3dab039bb750e384ee30b01ba1d12b571fb5b06c01a5d",
+  "scope_sha256": "77c4471d3e792b8817c01409836de6c73a43520b00861b9617cd5aaafae3e8d6",
+  "after_sha256": "dec1d1dd4dcd600e563870eaa82b44968536fd9b7af39ac957630509b48a86e6",
+  "sequence": [
+    "T01",
+    "T03_NO_ROUTE_CHANGE",
+    "T04",
+    "T02"
+  ],
+  "rectangle_targets": 46,
+  "grown": 45,
+  "keep": 1,
+  "inclusive_candidates": 157,
+  "inclusive_merges": 6,
+  "added_area_mm2": 3.086444917390906,
+  "protected_T01_T04_parts": 629,
+  "protected_parts": "ALL_BYTE_IDENTICAL",
+  "registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "owner_acceptance": "PENDING_USER",
+  "independent_native_electrical_manufacturing": "NOT_ESTABLISHED"
+}

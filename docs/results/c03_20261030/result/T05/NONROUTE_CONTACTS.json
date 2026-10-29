@@ -1,0 +1,4800 @@
+[
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:128875:128962",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 1.4826494395015811e-09,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:128965:129052",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 1.0055803742148915e-10,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129055:129142",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 1.1578708048276103e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129145:129232",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 7.72019586037918e-09,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129577:129664",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129667:129754",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129757:129844",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.00012510567684761385,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:130547:130634",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 4.984751479759563e-09,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:130637:130723",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657"
+    ],
+    "exposed_crop_area_mm2": 6.567642164022921e-09,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:131189:131275",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433"
+    ],
+    "exposed_crop_area_mm2": 1.2946444616758539e-08,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:131278:131365",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433"
+    ],
+    "exposed_crop_area_mm2": 0.0003208084044267638,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:131368:131455",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:131548:131635",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:131727:131812",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516"
+    ],
+    "exposed_crop_area_mm2": 5.602880380019617e-09,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:131815:131900",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211083:211298",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516"
+    ],
+    "exposed_crop_area_mm2": 2.6410447857547542e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:132748:132833",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214"
+    ],
+    "exposed_crop_area_mm2": 1.4267212341723182e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133596:133681",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:134581:134666",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:140221:140304",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547760:1547882"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153588:153676",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211083:211298",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 0.002287781654212804,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:154333:154421",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:154424:154512",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:160567:160653",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:160656:160742",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:160745:160831",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:160834:160920",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214"
+    ],
+    "exposed_crop_area_mm2": 7.593133105466636e-09,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:161366:161452",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211083:211298"
+    ],
+    "exposed_crop_area_mm2": 1.5583666105397136e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:161455:161541",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211083:211298"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:161544:161630",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516"
+    ],
+    "exposed_crop_area_mm2": 0.010064266193385952,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:161813:161901",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:161904:161992",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:161995:162083",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:162086:162174",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:162359:162447",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209"
+    ],
+    "exposed_crop_area_mm2": 0.010263662784950176,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:162450:162538",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:162541:162627",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433"
+    ],
+    "exposed_crop_area_mm2": 3.1902926547495276e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:162721:162809",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657"
+    ],
+    "exposed_crop_area_mm2": 2.500353022809853e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:162812:162900",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657"
+    ],
+    "exposed_crop_area_mm2": 8.557656668019011e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:162903:162991",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 0.023791520259896077,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:163629:163717",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 1.1098551730510622e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:163720:163808",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 9.208533747776452e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:163811:163899",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 1.4911287025376647e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:163902:163990",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 1.5787642092236848e-19,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:163993:164080",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 1.6026938583102524e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:164445:164533",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:165859:165946",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.01107637562255619,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:165949:166035",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:166038:166124",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:166127:166213",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:166216:166302",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:166305:166391",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 6.669941346084328e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:166394:166480",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:168943:169028",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 2.7458062046008065e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:173674:173758",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:173761:173846",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:173849:173934",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:173937:174022",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:174025:174110",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:174113:174198",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:189733:189821",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:190087:190175",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:190267:190355",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208353:208439",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996"
+    ],
+    "exposed_crop_area_mm2": 0.001876560297531802,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208442:208529",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:209217:209304",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:209307:209392",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214"
+    ],
+    "exposed_crop_area_mm2": 2.2779376628111005e-08,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:209484:209570",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:210727:210814",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211083:211298"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:210905:210992",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211083:211298"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211519:211606",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:212055:212141",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:212144:212230",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:212233:212319",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516"
+    ],
+    "exposed_crop_area_mm2": 1.3996531710594265e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:212682:212769",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214085:214172",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214626:214713",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214716:214803",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214806:214893",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209"
+    ],
+    "exposed_crop_area_mm2": 7.205588072808813e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214896:214985",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215436:215524",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215799:215887",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216162:216251",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216254:216343",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216346:216433",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657"
+    ],
+    "exposed_crop_area_mm2": 2.4874819394481963e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216884:216973",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:217338:217425",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:219240:219327",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 2.5053719314055864e-19,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:219514:219600",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:221140:221228",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:221231:221320",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:224470:224555",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 8.82872403133231e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:224648:224733",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 3.820229332793498e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:224825:224910",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:225630:225717",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:229522:229607",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:229786:229871",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:235521:235606",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547760:1547882"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:235609:235691",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547760:1547882"
+    ],
+    "exposed_crop_area_mm2": 0.04311770191793071,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:237010:237095",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547760:1547882"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:237098:237181",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547760:1547882"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:237184:237269",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547760:1547882"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:240676:240761",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0014580930283814562,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:240764:240847",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.00034960640086467406,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:240850:240935",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 6.514093597196701e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:240938:241021",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241024:241107",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241110:241195",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241198:241283",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241286:241371",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241374:241459",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241462:241547",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241674:241759",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241762:241847",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:241974:242059",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:242062:242147",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:242150:242234",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:287810:287925",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:288286:288402",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 5.331539035925392e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:289593:289709",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 2.1186913286349433e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:289828:289945",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 2.0818632988333345e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:289948:290065",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:290418:290532",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996"
+    ],
+    "exposed_crop_area_mm2": 8.200570478035228e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:290769:290883",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 3.121701628304535e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:290886:291000",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 5.130385056229991e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:291934:292047",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 6.735924690426182e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:292050:292164",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:292167:292281",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:292284:292397",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 4.2215664176685236e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:308961:309076",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804"
+    ],
+    "exposed_crop_area_mm2": 3.481511313958231e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:314140:314252",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996"
+    ],
+    "exposed_crop_area_mm2": 2.7269657236204328e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:314255:314369",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214"
+    ],
+    "exposed_crop_area_mm2": 5.222882953046949e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:315072:315185",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:315188:315305",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.00023321851672983358,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:315308:315425",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.000586935011270937,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:315428:315545",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 5.891045296139666e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:315548:315665",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469"
+    ],
+    "exposed_crop_area_mm2": 0.0005520991810195911,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:315668:315785",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209"
+    ],
+    "exposed_crop_area_mm2": 9.342634605582315e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:315788:315903",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433"
+    ],
+    "exposed_crop_area_mm2": 3.861229665913121e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:315906:316023",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433"
+    ],
+    "exposed_crop_area_mm2": 3.371546327971221e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:316026:316143",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657"
+    ],
+    "exposed_crop_area_mm2": 1.566873767335192e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:316146:316262",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:316265:316381",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 0.0003785745086225207,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:317103:317219",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:317222:317339",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 8.310678395612835e-08,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:317342:317458",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 2.9044416503900197e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:317580:317697",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:129235:129358"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:320279:320395",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:320518:320633",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:223914:224036"
+    ],
+    "exposed_crop_area_mm2": 4.2473656864364914e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:325651:325765",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 6.966774112225708e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:326119:326232",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 1.2998048424300982e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:326235:326348",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:133472:133593"
+    ],
+    "exposed_crop_area_mm2": 1.8942574315104412e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:333819:333933",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 8.401767086255988e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:333936:334047",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:334050:334164",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:334167:334281",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:511350:511438",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 1.604767265175979e-09,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:511441:511529",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:511532:511619",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:511622:511710",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.00010721089693342518,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:511713:511801",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:511804:511890",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:511893:511981",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:511984:512072",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.005143977868352255,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512075:512163",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.002247182637849269,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512166:512254",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512257:512345",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512348:512435",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512438:512526",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512979:513067",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0017829242049724513,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513070:513158",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.00466960663686214,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513161:513247",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.011362705491907698,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513250:513338",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.010029333615121266,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513341:513429",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513432:513518",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513521:513609",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513612:513731",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976"
+    ],
+    "exposed_crop_area_mm2": 9.254160602313694e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513734:513854",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513857:513977",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:513980:514099",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976"
+    ],
+    "exposed_crop_area_mm2": 0.0002310355761525458,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1471987:1472074",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1539732:1539854"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1473756:1473841",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1548391:1548513"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1474687:1474777",
+    "land_ids": [
+      "inclusive:M147"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1474780:1474870",
+    "land_ids": [
+      "inclusive:M147"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1474873:1474994",
+    "land_ids": [
+      "inclusive:M147"
+    ],
+    "exposed_crop_area_mm2": 0.02559309648753995,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1538361:1538447",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208781:208996",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:208999:209214",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211083:211298",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:211301:211516",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:213250:213469",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:214988:215209",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:215212:215433",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216436:216657",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:216660:216881"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1549014:1549104",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1549107:1549197",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1549327:1549416",
+    "land_ids": [
+      "inclusive:M069"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1549419:1549540",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950613:1950790",
+      "inclusive:M069"
+    ],
+    "exposed_crop_area_mm2": 0.002616656991101743,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1549670:1549790",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1549793:1549883",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950793:1950974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1549886:1549976",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950613:1950790"
+    ],
+    "exposed_crop_area_mm2": 9.167980890490642e-08,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1549979:1550069",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950613:1950790",
+      "inclusive:M069"
+    ],
+    "exposed_crop_area_mm2": 0.005724479585737321,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1550072:1550162",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950613:1950790"
+    ],
+    "exposed_crop_area_mm2": 0.0013058059197189912,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1550292:1550413",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950613:1950790"
+    ],
+    "exposed_crop_area_mm2": 0.0009023796024194474,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1550416:1550506",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1918153:1918342",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950613:1950790"
+    ],
+    "exposed_crop_area_mm2": 0.0017241794826035124,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1550509:1550599",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1918153:1918342"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1550602:1550692",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1918153:1918342"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1550695:1550785",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1918153:1918342"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1602422:1602510",
+    "land_ids": [
+      "inclusive:M069"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1602513:1602601",
+    "land_ids": [
+      "inclusive:M069"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1603105:1603193",
+    "land_ids": [
+      "inclusive:M069"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1612057:1612144",
+    "land_ids": [
+      "inclusive:M069"
+    ],
+    "exposed_crop_area_mm2": 0.00029410447542994926,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1612414:1612500",
+    "land_ids": [
+      "inclusive:M100"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1612503:1612590",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1906787:1906964",
+      "inclusive:M100"
+    ],
+    "exposed_crop_area_mm2": 0.07379294682194959,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1612593:1612682",
+    "land_ids": [
+      "inclusive:M147"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1612685:1612774",
+    "land_ids": [
+      "inclusive:M147"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1612777:1612865",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1918345:1918534"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1612868:1612986",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1918345:1918534"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1613080:1613169",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1909883:1910064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1613172:1613261",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1909883:1910064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1613264:1613353",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1909883:1910064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1613356:1613445",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1909883:1910064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1613448:1613537",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1909883:1910064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1615698:1615786",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1910067:1910248"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635135:1635220",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543253:1543377"
+    ],
+    "exposed_crop_area_mm2": 0.1167869840702711,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635223:1635310",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543253:1543377"
+    ],
+    "exposed_crop_area_mm2": 7.41314343703552e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1636282:1636396",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0017080765587277112,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1636399:1636485",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 1.1036578899864869e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1636488:1636574",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 1.7943727510739122e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1636577:1636662",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 7.78421715323928e-05,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1731394:1731479",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542751:1542872"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1731482:1731598",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543253:1543377"
+    ],
+    "exposed_crop_area_mm2": 0.012041098103121912,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1731601:1731688",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542751:1542872"
+    ],
+    "exposed_crop_area_mm2": 0.023984663069837403,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1731691:1731778",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542751:1542872"
+    ],
+    "exposed_crop_area_mm2": 0.005641493213380857,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1731902:1731990",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543253:1543377"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1732599:1732717",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635948:1636070"
+    ],
+    "exposed_crop_area_mm2": 0.029732154349990093,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1733505:1733593",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635948:1636070"
+    ],
+    "exposed_crop_area_mm2": 1.2525264964929374e-06,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1733687:1733773",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635948:1636070"
+    ],
+    "exposed_crop_area_mm2": 2.3367536026219425e-07,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1733897:1734014",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635948:1636070"
+    ],
+    "exposed_crop_area_mm2": 0.03566266367141227,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1734860:1734946",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546390:1546512"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1734949:1735066",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637046:1637170"
+    ],
+    "exposed_crop_area_mm2": 0.013325297037239874,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1735187:1735304",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637046:1637170"
+    ],
+    "exposed_crop_area_mm2": 0.03407509478936446,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1735307:1735395",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637046:1637170"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1735398:1735485",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637046:1637170"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1735488:1735576",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637046:1637170",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637173:1637297"
+    ],
+    "exposed_crop_area_mm2": 0.013379311472801508,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1735579:1735667",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637173:1637297"
+    ],
+    "exposed_crop_area_mm2": 0.022266931970349013,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1736181:1736269",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1638441:1638565"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1736514:1736602",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1639455:1639579"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1739484:1739571",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1640850:1640974"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1742790:1742877",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1905527:1905704"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1743511:1743599",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1906967:1907144"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1749686:1749773",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1539974:1540098"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1750558:1750646",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540609:1540733"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1751038:1751126",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540101:1540225"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1752813:1752897",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540736:1540857"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1753020:1753107",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1629684:1629808"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1753110:1753196",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1629811:1629935"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1753619:1753705",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540355:1540479"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1753708:1753795",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540355:1540479"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1753798:1753886",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540355:1540479"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1753889:1753977",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1630319:1630443"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1754071:1754159",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540228:1540352"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1754162:1754250",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1630573:1630697"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1754344:1754432",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540482:1540606"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1755091:1755175",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540860:1540982"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1755178:1755262",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540860:1540982"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1755265:1755351",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540860:1540982"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1759170:1759257",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1631460:1631584"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1759377:1759464",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1631968:1632090"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1759587:1759672",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1541236:1541358"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1759762:1759850",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1630952:1631076"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1760035:1760123",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540985:1541108"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1760126:1760213",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540985:1541108"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1760216:1760303",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1630825:1630949"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1761053:1761141",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1541486:1541610"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1761233:1761319",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1633109:1633233"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1761322:1761410",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1541613:1541737"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1761413:1761501",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1541613:1541737"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1761595:1761683",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1541867:1541991"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1762527:1762613",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1541994:1542116"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1763035:1763122",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1632220:1632344"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1763307:1763394",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542875:1542999"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1763397:1763484",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542875:1542999"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1763487:1763575",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1632601:1632725"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1763668:1763755",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1541740:1541864"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1763849:1763937",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542371:1542495"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1763940:1764027",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1633236:1633358"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1765227:1765314",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542498:1542622"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1765406:1765493",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542625:1542748"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1765496:1765583",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542625:1542748"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1766745:1766829",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543129:1543250"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1766832:1766917",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543129:1543250"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1767215:1767299",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1544384:1544504"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1767628:1767714",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543380:1543502"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1767717:1767803",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543380:1543502"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1767806:1767892",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543380:1543502"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1768196:1768284",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1544007:1544131"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1768848:1768934",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543505:1543627"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1769026:1769114",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543630:1543754"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1769117:1769205",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543630:1543754"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1769208:1769296",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543630:1543754"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1770128:1770214",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1544259:1544381"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1770217:1770303",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1544259:1544381"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1770306:1770392",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1544259:1544381"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1770395:1770481",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1544507:1544629"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1771025:1771113",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543757:1543881"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1771116:1771204",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1543757:1543881"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1771297:1771384",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1544757:1544880"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1772249:1772336",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1545135:1545257"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1772636:1772722",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1545260:1545382"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1772725:1772811",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1545260:1545382"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1772814:1772900",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1545260:1545382"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1772990:1773078",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1545385:1545509"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1773172:1773260",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1634629:1634753"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1773263:1773351",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635567:1635691"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1773354:1773441",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635567:1635691"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1773626:1773714",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1544883:1545007"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1773717:1773804",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635948:1636070"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1773807:1773895",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635948:1636070"
+    ],
+    "exposed_crop_area_mm2": 0.00425891756372036,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1774347:1774434",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1545764:1545887"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1774437:1774525",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635313:1635437"
+    ],
+    "exposed_crop_area_mm2": 4.0059602081253966e-08,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1774528:1774616",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1635313:1635437"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1775164:1775251",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1545637:1545761"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1775373:1775461",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1545890:1546014"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1776696:1776784",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637427:1637551"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1776877:1776964",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1636792:1636916"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1778018:1778103",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546640:1546762"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1778106:1778190",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546640:1546762"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1778641:1778724",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546765:1546884"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1778727:1778812",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546765:1546884"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1779595:1779682",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637679:1637803"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1779775:1779863",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1638568:1638692"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1780045:1780131",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547385:1547507"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1780578:1780665",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1637806:1637930"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1780877:1780963",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546887:1547007"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1780966:1781054",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1546887:1547007"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1782312:1782400",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1638947:1639071"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1782403:1782491",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1638947:1639071"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1782585:1782673",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1639074:1639198"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1782767:1782855",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547258:1547382"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1782948:1783036",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1640090:1640214"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1783675:1783762",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1547885:1548009"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1784066:1784154",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1548012:1548136"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1784157:1784245",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1548012:1548136"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1784339:1784427",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1548139:1548263"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1784612:1784700",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1640342:1640466"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1790589:1790677",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917209:1917394"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1790680:1790768",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917209:1917394"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1790771:1790859",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917209:1917394"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1790862:1790950",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917209:1917394"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1790953:1791041",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917209:1917394"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1792555:1792643",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917209:1917394"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1793425:1793511",
+    "land_ids": [
+      "inclusive:M100"
+    ],
+    "exposed_crop_area_mm2": 7.3732780006508424e-09,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1793514:1793600",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1905887:1906064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1793603:1793689",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1905887:1906064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1794351:1794439",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1906787:1906964"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1794532:1794650",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1906787:1906964"
+    ],
+    "exposed_crop_area_mm2": 0.0012450655402159215,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1794955:1795043",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1641485:1641609"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1795469:1795559",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950245:1950426"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1796282:1796370",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1907327:1907504"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1796373:1796491",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1907867:1908044"
+    ],
+    "exposed_crop_area_mm2": 0.001316033398740215,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1796494:1796582",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1907867:1908044"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1796585:1796673",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1907867:1908044"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1797447:1797535",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1797538:1797626",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1797629:1797717",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1797720:1797808",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1797992:1798080",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1907867:1908044"
+    ],
+    "exposed_crop_area_mm2": 0.00012561002494393408,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1798264:1798353",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1798356:1798444",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1798447:1798537",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:512754:512976",
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1917963:1918150"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1799213:1799303",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950429:1950610"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1800645:1800735",
+    "land_ids": [
+      "inclusive:M147"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1800738:1800859",
+    "land_ids": [
+      "inclusive:M147"
+    ],
+    "exposed_crop_area_mm2": 0.0012603080859169493,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1801135:1801225",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1950977:1951158"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1801504:1801594",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1918345:1918534"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1802303:1802393",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1951345:1951526"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1802396:1802486",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1951345:1951526"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1802612:1802702",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1909515:1909696"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1802891:1802981",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1951345:1951526"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1803442:1803532",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1909883:1910064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1803933:1804023",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1909883:1910064"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1804459:1804549",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1951713:1951894"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "FULLY_COVERED_BY_OTHER_EXISTING_COPPER",
+      "FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1804552:1804642",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1951897:1952078"
+    ],
+    "exposed_crop_area_mm2": 0.0,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "ORIGINAL_BULK_COPPER_COVERS_COMPLETE_TWO_WIDTH_SIDE_STRIP"
+    ],
+    "treatment": "SKIP_FULLY_COVERED"
+  },
+  {
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1900951:1901038",
+    "land_ids": [
+      "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1918153:1918342"
+    ],
+    "exposed_crop_area_mm2": 0.012254523220009982,
+    "prior_disposition": "FIXED_EMBEDDED_OR_FILL",
+    "prior_reasons": [
+      "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+    ],
+    "treatment": "FIXED_ROLE_RETAINED_NOT_GROWN"
+  }
+]

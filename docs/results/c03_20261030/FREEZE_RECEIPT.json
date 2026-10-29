@@ -1,0 +1,29 @@
+{
+  "status": "FROZEN_C03_FINAL_SO_FAR_OWNER_ACCEPTED",
+  "authority": "Owner: Looks good. Plz freeze this as the final C03 result so far, keeping C01 and C02 unchanged, then commit & push the latest implementation and results.",
+  "source_result": "out/crop_dynamic_tasks/c03_sequence_20261030_269",
+  "sequence": [
+    "T01",
+    "T03_NO_ROUTE_CHANGE",
+    "T04",
+    "T02",
+    "T05"
+  ],
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "after_sha256": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323",
+  "geometry_path": "frozen/T05/after.wkb",
+  "review_path": "frozen/review/index.html",
+  "manifest_sha256": "a3dc77ba5052699d3c0a83dc2a5c74559c09d0ab171d384c64ed703296804a23",
+  "frozen_files": 19019,
+  "owner_visual_acceptance": "PASSED",
+  "asset_integrity": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "protected_C01_C02": "971 frozen C01/C02 files and both acceptance receipts unchanged",
+  "local_replay": "PASS_SAME_ASSISTANT_C03_FINAL_SOURCE_SEQUENCE_REPLAY",
+  "registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "independent_native_electrical_manufacturing": "NOT_ESTABLISHED",
+  "acceptance_scope": "Owner-accepted final C03 result so far; separate crop lineage, not whole-board qualification. Original provisional registration and construction-time labels retained."
+}

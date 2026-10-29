@@ -1,0 +1,7 @@
+{
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "source_manifest_sha256": "0c3e75925053a649a3c14e0449555a2faa7a814c061beb26ef1fc29a96605101",
+  "scope_sha256": "77c4471d3e792b8817c01409836de6c73a43520b00861b9617cd5aaafae3e8d6",
+  "T01_after_sha256": "ad9ffba4aa33934a51d145b6f5583911135e2c9d0b3082f4f9c3a315028bdfc1",
+  "source_authority": "Same immutable original board/cache; no C02 candidate geometry or acceptance inherited"
+}

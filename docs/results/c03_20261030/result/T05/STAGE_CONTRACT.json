@@ -1,0 +1,16 @@
+{
+  "family": "land-sized-additive-spindle/1",
+  "barrier_gap_mm": 0.02011,
+  "construction_gap_mm": 0.0201,
+  "hard_gap_mm": 0.02,
+  "area_epsilon_mm2": 1e-12,
+  "minimum_visible_addition_mm2": 1e-08,
+  "buffer_quad_segs": 64,
+  "window_land_radii": 2.0,
+  "radius_scales": [
+    1.0,
+    0.75,
+    0.5,
+    0.25
+  ]
+}

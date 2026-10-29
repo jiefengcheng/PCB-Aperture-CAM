@@ -1,0 +1,12 @@
+{
+  "status": "NO_APPLICABLE_GROWTH_CAUSED_T03_ROUTE_OBJECTIVE_IN_SUPPORTED_T01_SCOPE",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "T01_after_sha256": "ad9ffba4aa33934a51d145b6f5583911135e2c9d0b3082f4f9c3a315028bdfc1",
+  "checked_circle_lands": 153,
+  "check": "PASS_SOURCE_VISIBLE_GROWTH_ONLY",
+  "route_changes": 0,
+  "inherited_original_gaps": "NOT_RECLASSIFIED_AS_GROWTH_DEFECTS",
+  "electrical_native_manufacturing": "NOT_ESTABLISHED",
+  "registration": "PROVISIONAL",
+  "C01_C02": "UNMODIFIED"
+}

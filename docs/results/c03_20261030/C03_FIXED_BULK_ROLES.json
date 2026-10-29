@@ -1,0 +1,60 @@
+{
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "authority": "Standing owner instruction: skip bulk-background copper and embedded source strokes; same rule as accepted C02, new C03-local source binding",
+  "registration": "Operator-derived exact original copper interior points; no source geometry changed",
+  "scope": "Fixed source-role classification only; no clearance or electrical exemption",
+  "viewport_mm": [
+    -0.2014567873677096,
+    -16.663049227354815,
+    12.287158691076955,
+    -8.101315108723439
+  ],
+  "selection_scope": "EXACT_C03_ORIGINAL_COPPER_CROP; remote connections cannot classify a separate local trace as bulk",
+  "seeds": [
+    {
+      "name": "outer_background_field",
+      "point_mm": [
+        0.5546791799963923,
+        -12.285273091294048
+      ],
+      "selection_basis": "Operator located actual background field in C03 source image; point derived from exact source component interior, not owner-entered coordinates",
+      "source_component_area_mm2": 24.20766997056964,
+      "source_component_bounds_mm": [
+        -0.04869999999999999,
+        -16.468989999999998,
+        12.287158691076955,
+        -8.101315108723439
+      ]
+    },
+    {
+      "name": "upper_background_with_round_protrusion",
+      "point_mm": [
+        8.358060939166592,
+        -9.115458411359837
+      ],
+      "selection_basis": "Operator located actual background field in C03 source image; point derived from exact source component interior, not owner-entered coordinates",
+      "source_component_area_mm2": 4.526839860630074,
+      "source_component_bounds_mm": [
+        7.472049999999999,
+        -10.12995,
+        12.287158691076955,
+        -8.101315108723439
+      ]
+    },
+    {
+      "name": "upper_right_background_field",
+      "point_mm": [
+        10.823552483783065,
+        -9.179702778952855
+      ],
+      "selection_basis": "Operator located actual background field in C03 source image; point derived from exact source component interior, not owner-entered coordinates",
+      "source_component_area_mm2": 2.8609753982567785,
+      "source_component_bounds_mm": [
+        9.345,
+        -9.801006964067186,
+        12.287158691076955,
+        -8.562570569785713
+      ]
+    }
+  ]
+}

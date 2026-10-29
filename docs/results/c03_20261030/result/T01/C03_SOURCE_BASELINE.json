@@ -1,0 +1,99 @@
+{
+  "c03_source_object": {
+    "bounds_mm": [
+      3.01501,
+      -13.517990000000001,
+      3.31499,
+      -13.21801
+    ],
+    "center_mm": [
+      3.165,
+      -13.368
+    ],
+    "geometry_sha256": "a0d969b9df91760eb0e668ddf67cc95f35a586fc7f3420b4a28925b119a03df4",
+    "geometry_status": "GEOMETRY_AVAILABLE",
+    "kind": "gr_circle",
+    "label": "C03 (prior T01 review locator; not an acceptance claim)",
+    "layers": [
+      "F.Cu"
+    ],
+    "net_code": null,
+    "net_name": null,
+    "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542371:1542495",
+    "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+    "source_span": [
+      1542371,
+      1542495
+    ]
+  },
+  "c3_occurrence_inventory_sha256": "4a9f5e0ddd4753c3599d5adcec81afe47744e8e750537a140b7e3a7c04820cb6",
+  "c3_org_union_wkb_sha256": "a02fff48551d1786694cc1ae0c0b57244c1d03bfa3f8016296420123fb170988",
+  "c3_screenshot_location_status": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "c3_screenshot_to_org_iou": 0.9648684533073594,
+  "closeup_bounds_mm": [
+    1.865,
+    -14.268,
+    4.465,
+    -12.468
+  ],
+  "closeup_centered_on_source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1542371:1542495",
+  "closeup_source_primitive_count": 85,
+  "closeup_union_reconstruction": "PASS",
+  "closeup_union_reconstruction_tolerance_mm2": 1e-12,
+  "current_materializer_closeup_union_xor_area_mm2": 1.9584393482115273e-16,
+  "current_materializer_full_crop_union_xor_area_mm2": 0.0,
+  "limitation": "C3 screenshot localization remains provisional; no crop-wide accepted T01/T02 land scene; source identities and geometric copper are not electrical net proof.",
+  "native_crop_bounds_mm": [
+    -0.2014567873677096,
+    -16.663049227354815,
+    12.287158691076955,
+    -8.101315108723439
+  ],
+  "native_crop_edge_uncertainty_mm": 0.009439618653397328,
+  "org_source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "packet": "C03-00-ORG-SOURCE-BASELINE-20261027",
+  "predeclared_min_iou": 0.97,
+  "prior_independent_audit_closeup_union_xor_area_mm2": 1.960245546611416e-16,
+  "prior_independent_audit_full_crop_union_xor_area_mm2": 1.5463736757481987e-16,
+  "prior_independent_audit_receipt_sha256": "26de886326efb8f905a89bb7ccea68a04199ce7037cdeb1413be609ecc150c7c",
+  "reconstructed_closeup_union_xor_area_mm2": 1.960245546611416e-16,
+  "reconstructed_full_crop_union_xor_area_mm2": 1.5463736757481987e-16,
+  "reconstructed_full_crop_union_xor_bounds_mm": null,
+  "s1_source_manifest_sha256": "24e7d5563721757acf37cb0230241ff302a64c876d6e54b2d5852f1f632b5987",
+  "same_lineage_union_reconstruction": "PASS",
+  "same_lineage_union_reconstruction_tolerance_mm2": 1e-12,
+  "scope": "read-only source geometry display; no T01/T02/T03/T04 construction",
+  "source_member_count": 1824,
+  "visual_rendering": {
+    "images": {
+      "c03_neighborhood_source_boundaries.png": {
+        "dimensions_px": [
+          1800,
+          1450
+        ],
+        "sha256": "fad56e6996923a523d4637c39fe4e4cb128ec89cc8fb71efa9e80cb9bc418a8b"
+      },
+      "c03_neighborhood_union.png": {
+        "dimensions_px": [
+          1800,
+          1450
+        ],
+        "sha256": "02e17219138f603d27477730d7ea1ab1c25930f81e3d88990740f8b089235a02"
+      },
+      "full_c3_org_union.png": {
+        "dimensions_px": [
+          2000,
+          1500
+        ],
+        "sha256": "31ca6da9cb5f019f330dd2a1a867e5110c2acba192435485feb4e7d95815e95b"
+      }
+    },
+    "matplotlib_version": "3.10.9",
+    "renderer": "Matplotlib"
+  },
+  "visuals": {
+    "c03_neighborhood_source_boundaries.svg": "d080e9cbaa6db82660e4a41687f84b1ceaa5b2878c4a339f2bdb1a0b150884c2",
+    "c03_neighborhood_union.svg": "afa816ed7552aff568ef32438d83b0a75a0ffa28a68bc20a7f578de70fadea6b",
+    "full_c3_org_union.svg": "a0187eb63fd243592d5d56a5a9260d647cf7a3fc87e6d1de881f4a5079b16f73"
+  }
+}
