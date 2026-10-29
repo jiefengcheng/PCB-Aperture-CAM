@@ -1,0 +1,931 @@
+[
+  {
+    "path": "src/agent_abi/__init__.py",
+    "sha256": "3cbe4ed69dd3107fbeff11c6f56d5c727ee22046ee660dce7c4164a67d2abf57",
+    "symbols": [],
+    "imports": []
+  },
+  {
+    "path": "src/agent_abi/cli.py",
+    "sha256": "49b4428d8f3decea2054d7cfff8b116695d73c7316991bfaa4f73d0629a3eee0",
+    "symbols": [
+      {
+        "name": "main",
+        "line": 12,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import json",
+      "import sys",
+      "from pathlib import Path",
+      "from .service import dispatch"
+    ]
+  },
+  {
+    "path": "src/agent_abi/models.py",
+    "sha256": "ae44eb1875eb57eabf89527bf6822c9445d172ef8fe8253b01a5d1ef0f79065e",
+    "symbols": [
+      {
+        "name": "SourceBinding",
+        "line": 23,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "EvidenceReference",
+        "line": 28,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "CAMRequest",
+        "line": 33,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "StatusDimensions",
+        "line": 43,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "PlanStep",
+        "line": 51,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "ABIError",
+        "line": 57,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "Response",
+        "line": 65,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "exact_int",
+        "line": 82,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "exact_pass",
+        "line": 87,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "require_object",
+        "line": 92,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "validate_request",
+        "line": 98,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from typing import Any, Literal, TypedDict"
+    ]
+  },
+  {
+    "path": "src/agent_abi/ports.py",
+    "sha256": "0be66393522c3d66d99935656f88ff574dcaa2c4c3912a2c3ad922f75a1d0275",
+    "symbols": [
+      {
+        "name": "ExecutionPort",
+        "line": 9,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "declared_port",
+        "line": 29,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from typing import Literal"
+    ]
+  },
+  {
+    "path": "src/agent_abi/registry.py",
+    "sha256": "824ddd64c19d1b2b3c2aceb00effbd9a961529d32809cdabeae24a149d5c285c",
+    "symbols": [
+      {
+        "name": "sha256_bytes",
+        "line": 17,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "sha256_file",
+        "line": 21,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "canonical_json",
+        "line": 29,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "project_root",
+        "line": 33,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_read_pinned_json",
+        "line": 37,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "load_registry",
+        "line": 55,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_safe_project_file",
+        "line": 66,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_load_artifacts",
+        "line": 77,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_check_scene_and_source",
+        "line": 99,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_validate_historical_r1",
+        "line": 123,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "load_profile",
+        "line": 157,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_validate_crop_run",
+        "line": 191,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "site_record",
+        "line": 321,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import hashlib",
+      "import json",
+      "from pathlib import Path",
+      "from typing import Any",
+      "from .models import ABIError, exact_int, exact_pass"
+    ]
+  },
+  {
+    "path": "src/agent_abi/service.py",
+    "sha256": "515a650fa7ac9a5d76cfc10580ed60413ba6252657c3d97c847dc306506b51f4",
+    "symbols": [
+      {
+        "name": "_artifact_ref",
+        "line": 14,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_require_profile_id",
+        "line": 19,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_require_crop",
+        "line": 26,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_profile_summary",
+        "line": 33,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_describe",
+        "line": 49,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_inspect",
+        "line": 71,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_plan",
+        "line": 129,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_compare",
+        "line": 170,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "dispatch",
+        "line": 196,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "from pathlib import Path",
+      "from typing import Any",
+      "from . import ABI_VERSION",
+      "from .models import ABIError, Response, exact_int, validate_request",
+      "from .ports import declared_port",
+      "from .registry import canonical_json, load_profile, load_registry, site_record"
+    ]
+  },
+  {
+    "path": "src/bounded_width_solver.py",
+    "sha256": "70c27ace2cec8999a56b57d0449197b36605bcd84bf2391bc3ed8f0c8edc6c4f",
+    "symbols": [
+      {
+        "name": "solve_width_scales",
+        "line": 14,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "import hashlib",
+      "import json",
+      "import math",
+      "from .uniform_trace_width_v2 import FAMILY",
+      "from .source_offset_width import FAMILY as SOURCE_OFFSET_FAMILY"
+    ]
+  },
+  {
+    "path": "src/crop_stage_growth.py",
+    "sha256": "f416d87ace52e3d21857032bc02e5fcf34442d1bbcf7c7e0033a14ae4fba9529",
+    "symbols": [
+      {
+        "name": "GrowthContract",
+        "line": 18,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "original_attachment_port",
+        "line": 28,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "check_proposal",
+        "line": 37,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "GrowthScene",
+        "line": 106,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "fit_rectangle",
+        "line": 135,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "fit_round_circle",
+        "line": 170,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from math import hypot",
+      "from shapely import STRtree",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import Point",
+      "from .crop_attachment_support import qualify_original_support"
+    ]
+  },
+  {
+    "path": "src/parallel_curve_relations.py",
+    "sha256": "108c1b843a422de73cee4b3c554defbc9e003a1f7f9046158c8541f61f9620c4",
+    "symbols": [
+      {
+        "name": "parallel_curve_relation",
+        "line": 6,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "import math",
+      "from shapely.geometry import LineString"
+    ]
+  },
+  {
+    "path": "src/parallel_trace_relations.py",
+    "sha256": "2a3d8192fda1ce419e2e05ed94f13287a3ff17d2b1eee71e08655e4516d1edf0",
+    "symbols": [
+      {
+        "name": "parallel_relation",
+        "line": 9,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "relation_groups",
+        "line": 42,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "import math"
+    ]
+  },
+  {
+    "path": "src/prepared_width_scene.py",
+    "sha256": "f09f16c0c3104b638c15aadb0b8a59fa85d29f9cdc7bb9bcdff3630619fca6db",
+    "symbols": [
+      {
+        "name": "PreparedWidthScene",
+        "line": 15,
+        "kind": "ClassDef"
+      }
+    ],
+    "imports": [
+      "import math",
+      "from shapely import STRtree",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from .trace_width_clearance import TraceWidthContract, sha"
+    ]
+  },
+  {
+    "path": "src/primary_parallel_cohorts.py",
+    "sha256": "77f93828c6dcc1a1777ce78e49cf22fd3091ea7c511620f076aa3e69476568d2",
+    "symbols": [
+      {
+        "name": "choose_primary_cohorts",
+        "line": 11,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "station_spacing_links",
+        "line": 35,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "import math",
+      "from .parallel_trace_relations import relation_groups"
+    ]
+  },
+  {
+    "path": "src/source_offset_width.py",
+    "sha256": "dad234a16f9c13100cff8a6155a9dedf0971ef99da5b5aa9d01a24200f95038c",
+    "symbols": [
+      {
+        "name": "construct_source_offset_width",
+        "line": 16,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "import hashlib",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.ops import unary_union",
+      "from .uniform_trace_width import construct_uniform_width as source_binding",
+      "from .native_inventory import steps, ERROR_MM"
+    ]
+  },
+  {
+    "path": "src/t03_c2_cumulative_result.py",
+    "sha256": "d0d61ff3668fd6b174cfcbf185b9668eec837c484b9a6bbc44ccd3e2646d9673",
+    "symbols": [
+      {
+        "name": "_sha",
+        "line": 15,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_rings_path",
+        "line": 19,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_geometry_paths",
+        "line": 29,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_svg",
+        "line": 37,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "render_verified_cumulative_scene",
+        "line": 58,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import hashlib",
+      "import html",
+      "import json",
+      "from pathlib import Path",
+      "from typing import Any",
+      "from zipfile import ZipFile",
+      "from shapely import wkb",
+      "from shapely.geometry import box"
+    ]
+  },
+  {
+    "path": "src/t03_c2_search_executor.py",
+    "sha256": "1a903bb8fc42c8bc4ea7cc1db52c69f09b6147563492746c250edba3cb5d443b",
+    "symbols": [
+      {
+        "name": "SearchExecutorError",
+        "line": 61,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "CandidateSpec",
+        "line": 66,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "SearchDomain",
+        "line": 82,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "TrustedCandidateEvaluator",
+        "line": 94,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "_canonical_json",
+        "line": 110,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_sha",
+        "line": 114,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_source_path_from_report",
+        "line": 118,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "build_locked_search_domain",
+        "line": 139,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "load_c2_search_domain",
+        "line": 223,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "make_source_bound_c2_archive_factory",
+        "line": 242,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "create_no_search_qualification_receipt",
+        "line": 389,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_append_record",
+        "line": 417,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_fsync_directory",
+        "line": 427,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_atomic_json",
+        "line": 435,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "make_trusted_candidate_evaluator",
+        "line": 446,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "execute_ordered_search",
+        "line": 511,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_execute_ordered_search_core",
+        "line": 550,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from decimal import Decimal",
+      "from hashlib import sha256",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import platform",
+      "import uuid",
+      "from typing import Any, Callable",
+      "from zipfile import ZipFile",
+      "from shapely import geos_version_string, to_wkb",
+      "from shapely.geometry import Point",
+      "from shapely.ops import unary_union",
+      "from src.t03_c2_source_verifier import PreflightError, canonical_source_preflight_report_bytes, _downstream_source_suffix, _load_scene, verify_c2_source_obligations, verify_saved_candidate_archive_from_c2_package, write_candidate_geometry_archive",
+      "from src.t03_route_preflight import MAX_CANDIDATES, OFFSETS_MM, PORT_TRANSITION_BUFFER_MM, REGULAR_PORT_STEP_MM, MAX_ADDED_SPANS, MAX_EXTENSION_MM, Primitive, SourcePath, WIDTH_MM, buffer_centerline, candidate_source_copper_by_id, candidate_order_key, construct_candidate_centerline_source_spans, enumerate_candidate_specs, enumerate_cut_ports"
+    ]
+  },
+  {
+    "path": "src/t03_c2_search_guard.py",
+    "sha256": "a88c0b3ea064192e6eef2c92358d4fc0ce06a92c1e49038a7eb7827616479f83",
+    "symbols": [
+      {
+        "name": "_sha",
+        "line": 22,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_executable_integrity",
+        "line": 26,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "run_guarded",
+        "line": 46,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_invoke_launcher",
+        "line": 65,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "main",
+        "line": 83,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import hashlib",
+      "import importlib.util",
+      "import os",
+      "from pathlib import Path",
+      "import sys",
+      "from typing import Callable"
+    ]
+  },
+  {
+    "path": "src/t03_c2_search_run.py",
+    "sha256": "3711eccc7ff567aa47f7c068092b0782755a0a3d71dd9d5c9982ee9a91b957b2",
+    "symbols": [
+      {
+        "name": "_sha",
+        "line": 55,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_file_sha",
+        "line": 59,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_write_json_atomic",
+        "line": 63,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_verify_zip",
+        "line": 82,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_verify_manifest",
+        "line": 90,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_package_paths",
+        "line": 108,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_verify_source_report_in_packet12",
+        "line": 118,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_preflight_bindings",
+        "line": 132,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "launch_one_bounded_search",
+        "line": 192,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "main",
+        "line": 331,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import hashlib",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import platform",
+      "import re",
+      "import sys",
+      "from typing import Any",
+      "from zipfile import ZipFile",
+      "import shapely",
+      "from src import t03_c2_search_executor as executor",
+      "from src.t03_c2_cumulative_result import render_verified_cumulative_scene",
+      "from src.t03_c2_source_verifier import canonical_source_preflight_report_bytes, verify_saved_candidate_archive_from_c2_package"
+    ]
+  },
+  {
+    "path": "src/t03_c2_source_verifier.py",
+    "sha256": "d6bb4ce3833f10b59eaec179a07dc7afe86c86ddda2118dea417926972a3af72",
+    "symbols": [
+      {
+        "name": "_sha",
+        "line": 48,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "canonical_source_preflight_report_bytes",
+        "line": 52,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_json",
+        "line": 59,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_span",
+        "line": 63,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_source_record",
+        "line": 70,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_object_source_id",
+        "line": 78,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_downstream_source_suffix",
+        "line": 82,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_load_scene",
+        "line": 105,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_contact_census",
+        "line": 151,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_c2_source_obligations",
+        "line": 191,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_saved_candidate_wkb",
+        "line": 600,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_saved_candidate_bundle",
+        "line": 639,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "write_candidate_geometry_archive",
+        "line": 1063,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_verify_contact_obligations",
+        "line": 1124,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_stable_contact_id",
+        "line": 1178,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_classify_inherited_v69_findings",
+        "line": 1185,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_saved_candidate_archive",
+        "line": 1538,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_saved_candidate_archive_from_c2_package",
+        "line": 1623,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from hashlib import sha256",
+      "from decimal import Decimal",
+      "import json",
+      "import math",
+      "from pathlib import Path",
+      "import re",
+      "from typing import Any",
+      "from zipfile import ZIP_STORED, ZipFile",
+      "from shapely import wkb",
+      "from shapely.geometry import LineString, Point, Polygon, box",
+      "from shapely.ops import unary_union",
+      "from shapely.strtree import STRtree",
+      "from src.t03_route_preflight import MAX_ADDED_SPANS, MAX_CANDIDATES, MAX_EXTENSION_MM, OFFSETS_MM, PORT_TRANSITION_BUFFER_MM, REGULAR_PORT_STEP_MM, ROUTE_TESSELLATION_TOLERANCE_MM, WIDTH_MM, SOURCE_GEOMETRY_TOLERANCE_MM, SOURCE_SPAN_UNION_TOLERANCE_MM2, SOURCE_SURFACE_TARGET_MM, PreflightError, Primitive, SourcePath, buffer_centerline, candidate_source_copper_by_id, construct_candidate_centerline, construct_candidate_centerline_source_spans, enumerate_cut_ports, verify_candidate_copper, verify_scene"
+    ]
+  },
+  {
+    "path": "src/t03_route_preflight.py",
+    "sha256": "b9609baf6d49b5688d001a7863ef03c41469e53762a5fec45be2036af282b262",
+    "symbols": [
+      {
+        "name": "PreflightError",
+        "line": 48,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "digest",
+        "line": 52,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "Primitive",
+        "line": 57,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "SourcePath",
+        "line": 134,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "CutPort",
+        "line": 184,
+        "kind": "ClassDef"
+      },
+      {
+        "name": "enumerate_cut_ports",
+        "line": 192,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "offset_tuples",
+        "line": 240,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "candidate_order_key",
+        "line": 244,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "enumerate_candidate_specs",
+        "line": 253,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_smoothstep",
+        "line": 262,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_offset_at",
+        "line": 266,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "_bounded_source_span_fraction",
+        "line": 275,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "construct_candidate_centerline",
+        "line": 295,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "construct_candidate_centerline_source_spans",
+        "line": 368,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "buffer_centerline",
+        "line": 440,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "candidate_source_copper_by_id",
+        "line": 452,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_candidate_copper",
+        "line": 556,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "verify_scene",
+        "line": 656,
+        "kind": "FunctionDef"
+      },
+      {
+        "name": "serialize_candidate",
+        "line": 769,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from decimal import Decimal",
+      "from hashlib import sha256",
+      "from itertools import product",
+      "import json",
+      "import math",
+      "from pathlib import Path",
+      "from typing import Any, Iterable",
+      "from zipfile import ZipFile",
+      "from shapely import to_wkb",
+      "from shapely.geometry import LineString, Point",
+      "from shapely.wkb import loads as load_wkb"
+    ]
+  },
+  {
+    "path": "src/trace_chain_contacts.py",
+    "sha256": "c9cd45c4f7c42db609c0cd8f4187d6e561ec0c0d596231aa0a024f0386f09207",
+    "symbols": [
+      {
+        "name": "qualify_chain",
+        "line": 6,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from shapely.geometry import Point",
+      "from shapely.ops import unary_union"
+    ]
+  },
+  {
+    "path": "src/trace_endpoint_inventory.py",
+    "sha256": "e6ebd1fd5661e32b23ef0e6b07708f4762c15cd51850a1f593b0a09c91e72870",
+    "symbols": [
+      {
+        "name": "endpoint_components",
+        "line": 12,
+        "kind": "FunctionDef"
+      }
+    ],
+    "imports": [
+      "from collections import defaultdict",
+      "from decimal import Decimal",
+      "import math"
+    ]
+  }
+]

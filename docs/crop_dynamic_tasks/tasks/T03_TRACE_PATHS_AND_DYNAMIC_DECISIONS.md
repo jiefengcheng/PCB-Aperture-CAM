@@ -30,3 +30,11 @@ Show accepted land geometry with old and new trace approaches, their width envel
 
 ## Complete and continue
 Retain safe unchanged paths where no adjustment is needed or feasible, with reasons. Report actual changed-chain counts separately from implemented capability. Continue to T04; do not stop at a path-only drawing or a proposal for a general autorouter.
+
+## Current consolidation pointer — 2026-10-29
+
+For the current lane, the governing order is T01 → T03 if needed → T04 → T02.
+The older prerequisite/order and land-reopening language above are historical,
+not current permission. See the [T03 architecture consolidation](../t03_architecture_notes/T03_CODE_STRUCTURE.md)
+and [decision](../t03_architecture_notes/T03_CONSOLIDATION_DECISION.md). No new route
+execution or ABI implementation follows from this documentation slice.
