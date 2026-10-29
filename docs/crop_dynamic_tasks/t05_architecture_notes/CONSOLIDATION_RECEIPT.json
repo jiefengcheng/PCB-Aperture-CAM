@@ -1,0 +1,81 @@
+{
+  "schema": "t05-architecture-consolidation/1",
+  "status": "PASS_LOCAL_CONSOLIDATION_WITH_EXACT_FROZEN_SCENE_PARITY",
+  "based_on_commit": "5d827049a7092f9ce82d0c5b1707d72aa8e04d0f",
+  "geometry_family": "land-sized-additive-spindle/1",
+  "new_shared_stage": "src/junction_spindle_stage.py",
+  "refactored_adapters": [
+    "tools/run_c01_spindle_trial.py",
+    "tools/run_c02_t05_spindle.py"
+  ],
+  "accepted_scenes": [
+    {
+      "receipt": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261/FREEZE_RECEIPT.json",
+      "receipt_sha256": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013",
+      "status": "FROZEN_C01_FINAL_SO_FAR_OWNER_ACCEPTED",
+      "after_sha256": "587d10f5855c4b7afe2f37130277d3c0bdc711b84b74c0dd8c69f6d4ff932966",
+      "bound_files_reverified": 90,
+      "changed": false
+    },
+    {
+      "receipt": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266/FREEZE_RECEIPT.json",
+      "receipt_sha256": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627",
+      "status": "FROZEN_C02_FINAL_SO_FAR_OWNER_ACCEPTED",
+      "after_sha256": "60f60b0012277f28fad494df16e14957fa8196fcd11475a5cafb42500918040a",
+      "bound_files_reverified": 881,
+      "changed": false
+    }
+  ],
+  "parity": [
+    {
+      "crop": "C01",
+      "accepted_run": "out/crop_dynamic_tasks/c01_t05_spindle_trial_20261030_260",
+      "isolated_comparison_run": "out/crop_dynamic_tasks/t05_architecture_consolidation_20261030_267/c01_final_parity",
+      "geometry_files_byte_identical": 72,
+      "all_decisions_and_final_checks_equal": true,
+      "after_sha256": "587d10f5855c4b7afe2f37130277d3c0bdc711b84b74c0dd8c69f6d4ff932966",
+      "promoted": false
+    },
+    {
+      "crop": "C02",
+      "accepted_run": "out/crop_dynamic_tasks/c02_t05_after_T02_20261030_263",
+      "isolated_comparison_run": "out/crop_dynamic_tasks/t05_architecture_consolidation_20261030_267/c02_final_parity",
+      "geometry_files_byte_identical": 171,
+      "all_decisions_and_final_checks_equal": true,
+      "after_sha256": "60f60b0012277f28fad494df16e14957fa8196fcd11475a5cafb42500918040a",
+      "promoted": false
+    }
+  ],
+  "focused_tests": ".............................................                            [100%]\n45 passed in 0.34s",
+  "test_log_sha256": "4fb1eece8fdde5c6583b183072b7a6dd63c6f6dac0258c2671b9075f13f35af8",
+  "runtime": {
+    "python": "3.14.5",
+    "shapely": "2.1.2",
+    "geos": "3.13.1"
+  },
+  "code_inventory_sha256": "a562b1f66899e628227a200ce2ae8e3a178c3dab7786fa2763da06006245dfd4",
+  "ABI": {
+    "requested_suite": "T02",
+    "design": "docs/crop_dynamic_tasks/t02_architecture_notes/T02_AGENT_ABI_PROPOSAL.md",
+    "status": "PROPOSED_NOT_IMPLEMENTED",
+    "runtime_registry_and_ports": "UNCHANGED",
+    "cam_run": "UNAVAILABLE",
+    "cam_verify": "UNAVAILABLE"
+  },
+  "C03": "NOT_STARTED",
+  "accepted_delivery": "347 files and45 presentation links still verify",
+  "independent_qualification": "No new independent claim; inherited C02 REV234 REVISE remains open",
+  "native_electrical_manufacturing": "NOT_ESTABLISHED",
+  "limitations": "Same-runtime exact geometry/decision parity; crop-specific source adapters are not general C03 admission; short-taper width proof is not broad-spindle proof",
+  "documentation_sha256": {
+    "docs/crop_dynamic_tasks/t05_architecture_notes/T05_CONSTRUCTION_CONTRACT.md": "bba472b9dbeceeff6ae8b003981fd37b9edf222976d8f2d717484c2d455d158c",
+    "docs/crop_dynamic_tasks/t05_architecture_notes/README.md": "bbaa37059b99e83920c514ddd06ac4595faf7ae7854400153e7d193a11df59aa",
+    "docs/crop_dynamic_tasks/t05_architecture_notes/T05_CODE_STRUCTURE.md": "2bd7862fedaf1406484cd5f3bbfd604acc801a5380df76a03b1993f7c948a3ec",
+    "docs/crop_dynamic_tasks/t02_architecture_notes/T02_AGENT_ABI_PROPOSAL.md": "8c3c473c5487b49f812e872eb47f0f460c365610431c1bffcbccea7885150fc3",
+    "docs/crop_dynamic_tasks/t02_architecture_notes/T02_AGENT_ABI_DEFERRED.md": "3c48663261336eaa20cdd2ed84cfa583084052df1d8df418a38b680ac960f719",
+    "docs/crop_dynamic_tasks/t02_architecture_notes/T02_CODE_STRUCTURE.md": "5c5a68d67284470bf75aa8916a0dd712524f4d26021042504dda33456a2b8b44",
+    "docs/crop_dynamic_tasks/tasks/T05_JUNCTIONS_AND_DYNAMIC_DECISIONS.md": "07f911b96a9df3b2b9d9e698cd1f6bf3050ce46cd7111567b19b8d84d8b8a00f"
+  },
+  "design_example_json": "PARSES; placeholders documented as non-executable",
+  "ABI_implementation_changed": false
+}

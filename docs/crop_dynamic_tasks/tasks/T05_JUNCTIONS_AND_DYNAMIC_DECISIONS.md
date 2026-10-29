@@ -2,6 +2,8 @@
 > **Authorized and owner accepted for C01/C02:** C01 T05 was applied after T04, with T02 skipped by owner. C02 uses T01 → T03(if needed) → T04 → T02 → T05. Both current displayed results are frozen as final so far. See [accepted results and scope](../../implementation/20261030/ACCEPTED_RESULTS_AND_COMMIT_SCOPE.md). Independent/native/electrical qualification remains separate.
 
 
+Current implementation map: [T05 consolidated architecture](../t05_architecture_notes/T05_CODE_STRUCTURE.md). The shared internal stage has exact C01/C02 parity; the requested [T02 ABI suite](../t02_architecture_notes/T02_AGENT_ABI_PROPOSAL.md) is design only. C03 has not started.
+
 **Operation stages:** 5 + 5.5  
 **Prerequisite:** T04  
 **Autonomy:** Implement, verify, record, and continue within the mandate. No routine human-review gate.

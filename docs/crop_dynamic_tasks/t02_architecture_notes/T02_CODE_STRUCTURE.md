@@ -1,5 +1,7 @@
 # T02 code structure and accepted checkpoint
 
+> This map describes the historical v69/policy15 implementation. Later trace-first ordinary/inclusive/context T02 work and the proposed interface are distinguished in [T02_AGENT_ABI_PROPOSAL.md](T02_AGENT_ABI_PROPOSAL.md). The accepted C01/C02 scenes remain frozen; current T05 is mapped [separately](../t05_architecture_notes/T05_CODE_STRUCTURE.md).
+
 This is a documentation map of the implementation already used for the accepted crop. It does not split modules, create a public API, or change the saved result. Function and file boundaries below describe the current checkout.
 
 ## Checkpoint identity

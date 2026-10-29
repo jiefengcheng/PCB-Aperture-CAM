@@ -1,5 +1,7 @@
 # T02 Agent ABI mapping — deferred
 
+> Historical v69 mapping. The requested, expanded [T02 ChatGPT-agent suite proposal](T02_AGENT_ABI_PROPOSAL.md) now describes current trace-first profiles, wire contracts and qualification boundaries. Both remain design-only; no T02 ABI adapter is implemented.
+
 This note maps the accepted T02 capability to the existing seven-operation CAM Agent ABI vocabulary. It specifies future behavior only. It does not add a T02 profile, adapter, schema, wrapper, endpoint, test suite, or module split.
 
 ## Current boundary

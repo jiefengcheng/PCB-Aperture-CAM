@@ -10,7 +10,7 @@ from shapely import from_wkb,to_wkb,STRtree
 from shapely.geometry import box,GeometryCollection
 from shapely.ops import unary_union
 from src.crop_circle_sources import verify_assets
-from src.junction_spindle_blend import spindle_blend,check_spindle
+from src.junction_spindle_stage import CONTRACT,prepare_spindle_context,fit_spindle_blend,verify_spindle_batch,assemble_spindle_scene
 from src.native_reference import one
 from tools.run_c02_growth_coverage import render
 import sexpdata
@@ -62,25 +62,17 @@ def main(freeze,out):
   rid=route['component_id'];source_ids=route['complete_source_ids'];trace=unary_union([current[s] for s in source_ids]);oldtrace=unary_union([original[s] for s in source_ids]);attached=[d for d in lands if oldtrace.intersection(d['original']).area>1e-12 and trace.intersection(d['geometry']).area>1e-12]
   row=dict(route_id=rid,source_ids=source_ids,nominal_width_mm=route['uniform_nominal_width_mm'],land_ids=[d['id'] for d in attached],land_kinds=[d['kind'] for d in attached],status='KEEP')
   if not attached:row['reason']='NO_EXPOSED_SOURCE_QUALIFIED_LAND_CONTACT';rows.append(row);continue
-  owner=unary_union([trace]+[d['geometry'] for d in attached]);radius=min(min(d['geometry'].bounds[2]-d['geometry'].bounds[0],d['geometry'].bounds[3]-d['geometry'].bounds[1])/2 for d in attached)
-  if radius<=0:raise ValueError('INVALID_LAND_SIZE')
-  window=unary_union([d['geometry'].buffer(2*radius,quad_segs=64) for d in attached]).intersection(crop);allowed=set(source_ids)|{s for d in attached for s in d['source_ids']};foreign=[(ids[int(i)],current[ids[int(i)]]) for i in tree.query(window.buffer(.02011)) if ids[int(i)] not in allowed]
-  base_foreign=foreign[:];foreign += [('T05:'+a['id'],a['addition']) for a in accepted];barriers=unary_union([g.buffer(.02011,quad_segs=64) for _,g in foreign if not g.difference(owner).is_empty]);attempts=[];best=None
-  for scale in [1.,.75,.5,.25]:
-   try:
-    _,addition=spindle_blend(owner,radius*scale,window);addition=addition.difference(barriers);candidate=owner.union(addition);check=check_spindle(owner,candidate,addition,window,foreign)
-   except ValueError as e:attempts.append(dict(scale=scale,error=str(e)));continue
-   attempts.append(dict(scale=scale,passed=check['passed'],failures=check['failures'],added_area_mm2=addition.area))
-   if check['passed'] and addition.area>1e-8:best=(addition,check,scale);break
+  owner,radius,window=prepare_spindle_context(trace,[d['geometry'] for d in attached],crop)
+  allowed=set(source_ids)|{s for d in attached for s in d['source_ids']};foreign=[(ids[int(i)],current[ids[int(i)]]) for i in tree.query(window.buffer(.02011)) if ids[int(i)] not in allowed]
+  base_foreign=foreign[:];foreign += [('T05:'+a['id'],a['addition']) for a in accepted]
+  best,attempts=fit_spindle_blend(owner,radius,window,foreign)
   row['attempts']=attempts
   if best is None:row['reason']='NO_VALID_BOUNDED_ADDITIVE_BLEND';rows.append(row);continue
-  addition,check,scale=best;cid='J-'+sha(rid.encode())[:16];row.update(id=cid,status='GROWN',blend_radius_mm=radius*scale,window_sha256=sha(to_wkb(window)),owner_sha256=sha(to_wkb(owner)),addition_sha256=sha(to_wkb(addition)),added_area_mm2=addition.area,check=check)
+  addition,check,scale=[best[k] for k in ['addition','check','scale']];cid='J-'+sha(rid.encode())[:16];row.update(id=cid,status='GROWN',blend_radius_mm=radius*scale,window_sha256=sha(to_wkb(window)),owner_sha256=sha(to_wkb(owner)),addition_sha256=sha(to_wkb(addition)),added_area_mm2=addition.area,check=check)
   for suffix,g in [('',addition),('_window',window),('_owner',owner)]:(out/'patches'/f'{cid}{suffix}.wkb').write_bytes(to_wkb(g))
   accepted.append(dict(id=cid,owner=owner,window=window,addition=addition,foreign=base_foreign));rows.append(row)
- final=[]
- for a in accepted:
-  foreign=a['foreign']+[(b['id'],b['addition']) for b in accepted if b['id']!=a['id']];check=check_spindle(a['owner'],a['owner'].union(a['addition']),a['addition'],a['window'],foreign);assert check['passed'],(a['id'],check['failures']);final.append(dict(id=a['id'],check=check))
- additions=unary_union([a['addition'] for a in accepted]);after=before.union(additions);assert before.difference(after).area<=1e-12
+ final=verify_spindle_batch(accepted)
+ after=assemble_spindle_scene(before,accepted)
  for name,h in read(freeze/'SHA256SUMS.json').items():assert sha((freeze/name).read_bytes())==h
  for name,g in [('before',before),('after',after),('added',after.difference(before))]:(out/f'{name}.wkb').write_bytes(to_wkb(g))
  save(out/'DECISIONS.json',rows);save(out/'SKIPPED_COVERED_LANDS.json',skipped);save(out/'FINAL_CHECKS.json',final)
@@ -93,8 +85,8 @@ def main(freeze,out):
   coverage.append(dict(source_id=sid,land_ids=contacts,exposed_area_mm2=visible,disposition='FULLY_COVERED_SOURCE_SKIP' if visible<=1e-12 else 'OUTSIDE_FROZEN_T04_ROUTE_SET_RETAINED_NOT_TREATED'))
  save(out/'NONROUTE_SOURCE_CONTACTS.json',coverage)
  result=dict(status='C02_T05_AFTER_T02_LOCAL_SPINDLE_CANDIDATE',assets=assets,predecessor_freeze_sha256=sha((freeze/'FREEZE_RECEIPT.json').read_bytes()),predecessor_sha256=sha(before_blob),source_sha256=receipt['source_sha256'],after_sha256=sha(to_wkb(after)),sequence=['T01','T03_NO_ROUTE_CHANGE','T04','T02','T05'],routes_evaluated=len(routes),grown_routes=len(accepted),keep_routes=len(routes)-len(accepted),grown_land_contact_incidences=sum(len(r['land_ids']) for r in rows if r['status']=='GROWN'),grown_rectangle_contact_incidences=sum(k!='circle' for r in rows if r['status']=='GROWN' for k in r['land_kinds']),added_area_mm2=after.difference(before).area,covered_lands_skipped=len(skipped),exposed_nonroute_source_contacts=sum(r['disposition'].startswith('OUTSIDE') for r in coverage),frozen_predecessor='UNCHANGED_EXACT_BYTES',T01_T04_T02_source_parts='ALL_606_UNCHANGED',routes_and_nominal_widths='UNCHANGED',independent_qualification='OPEN; inherited REV234 strict replay REVISE not waived',owner_new_T05_acceptance='PENDING_USER',limitations='Bounded additive junction model; all KEEP and nonroute contacts retained; no native/electrical/manufacturing or final owner acceptance')
- save(out/'RESULT.json',result);(out/'source_snapshot').mkdir()
- for name in ['tools/run_c02_t05_spindle.py','src/junction_spindle_blend.py']:shutil.copyfile(ROOT/name,out/'source_snapshot'/Path(name).name)
+ save(out/'RESULT.json',result);save(out/'STAGE_CONTRACT.json',CONTRACT.__dict__);(out/'source_snapshot').mkdir()
+ for name in ['tools/run_c02_t05_spindle.py','src/junction_spindle_blend.py','src/junction_spindle_stage.py']:shutil.copyfile(ROOT/name,out/'source_snapshot'/Path(name).name)
  for name,title,g,d in [('before','C02 / frozen T01 + T04 + T02',before,GeometryCollection()),('after','C02 / T05 after T02 / cumulative copper',after,GeometryCollection()),('growth','C02 / actual T05 junction addition',after,after.difference(before))]:
   p=out/f'{name}.svg';render(p,title,g,d,receipt['viewport_mm'],[],{},[f"{len(accepted)} trace routes blended; {result['grown_land_contact_incidences']} land-contact incidences; {result['grown_rectangle_contact_incidences']} rectangle incidences.",'Teal = actual T05 added copper only. Frozen result232 and all source parts retained.',f"{result['keep_routes']} KEEP routes; {result['exposed_nonroute_source_contacts']} exposed source contacts outside frozen T04 route set recorded.",'Local model checks; inherited independent audit REVISE remains open. No native/electrical/manufacturing claim.']);subprocess.run(['sips','-s','format','png',str(p),'--out',str(p.with_suffix('.png'))],capture_output=True,check=True)
  table=''.join('<tr><td>'+html.escape(r['route_id'])+'</td><td>'+r['status']+'</td><td>'+html.escape(', '.join(r['land_kinds']))+'</td><td>'+html.escape(r.get('reason','Additive blend passed'))+'</td></tr>' for r in rows)

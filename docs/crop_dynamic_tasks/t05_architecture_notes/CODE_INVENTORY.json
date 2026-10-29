@@ -1,0 +1,182 @@
+[
+  {
+    "path": "src/junction_spindle_stage.py",
+    "sha256": "aff0dcc4284a200f7fabc3273577305649e1b2633d3db5fc1be55a9183ab7798",
+    "symbols": [
+      "SpindleStageContract",
+      "_fixed_contract",
+      "prepare_spindle_context",
+      "fit_spindle_blend",
+      "verify_spindle_batch",
+      "assemble_spindle_scene"
+    ]
+  },
+  {
+    "path": "src/junction_spindle_blend.py",
+    "sha256": "b842091cf691eb159438ad6ece61f4831eb12919c496705a5c0fc5ece793a1be",
+    "symbols": [
+      "spindle_blend",
+      "check_spindle"
+    ]
+  },
+  {
+    "path": "src/trace_land_junctions.py",
+    "sha256": "8fe57066d2d735bab06a9655aa9a466d3981b340955fc78a64873259c43dad37",
+    "symbols": [
+      "JunctionContract",
+      "_width",
+      "_point",
+      "_tangent",
+      "propose_taper",
+      "_station_width",
+      "verify_taper",
+      "fit_taper"
+    ]
+  },
+  {
+    "path": "tests/test_junction_spindle_stage.py",
+    "sha256": "331c16d536c74f409b6a214892a4607b9c234ad9a231fae6dceb35f4bbfe1ab9",
+    "symbols": [
+      "context",
+      "test_land_sized_fit_and_assembly_preserve_exact_predecessor",
+      "test_blocked_growth_retains_original_and_finite_attempts",
+      "test_final_repeat_rejects_later_patch_collision",
+      "test_disconnected_owner_never_becomes_bridge",
+      "test_policy_change_cannot_silently_weaken_clearance",
+      "test_missing_qualified_land_rejected"
+    ]
+  },
+  {
+    "path": "tests/test_junction_spindle_blend.py",
+    "sha256": "6a85f6003b003395df929206b102e23f70d80dbda68787acb3955b1ca68ddb25",
+    "symbols": [
+      "owner",
+      "test_pair_of_circles_and_neck_broadens_without_source_removal",
+      "test_separate_circles_cannot_become_owner_by_label",
+      "test_foreign_contact_rejected",
+      "test_window_is_hard_bound",
+      "test_owner_deletion_rejected",
+      "test_rectangle_trace_shoulder_is_blended_without_growing_fixed_part"
+    ]
+  },
+  {
+    "path": "tests/test_trace_land_junctions.py",
+    "sha256": "cd9080051970dc92d3fda82fdfa0ecc65f96b0027fb5415be3c68610413841b8",
+    "symbols": [
+      "test_circle_and_rectangle_tapers_keep_owners_and_width",
+      "test_overlarge_blend_outside_independently_bound_window_rejected",
+      "test_disconnected_blend_rejected",
+      "test_too_thin_neck_fails_measured_width_and_robust_witness",
+      "test_foreign_contact_never_excused_by_component_label",
+      "test_bounded_fit_reduces_or_rejects_growth_without_modifying_owners",
+      "test_unverified_width_rejected",
+      "test_changed_policy_fails_closed"
+    ]
+  },
+  {
+    "path": "tools/run_c01_spindle_trial.py",
+    "sha256": "96d532e69aedde06812c1358bbc43377b5e7e4cf5c673c7ede8cfa71d2cd47c3",
+    "symbols": [
+      "sha",
+      "read",
+      "save",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/run_c02_t05_spindle.py",
+    "sha256": "657c79cd8101c1286c61cc89c6549a8da0797cf3febfa919f5925d82d1fdfd65",
+    "symbols": [
+      "sha",
+      "read",
+      "save",
+      "load_scene",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/verify_c02_t05_spindle.py",
+    "sha256": "f20b3ca067edddc8ae1ae0736823ed9ca559141c3414041d9a7130e88dbffbde",
+    "symbols": [
+      "main"
+    ]
+  },
+  {
+    "path": "tools/verify_c01_t05_junctions.py",
+    "sha256": "41baf643055bb6b032cb11e7ca21d97a1a63302868fed65af016707c36e4e3d4",
+    "symbols": [
+      "sha",
+      "read",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/run_c01_t05_junctions.py",
+    "sha256": "6f9d6897ca8ae8578bcabf42d3ed191cef74a3188534f2e39fb20673ee0dcb57",
+    "symbols": [
+      "sha",
+      "save",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/build_c01_t05_review.py",
+    "sha256": "1c3110731667d500fa2e58a061943bdffa62aca11f4fa54752310d379c32a6b7",
+    "symbols": [
+      "sha",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/build_c02_t05_review.py",
+    "sha256": "abf58d2d0e613dd0fd4eafcefdaf7ff380aabc92a713e969e0dd27b1e376eebd",
+    "symbols": [
+      "read",
+      "sha",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/prepare_c02_t05_predecessor.py",
+    "sha256": "4204183d696de96edf05f06a754761b01046ffd97a433007384ce4386fc50a95",
+    "symbols": [
+      "sha",
+      "read",
+      "save",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/freeze_c01_spindle_result.py",
+    "sha256": "3c0aae2338dc0fe889dc4a788906be5f18bc356e6dbc29be8f6a58e5918a6b66",
+    "symbols": [
+      "sha",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/freeze_c02_t05_result.py",
+    "sha256": "e970e70c1d9ab1fc6e34e2c319003d1b7e78d779bb76aaf00df84213710f9611",
+    "symbols": [
+      "sha",
+      "read",
+      "main"
+    ]
+  },
+  {
+    "path": "tools/build_accepted_t05_index.py",
+    "sha256": "13f71e3a68e6270faa752784ba9467167de539b43e42d78e913606248b18cd37",
+    "symbols": [
+      "main"
+    ]
+  },
+  {
+    "path": "tools/verify_accepted_t05_results.py",
+    "sha256": "ababa090b66fead00b6bdfe05ddb1cfe3640bac49dcea63d921d45d11290e574",
+    "symbols": [
+      "sha",
+      "read",
+      "main"
+    ]
+  }
+]
