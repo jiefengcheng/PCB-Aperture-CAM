@@ -1,0 +1,29 @@
+from pathlib import Path
+import sys,json,hashlib
+R=Path.cwd();O=Path(__file__).parent;sys.path[:0]=[str(O),str(R)]
+import build_parallel,build_primary
+from c01_profile import compute
+from tools.build_c02_trace_eligibility import native_rows
+from src.trace_growth_eligibility import overlapping_parallel_fill_witness
+from shapely.ops import unary_union
+B=R/'out/crop_dynamic_tasks';D=B/'c01_t04_bulk_qualified_paths_20261029_247';G=B/'c01_t04_qualified_parallel_20261029_248';P=B/'c01_t04_qualified_cohorts_20261029_249'
+sys.argv=[__file__,str(O),str(D),str(G)];build_parallel.main(pathwise=True)
+g=json.loads((G/'PARALLEL_MEMBERSHIP.json').read_text());report,ctx=compute(O);scene=ctx['scene'];meta={r['id']:r for r in json.loads((O/'inputs/source_manifest.json').read_text())['objects']};defs=json.loads((D/'UNIFORM_SOURCE_PATHS.json').read_text());paths={r['path_id']:r for r in defs['paths']};ids={sid for r in paths.values() for sid in r['source_ids']};native=native_rows(ctx['base']['source'],meta,ids);kept=[];rejected=[]
+for link in g['common_operation_links']:
+ if link['reason']!='PARTIAL_SOURCE_COPPER_OVERLAP_ONE_OPERATION':kept.append(link);continue
+ a,b=(paths[link[k]] for k in ('member_a','member_b'));witness=None
+ for sa in a['source_ids']:
+  if native[sa]['kind']!='segment':continue
+  for sb in b['source_ids']:
+   if native[sb]['kind']!='segment':continue
+   rows=[]
+   for sid in (sa,sb):
+    r=native[sid];rows.append(dict(id=sid,start_mm=list(map(float,r['attrs']['start'])),end_mm=list(map(float,r['attrs']['end'])),width_mm=r['width'],geometry=scene.objects[sid]['geometry']))
+   witness=overlapping_parallel_fill_witness(*rows)
+   if witness:break
+  if witness:break
+ if witness:kept.append(dict(link,source_longitudinal_overlap_witness=witness))
+ else:rejected.append(dict(link,reason='CAP_OR_JUNCTION_CONTACT_WITHOUT_LONGITUDINAL_FILL_PROOF; retained as full-scene contact/clearance interaction'))
+g['common_operation_links']=kept;g['unqualified_overlap_scale_links']=rejected;g['grouping_contract']='Common parent runs and source-verified longitudinal overlap share factors; branch cap contacts alone do not fuse trace factors. All actual copper/contact interactions remain in verifier.';(G/'PARALLEL_MEMBERSHIP.json').write_text(json.dumps(g,indent=2)+'\n')
+build_primary.main(O,D,G/'PARALLEL_MEMBERSHIP.json',P)
+print(json.dumps(dict(qualified_hard_links=len(kept),ordinary_contact_links_not_fused=len(rejected))))

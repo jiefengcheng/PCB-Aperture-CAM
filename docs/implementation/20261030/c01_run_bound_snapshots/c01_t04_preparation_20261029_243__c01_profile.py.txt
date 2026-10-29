@@ -1,0 +1,24 @@
+from pathlib import Path
+import sys,json,hashlib,re
+R=Path.cwd();sys.path.insert(0,str(R));B=R/'out/crop_dynamic_tasks';F=B/'c01_existing_t01_freeze_20261029_239';O=Path(__file__).parent
+from shapely import from_wkb,to_wkb,STRtree
+from shapely.geometry import box
+from shapely.ops import unary_union
+from src.crop_stage_growth import GrowthScene
+from src.crop_circle_sources import verify_assets
+_CACHE=None
+def compute(pre):
+ global _CACHE
+ if _CACHE is not None:return _CACHE
+ assets=verify_assets();freeze=json.loads((F/'FREEZE_RECEIPT.json').read_text());P=F/'frozen'
+ for name,h in freeze['file_bindings'].items():assert hashlib.sha256((P/name).read_bytes()).hexdigest()==h
+ bank=json.loads((pre/'inputs/source_manifest.json').read_text());raw=(P/'ORG_source.kicad_pcb').read_bytes();assert hashlib.sha256(raw).hexdigest()==bank['source_sha256']==freeze['source_sha256']
+ originals={r['id']:from_wkb((pre/'inputs/source_wkb'/f"{r['geometry_sha256']}.wkb").read_bytes()) for r in bank['objects']}
+ scene=GrowthScene([dict(source_id=r['id'],geometry=originals[r['id']],trace_width_mm=r['trace_width_mm'],kind=r['kind']) for r in bank['objects']])
+ report=json.loads((P/'report.json').read_text())
+ for d in report['decisions']:
+  candidate=from_wkb((P/d['geometry']['dynamic']).read_bytes());assert hashlib.sha256(to_wkb(candidate)).hexdigest()==d['candidate_sha256']
+  for sid in d['aliases']:scene.accept(sid,candidate)
+ ids=sorted(scene.objects);current=[scene.replacements.get(s,scene.objects[s]['geometry']) for s in ids];crop=box(*freeze['viewport_mm']);tree=STRtree(current);after=unary_union([current[int(i)] for i in tree.query(crop,predicate='intersects')]).intersection(crop)
+ info=dict(source_sha256=freeze['source_sha256'],cumulative_sha256=hashlib.sha256(to_wkb(after)).hexdigest(),asset_integrity=assets)
+ _CACHE=(info,dict(scene=scene,after=after,base=dict(bounds=freeze['viewport_mm'],source=raw),source=raw));return _CACHE

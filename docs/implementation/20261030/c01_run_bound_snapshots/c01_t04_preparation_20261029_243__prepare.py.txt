@@ -1,0 +1,26 @@
+from pathlib import Path
+import sys,json,shutil,hashlib,re
+R=Path.cwd();O=Path(__file__).parent;sys.path[:0]=[str(O),str(R)]
+from c01_profile import compute,B,F
+from shapely import STRtree,to_wkb
+from shapely.geometry import box
+from src.native_inventory import arc_points
+from tools.build_c02_junction_source_paths import build as path_builder
+cache=B/'c02_focused_growth_coverage_20261028_05/inputs';inputs=O/'inputs';inputs.mkdir(exist_ok=True)
+shutil.copyfile(F/'frozen/ORG_source.kicad_pcb',inputs/'ORG_source.kicad_pcb');shutil.copyfile(cache/'source_manifest.json',inputs/'source_manifest.json')
+if not (inputs/'source_wkb').exists():(inputs/'source_wkb').symlink_to((cache/'source_wkb').resolve(),target_is_directory=True)
+report,g=compute(O);meta={r['id']:r for r in json.loads((inputs/'source_manifest.json').read_text())['objects']};raw=g['base']['source'];crop=box(*g['base']['bounds']);rows=[];seeds=[]
+for sid,r in meta.items():
+ if r['kind'] not in ('segment','arc'):continue
+ fragment=raw[slice(*r['source_span'])];ends=[]
+ for name in ('start','end'):
+  m=re.search(rb'\('+name.encode()+rb'\s+([^\s()]+)\s+([^\s()]+)\)',fragment);assert m;ends.append([x.decode() for x in m.groups()])
+ rows.append(dict(source_id=sid,kind=r['kind'],width_mm=r['trace_width_mm'],endpoints_decimal_mm=ends,source_wkb_sha256=r['geometry_sha256'],source_fragment_sha256=hashlib.sha256(fragment).hexdigest()))
+ if g['scene'].objects[sid]['geometry'].intersects(crop):seeds.append(sid)
+paths=path_builder(rows,seeds,raw);d=dict(schema='c01-native-junction-source-definitions/1',source_sha256=report['source_sha256'],cumulative_land_scene_sha256=report['cumulative_sha256'],paths=paths,viewport_mm=g['base']['bounds']);(O/'PARENT_SOURCE_PATHS.json').write_text(json.dumps(d,indent=2)+'\n');(O/'result.json').write_text(json.dumps(dict(viewport_mm=g['base']['bounds']))+'\n')
+(O/'PREDECESSOR_RECEIPT.json').write_text(json.dumps(dict(status='C01_FROZEN_T01_PROFILE_NO_ROUTE_CHANGE',source_sha256=report['source_sha256'],cumulative_sha256=report['cumulative_sha256'],freeze_receipt_sha256=hashlib.sha256((F/'FREEZE_RECEIPT.json').read_bytes()).hexdigest(),frozen_T01_layers='ALL_EXACT',geometry_authority='Frozen per-source T01 candidates; assembled crop is a derived view, not a replacement for freeze239',T03='NO_ROUTE_CHANGE',T02='NOT_APPLIED'),indent=2)+'\n')
+# Versioned C01 profile bindings; original C02 modules are unchanged.
+for source,target in [('tools/build_c02_trace_eligibility.py','build_eligibility.py'),('tools/build_c02_parallel_membership_v2.py','build_parallel.py'),('tools/build_c02_primary_parallel_cohorts.py','build_primary.py')]:
+ s=(R/source).read_text().replace('ROOT = Path(__file__).resolve().parents[1]','ROOT = Path.cwd()').replace('ROOT=Path(__file__).resolve().parents[1]','ROOT=Path.cwd()').replace('from tools.run_c02_four_attachment_diagnostic_v2 import compute','from c01_profile import compute')
+ (O/target).write_text(s)
+print(json.dumps(dict(source_trace_seeds=len(seeds),parent_source_paths=len(paths),full_native_closure=sum(len(p['source_ids']) for p in paths),profile=report)))

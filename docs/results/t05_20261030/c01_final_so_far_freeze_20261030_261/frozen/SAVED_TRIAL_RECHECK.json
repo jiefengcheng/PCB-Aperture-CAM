@@ -1,0 +1,9 @@
+{
+  "status": "PASS_SAME_ASSISTANT_SAVED_TRIAL_RECHECK",
+  "patches": 23,
+  "frozen_T01_files": 266,
+  "unchanged_T04_parts": 126,
+  "minimum_checked_added_foreign_gap_mm": 0.020108464650033457,
+  "after_sha256": "587d10f5855c4b7afe2f37130277d3c0bdc711b84b74c0dd8c69f6d4ff932966",
+  "scope": "Exact source-owner and cumulative-assembly replay; saved patch/window hash checks; full-neighborhood final clearance recheck. Not constructor replay, independent review or final T05 acceptance."
+}

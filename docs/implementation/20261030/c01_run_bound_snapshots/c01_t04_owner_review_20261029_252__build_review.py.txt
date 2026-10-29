@@ -1,0 +1,33 @@
+from pathlib import Path
+import json,sys,hashlib,html,subprocess
+R=Path.cwd();B=R/'out/crop_dynamic_tasks';P=B/'c01_t04_width_proposal_20261029_250';F=B/'c01_existing_t01_freeze_20261029_239';O=Path(__file__).parent;sys.path.insert(0,str(R));sys.path.insert(0,str(B/'c01_t04_preparation_20261029_243'))
+from c01_profile import compute
+from shapely import from_wkb,to_wkb
+from shapely.geometry import GeometryCollection
+from tools.run_c02_growth_coverage import render
+freeze=json.loads((F/'FREEZE_RECEIPT.json').read_text());r=json.loads((P/'RESULT.json').read_text());g=json.loads((B/'c01_t04_qualified_cohorts_20261029_249/PARALLEL_MEMBERSHIP.json').read_text());d=json.loads((B/'c01_t04_bulk_qualified_paths_20261029_247/UNIFORM_SOURCE_PATHS.json').read_text());paths={p['path_id']:p for p in d['paths']};records=json.loads((P/'CONSTRUCTION.json').read_text());record_by={x['component_id']:x for x in records};report=json.loads((F/'frozen/report.json').read_text());profile,ctx=compute(B/'c01_t04_preparation_20261029_243');scene=ctx['scene'];selected={s for x in records for s in x['complete_source_ids']}
+for name,h in freeze['file_bindings'].items():assert hashlib.sha256((F/'frozen'/name).read_bytes()).hexdigest()==h
+circle_checks=[]
+for x in report['decisions']:
+ blob=(F/'frozen'/x['geometry']['dynamic']).read_bytes();assert hashlib.sha256(blob).hexdigest()==x['candidate_sha256']
+ for sid in x['aliases']:
+  assert sid not in selected and to_wkb(scene.replacements[sid])==blob
+  circle_checks.append(dict(site=x['key'],source_id=sid,candidate_sha256=x['candidate_sha256']))
+parents={};groups=[]
+for x in g['groups']:
+ scale=r['selected_scales'][x['group_id']];assert 1<=scale<=1.5
+ members=[]
+ for pid in x['members']:
+  p=paths[pid];record=record_by[pid];assert record['factor']==scale
+  for primitive in record['primitives']:assert primitive['nominal_candidate_width_mm']==primitive['original_width_mm']*scale
+  parents.setdefault(p['parent_route_id'],set()).add(scale);members.append(dict(path_id=pid,width_before_mm=p['uniform_original_width_mm'],width_after_mm=p['uniform_original_width_mm']*scale,source_ids=p['source_ids']))
+ groups.append(dict(group_id=x['group_id'],scale=scale,members=members,status='AT_1P5' if scale==1.5 else 'KEEP_CLEARANCE_LIMITED' if scale==1 else 'GROWN_CLEARANCE_LIMITED'))
+assert all(len(v)==1 for v in parents.values())
+checks=json.loads((B/'c01_t04_width_replay_20261029_251/RECONCILIATION.json').read_text());assert checks['status']=='PASS_SAME_ASSISTANT_SAVED_MODEL_RECONCILIATION'
+preservation=dict(status='PASS_FROZEN_T01_EXACT_AND_UNIFORM_TRACE_WIDTHS',frozen_snapshot_files=len(freeze['file_bindings']),circle_source_occurrences=len(circle_checks),circle_sites=len(report['decisions']),all_frozen_candidate_parts_byte_identical=True,original_parent_factors_consistent=True,width_ceiling=1.5,route_changes=0,T02_applied=False,source_part_width_checks='PASS_ALL',replay_evaluations=checks['saved_checks_verified']);(O/'PRESERVATION_RECEIPT.json').write_text(json.dumps(preservation,indent=2)+'\n');(O/'GROUP_OUTCOMES.json').write_text(json.dumps(groups,indent=2)+'\n');(O/'FROZEN_CIRCLE_BINDINGS.json').write_text(json.dumps(circle_checks,indent=2)+'\n')
+after=from_wkb((P/'after.wkb').read_bytes());before=from_wkb((P/'before.wkb').read_bytes());delta=from_wkb((P/'added.wkb').read_bytes());image_bindings=[]
+for name,geom,overlay in [('before',before,GeometryCollection()),('clean_after',after,GeometryCollection()),('growth_only',after,delta)]:
+ f=O/f'{name}.svg';render(f,'C01 / T04 uniform trace widths / '+name,geom,overlay,freeze['viewport_mm'],[],{},['Frozen T01 unchanged:51 sites,53 source occurrences;266 snapshot hashes retained.', '36 complete source runs;29 common-scale groups/singletons;27 grow,21 reach1.5x,2 KEEP.', 'Teal = actual added trace copper only; original routes and all fixed lands retained.', 'Same-assistant source-bound replay191evaluations PASS; independent qualification open. T02 not applied.']);subprocess.run(['sips','-s','format','png',str(f),'--out',str(f.with_suffix('.png'))],capture_output=True,check=True);image_bindings.append(dict(image=f.with_suffix('.png').name,sha256=hashlib.sha256(f.with_suffix('.png').read_bytes()).hexdigest()))
+table=''.join('<tr><td>'+html.escape(x['group_id'])+'</td><td>'+str(len(x['members']))+'</td><td>'+format(x['scale'],'.8f')+'</td><td>'+x['status']+'</td></tr>' for x in groups)
+(O/'index.html').write_text('<!doctype html><meta charset="utf-8"><title>C01 T04 width review</title><style>body{font:18px system-ui;max-width:1500px;margin:30px auto;color:#142a3f;line-height:1.5}img{width:100%}td,th{padding:8px;border-bottom:1px solid #ddd}</style><h1>C01 T04 · uniform complete-trace growth</h1><p>Frozen T01 remains exact.36 complete runs in29 shared-scale groups/singletons:27 grow,21 reach1.5×,2 retain original width because clearance blocks growth. Original routes and all fixed lands preserved. T02 not applied.</p><h2>Before T04</h2><img src="before.png"><h2>Clean cumulative after T04</h2><img src="clean_after.png"><h2>Actual added trace copper in teal</h2><img src="growth_only.png"><h2>Every group outcome</h2><table><tr><th>Group</th><th>Runs</th><th>Common scale</th><th>Outcome</th></tr>'+table+'</table><p>All192 crop trace primitives accounted for:65 eligible and127 covered/bulk contributors kept fixed. The36 selected complete runs contain126 native primitives, including remote constraints. Source decomposition and bulk-role heuristics remain part of model qualification.</p><p>Local replay:191 evaluations, final nominal/envelope checks and non-ceiling upper rejections pass. The maximum is coordinate-wise within fixed groups and a1e-6 factor bracket, not a global optimization claim. Independent/native/electrical/manufacturing qualification remains open.</p><p><a href="GROUP_OUTCOMES.json">Per-route before/after widths and source identities</a> · <a href="PRESERVATION_RECEIPT.json">Frozen T01 preservation</a> · <a href="../c01_t04_width_replay_20261029_251/RECONCILIATION.json">Replay receipt</a> · <a href="../c01_t04_width_proposal_20261029_250/SOLVER.json">All selected factors and upper-limit proofs</a></p>')
+(O/'IMAGE_BINDINGS.json').write_text(json.dumps(image_bindings,indent=2)+'\n');print(json.dumps(preservation))

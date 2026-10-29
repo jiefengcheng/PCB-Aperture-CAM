@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""Publish self-contained accepted-result previews, avoiding file asset resolution."""
+from pathlib import Path
+import sys,json,hashlib,base64
+ROOT=Path(__file__).resolve().parents[1]
+B=ROOT/'out/crop_dynamic_tasks';H=ROOT/'out/visualization_results'
+def main():
+ c1=B/'c01_final_so_far_freeze_20261030_261';c2=B/'c02_final_so_far_freeze_20261030_266';r1=json.loads((c1/'FREEZE_RECEIPT.json').read_text());r2=json.loads((c2/'FREEZE_RECEIPT.json').read_text());assert r1['status']=='FROZEN_C01_FINAL_SO_FAR_OWNER_ACCEPTED' and r2['owner_visual_acceptance']=='PASSED'
+ image1=c1/'frozen/after.png';image2=c2/'frozen/c02_t05_owner_review_20261030_265/after.png';manifest=json.loads((c2/'SHA256SUMS.json').read_text());assert hashlib.sha256(image1.read_bytes()).hexdigest()==r1['files']['after.png'];assert hashlib.sha256(image2.read_bytes()).hexdigest()==manifest['c02_t05_owner_review_20261030_265/after.png']
+ def inline(p):
+  blob=p.read_bytes();assert blob.startswith(b'\x89PNG\r\n\x1a\n');return 'data:image/png;base64,'+base64.b64encode(blob).decode()
+ old=H/'index.html';backup=H/'index_before_self_contained_images_20261030.html'
+ if not backup.exists():backup.write_bytes(old.read_bytes())
+ page='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Accepted C01 and C02 results</title><style>body{font:18px system-ui;max-width:1600px;margin:30px auto;padding:20px;line-height:1.5}img{display:block;width:100%;height:auto;background:#edf4f8}a{color:#0566ad}section{margin:40px 0}</style></head><body><h1>C01 and C02 · accepted final results so far</h1><p>Both results are frozen with owner visual acceptance. Existing independent and native/electrical/manufacturing qualification limits remain recorded.</p><section><h2>C02 · T01 → T03 → T04 → T02 → T05</h2><p>56 trace-route blends;88 land-contact incidences including65 rectangle incidences. T03 required no route change in this lineage.</p><p><a href="../crop_dynamic_tasks/'+c2.name+'/'+r2['review_path']+'">Open frozen C02 comparison and junction details</a> · <a href="../crop_dynamic_tasks/'+c2.name+'/FREEZE_RECEIPT.json">Acceptance receipt</a></p><img alt="Frozen owner-accepted C02 copper after T05" src="'+inline(image2)+'"></section><section><h2>C01 · frozen spindle result; T02 skipped by owner</h2><p><a href="../crop_dynamic_tasks/'+c1.name+'/frozen/index.html">Open frozen C01 comparison</a> · <a href="../crop_dynamic_tasks/'+c1.name+'/FREEZE_RECEIPT.json">Acceptance receipt</a></p><img alt="Frozen owner-accepted C01 spindle copper" src="'+inline(image1)+'"></section><p><a href="index_before_C02_OWNER_FREEZE266.html">Preserved earlier review history</a></p></body></html>'
+ old.write_text(page);receipt=dict(status='SELF_CONTAINED_PNG_PREVIEWS_PUBLISHED',index_sha256=hashlib.sha256(old.read_bytes()).hexdigest(),embedded_images=[dict(crop='C01',source=str(image1),sha256=hashlib.sha256(image1.read_bytes()).hexdigest()),dict(crop='C02',source=str(image2),sha256=hashlib.sha256(image2.read_bytes()).hexdigest())],page223='UNCHANGED');(H/'IMAGE_DISPLAY_RESTORE_20261030.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt))
+if __name__=='__main__':main()

@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""Source-based local parallel relationships; no trace growth or acceptance."""
+import sys
+from pathlib import Path
+ROOT=Path.cwd()
+sys.path.insert(0,str(ROOT))
+import hashlib,json,re,subprocess,html,colorsys
+from collections import Counter
+from shapely import STRtree,from_wkb
+from shapely.geometry import LineString,box
+from shapely.ops import unary_union
+from src.parallel_trace_relations import parallel_relation,relation_groups
+from src.parallel_curve_relations import parallel_curve_relation
+from src.native_inventory import arc_points
+from src.crop_circle_sources import verify_assets
+from c01_profile import compute
+from tools.run_c02_growth_coverage import render,svg_shape
+
+
+def main(pathwise=False):
+    pre,definitions,out=map(Path,sys.argv[1:4])
+    prior_groups=Path(sys.argv[4]) if len(sys.argv)==5 else None
+    if len(sys.argv) not in (4,5):raise ValueError('EXPECTED_PRE_DEFINITIONS_OUT_OPTIONAL_PRIOR_GROUPS')
+    assert not out.exists()
+    verify_assets()
+    report,g=compute(pre)
+    d=json.loads((definitions/'UNIFORM_SOURCE_PATHS.json').read_text())
+    meta={r['id']:r for r in json.loads((pre/'inputs/source_manifest.json').read_text())['objects']}
+    scene=g['scene'];raw=g['base']['source'];crop=box(*g['base']['bounds'])
+    ids=sorted(scene.objects)
+    all_geoms={sid:scene.replacements.get(sid,scene.objects[sid]['geometry']) for sid in ids}
+    tree=STRtree([all_geoms[sid] for sid in ids])
+    members={c['path_id']:c for c in d['paths']
+             if c['definition_status'] in ('VISIBLE_COMPLETE_UNIFORM_PATH_PROPOSAL_CONTACT_CHECKS_RETAINED','VISIBLE_UNIFORM_NETWORK_JUNCTION_ASSESSMENT_RETAINED')}
+    exposed={}
+    for cid,c in members.items():
+        blob=(definitions/f'exposed_source_paths/{cid}.wkb').read_bytes()
+        assert hashlib.sha256(blob).hexdigest()==c['exposed_in_crop_wkb_sha256']
+        exposed[cid]=from_wkb(blob)
+    entries=[]
+    for cid,c in sorted(members.items()):
+        if pathwise:
+            route=LineString(c['ordered_route_points_mm'])
+            local=route.intersection(crop)
+            pieces=list(local.geoms) if hasattr(local,'geoms') else [local]
+            for n,piece in enumerate(pieces):
+                if piece.geom_type!='LineString' or piece.length==0:continue
+                entries.append(dict(component=cid,source_id=f'{cid}:local:{n}',source_ids=c['source_ids'],
+                    points=list(piece.coords),kind='complete_route_selection',width_mm=c['uniform_original_width_mm']))
+            # Retain native-span evidence too: a short parallel leg can fall
+            # between whole-route samples. Both map to the same full route.
+        for sid in c['source_ids']:
+            r=meta[sid]
+            if not all_geoms[sid].intersects(crop):continue
+            if all_geoms[sid].intersection(exposed[cid]).area==0:continue
+            a,b=map(int,sid.rsplit(':',2)[1:]);fragment=raw[a:b]
+            points=[]
+            for name in ('start','end'):
+                m=re.search(rb'\('+name.encode()+rb'\s+([^\s()]+)\s+([^\s()]+)\)',fragment)
+                assert m is not None
+                points.append([float(v) for v in m.groups()])
+            if points[0]==points[1]:continue
+            if r['kind']=='arc':
+                m=re.search(rb'\(mid\s+([^\s()]+)\s+([^\s()]+)\)',fragment);assert m
+                points=arc_points(points[0],[float(v) for v in m.groups()],points[1])
+            entries.append(dict(component=cid,source_id=sid,points=points,kind=r['kind'],width_mm=r['trace_width_mm']))
+    entries.sort(key=lambda r:r['source_id'])
+    paths=[LineString(r['points']) for r in entries];path_tree=STRtree(paths)
+    route_cores={cid:unary_union([all_geoms[sid] for sid in c['source_ids']]) for cid,c in members.items()} if pathwise else {}
+    accepted=[];blocked=[]
+    for i,a in enumerate(entries):
+        query_radius=.5+(a['width_mm']+max(r['width_mm'] for r in entries))/2
+        for j in sorted(int(v) for v in path_tree.query(paths[i].buffer(query_radius)) if int(v)>i):
+            b=entries[j]
+            if a['component']==b['component']:continue
+            ag,bg=(route_cores[a['component']],route_cores[b['component']]) if pathwise else (all_geoms[a['source_id']],all_geoms[b['source_id']])
+            if not pathwise and ag.intersects(bg):continue
+            minimum_shared=max(.02,min(a['width_mm'],b['width_mm']))
+            maximum_distance=.5+(a['width_mm']+b['width_mm'])/2
+            relation=(parallel_relation(a['points'],b['points'],min_shared_length_mm=minimum_shared,max_transverse_distance_mm=maximum_distance)
+                      if a['kind']==b['kind']=='segment' else
+                      parallel_curve_relation(a['points'],b['points'],min_shared_run_mm=minimum_shared,max_center_distance_mm=maximum_distance,
+                          allow_remote_intersections=pathwise,samples=min(2049,max(49,int(min(paths[i].length,paths[j].length)/minimum_shared*4)+1)) if pathwise else 49))
+            if relation is None:continue
+            cross=LineString(relation['midpoint_cross_section_mm']).difference(ag.union(bg))
+            if cross.is_empty:continue
+            excluded=set(members[a['component']]['source_ids']+members[b['component']]['source_ids'])
+            blockers=sorted(ids[int(k)] for k in tree.query(cross,predicate='intersects') if ids[int(k)] not in excluded)
+            row=dict(component_a=a['component'],component_b=b['component'],source_a=a['source_id'],source_b=b['source_id'],
+                     finite_width_source_gap_mm=ag.distance(bg),**relation)
+            if pathwise:row.update(source_ids_a=members[a['component']]['source_ids'],source_ids_b=members[b['component']]['source_ids'],selection_scope='Ordered full native route and native-span evidence for crop membership; construction/full-route clearance never clipped')
+            if blockers:
+                blocked.append(dict(**row,cross_section_blocker_source_ids=blockers))
+            else:accepted.append(row)
+    edges=sorted({tuple(sorted((r['component_a'],r['component_b']))) for r in accepted})
+    # Eligibility fragments do not acquire independent growth scales. Preserve
+    # their original trace identity and merge partially overlapping copper into
+    # a single operation, before applying the parallel-neighbor relationships.
+    operation_links=[]
+    member_ids=sorted(members)
+    core_tree=STRtree([route_cores[cid] for cid in member_ids]) if pathwise else None
+    if pathwise:
+        for i,a in enumerate(member_ids):
+            for j in sorted(int(v) for v in core_tree.query(route_cores[a],predicate='intersects') if int(v)>i):
+                b=member_ids[j]
+                if route_cores[a].intersection(route_cores[b]).area>0:
+                    operation_links.append(dict(member_a=a,member_b=b,reason='PARTIAL_SOURCE_COPPER_OVERLAP_ONE_OPERATION'))
+        parents={}
+        for cid,c in members.items():
+            parents.setdefault(c.get('parent_route_id',cid),[]).append(cid)
+        for parent,children in sorted(parents.items()):
+            for child in sorted(children)[1:]:
+                operation_links.append(dict(member_a=min(children),member_b=child,reason='ORIGINAL_TRACE_COMMON_SCALE',parent_route_id=parent))
+    prior_binding=None
+    if prior_groups is not None:
+        prior=json.loads(prior_groups.read_text())
+        if (prior['source_sha256']!=report['source_sha256']
+                or prior['proposed_cumulative_scene_sha256']!=report['cumulative_sha256']
+                or prior['source_definition_sha256']!=d['source_path_input_sha256']):
+            raise ValueError('PRIOR_GROUP_SOURCE_BINDING_MISMATCH')
+        prior_binding=dict(path=str(prior_groups.resolve()),sha256=hashlib.sha256(prior_groups.read_bytes()).hexdigest())
+        for group in prior['groups']:
+            children=sorted(cid for cid,c in members.items() if c.get('parent_route_id',cid) in group['members'])
+            for child in children[1:]:
+                operation_links.append(dict(member_a=children[0],member_b=child,
+                    reason='PRESERVE_ESTABLISHED_PARALLEL_GROUP_COMMON_SCALE',prior_group_id=group['group_id']))
+    edges=sorted(set(edges)|{tuple(sorted((r['member_a'],r['member_b']))) for r in operation_links})
+    grouped=relation_groups(sorted(members),edges)
+    groups=[]
+    for row in grouped:
+        cid='PG-'+hashlib.sha256('\n'.join(row).encode()).hexdigest()[:16]
+        ready=all(members[v]['definition_status']=='VISIBLE_COMPLETE_UNIFORM_PATH_PROPOSAL_CONTACT_CHECKS_RETAINED' for v in row)
+        groups.append(dict(group_id=cid,members=row,source_member_count=sum(len(members[v]['source_ids']) for v in row),
+            status='SOURCE_MEMBERSHIP_PROPOSAL_COMPLETE_PATHS' if ready else 'SOURCE_MEMBERSHIP_PROPOSAL_INCLUDES_BRANCH_NETWORK',
+            intended_scale_rule='One common factor; each full defined trace retains its own original uniform width, fixed route; maximum 1.5',
+            width_growth='NOT_RUN'))
+    out.mkdir(parents=True);(out/'visuals').mkdir()
+    result=dict(schema='c02-source-local-parallel-membership/2',source_sha256=report['source_sha256'],
+        source_definition_sha256=hashlib.sha256((definitions/'UNIFORM_SOURCE_PATHS.json').read_bytes()).hexdigest(),
+        proposed_cumulative_scene_sha256=report['cumulative_sha256'],selection_parameters=dict(angle_degrees=1.,minimum_shared_projection_mm='max(0.02,min(original widths))',maximum_transverse_distance_mm='0.5+half sum original widths',curves='49..2049 bounded whole-route samples; selection only' if pathwise else '49 sampled source tangent/side consistency points; selection only',membership_basis='Ordered full native routes plus native spans; both bind complete route IDs' if pathwise else 'Individual native primitives'),
+        accepted_local_cross_section_relationships=accepted,blocked_cross_section_relationships=blocked,
+        prior_scale_group_binding=prior_binding, common_operation_links=operation_links, operation_display_rule='One unioned added-copper surface per common-scale group; overlapping source primitives are not separate expansion operations',
+        groups=groups,classifications=dict(Counter(r['status'] for r in groups)),
+        limitations=['Relationship proposals only; all-path width and clearance verification still required.',
+            'Native straight spans and source arc samples establish local membership; remote sections remain full-route constraints.',
+            'A clear midpoint cross-section alone is not proof of clearance throughout a corridor.',
+            'No route or width edits. T02 exact frozen land predecessor unchanged. New target definitions are proposals, not T04 acceptance.'])
+    (out/'PARALLEL_MEMBERSHIP.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+    ready_groups=groups
+    for index,r in enumerate(ready_groups):
+        rgb=colorsys.hsv_to_rgb((index*.61803398875)%1,.55,.98)
+        r['visual_color']='#'+''.join(f'{round(v*255):02x}' for v in rgb)
+    (out/'VISUAL_COLOR_BINDINGS.json').write_text(json.dumps({r['group_id']:dict(color=r['visual_color'],members=r['members']) for r in ready_groups},indent=2,sort_keys=True)+'\n')
+    overlays=unary_union([all_geoms[sid] for r in ready_groups for cid in r['members'] for sid in members[cid]['source_ids']])
+    notes=[f'{len(accepted)} unblocked local source-span relations; {len(blocked)} blocked cross-sections retained.',
+        f'{len(groups)} source-defined groups/singletons across {len(members)} visible paths/networks; membership proposals only.',
+        'Colors = original source copper exposed outside fixed lands, mapped to group table. Red lands remain immutable.',
+        'Group membership uses source directions and an actual finite-copper cross-section blocker check.',
+        'Clearance along full routes, remote obstacles and curved sections still constrain any common width scale.',
+        'No width growth or T04 acceptance. Parallel cohorts are not physical components or electrical nets.']
+    render(out/'visuals/defined_groups.svg','C02 / immediate parallel-neighbor preparation',g['after'],overlays,g['base']['bounds'],[],{},notes)
+    svg=out/'visuals/defined_groups.svg'
+    land=unary_union([all_geoms[sid] for sid in ids if meta[sid]['kind'] not in ('segment','arc')])
+    colored=''.join(svg_shape(unary_union([exposed[cid] for cid in r['members']]),r['visual_color']) for r in ready_groups)
+    # Replace, rather than overlay, the renderer's initial teal membership layer.
+    source_overlay=svg_shape(overlays.intersection(crop),'#21bda8')
+    text=svg.read_text();assert text.count(source_overlay)==1;text=text.replace(source_overlay,'',1)
+    svg.write_text(text.replace('</svg>',colored+'</svg>',1))
+    subprocess.run(['sips','-s','format','png',str(out/'visuals/defined_groups.svg'),'--out',str(out/'visuals/defined_groups.png')],check=True,capture_output=True)
+    table=''.join('<tr><td style="border-left:12px solid '+r.get('visual_color','#999')+'">'+r['group_id']+'</td><td>'+str(len(r['members']))+'</td><td>'+html.escape(r['status'])+'</td><td>'+html.escape(', '.join(r['members']))+'</td></tr>' for r in groups)
+    (out/'index.html').write_text('<!doctype html><meta charset="utf-8"><title>C02 parallel membership</title><style>body{font:18px system-ui;margin:24px;color:#142a3f}img{width:100%}td{padding:8px;border-bottom:1px solid #ddd}</style><h1>C02 parallel-neighbor proposals — no width growth</h1><img src="visuals/defined_groups.png"><table>'+table+'</table>')
+    print(json.dumps(dict(source_spans=len(entries),accepted_relations=len(accepted),blocked_cross_sections=len(blocked),groups=len(groups),classifications=result['classifications'])))
+
+
+if __name__=='__main__':main()

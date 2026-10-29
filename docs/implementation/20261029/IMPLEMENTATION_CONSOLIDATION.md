@@ -1,5 +1,7 @@
 # Implementation consolidation — latest C02 worktree
 
+> Historical consolidation at dbfa1a0. Current owner-accepted C01/C02 freezes and the implemented T05 extension are recorded in [the 2026-10-30 delivery](../20261030/ACCEPTED_RESULTS_AND_COMMIT_SCOPE.md). Earlier stop/next-scope statements below describe that earlier checkpoint.
+
 This records and versions useful existing implementation across the repository,
 not only the T03 architecture documents. The inventory binds125 Python files:
 32 source modules,33 associated test modules and60 command-line tools. Two root

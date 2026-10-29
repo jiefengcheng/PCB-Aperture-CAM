@@ -1,0 +1,216 @@
+{
+  "status": "ALL_16_EXPOSED_NONROUTE_CONTACTS_MATCH_EXISTING_OWNER_BULK_EXCLUSIONS",
+  "source_role_ledger_sha256": "d161c92b6a4e66d89767bb352ef7e6b76e4c45aecf85ceaaa267d48f379dc294",
+  "bulk_specification_sha256": "98ec83e7ca1a13bcf5975ccbb8abaacc9078766e2626690f2c88d73f904e34e2",
+  "new_exclusions": 0,
+  "rows": [
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:386869:386958",
+      "exposed_crop_area_mm2": 3.152701504770268e-05,
+      "original_diagnostic_full_source_area_mm2": 3.152701504770268e-05,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:387145:387234",
+      "exposed_crop_area_mm2": 3.1968225722287855e-06,
+      "original_diagnostic_full_source_area_mm2": 3.1968225722287855e-06,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:387237:387326",
+      "exposed_crop_area_mm2": 2.230994608072446e-07,
+      "original_diagnostic_full_source_area_mm2": 2.230994608072446e-07,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:408262:408351",
+      "exposed_crop_area_mm2": 0.003225738158669933,
+      "original_diagnostic_full_source_area_mm2": 0.0037578815022555395,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:408536:408625",
+      "exposed_crop_area_mm2": 3.1798114430912495e-07,
+      "original_diagnostic_full_source_area_mm2": 3.1798114430912495e-07,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:408628:408717",
+      "exposed_crop_area_mm2": 1.9334367053886793e-06,
+      "original_diagnostic_full_source_area_mm2": 1.9334367053886793e-06,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:409178:409266",
+      "exposed_crop_area_mm2": 0.0024409362923009377,
+      "original_diagnostic_full_source_area_mm2": 0.0024409362923009377,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:409269:409358",
+      "exposed_crop_area_mm2": 0.0024130001363737957,
+      "original_diagnostic_full_source_area_mm2": 0.0024130001363737957,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:409453:409542",
+      "exposed_crop_area_mm2": 3.1654448411619894e-05,
+      "original_diagnostic_full_source_area_mm2": 3.1654448411619894e-05,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:409545:409634",
+      "exposed_crop_area_mm2": 3.1987960950392796e-05,
+      "original_diagnostic_full_source_area_mm2": 3.1987960950392796e-05,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:526049:526136",
+      "exposed_crop_area_mm2": 0.00131939254694643,
+      "original_diagnostic_full_source_area_mm2": 0.00131939254694643,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1556393:1556517"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:534986:535073",
+      "exposed_crop_area_mm2": 0.00016674384166184416,
+      "original_diagnostic_full_source_area_mm2": 0.00016674384166184416,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1556393:1556517"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:543264:543381",
+      "exposed_crop_area_mm2": 2.272283522622784e-06,
+      "original_diagnostic_full_source_area_mm2": 3.402939178475512e-06,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1556393:1556517"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:543862:543979",
+      "exposed_crop_area_mm2": 1.0332655027633908e-05,
+      "original_diagnostic_full_source_area_mm2": 1.0332655027633888e-05,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1556393:1556517"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1604303:1604393",
+      "exposed_crop_area_mm2": 0.031737064300000645,
+      "original_diagnostic_full_source_area_mm2": 0.11490921025204688,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1921033:1921222"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    },
+    {
+      "source_id": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1819983:1820101",
+      "exposed_crop_area_mm2": 4.624131505205397e-05,
+      "original_diagnostic_full_source_area_mm2": 0.0012854883748578733,
+      "disposition": "EXPOSED_FIXED_SOURCE_OUTSIDE_T04_ROUTE_SET_NOT_MODIFIED",
+      "land_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1556393:1556517"
+      ],
+      "standing_disposition": "FIXED_BULK_CONTRIBUTOR_SKIP_AS_PREVIOUSLY_INSTRUCTED",
+      "prior_role_reasons": [
+        "SOURCE_CONTRIBUTES_TO_OWNER_IDENTIFIED_FIXED_BULK_REGION"
+      ]
+    }
+  ]
+}

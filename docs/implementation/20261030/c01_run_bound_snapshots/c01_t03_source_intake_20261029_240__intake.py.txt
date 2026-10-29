@@ -1,0 +1,49 @@
+from pathlib import Path
+import sys,json,hashlib,re
+R=Path.cwd();sys.path.insert(0,str(R));O=Path(__file__).parent
+from shapely import from_wkb,to_wkb,STRtree
+from shapely.geometry import box
+from shapely.ops import unary_union
+from src.crop_circle_sources import verify_assets
+from src.trace_endpoint_inventory import endpoint_components
+F=R/'out/crop_dynamic_tasks/c01_existing_t01_freeze_20261029_239';P=F/'frozen';cache=R/'out/crop_dynamic_tasks/c02_focused_growth_coverage_20261028_05/inputs';assets=verify_assets();freeze=json.loads((F/'FREEZE_RECEIPT.json').read_text())
+for name,h in freeze['file_bindings'].items():assert hashlib.sha256((P/name).read_bytes()).hexdigest()==h
+raw=(P/'ORG_source.kicad_pcb').read_bytes();bank=json.loads((cache/'source_manifest.json').read_text());assert hashlib.sha256(raw).hexdigest()==bank['source_sha256']==freeze['source_sha256']
+meta={x['id']:x for x in bank['objects']};original={}
+for sid,row in meta.items():
+ blob=(cache/'source_wkb'/f"{row['geometry_sha256']}.wkb").read_bytes();assert hashlib.sha256(blob).hexdigest()==row['geometry_sha256'];original[sid]=from_wkb(blob)
+ids=sorted(original);tree=STRtree([original[s] for s in ids]);crop=box(*freeze['viewport_mm']);report=json.loads((P/'report.json').read_text());selection=json.loads((P/'selection.json').read_text());policy=json.loads((P/'policy.json').read_text());fixed_circle_ids={a for r in report['decisions'] for a in r['aliases']};alltraces=[];seeds=[]
+for sid,row in meta.items():
+ if row['kind'] not in ('segment','arc'):continue
+ fragment=raw[slice(*row['source_span'])];ends=[]
+ for field in ('start','end'):
+  m=re.search(rb'\('+field.encode()+rb'\s+([^\s()]+)\s+([^\s()]+)\)',fragment);assert m;ends.append([v.decode() for v in m.groups()])
+ width=re.search(rb'\(width\s+([^\s()]+)\)',fragment);assert width and float(width[1])==row['trace_width_mm']
+ alltraces.append(dict(source_id=sid,kind=row['kind'],width_mm=float(width[1]),endpoints_decimal_mm=ends,geometry_sha256=row['geometry_sha256']))
+ if original[sid].intersects(crop):seeds.append(sid)
+components=endpoint_components(alltraces,seeds);trace_meta={r['source_id']:r for r in alltraces};eligibility=[];active=set()
+for sid in sorted(seeds):
+ geom=original[sid];neighbors=[original[ids[int(i)]] for i in tree.query(geom,predicate='intersects') if ids[int(i)]!=sid];uncovered=geom.difference(unary_union(neighbors));covered=uncovered.is_empty
+ eligibility.append(dict(source_id=sid,kind=meta[sid]['kind'],original_width_mm=meta[sid]['trace_width_mm'],original_geometry_sha256=meta[sid]['geometry_sha256'],visible_original_area_mm2=uncovered.area,status='FULLY_COVERED_SKIP' if covered else 'EXPOSED_TRACE_SOURCE'))
+ if not covered:active.add(sid)
+pairs=[];objectives=[];growth_sites=[]
+for decision in report['decisions']:
+ core=from_wkb((P/decision['geometry']['core']).read_bytes());candidate=from_wkb((P/decision['geometry']['dynamic']).read_bytes());assert hashlib.sha256(to_wkb(candidate)).hexdigest()==decision['candidate_sha256'];added=candidate.difference(core)
+ if added.area<=1e-12:continue
+ assert candidate.covers(core) or core.difference(candidate).area<1e-12
+ growth_sites.append(decision['key'])
+ for i in tree.query(candidate.buffer(.02011)):
+  sid=ids[int(i)]
+  if sid not in active:continue
+  trace=original[sid];port_hex=selection.get('ports',{}).get(decision['source_id'],{}).get(sid);port=None if port_hex is None else from_wkb(bytes.fromhex(port_hex))
+  checked=added if port is None else added.difference(port);gap=None if checked.is_empty else checked.distance(trace);old_gap=core.distance(trace);new_gap=candidate.distance(trace)
+  reasons=[]
+  if not checked.is_empty and gap+1e-12<policy['hard_gap']:reasons.append('T01_ADDITION_BELOW_BOUND_HARD_SURFACE_GAP_OUTSIDE_SAVED_PORT')
+  # New raw contact is not excused by a component label.
+  if port is None and old_gap>1e-12 and candidate.intersects(trace):reasons.append('NEW_UNQUALIFIED_SOURCE_CONTACT')
+  row=dict(site=decision['key'],circle_source_id=decision['source_id'],trace_source_id=sid,original_width_mm=meta[sid]['trace_width_mm'],old_raw_surface_gap_mm=old_gap,new_raw_surface_gap_mm=new_gap,added_copper_gap_outside_saved_port_mm=gap,saved_port_sha256=None if port_hex is None else hashlib.sha256(bytes.fromhex(port_hex)).hexdigest(),saved_port_rule=policy['port_rule'] if port_hex else None,hard_floor_mm=policy['hard_gap'],construction_target_mm=policy['construction_gap'],requires_accommodation=bool(reasons),reasons=reasons)
+  pairs.append(row)
+  if reasons:objectives.append(row)
+result=dict(status='C01_T03_SOURCE_INTAKE_COMPLETE',assets=assets,freeze_receipt_sha256=hashlib.sha256((F/'FREEZE_RECEIPT.json').read_bytes()).hexdigest(),source_sha256=freeze['source_sha256'],viewport_mm=freeze['viewport_mm'],source_objects=len(meta),crop_trace_seeds=len(seeds),exposed_seed_primitives=len(active),fully_covered_skips=len(seeds)-len(active),complete_endpoint_components=len(components),unresolved_endpoint_components=sum(bool(x['unresolved_reasons']) for x in components),T01_grown_sites=len(growth_sites),T01_trace_pairs_checked=len(pairs),growth_related_hard_gap_objectives=len(objectives),widths_mm=sorted({trace_meta[s]['width_mm'] for s in seeds}),route_geometry_changed=False,T03_geometry_execution='NOT_RUN_INTAKE_ONLY',scope='Exact T01 growth versus exposed native segment/arc surfaces and saved T01 source-attachment ports; not general electrical intent or whole-board clearance',limitations=['Existing C2 launcher width0.10008 is not automatically applicable to C01 widths.','No source paths or contacts invented from physical-component labels.','Frozen T01 source shapes unchanged. All incoming and outgoing trace spans require source qualification before a new route candidate.','This inventory does not establish continuous bundle parallelism or width-growth feasibility.'])
+for name,data in [('RESULT',result),('TRACE_ELIGIBILITY',eligibility),('TRACE_ENDPOINT_COMPONENTS',components),('T01_TRACE_RELATIONSHIPS',pairs),('T03_OBJECTIVES',objectives)]: (O/f'{name}.json').write_text(json.dumps(data,indent=2)+'\n')
+print(json.dumps(result))

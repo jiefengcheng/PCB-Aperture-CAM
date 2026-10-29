@@ -1,0 +1,7 @@
+from pathlib import Path
+import sys,json
+R=Path.cwd();O=Path(__file__).parent;sys.path[:0]=[str(O),str(R)]
+import build_parallel,build_primary
+B=R/'out/crop_dynamic_tasks';definitions=B/'c01_t04_eligible_paths_20261029_244';parallel=B/'c01_t04_parallel_relations_20261029_245';primary=B/'c01_t04_primary_cohorts_20261029_246'
+sys.argv=[__file__,str(O),str(definitions),str(parallel)];build_parallel.main(pathwise=True)
+build_primary.main(O,definitions,parallel/'PARALLEL_MEMBERSHIP.json',primary)

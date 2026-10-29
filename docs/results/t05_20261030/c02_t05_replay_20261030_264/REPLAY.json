@@ -1,0 +1,20 @@
+{
+  "status": "PASS_SAME_ASSISTANT_SOURCE_BOUND_C02_T05_CONSTRUCTOR_REPLAY",
+  "assets": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "predecessor_sha256": "63fd6b9cfdb7ef1412f75618826034a00f3d490d87e14a6e78bd76cf4aad03e1",
+  "after_sha256": "60f60b0012277f28fad494df16e14957fa8196fcd11475a5cafb42500918040a",
+  "proposal_result_sha256": "e01f416214cd7eeccea5625fb5a8a5ca07562743a0fced1c12c4a71e63b19e4b",
+  "routes_accounted": 113,
+  "patches_exactly_reconstructed": 56,
+  "frozen_parts_preserved": 606,
+  "source_ports": "Original positive-area land contacts rechecked; no component-label exemption",
+  "windows": "Reconstructed from exact current lands and fixed radius bounds",
+  "minimum_added_foreign_surface_gap_mm": 0.02010843730179114,
+  "cumulative_byte_replay": true,
+  "exposed_fixed_nonroute_sources": 16,
+  "qualification": "Local geometric replay only; inherited independent REV234 REVISE remains open; native/electrical/manufacturing/owner T05 acceptance not established"
+}

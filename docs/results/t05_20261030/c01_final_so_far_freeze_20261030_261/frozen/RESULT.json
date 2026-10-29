@@ -1,0 +1,23 @@
+{
+  "status": "EXPERIMENTAL_C01_LAND_SIZED_SPINDLE_BLEND",
+  "asset_integrity": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "predecessor_sha256": "22022e50370b9193d30dd13a1ea3a106d1ecc8a977588a931ec13ae04f13e8c9",
+  "after_sha256": "587d10f5855c4b7afe2f37130277d3c0bdc711b84b74c0dd8c69f6d4ff932966",
+  "source_components": 57,
+  "grown_components": 23,
+  "grown_source_land_contacts": 43,
+  "kept_components": 34,
+  "added_area_mm2": 0.19900711150961453,
+  "operator": "Source-qualified connected owner; land-radius rolling-disc closing; only additions trimmed by 0.02011 mm foreign barriers; final gap checked at 0.02010 mm",
+  "limitations": "Trial, not qualified final T05; branched components require local split; no reference-geometry copying; no route or T04 source-width edits",
+  "T01": "266 frozen hashes unchanged",
+  "T04": "All source parts unchanged",
+  "T02": "NOT_APPLIED",
+  "first_T05_256": "PRESERVED_SEPARATELY",
+  "reference_sha256": "3888a9742346827da1d89bd8a4adf4690b64123a832a81e7eb6a8c7375fc7a85"
+}

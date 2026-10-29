@@ -1,0 +1,33 @@
+{
+  "status": "FROZEN_LATEST_OWNER_ACCEPTED_C02_PRE_T05",
+  "authority": "Owner requests T05 after T02 based on latest available frozen C02 result",
+  "source_result": "out/crop_dynamic_tasks/c02_context_rectangle_completion_20261029_232",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "after_sha256": "63fd6b9cfdb7ef1412f75618826034a00f3d490d87e14a6e78bd76cf4aad03e1",
+  "viewport_mm": [
+    16.44342222222222,
+    -16.556731666666664,
+    27.198977777777777,
+    -8.645620555555553
+  ],
+  "sequence": [
+    "T01",
+    "T03_NO_ROUTE_CHANGE",
+    "T04",
+    "T02",
+    "T05_NEXT"
+  ],
+  "exact_local_saved_source_assembly": "PASS_226_229_232",
+  "source_replacements": 606,
+  "T04_routes": 113,
+  "inclusive_merges": 6,
+  "assets": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "manifest_sha256": "09773778b2d7181f9a38a07200ea90062898d17e11338d9189a34d172e42eedb",
+  "independent_qualification": "REV234_REVISE_STRICT_EXACT_REPLAY_NOT_CLOSED; preserved, not waived",
+  "owner_predecessor_visual_acceptance": "PASSED_AS_RECORDED_FOR_RESULT232",
+  "geometry_export_electrical_manufacturing": "NOT_ESTABLISHED"
+}

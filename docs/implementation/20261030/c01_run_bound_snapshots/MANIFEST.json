@@ -1,0 +1,74 @@
+[
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/qualify_groups.py",
+    "snapshot": "c01_t04_preparation_20261029_243__qualify_groups.py.txt",
+    "sha256": "a0af079e88bee1aeb465c5a9ba091db21fbc4f5cc8e4e0b8792c222f6d7680a5",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/run_width.py",
+    "snapshot": "c01_t04_preparation_20261029_243__run_width.py.txt",
+    "sha256": "69d0a4c7f63052b5ac9cc76b4c384b65eaccfd5c594e15f4e5db713354a766c9",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/build_eligibility.py",
+    "snapshot": "c01_t04_preparation_20261029_243__build_eligibility.py.txt",
+    "sha256": "47cdc4c5bb1f623492fca45f07f4670054475e10219f8b049d725cb106e5f08f",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/c01_profile.py",
+    "snapshot": "c01_t04_preparation_20261029_243__c01_profile.py.txt",
+    "sha256": "c1af0ea404fba91606b672ed23bc4a58d16d7a48caaeca0e16ebb1ce29c2292c",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/build_primary.py",
+    "snapshot": "c01_t04_preparation_20261029_243__build_primary.py.txt",
+    "sha256": "7f14e74416ffead7ac61e4ea89a88c646bcc0e6c8dd805d3ccf150dbf7176e60",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/replay_width.py",
+    "snapshot": "c01_t04_preparation_20261029_243__replay_width.py.txt",
+    "sha256": "53e93eb4e539b0f94d699d94e67f0a97e0236c7326d3b51a2f316b7ffb077e4f",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/build_parallel.py",
+    "snapshot": "c01_t04_preparation_20261029_243__build_parallel.py.txt",
+    "sha256": "1d7e9bcf46dbe90171474029c9ec94d1824c8f0c3101168cc4e7c9ccf36e1cc7",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/build_groups.py",
+    "snapshot": "c01_t04_preparation_20261029_243__build_groups.py.txt",
+    "sha256": "074af48e6a5470fd9acc1be0db3f0fbdb063ffbaa5758e1e78da492e71261915",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_preparation_20261029_243/prepare.py",
+    "snapshot": "c01_t04_preparation_20261029_243__prepare.py.txt",
+    "sha256": "42c15a4aaff0509de3850694df8484b37154471734a9367dcf21bb038985224c",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t03_source_intake_20261029_240/intake.py",
+    "snapshot": "c01_t03_source_intake_20261029_240__intake.py.txt",
+    "sha256": "eefa522fa45fbb6b4f861e2e85113a823c00423f88c4da5890ba32e37ac7b73c",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t03_policy_reconciliation_20261029_242/reconcile.py",
+    "snapshot": "c01_t03_policy_reconciliation_20261029_242__reconcile.py.txt",
+    "sha256": "ece12dec523d8d529a3c291a502539424e74ccefe3f0c95b22e8c06e4af85f41",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  },
+  {
+    "original_path": "out/crop_dynamic_tasks/c01_t04_owner_review_20261029_252/build_review.py",
+    "snapshot": "c01_t04_owner_review_20261029_252__build_review.py.txt",
+    "sha256": "dc0457442db77dba322317ba9b2329d6a5ea7619e9ce9304c62f076d849d65ec",
+    "role": "ARCHIVAL_EXACT_SOURCE_TEXT_REQUIRES_ORIGINAL_RUN_PATH"
+  }
+]

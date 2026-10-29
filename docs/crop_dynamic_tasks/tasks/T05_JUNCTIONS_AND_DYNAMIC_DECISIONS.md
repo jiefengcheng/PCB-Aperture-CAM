@@ -1,5 +1,5 @@
 # T05 — Finish junctions and necks against the current scene
-> **FUTURE PLANNING ONLY — NOT AUTHORIZED by the current T01 handoff. Requires separate owner approval after review of T01 results.**
+> **Authorized and owner accepted for C01/C02:** C01 T05 was applied after T04, with T02 skipped by owner. C02 uses T01 → T03(if needed) → T04 → T02 → T05. Both current displayed results are frozen as final so far. See [accepted results and scope](../../implementation/20261030/ACCEPTED_RESULTS_AND_COMMIT_SCOPE.md). Independent/native/electrical qualification remains separate.
 
 
 **Operation stages:** 5 + 5.5  
@@ -28,4 +28,4 @@ Apply the last local reconciliation opportunity only when still available under 
 ORG / pre-junction / final candidate at the same scale, including the whole crop and a selectable transition detail. Explain the limiting neighbor or reason for an unchanged junction.
 
 ## Complete and continue
-Run the declared final in-memory checks and preserve the accepted scene plus rejected patches. A final geometry candidate is not yet an exported acceptance result. Continue directly to T06.
+Run the declared final in-memory checks and preserve the accepted scene plus rejected patches. A final geometry candidate is not yet an exported acceptance result. The historical proposed continuation was T06. The current C01 instruction places this bounded T05 application before T02; do not run T06 automatically.

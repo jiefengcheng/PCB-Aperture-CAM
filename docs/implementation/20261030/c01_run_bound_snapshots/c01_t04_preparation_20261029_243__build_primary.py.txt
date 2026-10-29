@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Propose disjoint primary cohorts at actual shared native cross-sections.
+
+Hard parent/longitudinal-overlap equality is preserved. Soft local parallel
+relationships do not transitively fuse different spatial bundles.
+"""
+from pathlib import Path
+import sys,json,hashlib,math
+ROOT=Path.cwd();sys.path.insert(0,str(ROOT))
+from shapely import STRtree
+from shapely.geometry import LineString
+from shapely.ops import unary_union
+from src.crop_circle_sources import verify_assets
+from src.parallel_trace_relations import relation_groups
+from src.primary_parallel_cohorts import choose_primary_cohorts, station_spacing_links
+from tools.build_c02_trace_eligibility import native_rows
+from c01_profile import compute
+
+
+def main(pre,definitions,groups_path,out):
+    assert not out.exists();verify_assets();report,ctx=compute(pre);scene=ctx['scene'];raw=ctx['base']['source']
+    d=json.loads((definitions/'UNIFORM_SOURCE_PATHS.json').read_text());g=json.loads(groups_path.read_text())
+    sha=lambda b:hashlib.sha256(b).hexdigest()
+    assert sha((definitions/'UNIFORM_SOURCE_PATHS.json').read_bytes())==g['source_definition_sha256']
+    assert report['cumulative_sha256']==g['proposed_cumulative_scene_sha256']
+    m={r['path_id']:r for r in d['paths'] if r['definition_status'].startswith('VISIBLE')}
+    hard=relation_groups(sorted(m),[(r['member_a'],r['member_b']) for r in g['common_operation_links']])
+    units={'HU-'+sha('\n'.join(row).encode())[:16]:row for row in hard};owner={cid:u for u,row in units.items() for cid in row}
+    metadata={r['id']:r for r in json.loads((pre/'inputs/source_manifest.json').read_text())['objects']}
+    nativeids={r[k] for r in g['accepted_local_cross_section_relationships'] for k in ('source_a','source_b') if r[k] in metadata and metadata[r[k]]['kind']=='segment'}
+    native=native_rows(raw,metadata,nativeids)
+    supports=[];fallback=[];seen=set();width_family_rejections=[]
+    for r in g['accepted_local_cross_section_relationships']:
+        a,b=owner[r['component_a']],owner[r['component_b']]
+        if a==b:continue
+        wa,wb=m[r['component_a']]['uniform_original_width_mm'],m[r['component_b']]['uniform_original_width_mm']
+        if max(wa,wb)>2*min(wa,wb)+1e-12:
+            width_family_rejections.append(dict(relation=r,reason='DIFFERENT_SOURCE_WIDTH_FAMILY_FOR_PRIMARY_COHORT_ONLY'))
+            continue
+        fallback.append((a,b,r))
+        sa,sb=r['source_a'],r['source_b']
+        if sa not in native or sb not in native:continue
+        key=(r['component_a'],r['component_b'],sa,sb)
+        if key in seen:continue
+        seen.add(key)
+        pts=[]
+        for sid in (sa,sb):pts.append([list(map(float,native[sid]['attrs'][n])) for n in ('start','end')])
+        p,q=pts[0];length=math.dist(p,q)
+        if not length:continue
+        u=[(q[i]-p[i])/length for i in (0,1)]
+        if u[0]<0 or (u[0]==0 and u[1]<0):u=[-v for v in u]
+        supports.append(dict(unit_a=a,unit_b=b,points_a=pts[0],points_b=pts[1],direction=u,source_a=sa,source_b=sb))
+    ids=sorted(scene.objects);geoms=[scene.replacements.get(s,scene.objects[s]['geometry']) for s in ids];tree=STRtree(geoms)
+    cores={u:unary_union([scene.objects[s]['geometry'] for cid in row for s in m[cid]['source_ids']]) for u,row in units.items()}
+    source_ids={u:{s for cid in row for s in m[cid]['source_ids']} for u,row in units.items()}
+    dot=lambda p,u:sum(x*y for x,y in zip(p,u))
+    def at(points,u,t):
+        a,b=points;den=dot([b[i]-a[i] for i in (0,1)],u)
+        if abs(den)<1e-12:return None
+        f=(t-dot(a,u))/den
+        return [a[i]+f*(b[i]-a[i]) for i in (0,1)]
+    candidates=[];station_records=[]
+    for seed in supports:
+        u=seed['direction'];v=[-u[1],u[0]]
+        lo=max(min(dot(p,u) for p in seed[k]) for k in ('points_a','points_b'))
+        hi=min(max(dot(p,u) for p in seed[k]) for k in ('points_a','points_b'))
+        if hi<=lo:continue
+        t=(lo+hi)/2;positions={};ports={};port_edges=[];edge_support=[]
+        def port(unit,point):
+            transverse=dot(point,v);existing=positions.setdefault(unit,[])
+            for position,name in existing:
+                if abs(position-transverse)<=1e-7:return name
+            name=unit+':port:'+str(len(existing));existing.append((transverse,name));ports[name]=unit;return name
+        for s in supports:
+            if abs(dot(s['direction'],u))<math.cos(math.radians(1.)):continue
+            low=max(min(dot(p,u) for p in s[k]) for k in ('points_a','points_b'))
+            high=min(max(dot(p,u) for p in s[k]) for k in ('points_a','points_b'))
+            if not low<=t<=high or high-low<=0:continue
+            pa,pb=at(s['points_a'],u,t),at(s['points_b'],u,t)
+            if pa is None or pb is None:continue
+            a,b=s['unit_a'],s['unit_b'];cross=LineString([pa,pb]).difference(cores[a].union(cores[b]))
+            if cross.is_empty:continue
+            excluded=source_ids[a]|source_ids[b]
+            blockers=[ids[int(i)] for i in tree.query(cross,predicate='intersects') if ids[int(i)] not in excluded]
+            if blockers:continue
+            na,nb=port(a,pa),port(b,pb);edge_support.append(dict(port_a=na,port_b=nb,unit_a=a,unit_b=b,source_a=s['source_a'],source_b=s['source_b'],surface_gap_mm=cross.length,shared_projected_length_mm=high-low,cross_section_mm=[pa,pb]))
+        edge_support, spacing_rejections = station_spacing_links(edge_support)
+        port_edges=[(s['port_a'],s['port_b']) for s in edge_support]
+        for component in relation_groups(sorted(ports),sorted(set(tuple(sorted(e)) for e in port_edges))):
+            members=sorted({ports[p] for p in component})
+            if len(members)<2 or len(members)!=len(component):continue # ambiguous repeated port of one route is not a bundle proof
+            evidence=[s for s in edge_support if s['port_a'] in component and s['port_b'] in component]
+            edges=sorted(set(tuple(sorted((s['unit_a'],s['unit_b']))) for s in evidence));score=sum(s['shared_projected_length_mm'] for s in evidence)
+            cid='CS-'+sha(json.dumps([u,t,members,edges],sort_keys=True).encode())[:16]
+            candidates.append(dict(candidate_id=cid,members=members,edges=edges,score=score,priority=0))
+            station_records.append(dict(candidate_id=cid,reference_direction=u,longitudinal_station_mm=t,unit_members=members,support=evidence,source='Verified native straight spans; full current fixed-copper cross-sections rechecked'))
+    # Qualified curved-only relationships remain pair candidates, after common-station bundles.
+    for a,b,r in fallback:
+        if r['source_a'] in native and r['source_b'] in native:continue
+        score=r.get('shared_projected_length_mm',r.get('shared_run_mm',0))
+        if not score:continue
+        cid='CV-'+sha(json.dumps(r,sort_keys=True).encode())[:16]
+        candidates.append(dict(candidate_id=cid,members=sorted([a,b]),edges=[sorted([a,b])],score=score,priority=1));station_records.append(dict(candidate_id=cid,source='Retained curved parallel pair, primary fallback only',relation=r))
+    chosen=choose_primary_cohorts(sorted(units),candidates);groups=[]
+    for c in chosen:
+        members=sorted(cid for u in c['units'] for cid in units[u]);gid='PG-'+sha('\n'.join(members).encode())[:16]
+        groups.append(dict(group_id=gid,members=members,status='SOURCE_MEMBERSHIP_PROPOSAL_COMPLETE_PATHS',hard_units=c['units'],primary_candidate_id=c['primary_candidate_id'],selection_score=c['score'],intended_scale_rule='One uniform factor per complete original trace; hard overlap preserved; disjoint primary parallel cohort, not global soft-link closure'))
+    out.mkdir(parents=True);(out/'PRIMARY_COHORT_CANDIDATES.json').write_text(json.dumps(station_records,indent=2)+'\n');(out/'HARD_TRACE_UNITS.json').write_text(json.dumps(units,indent=2)+'\n')
+    g.update(schema='c02-disjoint-primary-parallel-cohorts/2',groups=groups,prior_global_group_sha256=sha(groups_path.read_bytes()),width_family_membership_rejections=width_family_rejections,primary_selection_parameters=dict(max_alignment_degrees=1.,max_soft_source_width_ratio=2.,max_neighbor_gap_ratio=2.,port_selection_epsilon_mm=1e-7,source_station='Native-pair overlap midpoint',tie_break='Descending common-span score then stable candidate ID',curved_fallback='Pair candidates after straight common-station cohorts'),limitations='Proposed primary cohort selection; width/gap ratios select primary cohorts only, never relax clearance or hard overlap constraints; all full-route finite-copper interactions retained by checker regardless of selected cohort; independent qualification open')
+    (out/'PARALLEL_MEMBERSHIP.json').write_text(json.dumps(g,indent=2,sort_keys=True)+'\n')
+    print(json.dumps(dict(complete_runs=len(m),hard_units=len(units),candidate_cohorts=len(candidates),primary_groups=len(groups),largest_sizes=sorted([len(r['members']) for r in groups],reverse=True)[:12])))
+
+if __name__=='__main__':main(*map(Path,sys.argv[1:]))

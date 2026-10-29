@@ -1,0 +1,25 @@
+{
+  "status": "C02_T05_AFTER_T02_LOCAL_CONSTRUCTION_AND_REPLAY_PASS",
+  "sequence": [
+    "T01",
+    "T03_NO_ROUTE_CHANGE",
+    "T04",
+    "T02",
+    "T05"
+  ],
+  "review": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/crop_dynamic_tasks/c02_t05_owner_review_20261030_265/index.html",
+  "predecessor_freeze": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/crop_dynamic_tasks/c02_latest_pre_T05_freeze_20261030_262/FREEZE_RECEIPT.json",
+  "proposal": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/crop_dynamic_tasks/c02_t05_after_T02_20261030_263",
+  "replay": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/crop_dynamic_tasks/c02_t05_replay_20261030_264",
+  "C01": "FINAL_SO_FAR_FROZEN_OWNER_ACCEPTED261_T02_SKIPPED",
+  "C01_freeze": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261/FREEZE_RECEIPT.json",
+  "C03": "STOPPED",
+  "grown_routes": 56,
+  "land_contact_incidences": 88,
+  "rectangle_contact_incidences": 65,
+  "keep_routes": 57,
+  "fixed_bulk_skips": "16_NONROUTE_SOURCES_MATCH_EXISTING_ROLES_NO_NEW_EXCLUSIONS",
+  "independent_qualification": "INHERITED_REV234_REVISE_REMAINS_OPEN",
+  "owner_T05_acceptance": "PENDING_USER",
+  "next": "Retain C02 T05 candidate for visual review and batched qualification; no automatic final freeze"
+}
