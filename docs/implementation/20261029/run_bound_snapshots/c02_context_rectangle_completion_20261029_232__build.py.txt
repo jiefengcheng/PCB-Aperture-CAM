@@ -1,0 +1,40 @@
+from pathlib import Path
+import json,sys,hashlib,subprocess
+R=Path.cwd();sys.path.insert(0,str(R));B=R/'out/crop_dynamic_tasks';O=Path(__file__).parent
+P=B/'c02_inclusive_rectangle_20pct_20261029_229';ns={'__file__':str(P/'verify.py')}
+exec((P/'verify.py').read_text().split('ordinary=rebuilt;')[0],ns)
+from shapely import from_wkb,to_wkb
+from shapely.geometry import box,GeometryCollection
+from shapely.ops import unary_union
+from shapely.affinity import scale
+from src.crop_stage_growth import GrowthScene,GrowthContract,fit_rectangle,check_proposal
+from tools.run_c02_growth_coverage import render
+current=ns['current'];base=ns['scene'];crop=ns['crop'];contract=GrowthContract()
+objects=[dict(row,geometry=current[sid]) for sid,row in base.objects.items()]
+merges=json.loads((P/'CANDIDATES.json').read_text())
+for row in merges:
+ if row['status']=='MERGED':
+  geom=from_wkb((P/f"{row['candidate']}_inclusive.wkb").read_bytes());objects.append(dict(source_id='inclusive:'+row['candidate'],geometry=geom,trace_width_mm=0.))
+scene=GrowthScene(objects);before=from_wkb((P/'after.wkb').read_bytes());records=[]
+rows=json.loads((B/'c02_cumulative_coverage_replay_20261029_231/OMITTED_RECTANGLES.json').read_text())
+for row in rows:
+ sid=row['source_id'];core=scene.objects[sid]['geometry'];reason=row['reconciliation']
+ if reason!='HISTORICAL_CONTEXT_ONLY_NOT_CONSTRUCTED':
+  records.append(dict(source_id=sid,status=reason,added_area_mm2=0));continue
+ cap=scale(core,1.25,1.25,origin=core.centroid)
+ geom,factors,check=fit_rectangle(core,scene.neighbors(sid,cap),crop,max_factor=1.25,contract=contract)
+ assert check['passed'] and geom.covers(core)
+ scene.accept(sid,geom);records.append(dict(source_id=sid,status='GROWN' if geom.difference(core).area>1e-12 else 'KEEP_CLEARANCE_LIMITED',axis_factors=list(factors),added_area_mm2=geom.difference(core).area,check=check))
+ (O/'parts').mkdir(exist_ok=True);(O/'parts'/f'{hashlib.sha256(sid.encode()).hexdigest()}.wkb').write_bytes(to_wkb(geom))
+for row in records:
+ if 'axis_factors' not in row:continue
+ sid=row['source_id'];core=scene.objects[sid]['geometry'];cap=scale(core,1.25,1.25,origin=core.centroid)
+ check=check_proposal(core,scene.replacements[sid],scene.neighbors(sid,cap),crop=crop,cap=cap,contract=contract);assert check['passed'];row['final_check']=check
+addition=unary_union([geom.difference(scene.objects[sid]['geometry']) for sid,geom in scene.replacements.items()])
+after=before.union(addition);assert before.difference(after).area<1e-12
+(O/'after.wkb').write_bytes(to_wkb(after));(O/'added.wkb').write_bytes(to_wkb(addition));(O/'DECISIONS.json').write_text(json.dumps(records,indent=2)+'\n')
+r=dict(status='LOCAL_CONTEXT_RECTANGLE_COMPLETION_PASS',assets=ns['assets'],predecessor_sha256=hashlib.sha256((P/'after.wkb').read_bytes()).hexdigest(),after_sha256=hashlib.sha256(to_wkb(after)).hexdigest(),grown=sum(x['status']=='GROWN' for x in records),keep=sum(x['status']=='KEEP_CLEARANCE_LIMITED' for x in records),added_area_mm2=addition.area,trace_and_predecessor_copper='PRESERVED_ADDITION_ONLY',boundary_case='UNCHANGED_PARTIAL_VIEWPORT',independent_qualification='OPEN');(O/'RESULT.json').write_text(json.dumps(r,indent=2)+'\n')
+for name,copper,delta in [('before',before,GeometryCollection()),('after',after,GeometryCollection()),('growth',after,addition)]:
+ f=O/f'{name}.svg';render(f,'C02 / context rectangles / '+name,copper,delta,list(crop.bounds),[],{},['Six exposed context rectangles evaluated after T04 and T02 consolidation.','Original copper and all widened trace parts preserved; rectangle axis cap1.25x.','Teal = newly added context-rectangle copper only. Independent qualification open.']);subprocess.run(['sips','-s','format','png',str(f),'--out',str(f.with_suffix('.png'))],capture_output=True,check=True)
+(O/'index.html').write_text('<!doctype html><meta charset="utf-8"><title>C02 context rectangle completion</title><style>body{font:18px system-ui;max-width:1500px;margin:30px auto}img{width:100%}</style><h1>C02: remaining context rectangles</h1><p>Six exposed context rectangles evaluated. One partial crop-boundary rectangle remains unchanged; two fully covered shapes skipped. Local geometric proposal; independent qualification open.</p><h2>Before</h2><img src="before.png"><h2>Clean cumulative after</h2><img src="after.png"><h2>New growth only in teal</h2><img src="growth.png"><a href="DECISIONS.json">Exact decisions and checks</a>')
+print(json.dumps(r))

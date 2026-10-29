@@ -1,0 +1,111 @@
+{
+  "action": "Reconcile exact T01 predecessor union construction with original unchanged source objects; then independently isolate 229 ordinary T02 assembly; rerun 224/229/231/232 in original order. Preserve policy, source and recorded strict expected hashes.",
+  "archive_sha256": "841ef8bad9152c2bc87c5ac05ce52f73b0b7b80772c378332bc578e2eebcffb4",
+  "audit_scope": "Independent source-bound geometric-model audit only; no native, electrical or manufacturing acceptance",
+  "independent_script_results": {
+    "224_reconcile.py": {
+      "first_gate": "T01 predecessor SHA exact equality",
+      "log": "fresh_224.log",
+      "status": "FAIL"
+    },
+    "229_verify.py": {
+      "first_gate": "ORDINARY_T02_SOURCE_ASSEMBLY_MISMATCH",
+      "log": "fresh_229.log",
+      "status": "FAIL"
+    },
+    "231_verify.py": {
+      "log": "fresh_231.log",
+      "non_target_crop_rectangles": 9,
+      "non_target_exposed": 7,
+      "ordinary_rectangles_checked": 74,
+      "status": "PASS"
+    },
+    "232_verify.py": {
+      "first_gate": "ORDINARY_T02_SOURCE_ASSEMBLY_MISMATCH inherited from 229 before final checks",
+      "log": "fresh_232.log",
+      "status": "FAIL"
+    }
+  },
+  "independent_source_reconstruction": {
+    "route_hash_match": 113,
+    "routes_processed": 113,
+    "source_part_exact": 525,
+    "source_parts": 525
+  },
+  "limitations": [
+    "Replayed 45 trace evaluations not reached in 224 due to predecessor mismatch",
+    "Full nominal/envelope scene clearance not independently re-established by strict replay",
+    "Six inclusive merges and final 232 output not byte-replayed",
+    "No electrical intent, native export, DFM or manufacturing assessment"
+  ],
+  "manifest_extras": 0,
+  "manifest_mismatches": 0,
+  "manifest_verified": 19028,
+  "note": "User text contains non-hex x in cumulative SHA; hash above taken from exact sealed after.wkb. No generated candidate or waived strict gate.",
+  "owner_visual_status": "PASSED_USER_UPDATE_FOR_RESULT232_REVIEW233; historical PENDING_USER receipts unchanged",
+  "predecessor_comparison": {
+    "exact_equal": false,
+    "fresh_coordinates": 30177,
+    "fresh_sha256": "5c2fc90308c186dbe09fbb8e4c45d3dbd71fa57e8bec5202c33520bacef946b6",
+    "hausdorff_distance_mm": 1.7763568394002505e-15,
+    "saved_coordinates": 30177,
+    "saved_sha256": "4e2b2c242fd01388a95de4a420590eadc0139bbb3c1717d04d588fd93789ae4b",
+    "symmetric_difference_area_mm2": 1.4004235254417757e-18,
+    "topological_equal": false
+  },
+  "rectangle": {
+    "final_covered_skips": 2,
+    "final_exact_replay": "NOT_ESTABLISHED_STRICT_232_STOPPED",
+    "final_grown": 6,
+    "final_partial_boundary": 1,
+    "inclusive_candidates": 155,
+    "inclusive_merged": 6,
+    "ordinary_positive": 70,
+    "ordinary_records": 74,
+    "ordinary_unchanged": 4
+  },
+  "rejected_M09": {
+    "foreign_circle_source_span": "1653156:1653278",
+    "fresh_reexecution": "NOT_ESTABLISHED",
+    "recorded_missing_fraction": 0.16524323274502745,
+    "reported_gap_um": 17.459166641036745,
+    "required_guard_um": 20.1,
+    "status": "REJECTED"
+  },
+  "revision_inputs": {
+    "REV05": "0b5ab41c6abc3b1bf3d914f4e3d32fbaa4616e38b430cc0d7f10e648aa5b5824",
+    "REV10": "ae3832475c907cfe3ca8c7a8ec30116b955fc80e8e9a850fec2b566bb4acfa4a"
+  },
+  "runtime": {
+    "GEOS": "3.13.1",
+    "platform": "Linux x86_64",
+    "python": "3.13.5",
+    "sexpdata": "REV10 1.0.2 vendor",
+    "shapely": "2.1.2"
+  },
+  "sealed_final_cumulative_sha256": "63fd6b9cfdb7ef1412f75618826034a00f3d490d87e14a6e78bd76cf4aad03e1",
+  "source_scope": {
+    "active_complete_routes": 113,
+    "collective_groups": 54,
+    "crop_trace_seed_primitives": 853,
+    "fixed_source_objects": 17324,
+    "group_member_unique": 113,
+    "group_members_count": 113,
+    "original_board_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+    "selected_primitive_count": 525,
+    "selected_primitive_unique": 525,
+    "source_definition_primitives": 1478,
+    "source_objects": 17849,
+    "source_paths_defined": 187
+  },
+  "status": "REVISE_STRICT_EXACT_REPLAY_NOT_CLOSED",
+  "width": {
+    "ceiling_groups": 38,
+    "fresh_full_scene_clearance": "NOT_ESTABLISHED_STRICT_224_STOPPED",
+    "global_or_coordinatewise_maximum": "NOT_ESTABLISHED",
+    "group_count": 54,
+    "max_scale": 1.5,
+    "min_scale": 1.0181350708007812,
+    "positive_groups": 54
+  }
+}

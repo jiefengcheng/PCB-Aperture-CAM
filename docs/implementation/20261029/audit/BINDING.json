@@ -1,0 +1,10 @@
+{
+  "status": "BOUND_EXTERNAL_REVISE_RECEIPT",
+  "receipt_sha256": "72f1f7f65e7d43ad07aab75a82550f856a89a94623685f46d09312f351ebcf53",
+  "evidence_zip_sha256": "ca37a538840a4e9e0c56e29f45f06e05d71242761bd6facaa6cdf374d8ca21ae",
+  "zip_crc": "PASS_ALL19_MEMBERS",
+  "embedded_receipt_matches_supplied": true,
+  "result_status": "REVISE_STRICT_EXACT_REPLAY_NOT_CLOSED",
+  "geometry_modified": false,
+  "independent_qualification": "OPEN_REVISE"
+}

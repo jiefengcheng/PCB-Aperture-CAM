@@ -1,0 +1,20 @@
+{
+  "scope": "All32 previously untracked src modules,33 associated test modules,60 tools plus existing ABI regression tests",
+  "source_files": 32,
+  "test_files_new": 33,
+  "tool_files": 60,
+  "total_python_files": 125,
+  "syntax": "PASS_ALL_AST_PARSE",
+  "selected_test_result": "306 passed,2 subtests passed",
+  "initial_test_result": "281 passed,25 failed at historical path guards due to LaCie symlink resolution",
+  "resolution": "19 frozen evidence files (176750739 bytes) materialized inside out/ as exact SHA-256-preserving copies; original LaCie data unchanged; no path/geometry gate weakened",
+  "tests_log_sha256": "2052fef537dd59cd22a6365b018a62d44f537216bbfe3850b69ae64dca2b2fe1",
+  "acceptance": "C02 human visual acceptance preserved; independent geometric qualification REVISE",
+  "abi_suite": "PROPOSAL_ONLY_NO_IMPLEMENTATION",
+  "native_electrical_manufacturing": "NOT_ESTABLISHED_BY_THIS_CONSOLIDATION",
+  "staged_diff_check": {
+    "exit_code": 2,
+    "output": "tools/run_c02_four_attachment_diagnostic_v2.py:135: new blank line at EOF.\n",
+    "disposition": "Single inherited blank EOF line retained in exact historical diagnostic source; no source rewrite to alter frozen hashes"
+  }
+}

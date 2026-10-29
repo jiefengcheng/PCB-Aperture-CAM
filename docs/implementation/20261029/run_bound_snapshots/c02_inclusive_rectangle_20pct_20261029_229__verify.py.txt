@@ -1,0 +1,50 @@
+from pathlib import Path
+import json,hashlib,sys
+R=Path.cwd();sys.path.insert(0,str(R))
+from shapely import from_wkb,to_wkb,STRtree
+from shapely.geometry import box
+from shapely.ops import unary_union
+from src.crop_circle_sources import verify_assets
+from src.crop_stage_growth import check_proposal,GrowthContract
+from tools.run_c02_four_attachment_diagnostic_v2 import compute
+B=R/'out/crop_dynamic_tasks';O=Path(__file__).parent;P=B/'c02_focused_growth_coverage_20261028_05';W=B/'c02_upper_bundle_width_20261029_222';T=B/'c02_t02_revised_trace_stage_20261029_226'
+assets=verify_assets();_,g=compute(P);scene=g['scene'];meta={r['id']:r for r in json.loads((P/'inputs/source_manifest.json').read_text())['objects']}
+current={sid:r['geometry'] for sid,r in scene.objects.items()}
+for sid,geom in scene.replacements.items():
+    if meta[sid]['kind']=='gr_circle':current[sid]=geom
+trace_parts=0
+for row in json.loads((W/'CONSTRUCTION.json').read_text()):
+    for sid in row['complete_source_ids']:
+        blob=(W/'nominal_source_parts'/f'{hashlib.sha256(sid.encode()).hexdigest()}.wkb').read_bytes()
+        current[sid]=from_wkb(blob);assert current[sid].covers(scene.objects[sid]['geometry']);trace_parts+=1
+for row in json.loads((T/'DECISIONS.json').read_text()):
+    sid=row['source_id'];blob=(T/'rectangle_parts'/f'{hashlib.sha256(sid.encode()).hexdigest()}.wkb').read_bytes()
+    assert hashlib.sha256(blob).hexdigest()==row['geometry_sha256'];current[sid]=from_wkb(blob)
+    assert current[sid].covers(scene.objects[sid]['geometry']) and all(1<=x<=1.25 for x in row['axis_factors'])
+ids=sorted(current);tree=STRtree([current[sid] for sid in ids]);crop=box(*g['base']['bounds'])
+rebuilt=unary_union([current[ids[int(i)]] for i in tree.query(crop,predicate='intersects')]).intersection(crop)
+assert to_wkb(rebuilt)==(T/'after_T02.wkb').read_bytes(),'ORDINARY_T02_SOURCE_ASSEMBLY_MISMATCH'
+ordinary=rebuilt;accepted=[];claimed=set();checks=[]
+for row in json.loads((O/'CANDIDATES.json').read_text()):
+    if row['status']!='MERGED':continue
+    rect=from_wkb((O/f"{row['candidate']}_inclusive.wkb").read_bytes());assert rect.equals(box(*rect.bounds))
+    assert hashlib.sha256(to_wkb(rect)).hexdigest()==row['inclusive_wkb_sha256']
+    span=rebuilt.intersection(rect);shortage=rect.difference(span).area/rect.area
+    assert shortage<=.20 and abs(shortage-row['missing_area_fraction'])<1e-12
+    assert span.geom_type=='Polygon' and not claimed.intersection(row['rectangle_members'])
+    supports=set(row['rectangle_members'])|set(row['support_trace_source_ids']);support_union=unary_union([current[s] for s in supports])
+    for sid in row['covered_sources_skipped']:assert current[sid].difference(support_union).is_empty
+    omit=supports|set(row['covered_sources_skipped'])
+    neighbors=[dict(source_id=ids[int(i)],original=current[ids[int(i)]],geometry=current[ids[int(i)]],trace_width_mm=scene.objects[ids[int(i)]].get('trace_width_mm',0.)) for i in tree.query(rect.buffer(.021)) if ids[int(i)] not in omit]
+    check=check_proposal(span,rect,sorted(neighbors,key=lambda x:x['source_id']),crop=crop,cap=rect,contract=GrowthContract())
+    assert check['passed']
+    addition=rect.difference(rebuilt)
+    for previous in accepted:
+        outside=previous.difference(span)
+        assert outside.is_empty or addition.is_empty or addition.distance(outside)>=.0201
+    rebuilt=rebuilt.union(rect);accepted.append(rect);claimed.update(row['rectangle_members']);checks.append(dict(candidate=row['candidate'],missing_fraction=shortage,check=check))
+assert to_wkb(rebuilt)==(O/'after.wkb').read_bytes(),'MERGE_ASSEMBLY_BYTE_MISMATCH'
+assert ordinary.difference(rebuilt).area<=1e-12
+assert all(rebuilt.covers(rect) for rect in accepted)
+receipt=dict(status='PASS_SAME_ASSISTANT_SOURCE_BOUND_CONSOLIDATION_REPLAY',asset_integrity=assets,trace_source_parts_preserved=trace_parts,ordinary_T02_source_assembly_byte_replay='PASS',merged_rectangles=len(accepted),threshold_recomputed='PASS_ALL_LE20_PERCENT',connected_spans='PASS_ALL',foreign_copper_clearance_replay='PASS_ALL',covered_source_witnesses='PASS_ALL',final_cumulative_byte_replay='PASS',after_sha256=hashlib.sha256(to_wkb(rebuilt)).hexdigest(),independent_qualification='OPEN',owner_acceptance='PENDING_USER')
+(O/'REPLAY_CHECKS.json').write_text(json.dumps(checks,indent=2)+'\n');(O/'REPLAY_RECEIPT.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt))

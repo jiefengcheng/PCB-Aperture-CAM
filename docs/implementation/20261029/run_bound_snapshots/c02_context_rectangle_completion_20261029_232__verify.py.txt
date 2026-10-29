@@ -1,0 +1,16 @@
+from pathlib import Path
+import json,hashlib
+p=Path(__file__).parent;ns={'__file__':str(p/'build.py')};exec((p/'build.py').read_text().split('for row in rows:')[0],ns)
+from shapely import from_wkb,to_wkb
+from shapely.affinity import scale
+from shapely.ops import unary_union
+from src.crop_stage_growth import check_proposal
+scene=ns['scene'];records=json.loads((p/'DECISIONS.json').read_text());parts={}
+for row in records:
+ if 'axis_factors' not in row:continue
+ sid=row['source_id'];part=from_wkb((p/'parts'/f'{hashlib.sha256(sid.encode()).hexdigest()}.wkb').read_bytes());assert part.covers(scene.objects[sid]['geometry']);assert all(1<=f<=1.25 for f in row['axis_factors']);scene.accept(sid,part);parts[sid]=part
+checks=[]
+for sid,part in parts.items():
+ core=scene.objects[sid]['geometry'];cap=scale(core,1.25,1.25,origin=core.centroid);check=check_proposal(core,part,scene.neighbors(sid,cap),crop=ns['crop'],cap=cap,contract=ns['contract']);assert check['passed'];checks.append(dict(source_id=sid,check=check))
+a=unary_union([part.difference(scene.objects[sid]['geometry']) for sid,part in parts.items()]);after=ns['before'].union(a);assert to_wkb(after)==(p/'after.wkb').read_bytes();assert ns['before'].difference(after).area<1e-12
+r=dict(status='PASS_SAME_ASSISTANT_SAVED_PART_REPLAY',asset_integrity=ns['ns']['assets'],rectangles_replayed=len(parts),full_predecessor_retained=True,cumulative_byte_identity=True,after_sha256=hashlib.sha256(to_wkb(after)).hexdigest(),independent_qualification='OPEN');(p/'REPLAY_CHECKS.json').write_text(json.dumps(checks,indent=2)+'\n');(p/'REPLAY_RECEIPT.json').write_text(json.dumps(r,indent=2)+'\n');print(json.dumps(r))

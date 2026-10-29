@@ -23,3 +23,12 @@ skipped. Global/coordinatewise width maximum is NOT_ESTABLISHED.
 Local generated evidence and images remain under ignored out/ paths; they are
 not uploaded by this documentation push. C03 remains stopped. C01 is next only
 after C02 qualification gates are resolved. No proposed ABI function is implemented.
+
+## Received independent audit update
+
+REV234 returned REVISE_STRICT_EXACT_REPLAY_NOT_CLOSED. Source525parts/113routes
+and74rectangle checks independently pass, but predecessor/ordinary union exact
+identity gates stop full trace, inclusive and final replay. Human acceptance
+remains PASSED; independent qualification remains OPEN_REVISE. See the
+[implementation consolidation](../../implementation/20261029/IMPLEMENTATION_CONSOLIDATION.md)
+and its exact received receipt. No tolerance waiver or geometry change applied.

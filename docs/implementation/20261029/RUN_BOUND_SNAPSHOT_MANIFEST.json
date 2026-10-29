@@ -1,0 +1,50 @@
+[
+  {
+    "original": "out/crop_dynamic_tasks/c02_trace_first_setup_20261029_214/run_trace_first.py",
+    "snapshot": "docs/implementation/20261029/run_bound_snapshots/c02_trace_first_setup_20261029_214__run_trace_first.py.txt",
+    "sha256": "3fcc32b86cea36882ac5ffdb846061ced0e5ceab7e968a6602e4b1152e9e33de",
+    "role": "ARCHIVAL_SOURCE_TEXT_NOT_EXECUTABLE_ADAPTER"
+  },
+  {
+    "original": "out/crop_dynamic_tasks/c02_upper_bundle_allocation_20261029_221/run.py",
+    "snapshot": "docs/implementation/20261029/run_bound_snapshots/c02_upper_bundle_allocation_20261029_221__run.py.txt",
+    "sha256": "6817c4d4cb9779bb4c5f433939e7192e33ad459c20bb895083ed2e3f5d492521",
+    "role": "ARCHIVAL_SOURCE_TEXT_NOT_EXECUTABLE_ADAPTER"
+  },
+  {
+    "original": "out/crop_dynamic_tasks/c02_joint_allocation_replay_tools_20261029_224/reconcile.py",
+    "snapshot": "docs/implementation/20261029/run_bound_snapshots/c02_joint_allocation_replay_tools_20261029_224__reconcile.py.txt",
+    "sha256": "a2945c1ed3ab4ca5e5ca13bd67f8b6e25255535be9c4ec88e8f77206b03b2919",
+    "role": "ARCHIVAL_SOURCE_TEXT_NOT_EXECUTABLE_ADAPTER"
+  },
+  {
+    "original": "out/crop_dynamic_tasks/c02_t02_revised_trace_stage_20261029_226/build.py",
+    "snapshot": "docs/implementation/20261029/run_bound_snapshots/c02_t02_revised_trace_stage_20261029_226__build.py.txt",
+    "sha256": "b84a732906e3ca5854c4eaa19651b1236f3b91642bfc39e7b1d80582818eab46",
+    "role": "ARCHIVAL_SOURCE_TEXT_NOT_EXECUTABLE_ADAPTER"
+  },
+  {
+    "original": "out/crop_dynamic_tasks/c02_inclusive_rectangle_20pct_20261029_229/build.py",
+    "snapshot": "docs/implementation/20261029/run_bound_snapshots/c02_inclusive_rectangle_20pct_20261029_229__build.py.txt",
+    "sha256": "da6453ae2aab0e1fcd173d71f9627f12db9c47e45f713727b363e0838f9b8d9b",
+    "role": "ARCHIVAL_SOURCE_TEXT_NOT_EXECUTABLE_ADAPTER"
+  },
+  {
+    "original": "out/crop_dynamic_tasks/c02_inclusive_rectangle_20pct_20261029_229/verify.py",
+    "snapshot": "docs/implementation/20261029/run_bound_snapshots/c02_inclusive_rectangle_20pct_20261029_229__verify.py.txt",
+    "sha256": "15278788c9fd6a1ca78a41c224db73495fc3649e2f8fbe7535adc52d99096c9e",
+    "role": "ARCHIVAL_SOURCE_TEXT_NOT_EXECUTABLE_ADAPTER"
+  },
+  {
+    "original": "out/crop_dynamic_tasks/c02_context_rectangle_completion_20261029_232/build.py",
+    "snapshot": "docs/implementation/20261029/run_bound_snapshots/c02_context_rectangle_completion_20261029_232__build.py.txt",
+    "sha256": "f5b3db8be875f50b6f95a21c4a5302cf47c33e477a95e853952681d1ddbf5280",
+    "role": "ARCHIVAL_SOURCE_TEXT_NOT_EXECUTABLE_ADAPTER"
+  },
+  {
+    "original": "out/crop_dynamic_tasks/c02_context_rectangle_completion_20261029_232/verify.py",
+    "snapshot": "docs/implementation/20261029/run_bound_snapshots/c02_context_rectangle_completion_20261029_232__verify.py.txt",
+    "sha256": "ffef17f258393fe82edf141d5c5984dc12974afd40821255f2313fb739a524c0",
+    "role": "ARCHIVAL_SOURCE_TEXT_NOT_EXECUTABLE_ADAPTER"
+  }
+]

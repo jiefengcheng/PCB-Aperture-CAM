@@ -1,0 +1,2579 @@
+[
+  {
+    "path": "src/bounded_width_solver.py",
+    "sha256": "70c27ace2cec8999a56b57d0449197b36605bcd84bf2391bc3ed8f0c8edc6c4f",
+    "lines": 73,
+    "module_doc": "Ceiling-first deterministic scalar search on certified nested width families.\n\nEach immediate parallel group (or singleton) has one factor. Groups are optimized\nin stable ID order against every current candidate. Final upper-bracket rejection\nestablishes coordinate-wise model maximality, not a global aggregate objective.",
+    "symbols": [
+      "solve_width_scales"
+    ],
+    "imports": [
+      "import hashlib",
+      "import json",
+      "import math",
+      "from .uniform_trace_width_v2 import FAMILY",
+      "from .source_offset_width import FAMILY as SOURCE_OFFSET_FAMILY"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/collective_width_bounds.py",
+    "sha256": "3d569062e40722e4e5b6db5c9c5d3897832a53bbfcffd864283ca7e2f70532b3",
+    "lines": 38,
+    "module_doc": "Analytical shared-width bounds for already-applicable surface constraints.\n\nNo routes move. A member's radius increases by (factor-1)*original_width/2.\nThis bound is preparation, not a substitute for complete finite-copper checking.",
+    "symbols": [
+      "shared_scale_bound"
+    ],
+    "imports": [
+      "import math"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/crop_attachment_diagnostic.py",
+    "sha256": "8ee0059b2c2cfa17f7b0f4924585d8fb43d16a2cc6d19a3c9ae71cd96ae770ec",
+    "lines": 164,
+    "module_doc": "Source-bound REV09 diagnostics; not an enabled production growth policy.\n\nOriginal finite ports and clearance thresholds are unchanged. Only the four\ndeclared source relationships are eligible in the calling diagnostic packet.",
+    "symbols": [
+      "AttachmentDiagnostic",
+      "_decode",
+      "bind_circle_attachment",
+      "bind_overlapping_feed_attachment",
+      "check_attachment_diagnostic"
+    ],
+    "imports": [
+      "from dataclasses import dataclass",
+      "import hashlib",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.geometry import LineString",
+      "from shapely.ops import nearest_points",
+      "from .crop_stage_growth import check_proposal, original_attachment_port"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "src/crop_attachment_support.py",
+    "sha256": "740d1886eb17aa3f58f26c54719bcb16e3e0daef53dee0ed7a0997eaed8436d2",
+    "lines": 108,
+    "module_doc": "A finite local attachment supported by exact original native trace records.\n\nNo net or physical-component label is consumed. The original port is recomputed\nfrom the original intersection; callers cannot supply an enlarged permission area.",
+    "symbols": [
+      "OriginalTraceAttachment",
+      "bind_original_trace_attachment",
+      "qualify_original_support"
+    ],
+    "imports": [
+      "from dataclasses import dataclass",
+      "import hashlib",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.geometry import LineString",
+      "from shapely.ops import nearest_points"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/crop_growth_coverage.py",
+    "sha256": "5840bd01d40f3e5a3d260ada3572f089affe0e86e85e1b1da58b6141ddd42b6b",
+    "lines": 36,
+    "module_doc": "Source-ID coverage of the existing T02 inventory and trace-work records.\n\nRecord membership selects a candidate, never establishes an actual defect or\nelectrical applicability. Historical records are retained without reclassification.",
+    "symbols": [
+      "focused_rectangle_coverage"
+    ],
+    "imports": [
+      "from collections import defaultdict"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/crop_pinned_circle_binding.py",
+    "sha256": "14801b8279a8d2413999ac67e8a33ba2c9b7ba827fa389e8cc9576d9d0b18767",
+    "lines": 95,
+    "module_doc": "Versioned, source-specific diagnostic binding; never a tolerance waiver.\n\nREV10 strict verification remains unchanged. Only the two independently observed\nalternate representations below are admitted as source-correspondence evidence.\nEvery geometric operation must continue to use the exact REV05 cached WKB.",
+    "symbols": [
+      "sha",
+      "verify_representation",
+      "bind_pinned_circle"
+    ],
+    "imports": [
+      "import hashlib",
+      "import math",
+      "from shapely import from_wkb, get_coordinates, to_wkb",
+      "from .crop_attachment_diagnostic import _decode",
+      "from .native_inventory import steps"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "src/crop_replay_comparison.py",
+    "sha256": "c9443381c553ecacfcbca1b1cfb7ea9ed1672670134c30350fa78f97506122ed",
+    "lines": 62,
+    "module_doc": "Reviewed diagnostic-area receipt comparison; never a clearance predicate.",
+    "symbols": [
+      "_allowed",
+      "_path",
+      "compare_final_scene_checks"
+    ],
+    "imports": [
+      "import math"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "src/crop_stage_growth.py",
+    "sha256": "f416d87ace52e3d21857032bc02e5fcf34442d1bbcf7c7e0033a14ae4fba9529",
+    "lines": 187,
+    "module_doc": "Growth-only stage checks: each stage must discharge its own geometry changes.\n\nHistorical T01/T02 materializers remain unchanged. These helpers implement the\nrevised, pairwise F.Cu geometric contract without inferring electrical nets.",
+    "symbols": [
+      "GrowthContract",
+      "original_attachment_port",
+      "check_proposal",
+      "GrowthScene",
+      "fit_rectangle",
+      "fit_round_circle"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from math import hypot",
+      "from shapely import STRtree",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import Point",
+      "from .crop_attachment_support import qualify_original_support"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/filled_copper_source_role.py",
+    "sha256": "ade584764aca1cbf96a6bd582d42b0f01558b9e301ca3b622c9ed1170bcb6142",
+    "lines": 66,
+    "module_doc": "Proposed source-role evidence for native strokes buried in filled lands.\n\nThis selects fixed source objects; it is never a trace-distance/clearance rule.\nNo coverage percentage, geometry rounding, or net/component exemption is used.",
+    "symbols": [
+      "buried_route_witness",
+      "bulk_boundary_route_witness"
+    ],
+    "imports": [
+      "import hashlib",
+      "import math",
+      "from shapely import to_wkb",
+      "from shapely.geometry import LineString, Point",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/joint_rectangle_growth.py",
+    "sha256": "ba6b5c2b79875d18db0a9b86086ec2a6e5932fb8b2c01ddbf9f71b0e23f9c5a2",
+    "lines": 34,
+    "module_doc": "Bounded axis-aligned rectangle growth with a caller's joint-scene predicate.",
+    "symbols": [
+      "fit_joint_rectangle"
+    ],
+    "imports": [
+      "import math",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import box"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/parallel_curve_relations.py",
+    "sha256": "108c1b843a422de73cee4b3c554defbc9e003a1f7f9046158c8541f61f9620c4",
+    "lines": 46,
+    "module_doc": "Local source-curve neighbor proposals, never a clearance certificate.",
+    "symbols": [
+      "parallel_curve_relation"
+    ],
+    "imports": [
+      "import math",
+      "from shapely.geometry import LineString"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/parallel_trace_relations.py",
+    "sha256": "2a3d8192fda1ce419e2e05ed94f13287a3ff17d2b1eee71e08655e4516d1edf0",
+    "lines": 55,
+    "module_doc": "Bounded geometric proposals for immediate parallel membership, read-only.\n\nDirection/overlap parameters select relationships; they never establish copper\nclearance. The caller checks the actual finite-width strip and full routes.",
+    "symbols": [
+      "parallel_relation",
+      "relation_groups"
+    ],
+    "imports": [
+      "import math"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/prepared_land_scene.py",
+    "sha256": "68a8339e08957146aa37b07077c99ee4ed1ce3a2df9f5d6bbb38ecd6e984f724",
+    "lines": 45,
+    "module_doc": "Finite-surface growth checks for source-bound zero-stroke filled lands.\n\nReuses the qualified growth-only surface predicate without inventing a positive\ntrace width for a filled graphic. Original source copper alone hides internal\nboundaries; newly grown copper never hides another candidate's boundary.",
+    "symbols": [
+      "PreparedLandScene"
+    ],
+    "imports": [
+      "import math",
+      "from shapely import STRtree",
+      "from shapely.ops import unary_union",
+      "from .prepared_width_scene import PreparedWidthScene",
+      "from .trace_width_clearance import TraceWidthContract, sha"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/prepared_width_scene.py",
+    "sha256": "f09f16c0c3104b638c15aadb0b8a59fa85d29f9cdc7bb9bcdff3630619fca6db",
+    "lines": 92,
+    "module_doc": "Reusable fixed-source context for growth-only width checks.\n\nPolicy and positive-proposal pair predicates match trace_width_clearance v1.\nExact unchanged source geometries carry zero growth by identity, avoiding a\nspurious tiny difference created by recomputing a large Boolean source union.\nThe original audited verifier is preserved for independent final comparisons.",
+    "symbols": [
+      "PreparedWidthScene"
+    ],
+    "imports": [
+      "import math",
+      "from shapely import STRtree",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from .trace_width_clearance import TraceWidthContract, sha"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/primary_parallel_cohorts.py",
+    "sha256": "77f93828c6dcc1a1777ce78e49cf22fd3091ea7c511620f076aa3e69476568d2",
+    "lines": 52,
+    "module_doc": "Disjoint primary parallel cohorts; hard trace identities remain indivisible.\n\nParallel proximity is not a global equality graph. A source unit may occur in\nseveral local bundle candidates, but receives one primary cohort. All omitted\nparallel relationships remain clearance interactions in the geometry checker.",
+    "symbols": [
+      "choose_primary_cohorts",
+      "station_spacing_links"
+    ],
+    "imports": [
+      "import math",
+      "from .parallel_trace_relations import relation_groups"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/source_bulk_components.py",
+    "sha256": "2fdfdf3f9a3368c4f589bd2a8af9deac9f225f43fb7c82bd6e652536428d8fd8",
+    "lines": 41,
+    "module_doc": "Source-bound fixed bulk-copper roles from explicitly identified regions.\n\nA physical component label is used only to identify an unchanged bulk object.\nIt provides no electrical assertion and no clearance/contact exemption.",
+    "symbols": [
+      "bind_bulk_regions",
+      "source_bulk_role"
+    ],
+    "imports": [
+      "import hashlib, math",
+      "from shapely import to_wkb",
+      "from shapely.geometry import Point",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/source_junction_paths.py",
+    "sha256": "4f51a0d603a1420ec34a93c5405efb0f8ac1a606c0ea64bb965216ae8bb49cb6",
+    "lines": 120,
+    "module_doc": "Geometric width-target routes through original native junctions.\n\nNo primitive is trimmed. Exact aliases retain all source identities. A unique\nnear-straight continuation may cross a branch node; other branches terminate at\nthat original junction. Ambiguous continuations are never inferred electrically.",
+    "symbols": [
+      "key",
+      "junction_source_paths"
+    ],
+    "imports": [
+      "from collections import defaultdict",
+      "from decimal import Decimal",
+      "import hashlib, math"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/source_offset_width.py",
+    "sha256": "dad234a16f9c13100cff8a6155a9dedf0971ef99da5b5aa9d01a24200f95038c",
+    "lines": 47,
+    "module_doc": "Fixed-source uniform normal offsets with separate checking envelopes.\n\nThis is a versioned alternative to rebuffering a sampled route. The original\nfinite stroke is the nominal geometry authority; every primitive receives the\nsame width-derived radial increase. No route fitting or corner adjustment occurs.",
+    "symbols": [
+      "construct_source_offset_width"
+    ],
+    "imports": [
+      "import hashlib",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.ops import unary_union",
+      "from .uniform_trace_width import construct_uniform_width as source_binding",
+      "from .native_inventory import steps, ERROR_MM"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/t03_c2_cumulative_result.py",
+    "sha256": "d0d61ff3668fd6b174cfcbf185b9668eec837c484b9a6bbc44ccd3e2646d9673",
+    "lines": 145,
+    "module_doc": "Deterministic cumulative T02+T03 SVG rendering for a trusted C2 PASS.",
+    "symbols": [
+      "_sha",
+      "_rings_path",
+      "_geometry_paths",
+      "_svg",
+      "render_verified_cumulative_scene"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import hashlib",
+      "import html",
+      "import json",
+      "from pathlib import Path",
+      "from typing import Any",
+      "from zipfile import ZipFile",
+      "from shapely import wkb",
+      "from shapely.geometry import box"
+    ],
+    "role": "PINNED_HISTORICAL_T03"
+  },
+  {
+    "path": "src/t03_c2_search_executor.py",
+    "sha256": "1a903bb8fc42c8bc4ea7cc1db52c69f09b6147563492746c250edba3cb5d443b",
+    "lines": 710,
+    "module_doc": "Deterministic, bounded orchestration for the C2 T03 candidate search.\n\nThis module defines the search domain, no-search qualification receipt, and\nfail-closed attempt loop. It does not run at import time. The production loop\nrequires an explicit candidate evaluator, which must materialize a saved\ncandidate archive and invoke the trusted C2-package verifier.",
+    "symbols": [
+      "SearchExecutorError",
+      "CandidateSpec",
+      "SearchDomain",
+      "TrustedCandidateEvaluator",
+      "_canonical_json",
+      "_sha",
+      "_source_path_from_report",
+      "build_locked_search_domain",
+      "load_c2_search_domain",
+      "make_source_bound_c2_archive_factory",
+      "create_no_search_qualification_receipt",
+      "_append_record",
+      "_fsync_directory",
+      "_atomic_json",
+      "make_trusted_candidate_evaluator",
+      "execute_ordered_search",
+      "_execute_ordered_search_core"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from decimal import Decimal",
+      "from hashlib import sha256",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import platform",
+      "import uuid",
+      "from typing import Any, Callable",
+      "from zipfile import ZipFile",
+      "from shapely import geos_version_string, to_wkb",
+      "from shapely.geometry import Point",
+      "from shapely.ops import unary_union",
+      "from src.t03_c2_source_verifier import PreflightError, canonical_source_preflight_report_bytes, _downstream_source_suffix, _load_scene, verify_c2_source_obligations, verify_saved_candidate_archive_from_c2_package, write_candidate_geometry_archive",
+      "from src.t03_route_preflight import MAX_CANDIDATES, OFFSETS_MM, PORT_TRANSITION_BUFFER_MM, REGULAR_PORT_STEP_MM, MAX_ADDED_SPANS, MAX_EXTENSION_MM, Primitive, SourcePath, WIDTH_MM, buffer_centerline, candidate_source_copper_by_id, candidate_order_key, construct_candidate_centerline_source_spans, enumerate_candidate_specs, enumerate_cut_ports"
+    ],
+    "role": "PINNED_HISTORICAL_T03"
+  },
+  {
+    "path": "src/t03_c2_search_guard.py",
+    "sha256": "a88c0b3ea064192e6eef2c92358d4fc0ce06a92c1e49038a7eb7827616479f83",
+    "lines": 95,
+    "module_doc": "Independent integrity guard for the frozen one-shot T03 C2 launcher.",
+    "symbols": [
+      "_sha",
+      "verify_executable_integrity",
+      "run_guarded",
+      "_invoke_launcher",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import hashlib",
+      "import importlib.util",
+      "import os",
+      "from pathlib import Path",
+      "import sys",
+      "from typing import Callable"
+    ],
+    "role": "PINNED_HISTORICAL_T03"
+  },
+  {
+    "path": "src/t03_c2_search_run.py",
+    "sha256": "3711eccc7ff567aa47f7c068092b0782755a0a3d71dd9d5c9982ee9a91b957b2",
+    "lines": 348,
+    "module_doc": "Pinned one-shot launcher for the single frozen C2 candidate-search run.\n\nImporting this module performs no search. The CLI has no arbitrary input or\noutput paths: it verifies fixed checkpoint snapshots and one exact domain,\nthen atomically creates one new run directory below the approved out path.",
+    "symbols": [
+      "_sha",
+      "_file_sha",
+      "_write_json_atomic",
+      "_verify_zip",
+      "_verify_manifest",
+      "_package_paths",
+      "_verify_source_report_in_packet12",
+      "verify_preflight_bindings",
+      "launch_one_bounded_search",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import hashlib",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import platform",
+      "import re",
+      "import sys",
+      "from typing import Any",
+      "from zipfile import ZipFile",
+      "import shapely",
+      "from src import t03_c2_search_executor as executor",
+      "from src.t03_c2_cumulative_result import render_verified_cumulative_scene",
+      "from src.t03_c2_source_verifier import canonical_source_preflight_report_bytes, verify_saved_candidate_archive_from_c2_package"
+    ],
+    "role": "PINNED_HISTORICAL_T03"
+  },
+  {
+    "path": "src/t03_c2_source_verifier.py",
+    "sha256": "d6bb4ce3833f10b59eaec179a07dc7afe86c86ddda2118dea417926972a3af72",
+    "lines": 1758,
+    "module_doc": "Source-bound C2 preflight checks for the bounded T03 trace patch.\n\nThis module audits frozen inputs, source topology, inherited T02 findings and\nsaved-candidate serialization. It does not search for a route; it re-derives a\nsaved candidate from its frozen source and grid specification before checking it.",
+    "symbols": [
+      "_sha",
+      "canonical_source_preflight_report_bytes",
+      "_json",
+      "_span",
+      "_source_record",
+      "_object_source_id",
+      "_downstream_source_suffix",
+      "_load_scene",
+      "_contact_census",
+      "verify_c2_source_obligations",
+      "verify_saved_candidate_wkb",
+      "verify_saved_candidate_bundle",
+      "write_candidate_geometry_archive",
+      "_verify_contact_obligations",
+      "_stable_contact_id",
+      "_classify_inherited_v69_findings",
+      "verify_saved_candidate_archive",
+      "verify_saved_candidate_archive_from_c2_package"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from hashlib import sha256",
+      "from decimal import Decimal",
+      "import json",
+      "import math",
+      "from pathlib import Path",
+      "import re",
+      "from typing import Any",
+      "from zipfile import ZIP_STORED, ZipFile",
+      "from shapely import wkb",
+      "from shapely.geometry import LineString, Point, Polygon, box",
+      "from shapely.ops import unary_union",
+      "from shapely.strtree import STRtree",
+      "from src.t03_route_preflight import MAX_ADDED_SPANS, MAX_CANDIDATES, MAX_EXTENSION_MM, OFFSETS_MM, PORT_TRANSITION_BUFFER_MM, REGULAR_PORT_STEP_MM, ROUTE_TESSELLATION_TOLERANCE_MM, WIDTH_MM, SOURCE_GEOMETRY_TOLERANCE_MM, SOURCE_SPAN_UNION_TOLERANCE_MM2, SOURCE_SURFACE_TARGET_MM, PreflightError, Primitive, SourcePath, buffer_centerline, candidate_source_copper_by_id, construct_candidate_centerline, construct_candidate_centerline_source_spans, enumerate_cut_ports, verify_candidate_copper, verify_scene"
+    ],
+    "role": "PINNED_HISTORICAL_T03"
+  },
+  {
+    "path": "src/t03_route_preflight.py",
+    "sha256": "b9609baf6d49b5688d001a7863ef03c41469e53762a5fec45be2036af282b262",
+    "lines": 771,
+    "module_doc": "Bounded, deterministic T03 route candidate primitives for audited preflight.\n\nThe module separates candidate enumeration, path construction, and source-scene\nverification.  The real C2 search is deliberately not run by this module's CLI;\n``verify_scene`` only validates the frozen, hash-bound inputs.",
+    "symbols": [
+      "PreflightError",
+      "digest",
+      "Primitive",
+      "SourcePath",
+      "CutPort",
+      "enumerate_cut_ports",
+      "offset_tuples",
+      "candidate_order_key",
+      "enumerate_candidate_specs",
+      "_smoothstep",
+      "_offset_at",
+      "_bounded_source_span_fraction",
+      "construct_candidate_centerline",
+      "construct_candidate_centerline_source_spans",
+      "buffer_centerline",
+      "candidate_source_copper_by_id",
+      "verify_candidate_copper",
+      "verify_scene",
+      "serialize_candidate"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from decimal import Decimal",
+      "from hashlib import sha256",
+      "from itertools import product",
+      "import json",
+      "import math",
+      "from pathlib import Path",
+      "from typing import Any, Iterable",
+      "from zipfile import ZipFile",
+      "from shapely import to_wkb",
+      "from shapely.geometry import LineString, Point",
+      "from shapely.wkb import loads as load_wkb"
+    ],
+    "role": "PINNED_HISTORICAL_T03"
+  },
+  {
+    "path": "src/trace_chain_contacts.py",
+    "sha256": "c9cd45c4f7c42db609c0cd8f4187d6e561ec0c0d596231aa0a024f0386f09207",
+    "lines": 48,
+    "module_doc": "Geometric qualification of an exact-endpoint source chain, read-only.",
+    "symbols": [
+      "qualify_chain"
+    ],
+    "imports": [
+      "from shapely.geometry import Point",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/trace_endpoint_inventory.py",
+    "sha256": "e6ebd1fd5661e32b23ef0e6b07708f4762c15cd51850a1f593b0a09c91e72870",
+    "lines": 59,
+    "module_doc": "Read-only exact-source endpoint components; never net-intent proof.\n\nThe inventory expands crop seeds through the complete source endpoint graph.\nBranched or mixed-width components are explicit unresolved trace definitions,\nnot silently divided into easier width-growth targets.",
+    "symbols": [
+      "endpoint_components"
+    ],
+    "imports": [
+      "from collections import defaultdict",
+      "from decimal import Decimal",
+      "import math"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/trace_growth_eligibility.py",
+    "sha256": "df718c0162194fe224df0c0c9a125839728bec9bf7d9bbccce04bc88ce8d714e",
+    "lines": 133,
+    "module_doc": "Source-stroke eligibility evidence, separate from clearance acceptance.\n\nOnly fully covered source copper is suppressed. Partial overlap, including\noverlapping fill evidence, never independently excludes a stroke. The caller\nkeeps the established common trace/group scale. No geometry is changed here.",
+    "symbols": [
+      "_valid",
+      "overlapping_parallel_fill_witness",
+      "classify_stroke"
+    ],
+    "imports": [
+      "import hashlib",
+      "import math",
+      "from shapely import to_wkb",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/trace_width_clearance.py",
+    "sha256": "408e9b0f7466d4dd05ecba1fdf4959d593550eb8435cdeb654964b1aa227c809",
+    "lines": 114,
+    "module_doc": "Versioned finite-copper growth verifier for complete fixed-route trace groups.\n\nVisibility is computed against predecessor copper only. New candidates must never\nhide one another's bridges. The input scene must include all source objects; its\nprovenance/completeness is the responsibility of the source-bound caller.",
+    "symbols": [
+      "TraceWidthContract",
+      "sha",
+      "verify_width_scene"
+    ],
+    "imports": [
+      "from dataclasses import dataclass, asdict",
+      "import hashlib",
+      "import math",
+      "from shapely import STRtree, to_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/uniform_source_paths.py",
+    "sha256": "e33214490fb7c663132189338746d2a02f07ad06b358250776ba6e8d6284beb3",
+    "lines": 47,
+    "module_doc": "Explicit constant-width source path proposals, without copper edits.\n\nUnlike the historical endpoint-component filter, width transitions are recorded\nas original source boundaries instead of rejecting all visible copper in the\nmixed-width component. Branches remain complete networks, never silently split\ninto independently accepted paths. These are geometric source definitions only.",
+    "symbols": [
+      "point",
+      "uniform_source_paths"
+    ],
+    "imports": [
+      "import hashlib",
+      "from collections import defaultdict",
+      "from decimal import Decimal",
+      "from .trace_endpoint_inventory import endpoint_components"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/uniform_trace_nominal.py",
+    "sha256": "92cb511e585a90fd7015ac2d20059133290e7656cd630d881b8a74beb095f3b3",
+    "lines": 41,
+    "module_doc": "Nominal copper separate from its conservative width-verification envelope.\n\nEach original finite source stroke receives the same radial increase implied by\nits verified width and common factor. Dilation preserves the exact source core;\nthe separately constructed conservative envelope must contain all nominal copper.",
+    "symbols": [
+      "construct_nominal_width"
+    ],
+    "imports": [
+      "import hashlib",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.ops import unary_union",
+      "from .native_inventory import steps",
+      "from .uniform_trace_width_v2 import construct_uniform_width, FAMILY as VERIFICATION_FAMILY"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/uniform_trace_width.py",
+    "sha256": "8ed6e87e91e4fc4a2fcbda42c05514326e7a02c92f49cd0867ab6fcbe5dafc38",
+    "lines": 75,
+    "module_doc": "Construct nominal uniform width on unchanged, source-bound native routes.\n\nConstruction is not clearance verification or stage acceptance. Original cached\ncopper must be contained exactly; failure is rejected rather than patched by a\nneck-down or by changing a route. Curves retain the inventory's stated kernel.",
+    "symbols": [
+      "construct_uniform_width",
+      "construct_group_width"
+    ],
+    "imports": [
+      "import hashlib",
+      "import math",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.geometry import LineString",
+      "from shapely.ops import unary_union",
+      "from .crop_attachment_diagnostic import _decode",
+      "from .native_inventory import arc_points, steps, ERROR_MM"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "src/uniform_trace_width_v2.py",
+    "sha256": "dad38396ff312fd89423ee00515e4c2d56f7170f2bf764d3197bd79e40e46be3",
+    "lines": 61,
+    "module_doc": "Nested conservative verification envelopes for fixed-route width search.\n\nOne cap-selected tessellation is held fixed across factors. Positive proposals use\na one-ERROR_MM outward validation margin, bounded by the inventory's existing\ntwo-ERROR_MM geometry envelope. These are verification envelopes, not native\nexports or a change to nominal widths. Scale 1 retains exact source geometry.",
+    "symbols": [
+      "construct_uniform_width",
+      "construct_group_width"
+    ],
+    "imports": [
+      "import hashlib",
+      "import math",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.geometry import LineString",
+      "from shapely.ops import unary_union",
+      "from .native_inventory import steps, ERROR_MM",
+      "from .uniform_trace_width import construct_uniform_width as original_preflight"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tests/test_bounded_width_solver.py",
+    "sha256": "16c948152e3bf0608e5c04f99cd732c0d3ede6b019d715e3a75b0f3109df367a",
+    "lines": 72,
+    "module_doc": null,
+    "symbols": [
+      "source_evaluator",
+      "BoundedWidthSolverTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import box",
+      "from src.bounded_width_solver import solve_width_scales",
+      "from src.uniform_trace_width_v2 import construct_uniform_width, FAMILY",
+      "from src.trace_width_clearance import verify_width_scene",
+      "from tests.test_uniform_trace_width import fixture",
+      "from src.source_offset_width import construct_source_offset_width, FAMILY as OFFSET_FAMILY"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_c02_native_mismatch_capture.py",
+    "sha256": "245ae4dd0a3542d50d3fa33f9807f58dad7aa050a9c142eab8fb30989fb1e729",
+    "lines": 38,
+    "module_doc": null,
+    "symbols": [
+      "NativeMismatchCaptureTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely import to_wkb, reverse",
+      "from shapely.affinity import translate",
+      "from shapely.geometry import box, Polygon",
+      "from tools.capture_c02_native_binding_mismatch import compare"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_c02_trace_eligibility_builder.py",
+    "sha256": "a43491cfb8ce26c2da0b370b963760e4f8a16cc117852d299b17029891f30ca3",
+    "lines": 72,
+    "module_doc": null,
+    "symbols": [
+      "EligibilityBuilderControls",
+      "CompleteParentSelectionControls"
+    ],
+    "imports": [
+      "import hashlib",
+      "import unittest",
+      "from tools.build_c02_trace_eligibility import native_rows, edge_runs, native_edge_points, select_complete_parent_runs"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_c02_versioned_binding_integration.py",
+    "sha256": "7381a3c7f53bb374a5663150cb59478d31ad9db5d469cca0a1df8f2855f90f78",
+    "lines": 55,
+    "module_doc": null,
+    "symbols": [
+      "VersionedBindingIntegrationTests"
+    ],
+    "imports": [
+      "from dataclasses import replace",
+      "from pathlib import Path",
+      "from types import SimpleNamespace",
+      "import unittest",
+      "from unittest.mock import patch",
+      "from shapely import from_wkb, get_coordinates, to_wkb",
+      "from shapely.geometry import Polygon",
+      "from src.crop_attachment_diagnostic import bind_circle_attachment, _decode",
+      "from src.crop_pinned_circle_binding import PINS, SOURCE",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import bind_to_authoritative_scene"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_collective_width_bounds.py",
+    "sha256": "08aa16990d6e877471f1c282551fbde8b25c8def44ea412e762985c1757849aa",
+    "lines": 43,
+    "module_doc": null,
+    "symbols": [
+      "constraint",
+      "CollectiveWidthBoundTests"
+    ],
+    "imports": [
+      "import math",
+      "import unittest",
+      "from src.collective_width_bounds import shared_scale_bound"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_crop_attachment_diagnostic.py",
+    "sha256": "adfffd038303f759a0e1c3a3e0ee4616b1b88c9f416fa5be3a308836c7469567",
+    "lines": 114,
+    "module_doc": null,
+    "symbols": [
+      "source",
+      "AttachmentDiagnosticTests"
+    ],
+    "imports": [
+      "import hashlib",
+      "import unittest",
+      "from dataclasses import replace",
+      "from shapely import from_wkb",
+      "from shapely.affinity import scale, translate",
+      "from shapely.geometry import box",
+      "from src.crop_attachment_diagnostic import bind_circle_attachment, bind_overlapping_feed_attachment, check_attachment_diagnostic",
+      "from src.crop_stage_growth import GrowthContract"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_crop_attachment_support.py",
+    "sha256": "2203e961647e073a130a7f903f531cc3a6c49d5846a3465591a41308a06c9b5e",
+    "lines": 89,
+    "module_doc": null,
+    "symbols": [
+      "OriginalAttachmentSupportTests"
+    ],
+    "imports": [
+      "import hashlib",
+      "import unittest",
+      "from dataclasses import replace",
+      "from shapely import from_wkb",
+      "from shapely.affinity import scale, translate",
+      "from shapely.geometry import box",
+      "from src.crop_attachment_support import bind_original_trace_attachment",
+      "from src.crop_stage_growth import GrowthContract, check_proposal"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_crop_growth_coverage.py",
+    "sha256": "662ed92dd9c9f0a560dcb3300c94ed3b3f551d61a98d1b1308496f48bf6c612f",
+    "lines": 30,
+    "module_doc": null,
+    "symbols": [
+      "CoverageTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from src.crop_growth_coverage import focused_rectangle_coverage"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_crop_pinned_circle_binding.py",
+    "sha256": "52ad956f3808eef2915b3ab5730ff08776eb7f967d6c9b6348428816f26b41f7",
+    "lines": 80,
+    "module_doc": null,
+    "symbols": [
+      "PinnedCircleBindingTests"
+    ],
+    "imports": [
+      "import copy",
+      "from pathlib import Path",
+      "import unittest",
+      "from shapely import from_wkb, get_coordinates, to_wkb",
+      "from shapely.geometry import Polygon",
+      "from src.crop_pinned_circle_binding import PINS, bind_pinned_circle, verify_representation",
+      "from src.crop_attachment_diagnostic import _decode"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_crop_replay_comparison.py",
+    "sha256": "705ca2a1de8a0168adfcb104ee4cb2586ad190c5afb26c8b83ebf23dc144b7ea",
+    "lines": 77,
+    "module_doc": null,
+    "symbols": [
+      "DiagnosticAreaComparisonTests"
+    ],
+    "imports": [
+      "import copy",
+      "import math",
+      "import unittest",
+      "from src.crop_replay_comparison import compare_final_scene_checks, AREA_EPSILON_MM2"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_crop_stage_growth.py",
+    "sha256": "bff18d3d88191d15e68cd0221aa09960df99a3c4e619fa5745665791e50b6162",
+    "lines": 50,
+    "module_doc": null,
+    "symbols": [
+      "ValidStageGrowthTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import box, LineString, Point",
+      "from src.crop_stage_growth import GrowthContract, check_proposal, fit_rectangle"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_filled_copper_source_role.py",
+    "sha256": "a5aa07b0bce74e46aad6394a403fbfdc25ee49ddfe3ded158e3267aeaaa7759f",
+    "lines": 41,
+    "module_doc": null,
+    "symbols": [
+      "FilledCopperSourceRoleControls",
+      "BulkBoundarySourceRoleControls"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import box, Point",
+      "from src.filled_copper_source_role import buried_route_witness"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_joint_rectangle_growth.py",
+    "sha256": "af00302d44ea7d6acea4d1ec0c341cbd1a07ebcc2e8cc9776bbce0d64930afc5",
+    "lines": 29,
+    "module_doc": null,
+    "symbols": [
+      "JointRectangleGrowthControls"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import box, Point",
+      "from src.joint_rectangle_growth import fit_joint_rectangle"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_parallel_curve_relations.py",
+    "sha256": "fb9b67eddd11e6a8da66c8152275ca1a5a76c7b5f7efa648156eb34366f94543",
+    "lines": 38,
+    "module_doc": null,
+    "symbols": [
+      "arc",
+      "ParallelCurveRelationTests"
+    ],
+    "imports": [
+      "import math, unittest",
+      "from src.parallel_curve_relations import parallel_curve_relation"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_parallel_trace_relations.py",
+    "sha256": "18ec353aff890fa325c3c12eb9e76cf5c175da035440caf7b15154bc387627d3",
+    "lines": 28,
+    "module_doc": null,
+    "symbols": [
+      "ParallelRelationTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from src.parallel_trace_relations import parallel_relation, relation_groups"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_prepared_land_scene.py",
+    "sha256": "ccaa17bf83f2b746f6cb3fc561d187904b6113db4a4b1d70055c0299d09e21ee",
+    "lines": 32,
+    "module_doc": null,
+    "symbols": [
+      "PreparedLandControls"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import box, Point",
+      "from src.prepared_land_scene import PreparedLandScene"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_prepared_width_scene.py",
+    "sha256": "b084b7e29dd721edd1c25df25af7b87c50ec4a3a3dc3013435a3123e8c0c617b",
+    "lines": 75,
+    "module_doc": null,
+    "symbols": [
+      "trace",
+      "PreparedWidthSceneTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import LineString, box",
+      "from src.trace_width_clearance import verify_width_scene",
+      "from src.prepared_width_scene import PreparedWidthScene"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_primary_parallel_cohorts.py",
+    "sha256": "d8d9069858ebccbf2a0e4b026788991f6c0984d3fd4a60e4b245e9cd6667033c",
+    "lines": 32,
+    "module_doc": null,
+    "symbols": [
+      "PrimaryCohortControls",
+      "StationSpacingControls"
+    ],
+    "imports": [
+      "import unittest",
+      "from src.primary_parallel_cohorts import choose_primary_cohorts"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_source_bulk_components.py",
+    "sha256": "c86cc696819bc4bd7ff1f27b0b02efcf78411afe8692ec52d8a0932c4844e23f",
+    "lines": 23,
+    "module_doc": null,
+    "symbols": [
+      "SourceBulkComponentControls"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import box",
+      "from src.source_bulk_components import bind_bulk_regions, source_bulk_role"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_source_junction_paths.py",
+    "sha256": "c239b10144d4a22e1f4c02941ab40558c238f1082a3a98f94832058aa0aea46a",
+    "lines": 54,
+    "module_doc": null,
+    "symbols": [
+      "row",
+      "SourceJunctionPathTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from src.source_junction_paths import junction_source_paths"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_source_offset_width.py",
+    "sha256": "0e46dd67c9caf6a7d46fd391c46e41250839405b025dcadccabbb2eefb412841",
+    "lines": 32,
+    "module_doc": null,
+    "symbols": [
+      "SourceOffsetTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely import to_wkb",
+      "from src.source_offset_width import construct_source_offset_width",
+      "from tests.test_uniform_trace_width import fixture"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_t03_c2_search_executor.py",
+    "sha256": "9fc5316ed4f4fbaac4e6da81a8fa4a16f2e950e39db4c05c38df774cb3778200",
+    "lines": 473,
+    "module_doc": null,
+    "symbols": [
+      "source_report",
+      "domain",
+      "test_real_source_bound_domain_is_four_ports_and_1372_stable_candidates",
+      "test_no_search_qualification_binds_real_sources_and_creates_no_candidates",
+      "test_executor_stops_on_first_trusted_pass_and_records_each_attempt",
+      "test_executor_records_bounded_no_pass_when_all_candidates_reject",
+      "test_executor_aborts_on_unknown_or_incomplete_verifier_outcome",
+      "test_executor_aborts_and_logs_unexpected_exception",
+      "test_executor_refuses_to_overwrite_attempt_history",
+      "test_public_executor_refuses_untrusted_evaluator",
+      "test_public_executor_binds_completed_receipt_to_package_code_archive_and_ledger",
+      "test_changed_source_binding_fails_before_domain_enumeration",
+      "test_changed_or_reordered_port_report_fails_closed",
+      "test_executor_rejects_caller_reordered_or_duplicated_domain",
+      "test_executor_keeps_running_state_unfinished_on_rejection_then_exception",
+      "test_trusted_evaluator_uses_source_package_boundary_and_pinned_candidate",
+      "test_source_bound_archive_factory_round_trips_through_real_saved_archive_verifier"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "from dataclasses import replace",
+      "from hashlib import sha256",
+      "from pathlib import Path",
+      "from zipfile import ZIP_STORED, ZipFile, ZipInfo",
+      "import pytest",
+      "from shapely import to_wkb",
+      "from shapely.geometry import LineString, Point, box",
+      "from src.t03_c2_search_executor import PASS_STATUS, REJECT_STATUS, CandidateSpec, SearchDomain, SearchExecutorError, build_locked_search_domain, create_no_search_qualification_receipt, execute_ordered_search, _execute_ordered_search_core, make_trusted_candidate_evaluator, make_source_bound_c2_archive_factory",
+      "import src.t03_c2_search_executor as executor_module",
+      "from src.t03_c2_source_verifier import verify_c2_source_obligations",
+      "import src.t03_c2_source_verifier as source_verifier_module",
+      "from src.t03_route_preflight import PreflightError, SOURCE_GEOMETRY_TOLERANCE_MM, SOURCE_SURFACE_TARGET_MM, WIDTH_MM"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_t03_c2_search_run.py",
+    "sha256": "ec8eb68e2f96433125a12fce35aeb24fcacb173ca8ea5f34d2c0a5d581ad6741",
+    "lines": 345,
+    "module_doc": null,
+    "symbols": [
+      "test_source_bound_preflight_pins_the_exact_domain_without_search",
+      "test_checkpoint_hash_mismatch_aborts_before_domain_or_run_directory",
+      "test_independent_guard_rejects_mutated_executable_before_launch",
+      "test_direct_launcher_cli_requires_guard_and_creates_no_run_directory",
+      "test_missing_witness_aborts_before_directory_creation",
+      "test_exact_launcher_production_factory_rejects_unbound_cut_port_before_archive",
+      "test_exact_launcher_production_evaluator_exception_fails_closed",
+      "_NoSearchAPI",
+      "test_exact_launcher_fails_closed_without_materializing_candidates",
+      "test_fresh_run_directory_is_exclusive",
+      "test_executor_abort_is_not_misreported_as_bounded_no_pass",
+      "test_post_pass_renderer_failure_records_incomplete_delivery_and_never_writes_result",
+      "test_verified_archive_renders_cumulative_scene_and_binds_every_output",
+      "test_renderer_rejects_archive_partition_mismatch"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import hashlib",
+      "import shutil",
+      "import uuid",
+      "from dataclasses import replace",
+      "from pathlib import Path",
+      "import pytest",
+      "from shapely.geometry import box, LineString",
+      "from shapely import wkb",
+      "from src import t03_c2_search_run as launcher",
+      "from src.t03_c2_cumulative_result import render_verified_cumulative_scene",
+      "from src import t03_c2_search_guard as integrity_guard",
+      "from src.t03_c2_source_verifier import write_candidate_geometry_archive"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_t03_c2_source_verifier.py",
+    "sha256": "264b8492a2d4550c05a53044265b809f09db83140ed484d98bb0b4b1b9bb3029",
+    "lines": 942,
+    "module_doc": null,
+    "symbols": [
+      "test_source_preflight_report_identity_has_one_canonical_newline_encoding",
+      "test_source_bound_c2_obligations_recheck_complete_scene_contacts_and_inherited_findings",
+      "test_saved_candidate_wkb_binds_hash_and_fixed_ports_only",
+      "_candidate_bundle",
+      "_materialized_source_result",
+      "_bind_source_geometry",
+      "test_saved_candidate_bundle_checks_full_partition_corridor_buffer_and_clearance",
+      "test_saved_candidate_bundle_accepts_rederived_nonzero_grid_candidate",
+      "test_saved_candidate_bundle_rejects_arbitrary_path_inside_source_corridor",
+      "test_saved_candidate_bundle_rejects_native_primitive_path_mutation",
+      "test_saved_candidate_bundle_rejects_cutport_tangent_not_derived_from_native_path",
+      "test_saved_candidate_bundle_rejects_native_chain_not_matching_writable_partition",
+      "test_saved_candidate_bundle_accepts_candidate_at_declared_extension_limit",
+      "test_saved_candidate_archive_round_trips_and_rechecks_external_source_bindings",
+      "test_trusted_archive_entrypoint_rechecks_authoritative_package_before_candidate",
+      "test_saved_candidate_archive_rejects_changed_saved_bytes",
+      "test_saved_candidate_archive_rejects_preflight_report_substitution",
+      "test_saved_candidate_archive_binds_cut_port_and_offsets",
+      "test_saved_candidate_bundle_rejects_candidate_below_clearance_floor",
+      "test_saved_candidate_bundle_rejects_changed_protected_source",
+      "test_saved_candidate_bundle_rejects_incomplete_source_partition",
+      "test_saved_candidate_bundle_rejects_source_geometry_hash_mutation",
+      "test_saved_candidate_bundle_rejects_candidate_copper_hash_mutation",
+      "test_saved_candidate_bundle_rejects_self_intersecting_route_centerline",
+      "test_saved_candidate_bundle_rejects_source_hashes_not_matching_preflight_partition",
+      "test_saved_candidate_bundle_rejects_unbound_clearance_policy",
+      "test_saved_candidate_bundle_rejects_endpoints_not_matching_preflight",
+      "test_saved_candidate_bundle_rejects_cut_port_outside_preflight_domain",
+      "test_saved_candidate_bundle_rejects_omitted_preflight_contact_obligations",
+      "test_saved_candidate_bundle_rejects_candidate_outside_source_corridor",
+      "test_saved_candidate_bundle_preserves_declared_contact_only_with_hash_bound_exception",
+      "test_mutable_declared_contact_may_change_area_but_must_remain_connected",
+      "test_mutable_declared_contact_rejects_disconnect",
+      "test_legacy_contact_without_id_reports_stable_identity_and_source_pair",
+      "test_protected_contact_stays_exact",
+      "test_inherited_clearance_comparison_preserves_open_rows_and_flags_new_collision",
+      "test_inherited_attachment_contact_is_classified_only_from_bound_source_pair",
+      "test_multi_span_clearance_is_measured_once_per_protected_target_group",
+      "test_multi_span_overlap_is_unioned_once_and_worsening_is_fail_closed",
+      "test_inherited_attachment_contact_outside_bound_region_is_rejected",
+      "test_saved_candidate_bundle_rejects_unbound_attachment_exception",
+      "test_saved_candidate_bundle_binds_and_checks_fixed_cut_suffix",
+      "test_saved_candidate_bundle_rejects_cut_suffix_clearance_without_local_exception",
+      "test_saved_candidate_bundle_rejects_mutated_cut_suffix",
+      "test_saved_candidate_bundle_rejects_clearance_exception_without_physical_suffix_join"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from hashlib import sha256",
+      "import json",
+      "import inspect",
+      "from pathlib import Path",
+      "import re",
+      "import pytest",
+      "from shapely import to_wkb",
+      "from shapely.geometry import LineString, Point, box",
+      "from shapely.ops import unary_union",
+      "from src.t03_c2_source_verifier import _classify_inherited_v69_findings, _downstream_source_suffix, _verify_contact_obligations, canonical_source_preflight_report_bytes, verify_c2_source_obligations, verify_saved_candidate_archive, verify_saved_candidate_archive_from_c2_package, verify_saved_candidate_bundle, verify_saved_candidate_wkb, write_candidate_geometry_archive",
+      "from src.t03_route_preflight import PreflightError, Primitive, SourcePath, SOURCE_GEOMETRY_TOLERANCE_MM, SOURCE_SURFACE_TARGET_MM, WIDTH_MM, buffer_centerline, candidate_source_copper_by_id, construct_candidate_centerline, construct_candidate_centerline_source_spans"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_t03_route_preflight.py",
+    "sha256": "62fcd0d6f5f7958d50ede4c3afba74a6278953aa2306872f1ba8105d0fcc1c82",
+    "lines": 445,
+    "module_doc": null,
+    "symbols": [
+      "_digest",
+      "_path",
+      "test_source_path_rejects_gap_and_width_change",
+      "test_bounded_source_span_fraction_handles_endpoint_rounding_by_one_ulp",
+      "test_source_span_fraction_stays_fail_closed_for_out_of_range_stations",
+      "test_port_grid_is_sorted_deduplicated_and_fail_closed_at_transitions",
+      "test_candidate_specs_have_frozen_total_order_and_budget",
+      "test_centerline_is_deterministic_and_endpoints_stay_fixed",
+      "test_source_span_attribution_reconstructs_exact_generated_route",
+      "test_four_distinct_selected_ports_have_exact_source_span_partitions",
+      "test_generated_source_attribution_preserves_join_overlap_without_partitioning",
+      "test_source_span_seam_residual_outside_declared_join_neighborhood_is_rejected",
+      "test_source_span_join_residual_above_derived_per_join_bound_is_rejected",
+      "test_surface_buffer_keeps_exact_width_and_bounded_quad_segs",
+      "test_candidate_clearance_checks_surfaces_and_marks_unclassified_blocking",
+      "test_candidate_clearance_rejects_surface_overlap_and_unbounded_attachment_exception",
+      "test_candidate_rejects_width_change_and_mismatched_buffer",
+      "test_numeric_tolerance_never_waives_hard_floor_or_target",
+      "test_threshold_boundaries_are_conservative_and_explicit",
+      "_write_scene_fixture",
+      "test_complete_scene_loader_accepts_hash_bound_fixture_and_reports_no_search",
+      "test_complete_scene_loader_rejects_mutated_inventory_before_load"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import math",
+      "from hashlib import sha256",
+      "from pathlib import Path",
+      "from tempfile import TemporaryDirectory",
+      "from zipfile import ZipFile",
+      "import pytest",
+      "from shapely.geometry import LineString, Point, box",
+      "from shapely import to_wkb",
+      "from shapely.ops import unary_union",
+      "from src.t03_route_preflight import BUFFER_TESSELLATION_TOLERANCE_MM, PreflightError, Primitive, SourcePath, SOURCE_GEOMETRY_TOLERANCE_MM, SOURCE_SPAN_JOIN_RESIDUAL_MAX_MM2, SOURCE_SPAN_UNION_TOLERANCE_MM2, WIDTH_MM, buffer_centerline, candidate_source_copper_by_id, construct_candidate_centerline, construct_candidate_centerline_source_spans, enumerate_candidate_specs, enumerate_cut_ports, serialize_candidate, verify_scene, verify_candidate_copper, _bounded_source_span_fraction"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_trace_chain_contacts.py",
+    "sha256": "6955e21fe5fe5199c8f8e9ef2a13c92eddba14b4479d2fe0e2fe22494e7d98a0",
+    "lines": 41,
+    "module_doc": null,
+    "symbols": [
+      "TraceChainContactTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import box",
+      "from src.trace_chain_contacts import qualify_chain"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_trace_endpoint_inventory.py",
+    "sha256": "26187a33fdf3ea56a9be3b1d4dc35bd0125face6a1637b3341388eac91314b41",
+    "lines": 35,
+    "module_doc": null,
+    "symbols": [
+      "row",
+      "EndpointInventoryTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from src.trace_endpoint_inventory import endpoint_components"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_trace_growth_eligibility.py",
+    "sha256": "1fdd68a384018c3dd2aee672859c05d208e45305abed791ed3bdfae3ffb9dcd4",
+    "lines": 103,
+    "module_doc": null,
+    "symbols": [
+      "SourceStrokeEligibilityTests",
+      "ParallelFillWitnessTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import box, LineString",
+      "from src.trace_growth_eligibility import classify_stroke, overlapping_parallel_fill_witness"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_trace_width_clearance.py",
+    "sha256": "deccdd610f423d7e60664db4fe8c03eeae55bd60c21965fb030da42a76a879fe",
+    "lines": 60,
+    "module_doc": null,
+    "symbols": [
+      "trace",
+      "TraceWidthClearanceTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely.geometry import LineString, box",
+      "from src.trace_width_clearance import verify_width_scene"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_uniform_source_paths.py",
+    "sha256": "6e594fcf7e27c9184dd243b0323d0471e1ad1406527692e5b5d1a1de481555b7",
+    "lines": 41,
+    "module_doc": null,
+    "symbols": [
+      "row",
+      "UniformSourcePathTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from src.uniform_source_paths import uniform_source_paths"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_uniform_trace_nominal.py",
+    "sha256": "0f1778f49fe584f59bd4fe785569572544898144624615c30b1725f48c0e1319",
+    "lines": 35,
+    "module_doc": null,
+    "symbols": [
+      "NominalWidthTests"
+    ],
+    "imports": [
+      "import unittest",
+      "from shapely import to_wkb",
+      "from src.uniform_trace_nominal import construct_nominal_width",
+      "from tests.test_uniform_trace_width import fixture"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_uniform_trace_width.py",
+    "sha256": "2a4d677328ebe840a54a2532551d799ef15202c33f04bd405d2faaab9fdc4cd4",
+    "lines": 78,
+    "module_doc": null,
+    "symbols": [
+      "fixture",
+      "UniformTraceWidthTests"
+    ],
+    "imports": [
+      "import hashlib",
+      "import unittest",
+      "from shapely import to_wkb",
+      "from src.crop_attachment_diagnostic import _decode",
+      "from src.uniform_trace_width import construct_uniform_width, construct_group_width"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tests/test_uniform_trace_width_v2.py",
+    "sha256": "4852c4859eaa2a4b9d2bfc32290770d3fa7584a0eeedba3b9336e08e23206257",
+    "lines": 43,
+    "module_doc": null,
+    "symbols": [
+      "NestedWidthFamilyTests"
+    ],
+    "imports": [
+      "import hashlib",
+      "import unittest",
+      "from shapely import to_wkb",
+      "from shapely.geometry import box",
+      "from src.uniform_trace_width_v2 import construct_uniform_width, construct_group_width, FAMILY",
+      "from tests.test_uniform_trace_width import fixture"
+    ],
+    "role": "TEST"
+  },
+  {
+    "path": "tools/build_c02_collective_width_bounds.py",
+    "sha256": "9651cdb5a15a2621a968a56bb492c0ed99acf7ab767ad40861f3a42f86312ee3",
+    "lines": 93,
+    "module_doc": "Read-only source-surface bounds; not a T04 construction or clearance pass.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json, subprocess, html",
+      "from collections import Counter",
+      "from shapely import STRtree",
+      "from shapely.geometry import LineString",
+      "from shapely.ops import unary_union, nearest_points",
+      "from src.collective_width_bounds import shared_scale_bound",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_cumulative_ladder_review.py",
+    "sha256": "c01a4c3187e4ce3eec0735f1aca4e31ee51c53eec4a7ea030e1a6f5903d1c7ca",
+    "lines": 53,
+    "module_doc": "Same-frame presentation of exact saved cumulative copper stages.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib, subprocess, shutil, html",
+      "from pathlib import Path",
+      "from shapely import from_wkb",
+      "from src.crop_circle_sources import verify_assets",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_four_target_disposition.py",
+    "sha256": "c96d25add0d04d951800cdb4601e3e88eec95c6133ef5eeb48e3f32301ad87b3",
+    "lines": 128,
+    "module_doc": "Reconcile four unchanged targets from sealed records; never run geometry/search.",
+    "symbols": [
+      "sha",
+      "save",
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import hashlib",
+      "import html",
+      "import json",
+      "import shutil",
+      "import zipfile"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_junction_source_paths.py",
+    "sha256": "16da3bd9d73a72e9045a1f8d8c2fedfa8e0c9c1ae07df790666721771747df54",
+    "lines": 33,
+    "module_doc": "Bind maximal source routes to original junctions, preserving all source IDs.",
+    "symbols": [
+      "build"
+    ],
+    "imports": [
+      "import sys, re",
+      "from pathlib import Path",
+      "from src.uniform_source_paths import uniform_source_paths",
+      "from src.source_junction_paths import junction_source_paths",
+      "from src.native_inventory import arc_points",
+      "from tools.build_c02_uniform_source_paths import main"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_ordered_parallel_groups.py",
+    "sha256": "616d4bf71aa4cb67a6615d32903ebbe269bd08e58ad18164d0f0d0d00641a47b",
+    "lines": 8,
+    "module_doc": "Parallel cohort selection independent of native primitive fragmentation.",
+    "symbols": [],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "from tools.build_c02_parallel_membership_v2 import main"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_parallel_membership.py",
+    "sha256": "95573db186db573c00d18e67816445b8e391411d7eac2c13ad99f17c0a5b0889",
+    "lines": 102,
+    "module_doc": "Source-based local parallel relationships; no trace growth or acceptance.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json, re, subprocess, html",
+      "from collections import Counter",
+      "from shapely import STRtree",
+      "from shapely.geometry import LineString, box",
+      "from shapely.ops import unary_union",
+      "from src.parallel_trace_relations import parallel_relation, relation_groups",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render, svg_shape"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_parallel_membership_v2.py",
+    "sha256": "73272e12fee82cab83aaa9eab35d33f93544c35f1131f1a9ccf891b812331a1f",
+    "lines": 175,
+    "module_doc": "Source-based local parallel relationships; no trace growth or acceptance.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json, re, subprocess, html, colorsys",
+      "from collections import Counter",
+      "from shapely import STRtree, from_wkb",
+      "from shapely.geometry import LineString, box",
+      "from shapely.ops import unary_union",
+      "from src.parallel_trace_relations import parallel_relation, relation_groups",
+      "from src.parallel_curve_relations import parallel_curve_relation",
+      "from src.native_inventory import arc_points",
+      "from src.crop_circle_sources import verify_assets",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render, svg_shape"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/build_c02_primary_parallel_cohorts.py",
+    "sha256": "2944ae0e68e53ee53c03e00aa22baac8be0d9b6a25463669b08d96ca8ee3d1f5",
+    "lines": 113,
+    "module_doc": "Propose disjoint primary cohorts at actual shared native cross-sections.\n\nHard parent/longitudinal-overlap equality is preserved. Soft local parallel\nrelationships do not transitively fuse different spatial bundles.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import sys, json, hashlib, math",
+      "from shapely import STRtree",
+      "from shapely.geometry import LineString",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.parallel_trace_relations import relation_groups",
+      "from src.primary_parallel_cohorts import choose_primary_cohorts, station_spacing_links",
+      "from tools.build_c02_trace_eligibility import native_rows",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_r11_feasibility.py",
+    "sha256": "d98e248d755de214c22a58c29654a784b863c60ed350b9a43eb42728bb570be6",
+    "lines": 118,
+    "module_doc": "Read-only R11 fixed-center rectangle-domain infeasibility packet.",
+    "symbols": [
+      "save",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import json, csv, math, hashlib, shutil, html",
+      "from xml.etree import ElementTree as ET",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.geometry import Point, box",
+      "from shapely.ops import nearest_points",
+      "from shapely.affinity import scale",
+      "from src.crop_circle_sources import path_for",
+      "from src.crop_stage_growth import GrowthScene, GrowthContract, check_proposal",
+      "from src.native_inventory import geometry",
+      "from sexpdata import loads"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_trace_coverage_correction.py",
+    "sha256": "645a528bf064011eea0710506b83b034764c95b70384eb83f076a9ba6896bb03",
+    "lines": 98,
+    "module_doc": "Show all trace source copper, including definitions omitted from width scope.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, html, json, subprocess",
+      "from collections import Counter",
+      "from shapely import STRtree, to_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render, svg_shape"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_trace_eligibility.py",
+    "sha256": "3111543bbe8b7c73aa62443420399b839f5220b3ba9f19c88e88f8c228879e82",
+    "lines": 303,
+    "module_doc": "Rebuild continuation-aware C02 source eligibility without diagnostic caches.\n\nRead-only source qualification. Output paths are proposals, not acceptance.\nThe land scene and original source/path definitions remain immutable.",
+    "symbols": [
+      "select_complete_parent_runs",
+      "digest",
+      "save",
+      "native_rows",
+      "edge_runs",
+      "native_edge_points",
+      "build"
+    ],
+    "imports": [
+      "import argparse",
+      "import hashlib",
+      "import json",
+      "import platform",
+      "import sys",
+      "from importlib.metadata import version",
+      "from pathlib import Path",
+      "from shapely import STRtree, to_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from sexpdata import loads",
+      "import shapely",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.native_inventory import arc_points",
+      "from src.trace_growth_eligibility import classify_stroke, overlapping_parallel_fill_witness, VERSION",
+      "from src.filled_copper_source_role import buried_route_witness, bulk_boundary_route_witness, ROLE_VERSION",
+      "from src.source_bulk_components import bind_bulk_regions, source_bulk_role",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_trace_endpoint_inventory.py",
+    "sha256": "e415b532a953cd3b4ca2ab9fce811fe8b15d17d521d793a941e1bc210abd3d7c",
+    "lines": 73,
+    "module_doc": "Inventory whole-source trace adjacency before any T04 width construction.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib",
+      "import json",
+      "import re",
+      "from collections import Counter",
+      "from shapely.geometry import box",
+      "from shapely import from_wkb",
+      "from src.trace_endpoint_inventory import endpoint_components"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c02_uniform_source_paths.py",
+    "sha256": "f212827115f03075581aaafdfa380e80214b0d66432e4ed4b2c57670e5a7e550",
+    "lines": 117,
+    "module_doc": "Read-only correction of source path definitions and old coverage exclusions.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import json, hashlib, subprocess, html",
+      "from collections import Counter",
+      "from shapely import STRtree, to_wkb",
+      "from shapely.geometry import Point, box",
+      "from shapely.ops import unary_union",
+      "from src.uniform_source_paths import uniform_source_paths",
+      "from src.crop_circle_sources import verify_assets",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/build_c03_source_target_inventory.py",
+    "sha256": "bb062790bb3985d125f3529718caed859dbc7dc5bd9e34fdad6861599384bedf",
+    "lines": 48,
+    "module_doc": "Read-only C03 source candidates. Never inherits C02 land acceptance.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import sys, json, hashlib, subprocess",
+      "from shapely import STRtree, from_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from tools.render_c03_source_frame import render_source_frame as render"
+    ],
+    "role": "INACTIVE_C03_HISTORICAL_TOOL"
+  },
+  {
+    "path": "tools/build_c03_supported_land_targets.py",
+    "sha256": "05e3d7d67994e6dff2831ca6f4b7506e8792bf6611b8a6644f2ebf50cfae6c7e",
+    "lines": 78,
+    "module_doc": "Source-bound C03 land target scope using existing native eligibility helpers.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import sys, json, hashlib, math, subprocess",
+      "from sexpdata import loads",
+      "from shapely import from_wkb, STRtree",
+      "from shapely.geometry import Point, box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.crop_rect_t02 import rectangular_feature",
+      "from src.crop_diameter_selection import admissible_diameters",
+      "from src.crop_balanced_t01 import local_groups",
+      "from src.native_reference import one",
+      "from tools.render_c03_source_frame import render_source_frame as render"
+    ],
+    "role": "INACTIVE_C03_HISTORICAL_TOOL"
+  },
+  {
+    "path": "tools/capture_c02_native_binding_mismatch.py",
+    "sha256": "28700cdeb23c8cc8df4830c5bec7aa3ccb2d57ab7f7caa810a91bc3d74fe33f4",
+    "lines": 103,
+    "module_doc": "Capture all nine native/cache operands without weakening exact source identity.\n\nExit 3 means evidence was captured but strict binding identity failed. It never\nmeans that an approximate match, candidate, clearance or stage was accepted.",
+    "symbols": [
+      "sha",
+      "compare",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import argparse, hashlib, importlib.metadata, json, math, platform",
+      "import shapely",
+      "from shapely import from_wkb, to_wkb, get_coordinates",
+      "import sexpdata",
+      "from src.crop_attachment_diagnostic import _decode",
+      "from src import native_inventory, crop_attachment_diagnostic"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/check_c02_width_native_members.py",
+    "sha256": "38a74877ae1a70fda86755de82d1613f6bb5200a18d24f816d85ac864a88d75d",
+    "lines": 41,
+    "module_doc": "Check the saved bounded proposal without collapsing source primitive pairs.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import json, hashlib",
+      "from shapely import STRtree, to_wkb, from_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.uniform_trace_width_v2 import construct_uniform_width",
+      "from src.prepared_width_scene import PreparedWidthScene",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/diagnose_c02_nominal_union_identity.py",
+    "sha256": "aac400db33b8c9308100cbb8ba583cfaab5bbe72b89a5d4651f05282f6a4061f",
+    "lines": 41,
+    "module_doc": "Read-only union identity diagnostic. No assertion is weakened or waived.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib, platform",
+      "from pathlib import Path",
+      "import shapely",
+      "from shapely import from_wkb, to_wkb, normalize, get_num_coordinates",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/freeze_c02_land_scene.py",
+    "sha256": "7382ef84b33b39c874b89342903e535ada8a9adbb8471347b7e7717b32f58404",
+    "lines": 54,
+    "module_doc": "Record the exact audited focused land scene under owner standing authority.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json, shutil, datetime",
+      "from src.crop_circle_sources import verify_assets"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/preflight_c02_revised_source_paths.py",
+    "sha256": "2e9cd0eb91942bf5f91a1bdd9eabcace9212e9c741d590954a968f0263b3fb2b",
+    "lines": 48,
+    "module_doc": "Check revised complete source definitions at exact original widths only.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import json, hashlib",
+      "from shapely import to_wkb",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.uniform_trace_width_v2 import construct_uniform_width",
+      "from src.trace_width_clearance import verify_width_scene",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/preflight_c02_revised_source_paths_v2.py",
+    "sha256": "fa09eaf9f6776b291da977f413493ae34867435c8daaf271173399c3d77fd82d",
+    "lines": 14,
+    "module_doc": "Exact-source no-growth identity check, preserving the original raw verifier.",
+    "symbols": [
+      "check"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "from src.prepared_width_scene import PreparedWidthScene",
+      "from tools.preflight_c02_revised_source_paths import main"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/preflight_c02_uniform_width.py",
+    "sha256": "7dc9789a589cdf7aa45adcefa1316440540821ad8a21f1f2d9ef3dbd80b3c6d6",
+    "lines": 76,
+    "module_doc": "Actual source binding preflight at factor 1.0; no width-growth execution.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json, subprocess",
+      "from shapely import STRtree, from_wkb, to_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from src.uniform_trace_width import construct_uniform_width",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/preflight_c02_uniform_width_v2.py",
+    "sha256": "ea2cede48649575cc88521a01514f0081dcf35248befe38290b434a096381fb8",
+    "lines": 10,
+    "module_doc": "Check the nested verification family at exact original source width only.",
+    "symbols": [],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "from src.uniform_trace_width_v2 import construct_uniform_width",
+      "from tools.preflight_c02_uniform_width import main"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/preflight_c02_width_clearance.py",
+    "sha256": "95f4f2ef0787257b05cce4232095bb696ba04891ab42eb3ee13d8318e2fda8f7",
+    "lines": 41,
+    "module_doc": "Verify the complete source scene with unchanged trace inputs only.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json",
+      "from shapely.ops import unary_union",
+      "from src.trace_width_clearance import verify_width_scene",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/probe_c02_front_join_composition.py",
+    "sha256": "e4dfa7c4f384875afb0549364378ed4c4f19be87e3f3b460bf384cbb26813a07",
+    "lines": 35,
+    "module_doc": "Two fixed native-join-first constructions; unchanged 45 source parts.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib",
+      "from pathlib import Path",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/probe_c02_local_union_composition.py",
+    "sha256": "4ce9143bff0ecc54c6a72fc2b57817a5ae3667b583c29c4bfdfd76fb0c279896",
+    "lines": 49,
+    "module_doc": "Four fixed read-only union constructions around the diagnosed source join.\n\nUses all 45 unchanged parts, not cached union output. Two native-adjacent\npreunions fix an explicit local operation order; the final union retains the\nremaining original source order. Expected hashes are comparisons only.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib",
+      "from pathlib import Path",
+      "from shapely import from_wkb, to_wkb, get_num_coordinates",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/probe_c02_nominal_width_caps.py",
+    "sha256": "e9950e4b8bd9c948fc918d0fd8cb5db5c2ee90d41e5edfff858364956ff8f291",
+    "lines": 35,
+    "module_doc": "Nominal/envelope containment probes; full caps are NOT clearance-approved.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import json, hashlib",
+      "from shapely import to_wkb",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.uniform_trace_nominal import construct_nominal_width"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/qualify_c02_source_offsets.py",
+    "sha256": "42c79e3e2459ad5cb77962ebd35fd4e5c7e391d7f36a94cddd137a19bfc160ff",
+    "lines": 33,
+    "module_doc": "Read-only nominal/core/envelope qualification for every source route.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib",
+      "from pathlib import Path",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.source_offset_width import construct_source_offset_width, FAMILY"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/qualify_c02_trace_chains.py",
+    "sha256": "b5fd040609c494d595fee2a04289c33258cb46ff1d21fbf2661e4962929c30c9",
+    "lines": 66,
+    "module_doc": "Read-only full-chain contact qualification against the cumulative land scene.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json, subprocess, html",
+      "from collections import Counter",
+      "from shapely import STRtree, to_wkb",
+      "from shapely.ops import unary_union",
+      "from src.trace_chain_contacts import qualify_chain",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/reconcile_c02_complete_width_proposal.py",
+    "sha256": "59b112eebe1a0c33f652bc659a96b45ce15d7d5856b3bcc9aba924ae856e00b8",
+    "lines": 117,
+    "module_doc": "Reconcile saved source coverage, nominal parts and bounded-search evidence.\n\nSame-assistant source-bound verification, not independent or native acceptance.\nWrites a separate additive receipt, never changes the submitted proposal.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib, functools",
+      "from pathlib import Path",
+      "from shapely import from_wkb, to_wkb, STRtree",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.prepared_width_scene import PreparedWidthScene",
+      "from src.source_offset_width import construct_source_offset_width",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/reconcile_c02_predecessor_readiness.py",
+    "sha256": "40432340e1011535300cb177851992fe8dddd794f6c3d603e33df9eb085f1e80",
+    "lines": 100,
+    "module_doc": "Source-bound cumulative land-stage reconciliation, never self-acceptance.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json, subprocess",
+      "from shapely import STRtree, from_wkb, to_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute, SITES",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c02_final_width_limits.py",
+    "sha256": "e4e9ffc10f35576716c21a336e19df9fdfe6a98431d9bc8ddb7b4806037c0750",
+    "lines": 57,
+    "module_doc": "Actual source-bound operands behind final common-scale width limits.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib, subprocess, functools",
+      "from pathlib import Path",
+      "from shapely import from_wkb",
+      "from shapely.geometry import LineString, box",
+      "from shapely.ops import nearest_points, unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.source_offset_width import construct_source_offset_width",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render, svg_shape"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c02_growth_coverage_comparison.py",
+    "sha256": "dece00133dfc489bff20cb92594360df73d085172bf1fd17fdaf6a3df98e197a",
+    "lines": 69,
+    "module_doc": "Same-source-set historical/rebuilt comparison, without new construction.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import argparse",
+      "import hashlib",
+      "import json",
+      "import subprocess",
+      "import xml.etree.ElementTree as ET",
+      "from shapely import from_wkb",
+      "from shapely.ops import unary_union",
+      "from tools.run_c02_growth_coverage import render, HISTORICAL"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c02_growth_operations.py",
+    "sha256": "d1808f59f25efbdaadf16430a46c7c1c40ee6daa9ac5a68789e91705d6939183",
+    "lines": 47,
+    "module_doc": "Render one source-bound, unioned added-copper image per T04 operation.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import hashlib",
+      "import html",
+      "import json",
+      "from pathlib import Path",
+      "import subprocess",
+      "import sys",
+      "from shapely import from_wkb",
+      "from shapely.geometry import box",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c02_trace_endpoint_inventory.py",
+    "sha256": "a820376419e1917ef1a34b17d75cb3da1be47cd80694b470e1ca15aa43731103",
+    "lines": 48,
+    "module_doc": "Actual source trace footprints, classified for read-only T04 preparation.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib",
+      "import html",
+      "import json",
+      "import subprocess",
+      "from shapely import from_wkb",
+      "from shapely.ops import unary_union",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c02_valid_stage_comparison.py",
+    "sha256": "8f8d009919d317746f295cfabe10213a11d5c15e423c9b1fb7e17561f8f611c0",
+    "lines": 51,
+    "module_doc": "Compare the identical focused source set, retaining full C02 in both panels.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys, json, re, html",
+      "from pathlib import Path",
+      "from xml.etree import ElementTree as ET",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.ops import unary_union"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c02_versioned_ladder.py",
+    "sha256": "8ba1a38016f17f11c0ebb0a477164d3081d92d25e4909d4f2f830259f9751667",
+    "lines": 63,
+    "module_doc": "Render exact retained stage geometry after a successful versioned replay.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib",
+      "import json",
+      "import subprocess",
+      "import xml.etree.ElementTree as ET",
+      "from shapely import from_wkb",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c02_width_outcomes.py",
+    "sha256": "14d2455567d32ecc50ce122e30e6944cf1233a3440d97e042b024aa8c67d278c",
+    "lines": 42,
+    "module_doc": "Make complete route coverage versus legal growth explicit on actual copper.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib, subprocess, html",
+      "from pathlib import Path",
+      "from shapely import from_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render, svg_shape"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c02_width_witnesses.py",
+    "sha256": "28fe66e79cd609eda26195335bfd105db0f20485fb390ed24138acf733d46422",
+    "lines": 65,
+    "module_doc": "Show exact source-surface witnesses used by preliminary width bounds.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import json, subprocess, html",
+      "from shapely.geometry import LineString, box",
+      "from shapely.ops import unary_union",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render, svg_shape"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/render_c03_source_frame.py",
+    "sha256": "e2e1a56b99bd18bdf9a3a2fbd484cb9bdba068eef6578f52990093d85a299052",
+    "lines": 40,
+    "module_doc": "C03 presentation in the established source-baseline display frame.\n\nNative WKB stays unchanged. Only the SVG display uses x=native x, y=-native y,\nmatching build_c03_source_baseline.py's ymax-y mapping.",
+    "symbols": [
+      "render_source_frame",
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import sys, json, hashlib, subprocess",
+      "from shapely import from_wkb",
+      "from shapely.affinity import scale",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "INACTIVE_C03_HISTORICAL_TOOL"
+  },
+  {
+    "path": "tools/replay_c02_batch_audit.py",
+    "sha256": "be56944e4156284f16e7b87f6541b879bc93f448cc8eb34123d46e623e589ea9",
+    "lines": 49,
+    "module_doc": "Reproduce the batched geometric checks in a fresh extracted audit workspace.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import argparse, hashlib, json, os, shutil, subprocess, sys, zipfile",
+      "from pathlib import Path"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/run_bounded_width_solver_controls.py",
+    "sha256": "b4f613aaecf26176f9049fedbce5a4b178e2d7ae37b7a92811041bebfc1744f9",
+    "lines": 79,
+    "module_doc": "Retain solver controls and deterministic geometric visual evidence.\n\nThese artificial routes are controls, never source C02 growth proposals.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json, subprocess",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from shapely import to_wkb",
+      "from src.bounded_width_solver import solve_width_scales",
+      "from src.uniform_trace_width_v2 import construct_uniform_width, FAMILY",
+      "from src.trace_width_clearance import verify_width_scene",
+      "from tests.test_uniform_trace_width import fixture",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/run_c02_complete_width_proposal.py",
+    "sha256": "44c2e6ea26dd90d12cde289af4e8ef12c85142274dffa2d6c058644cec6f796f",
+    "lines": 122,
+    "module_doc": "Whole visible-route collective T04 model proposal on frozen C02 lands.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib, subprocess, functools, time",
+      "from pathlib import Path",
+      "from shapely import STRtree, to_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.source_offset_width import construct_source_offset_width, FAMILY",
+      "from src.bounded_width_solver import solve_width_scales",
+      "from src.prepared_width_scene import PreparedWidthScene",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/run_c02_four_attachment_diagnostic.py",
+    "sha256": "863194760abd5f8eb763f4c1e02cc57b88a74b3ccc96f9669419fbb6aa1257e2",
+    "lines": 161,
+    "module_doc": "Four fixed source-bound diagnostic witnesses; no search or production policy edit.",
+    "symbols": [
+      "sha",
+      "compute",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import argparse, hashlib, json, shutil, subprocess",
+      "from dataclasses import asdict",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import box, Point",
+      "from src.crop_attachment_diagnostic import bind_circle_attachment, bind_overlapping_feed_attachment, check_attachment_diagnostic",
+      "from src.crop_stage_growth import GrowthContract, check_proposal, original_attachment_port",
+      "from tools.run_c02_r080_attachment_revision import compute as compute_r080"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/run_c02_four_attachment_diagnostic_v2.py",
+    "sha256": "1e64aed4d5b1de70f6ec6c35e923dcbbf9d76218ba584d8523e9c3c2fe405a2c",
+    "lines": 135,
+    "module_doc": "Versioned replay: exact REV05 geometry and two pinned binding representations.\n\nOriginal strict runner is preserved. Candidate construction/checking below is\nretained verbatim except for the explicit source-binding call and evidence.",
+    "symbols": [
+      "sha",
+      "bind_to_authoritative_scene",
+      "compute"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import argparse, hashlib, json, shutil, subprocess",
+      "from dataclasses import asdict",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import box, Point",
+      "from src.crop_attachment_diagnostic import bind_circle_attachment, bind_overlapping_feed_attachment, check_attachment_diagnostic",
+      "from src.crop_stage_growth import GrowthContract, check_proposal, original_attachment_port",
+      "from tools.run_c02_r080_attachment_revision import compute as compute_r080",
+      "from dataclasses import replace",
+      "from src.crop_pinned_circle_binding import PINS, bind_pinned_circle"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/run_c02_growth_coverage.py",
+    "sha256": "461d4ead074edd120ad3cbe94b24aff44f3977717b90640861f76c201aada693",
+    "lines": 265,
+    "module_doc": "Rebuild every rectangle referenced by the saved trace-work candidate records.\n\nThe historical source bank is hash-checked and reused as a parser cache. Nothing\nin the source board, historical results, or prior focused packet is overwritten.",
+    "symbols": [
+      "digest",
+      "save",
+      "svg_shape",
+      "render",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import argparse",
+      "import hashlib",
+      "import html",
+      "import json",
+      "import platform",
+      "import shutil",
+      "from dataclasses import asdict",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import box, Point",
+      "from shapely.ops import unary_union",
+      "import shapely",
+      "from src.crop_circle_sources import verify_assets, path_for",
+      "from src.crop_growth_coverage import focused_rectangle_coverage",
+      "from src.crop_stage_growth import GrowthContract, GrowthScene, check_proposal, fit_rectangle, fit_round_circle"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/run_c02_r080_attachment_revision.py",
+    "sha256": "28963ee1ff22458314f2bfadf3051365223388df8ecb00c85479739f6f5b507f",
+    "lines": 144,
+    "module_doc": "One R080 positive-control proposal; all other REV05 replacements stay fixed.",
+    "symbols": [
+      "sha",
+      "compute",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import argparse, hashlib, json, shutil, subprocess",
+      "from dataclasses import asdict",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import box, Point",
+      "from src.crop_attachment_support import bind_original_trace_attachment",
+      "from src.crop_stage_growth import GrowthContract, GrowthScene, check_proposal"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/run_c02_source_width_proposal.py",
+    "sha256": "780a737f3f9b7383f34c88e8c8071cdc6d75e92fa57eecb9774a3584fc744562",
+    "lines": 123,
+    "module_doc": "Bounded full-route source-width proposal; requires a hash-bound land freeze.\n\nWrites only derived evidence. Does not update native board data or acceptance.\nThe input gate receipt records the separate audited model-space predecessor.",
+    "symbols": [
+      "sha",
+      "main"
+    ],
+    "imports": [
+      "import argparse, hashlib, json, sys, subprocess",
+      "from pathlib import Path",
+      "from shapely import STRtree, to_wkb",
+      "from shapely.geometry import box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.uniform_trace_width_v2 import construct_uniform_width, FAMILY",
+      "from src.bounded_width_solver import solve_width_scales",
+      "from src.trace_width_clearance import verify_width_scene",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/run_c02_valid_stage_growth.py",
+    "sha256": "53d0fc4598d63d95569ed727f7c02024fbc79a71e66607a2860a2fa7fcadf7e9",
+    "lines": 193,
+    "module_doc": "Focused C02 ORG -> compliant T01 -> compliant T02 demonstration.\n\nReads frozen historical data for target selection and rejected controls only.\nNo historical acceptance record or native source file is overwritten.",
+    "symbols": [
+      "sha",
+      "save",
+      "render",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import argparse, csv, hashlib, html, json, math, platform, re, shutil",
+      "from dataclasses import asdict",
+      "import shapely",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import Point, box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets, path_for",
+      "from src.org_edit_target_map import _inventory_side",
+      "from src.crop_rect_t02 import rectangular_feature",
+      "from src.crop_stage_growth import GrowthContract, GrowthScene, check_proposal, fit_rectangle, fit_round_circle"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/run_c03_joint_rectangle_stage.py",
+    "sha256": "2645e1b2fd004ad5ced202da0c1d172f2a432b1bdfc63c4b16b8368cb08182cc",
+    "lines": 153,
+    "module_doc": "C03 cumulative T02 proposal with fixed round-circle predecessor geometry.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import sys, json, hashlib, subprocess",
+      "from shapely import from_wkb, to_wkb, STRtree",
+      "from shapely.geometry import Point, box",
+      "from shapely.affinity import scale",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.crop_stage_growth import GrowthScene, check_proposal",
+      "from src.joint_rectangle_growth import fit_joint_rectangle",
+      "from src.prepared_land_scene import PreparedLandScene",
+      "from tools.render_c03_source_frame import render_source_frame as render"
+    ],
+    "role": "INACTIVE_C03_HISTORICAL_TOOL"
+  },
+  {
+    "path": "tools/run_c03_round_class_stage.py",
+    "sha256": "d118e59427dc3d4cd58a59e47ac9e18e459545562679f43f80c739055476d62b",
+    "lines": 99,
+    "module_doc": "Cumulative round-only C03 T01 proposal for the supported source target scope.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import sys, json, hashlib, subprocess, math",
+      "from shapely import from_wkb, STRtree, to_wkb",
+      "from shapely.geometry import Point, box",
+      "from shapely.ops import unary_union",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.crop_stage_growth import GrowthScene, check_proposal",
+      "from src.prepared_land_scene import PreparedLandScene",
+      "from tools.render_c03_source_frame import render_source_frame as render"
+    ],
+    "role": "INACTIVE_C03_HISTORICAL_TOOL"
+  },
+  {
+    "path": "tools/run_c03_round_growth_example.py",
+    "sha256": "38eddad554295f89d58f9066cca135c4b4c4f946ee1113f9d2cf71439b98ccc4",
+    "lines": 56,
+    "module_doc": "First C03 source-grounded round-growth proposal; no accepted scene inherited.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import sys, json, hashlib, subprocess, math",
+      "from shapely import from_wkb, STRtree, to_wkb",
+      "from shapely.geometry import box, Point",
+      "from shapely.ops import unary_union",
+      "from sexpdata import loads",
+      "from src.native_reference import one",
+      "from src.crop_circle_sources import verify_assets",
+      "from src.crop_stage_growth import GrowthScene, GrowthContract, fit_round_circle, check_proposal",
+      "from tools.render_c03_source_frame import render_source_frame as render"
+    ],
+    "role": "INACTIVE_C03_HISTORICAL_TOOL"
+  },
+  {
+    "path": "tools/run_trace_width_clearance_controls.py",
+    "sha256": "99fa4e5c601fa63895b5bbbe193d413c59d6efa2a2417705562aff04bb1e60d7",
+    "lines": 62,
+    "module_doc": "Retain synthetic positive/negative geometry controls, clearly outside C02.",
+    "symbols": [
+      "trace",
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import json, hashlib, subprocess",
+      "from shapely.geometry import LineString, box",
+      "from shapely.ops import unary_union",
+      "from shapely import to_wkb",
+      "from src.trace_width_clearance import verify_width_scene",
+      "from tools.run_c02_growth_coverage import render"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/verify_c02_four_attachment_diagnostic.py",
+    "sha256": "0528a61e5ff89769f4e01905368c22bff0705ed21eefafb1f0a2794fbf2ec5f3",
+    "lines": 53,
+    "module_doc": "Fresh diagnostic replay; geometry and non-port-area receipt values stay exact.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import copy, hashlib, json",
+      "from shapely import to_wkb",
+      "from tools.run_c02_four_attachment_diagnostic import compute",
+      "from src.crop_replay_comparison import compare_final_scene_checks"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/verify_c02_four_attachment_diagnostic_v2.py",
+    "sha256": "c9a8fafd09d79982f41edcfe90188ee5cc894455be10090d11c7282926ca2cfa",
+    "lines": 60,
+    "module_doc": "Fresh diagnostic replay; geometry and non-port-area receipt values stay exact.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import copy, hashlib, json",
+      "from shapely import to_wkb",
+      "from tools.run_c02_four_attachment_diagnostic_v2 import compute",
+      "from src.crop_replay_comparison import compare_final_scene_checks"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/verify_c02_growth_coverage.py",
+    "sha256": "1a9b617774c2fac58ab8a8342f5a816b2b5ec8fd37cf886f004ac9c98bb0ee41",
+    "lines": 100,
+    "module_doc": "Portable author-side replay of source-bound coverage and growth decisions.",
+    "symbols": [
+      "verify"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib",
+      "import json",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import box, Point",
+      "from shapely.ops import unary_union",
+      "from src.crop_growth_coverage import focused_rectangle_coverage",
+      "from src.crop_stage_growth import GrowthContract, GrowthScene, fit_round_circle, fit_rectangle, check_proposal"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/verify_c02_native_trace_coverage.py",
+    "sha256": "a97f0db1a50fdf6515a1073c579d04950942bd4476937b712e44990a266f9bd1",
+    "lines": 81,
+    "module_doc": "Re-derive crop seeds and complete same-width source closure from raw inputs.\n\nThis verifier does not consume the earlier endpoint-component inventory or its\ngrouping routines. It makes native trace coverage a source-derived assertion.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys, json, hashlib, re",
+      "from pathlib import Path",
+      "from decimal import Decimal",
+      "from collections import defaultdict, deque",
+      "from shapely import from_wkb",
+      "from shapely.geometry import box",
+      "from src.crop_circle_sources import verify_assets"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/verify_c02_r080_attachment_revision.py",
+    "sha256": "b852de8625475ec3d2ae37c10b4f6167631ba5bd3e0b1363013b1d07da7ae85a",
+    "lines": 28,
+    "module_doc": "Replay an R080-only proposal against an explicitly supplied REV05 packet.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import json, hashlib",
+      "from tools.run_c02_r080_attachment_revision import compute",
+      "from shapely import from_wkb, to_wkb"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  },
+  {
+    "path": "tools/verify_c02_r080_attachment_revision_v2.py",
+    "sha256": "9b40de78263923d99eb607219fa5624751f634da0bbccb703c4aa40dc3cd39f8",
+    "lines": 50,
+    "module_doc": "Versioned replay: only diagnostic port-area receipts use reviewed tolerance.",
+    "symbols": [
+      "verify"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, importlib, json",
+      "from shapely import to_wkb",
+      "from src.crop_replay_comparison import compare_final_scene_checks, AREA_EPSILON_MM2",
+      "from tools.run_c02_r080_attachment_revision import compute"
+    ],
+    "role": "DIAGNOSTIC_OR_VERSIONED_EXPERIMENT"
+  },
+  {
+    "path": "tools/verify_c02_valid_stage_growth.py",
+    "sha256": "339da8e3b2e1c8e7f251be06bb3c5d683cf91827068301bb4ca592170d799654",
+    "lines": 60,
+    "module_doc": "Replay the saved focused C02 construction and verify complete final geometry.\n\nAccepts a standalone packet directory; no external project path is required.\nThis is author-side reproducibility evidence, not independent review.",
+    "symbols": [
+      "main"
+    ],
+    "imports": [
+      "import sys",
+      "from pathlib import Path",
+      "import hashlib, json",
+      "from shapely import from_wkb, to_wkb",
+      "from shapely.affinity import scale",
+      "from shapely.geometry import box, Point",
+      "from shapely.ops import unary_union",
+      "from src.crop_stage_growth import GrowthContract, GrowthScene, check_proposal, fit_rectangle, fit_round_circle"
+    ],
+    "role": "REUSABLE_OR_ORCHESTRATION"
+  }
+]

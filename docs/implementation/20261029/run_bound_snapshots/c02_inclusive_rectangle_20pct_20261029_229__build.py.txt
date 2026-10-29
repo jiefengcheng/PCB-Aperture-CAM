@@ -1,0 +1,87 @@
+from pathlib import Path
+import json,sys,hashlib,subprocess
+R=Path.cwd();sys.path.insert(0,str(R))
+from shapely import from_wkb,to_wkb,STRtree
+from shapely.geometry import box
+from shapely.ops import unary_union
+from src.crop_stage_growth import check_proposal,GrowthContract
+from tools.run_c02_four_attachment_diagnostic_v2 import compute
+from tools.run_c02_growth_coverage import render
+from src.crop_circle_sources import verify_assets
+B=R/'out/crop_dynamic_tasks';O=Path(__file__).parent;P=B/'c02_focused_growth_coverage_20261028_05';W=B/'c02_upper_bundle_width_20261029_222';T=B/'c02_t02_revised_trace_stage_20261029_226'
+integrity=verify_assets();_,g=compute(P);scene=g['scene'];meta={r['id']:r for r in json.loads((P/'inputs/source_manifest.json').read_text())['objects']}
+current={sid:row['geometry'] for sid,row in scene.objects.items()}
+for sid,geom in scene.replacements.items():
+    if meta[sid]['kind']=='gr_circle':current[sid]=geom
+traceids=set()
+for r in json.loads((W/'CONSTRUCTION.json').read_text()):
+    for sid in r['complete_source_ids']:
+        current[sid]=from_wkb((W/'nominal_source_parts'/f'{hashlib.sha256(sid.encode()).hexdigest()}.wkb').read_bytes());traceids.add(sid)
+decisions=json.loads((T/'DECISIONS.json').read_text());rectids=[r['source_id'] for r in decisions]
+for sid in rectids:current[sid]=from_wkb((T/'rectangle_parts'/f'{hashlib.sha256(sid.encode()).hexdigest()}.wkb').read_bytes())
+before=from_wkb((T/'after_T02.wkb').read_bytes());crop=box(*g['base']['bounds']);contract=GrowthContract()
+def aligned(a,b,axis):
+    p=scene.objects[a]['geometry'].bounds;q=scene.objects[b]['geometry'].bounds;j=1-axis
+    thickness1=p[j+2]-p[j];thickness2=q[j+2]-q[j]
+    overlap=min(p[j+2],q[j+2])-max(p[j],q[j])
+    center_delta=abs((p[j]+p[j+2]-q[j]-q[j+2])/2)
+    gap=max(p[axis],q[axis])-min(p[axis+2],q[axis+2])
+    return overlap>=.75*min(thickness1,thickness2) and center_delta<=.15*max(thickness1,thickness2) and max(thickness1,thickness2)<=2*min(thickness1,thickness2) and gap>=0 and gap<=2*max(p[axis+2]-p[axis],q[axis+2]-q[axis])
+candidates=[]
+for axis in (0,1):
+    remaining=set(rectids)
+    while remaining:
+        seed=min(remaining);remaining.remove(seed);group={seed};pending=[seed]
+        while pending:
+            a=pending.pop();links={b for b in remaining if aligned(a,b,axis)};group.update(links);remaining-=links;pending.extend(sorted(links))
+        if len(group)>=2:candidates.append((axis,sorted(group)))
+expanded=[]
+for axis,members in candidates:
+    members=sorted(members,key=lambda sid:scene.objects[sid]["geometry"].bounds[axis])
+    for first in range(len(members)-1):
+        for last in range(first+2,len(members)+1):expanded.append((axis,sorted(members[first:last])))
+candidates=list({(axis,tuple(members)):(axis,members) for axis,members in expanded}.values())
+ids=sorted(current);tree=STRtree([current[sid] for sid in ids]);after=before;records=[];accepted=[];claimed=set();figs=[]
+for i,(axis,members) in enumerate(sorted(candidates,key=lambda x:(-len(x[1]),x[0],x[1])),1):
+    label=f'M{i:02}';inclusive=box(*unary_union([current[s] for s in members]).bounds)
+    span=after.intersection(inclusive);shortage=inclusive.difference(span).area/inclusive.area
+    nearby=[ids[int(n)] for n in tree.query(inclusive.buffer(.021))]
+    supports=set(members)|{s for s in nearby if meta[s]['kind'] in ('segment','arc') and current[s].intersection(span).area>0}
+    support_union=unary_union([current[s] for s in supports])
+    # Covered source shapes are already part of the same surface, never separate edit targets.
+    covered={s for s in nearby if s not in supports and current[s].difference(support_union).is_empty}
+    neighbors=[dict(source_id=s,original=current[s],geometry=current[s],trace_width_mm=scene.objects[s].get('trace_width_mm',0.)) for s in nearby if s not in supports|covered]
+    reasons=[]
+    if shortage>.20:reasons.append('AREA_SHORTAGE_ABOVE_20_PERCENT')
+    if span.geom_type!='Polygon':reasons.append('SPAN_NOT_ONE_CONNECTED_COPPER_SURFACE')
+    if claimed.intersection(members):reasons.append('SOURCE_ALREADY_IN_ACCEPTED_MERGE')
+    check=check_proposal(span,inclusive,neighbors,crop=crop,cap=inclusive,contract=contract)
+    if not check['passed']:reasons.append('FOREIGN_COPPER_CLEARANCE_CHECK_FAILED')
+    for prior in accepted:
+        outside=prior.difference(span)
+        addition=inclusive.difference(after)
+        if not outside.is_empty and not addition.is_empty and addition.distance(outside)<contract.construction_gap_mm:reasons.append('PRIOR_MERGE_CLEARANCE_FAILED')
+    row=dict(candidate=label,orientation='ROW' if axis==0 else 'COLUMN',rectangle_members=members,support_trace_source_ids=sorted(supports-set(members)),covered_sources_skipped=sorted(covered),
+        inclusive_bounds_mm=list(inclusive.bounds),inclusive_area_mm2=inclusive.area,existing_copper_area_mm2=span.area,missing_area_fraction=shortage,threshold=.20,
+        pre_T02_missing_area_fraction=inclusive.difference(from_wkb((W/'after.wkb').read_bytes())).area/inclusive.area,
+        status='MERGED' if not reasons else 'REJECTED',reasons=reasons,check=check,merge_cap_policy='Owner-authorized inclusive fill <=20% shortage; ordinary rectangle growth retains1.25axis cap')
+    if not reasons:
+        addition=inclusive.difference(after);after=after.union(inclusive);accepted.append(inclusive);claimed.update(members)
+        row['added_area_mm2']=addition.area;row['inclusive_wkb_sha256']=hashlib.sha256(to_wkb(inclusive)).hexdigest();(O/f'{label}_inclusive.wkb').write_bytes(to_wkb(inclusive))
+    records.append(row)
+    if not reasons or len(members)>=4:
+        x0,y0,x1,y1=inclusive.bounds;bounds=[x0-.15,y0-.15,x1+.15,y1+.15]
+        for name,copper in [('before',before),('after',after if not reasons else before)]:
+            f=O/f'{label}_{name}.svg';render(f,f'C02 / inclusive rectangle {label} / {name}',copper,copper.difference(before),bounds,[],{},[
+                f'{len(members)} rectangles; missing area {shortage*100:.3f}% of inclusive rectangle; threshold20%.',
+                f'Disposition: {row["status"]}; '+(', '.join(reasons) if reasons else 'one exact inclusive rectangle; clearance checks pass locally.'),
+                'Teal = actual consolidation addition. Original copper and T04 trace widths preserved.'])
+            subprocess.run(['sips','-s','format','png',str(f),'--out',str(f.with_suffix('.png'))],capture_output=True,check=True)
+        figs.append(f'<h2>{label}: {row["status"]} · shortage {shortage*100:.3f}%</h2><p>{", ".join(reasons)}</p><h3>Before</h3><img src="{label}_before.png"><h3>After</h3><img src="{label}_after.png">')
+assert before.difference(after).area<=1e-12
+(O/'CANDIDATES.json').write_text(json.dumps(records,indent=2)+'\n');(O/'after.wkb').write_bytes(to_wkb(after));(O/'added.wkb').write_bytes(to_wkb(after.difference(before)))
+result=dict(status='LOCAL_INCLUSIVE_RECTANGLE_CONSOLIDATION_PROPOSAL',asset_integrity=integrity,ordinary_T02_result_sha256=hashlib.sha256((T/'RESULT.json').read_bytes()).hexdigest(),trace_result_sha256=hashlib.sha256((W/'RESULT.json').read_bytes()).hexdigest(),candidates=len(records),merged=sum(r['status']=='MERGED' for r in records),threshold_missing_fraction=.20,added_merge_area_mm2=after.difference(before).area,after_sha256=hashlib.sha256(to_wkb(after)).hexdigest(),source_geometry_and_trace_parts='UNCHANGED; additions only',limitations='Same-assistant local consolidation checks; cumulative independent replay and owner acceptance pending')
+(O/'RESULT.json').write_text(json.dumps(result,indent=2)+'\n')
+f=O/'full_after.svg';render(f,'C02 / T01 + T04 + T02 / inclusive rectangles',after,after.difference(from_wkb((W/'after.wkb').read_bytes())),g['base']['bounds'],[],{},['Teal = all T02 additions including inclusive rectangle fills.','Missing-area threshold20%; original copper and widened traces retained.','Local model proposal; independent qualification and owner acceptance pending.']);subprocess.run(['sips','-s','format','png',str(f),'--out',str(f.with_suffix('.png'))],capture_output=True,check=True)
+(O/'index.html').write_text('<!doctype html><meta charset="utf-8"><title>C02 T02 inclusive rectangles</title><style>body{font:18px system-ui;max-width:1500px;margin:28px auto}img{width:100%}</style><h1>C02 · T02 with inclusive rectangle consolidation</h1><p>Missing area / enclosing rectangle area ≤20%; connected row/column spans only. Original copper retained; trace result222preserved. Local proposal, not final acceptance.</p><img src="full_after.png">'+''.join(figs)+'<a href="CANDIDATES.json">All candidates, identities and checks</a>')
+print(json.dumps(result))

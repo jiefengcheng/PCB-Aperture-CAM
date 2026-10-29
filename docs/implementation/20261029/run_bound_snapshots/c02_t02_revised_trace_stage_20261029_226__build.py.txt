@@ -1,0 +1,58 @@
+from pathlib import Path
+import sys,json,hashlib,subprocess
+R=Path.cwd();sys.path.insert(0,str(R))
+from shapely import from_wkb,to_wkb,STRtree
+from shapely.affinity import scale
+from shapely.geometry import box
+from shapely.ops import unary_union
+from src.crop_stage_growth import fit_rectangle,check_proposal,GrowthContract,GrowthScene
+from tools.run_c02_four_attachment_diagnostic_v2 import compute
+from tools.run_c02_growth_coverage import render
+from src.crop_circle_sources import verify_assets
+B=R/'out/crop_dynamic_tasks';O=Path(__file__).parent;P=B/'c02_focused_growth_coverage_20261028_05';W=B/'c02_upper_bundle_width_20261029_222'
+integrity=verify_assets();prior,g=compute(P);scene=g['scene'];meta={r['id']:r for r in json.loads((P/'inputs/source_manifest.json').read_text())['objects']}
+historical=dict(scene.replacements);targets=sorted(s for s in historical if meta[s]['kind']=='gr_poly');assert len(targets)==74
+scene.replacements={s:x for s,x in historical.items() if meta[s]['kind']=='gr_circle'}
+width_result=json.loads((W/'RESULT.json').read_text());records=json.loads((W/'CONSTRUCTION.json').read_text());traceparts={}
+for row in records:
+    for sid in row['complete_source_ids']:
+        path=W/'nominal_source_parts'/f'{hashlib.sha256(sid.encode()).hexdigest()}.wkb'
+        traceparts[sid]=from_wkb(path.read_bytes())
+scene.replacements.update(traceparts)
+# T02 stage input is the complete post-T04 scene, not pre-T04 trace operands.
+scene=GrowthScene([dict(row,geometry=scene.replacements.get(sid,row["geometry"])) for sid,row in scene.objects.items()])
+crop=box(*g['base']['bounds']);contract=GrowthContract();decisions=[]
+before=from_wkb((W/'after.wkb').read_bytes())
+for sid in targets:
+    core=scene.objects[sid]['geometry'];cap=scale(core,1.25,1.25,origin=core.centroid)
+    candidate,factors,check=fit_rectangle(core,scene.neighbors(sid,cap),crop,max_factor=1.25,contract=contract)
+    assert check['passed'] and candidate.covers(core)
+    scene.accept(sid,candidate)
+    decisions.append(dict(source_id=sid,axis_factors=list(factors),geometry_sha256=hashlib.sha256(to_wkb(candidate)).hexdigest(),added_area_mm2=candidate.difference(core).area,check=check))
+final=[]
+for sid in targets:
+    core=scene.objects[sid]['geometry'];candidate=scene.replacements[sid];cap=scale(core,1.25,1.25,origin=core.centroid)
+    check=check_proposal(core,candidate,scene.neighbors(sid,cap),crop=crop,cap=cap,contract=contract)
+    final.append(dict(source_id=sid,check=check));assert check['passed'],sid
+for sid,part in traceparts.items():assert to_wkb(scene.replacements.get(sid,scene.objects[sid]["geometry"]))==to_wkb(part)
+ids=sorted(scene.objects);parts=[scene.replacements.get(sid,scene.objects[sid]['geometry']) for sid in ids];tree=STRtree(parts)
+after=unary_union([parts[int(i)] for i in tree.query(crop,predicate='intersects')]).intersection(crop)
+removed=before.difference(after).area;assert removed<=1e-12
+for name,geometry in [('before_T02',before),('after_T02',after),('T02_added',after.difference(before))]:(O/f'{name}.wkb').write_bytes(to_wkb(geometry))
+(O/'rectangle_parts').mkdir(exist_ok=True)
+for sid in targets:(O/'rectangle_parts'/f'{hashlib.sha256(sid.encode()).hexdigest()}.wkb').write_bytes(to_wkb(scene.replacements[sid]))
+(O/'DECISIONS.json').write_text(json.dumps(decisions,indent=2)+'\n');(O/'FINAL_RECTANGLE_CHECKS.json').write_text(json.dumps(final,indent=2)+'\n')
+result=dict(status='TRACE_FIRST_T02_CONSTRUCTION_LOCAL_CHECKS_PASS_PENDING_FULL_REPLAY',sequence=['T01','T03_NO_ROUTE_CHANGE_NEEDED_FOR_THIS_PROPOSAL','T04','T02'],asset_integrity=integrity,
+    width_proposal_sha256=hashlib.sha256((W/'RESULT.json').read_bytes()).hexdigest(),targets=len(targets),positive_rectangles=sum(r['added_area_mm2']>1e-12 for r in decisions),
+    unchanged_rectangles=sum(r['added_area_mm2']<=1e-12 for r in decisions),added_rectangle_crop_area_mm2=after.difference(before).area,removed_predecessor_area_mm2=removed,
+    trace_widths_retained='ALL_SOURCE_PART_WKB_IDENTICAL_TO222',historical_frozen_result='UNCHANGED',after_sha256=hashlib.sha256(to_wkb(after)).hexdigest(),limitations='Same-assistant rectangle-stage checks; final source-part/cumulative replay and independent qualification still required')
+(O/'RESULT.json').write_text(json.dumps(result,indent=2)+'\n')
+for name,copper,addition in [('before_T02',before,before.difference(before)),('after_T02',after,after.difference(before))]:
+    f=O/f'{name}.svg';render(f,f'C02 / trace-first sequence / {name}',copper,addition,g['base']['bounds'],[],{},[
+        'New sequence: T01 circle growth, T04 collective trace width, then T02 rectangle growth.',
+        'Teal = added T02 rectangle copper only; all T04 trace widths remain byte-identical.',
+        'Original rectangle cores retained; per-axis ceiling1.25x; minimum finite-copper gap20um, guard20.1um.',
+        'Local construction proposal; cumulative replay and independent qualification remain open.'])
+    subprocess.run(['sips','-s','format','png',str(f),'--out',str(f.with_suffix('.png'))],capture_output=True,check=True)
+(O/'index.html').write_text('<!doctype html><meta charset="utf-8"><title>C02 trace-first cumulative result</title><style>body{font:18px system-ui;max-width:1500px;margin:28px auto}img{width:100%}</style><h1>C02 · trace widths before rectangle growth</h1><p>New version; historical frozen sequence preserved. Rectangle growth adapts to widened trace surfaces. Full cumulative replay pending.</p><h2>After T01 + T04, before T02</h2><img src="before_T02.png"><h2>After T02</h2><img src="after_T02.png"><p>Teal = T02 additions; no T04 trace width reduction.</p><a href="RESULT.json">Bound result</a> · <a href="DECISIONS.json">All74rectangle decisions</a>')
+print(json.dumps(result))

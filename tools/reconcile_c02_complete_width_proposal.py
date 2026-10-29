@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+"""Reconcile saved source coverage, nominal parts and bounded-search evidence.
+
+Same-assistant source-bound verification, not independent or native acceptance.
+Writes a separate additive receipt, never changes the submitted proposal.
+"""
+import sys,json,hashlib,functools
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from shapely import from_wkb,to_wkb,STRtree
+from shapely.geometry import box
+from shapely.ops import unary_union
+from src.crop_circle_sources import verify_assets
+from src.prepared_width_scene import PreparedWidthScene
+from src.source_offset_width import construct_source_offset_width
+from tools.run_c02_four_attachment_diagnostic_v2 import compute
+
+
+def sha(b):return hashlib.sha256(b).hexdigest()
+
+
+def main():
+    pre,definitions,groups_dir,freeze,proposal,out=map(Path,sys.argv[1:]);assert not out.exists()
+    integrity=verify_assets();report,g=compute(pre);scene=g['scene'];receipt=json.loads(freeze.read_text())
+    d=json.loads((definitions/'UNIFORM_SOURCE_PATHS.json').read_text());groups=json.loads((groups_dir/'PARALLEL_MEMBERSHIP.json').read_text())
+    result=json.loads((proposal/'RESULT.json').read_text());binding=json.loads((proposal/'INPUT_BINDING.json').read_text())
+    assert receipt['cumulative_sha256']==report['cumulative_sha256']==binding['land_predecessor_sha256']
+    assert sha((definitions/'UNIFORM_SOURCE_PATHS.json').read_bytes())==binding['definition_sha256']==groups['source_definition_sha256']
+    assert sha((groups_dir/'PARALLEL_MEMBERSHIP.json').read_bytes())==binding['groups_sha256']
+    paths={r['path_id']:r for r in d['paths'] if r['definition_status']=='VISIBLE_COMPLETE_UNIFORM_PATH_PROPOSAL_CONTACT_CHECKS_RETAINED'}
+    assignment={cid:r['group_id'] for r in groups['groups'] for cid in r['members']}
+    assert set(paths)==set(assignment) and len(assignment)==sum(len(r['members']) for r in groups['groups'])
+    constructions=json.loads((proposal/'CONSTRUCTION.json').read_text());assert {r['component_id'] for r in constructions}==set(paths)
+    meta={r['id']:r for r in json.loads((pre/'inputs/source_manifest.json').read_text())['objects']}
+    source=g['base']['source']
+    all_ids={sid for r in paths.values() for sid in r['source_ids']}
+    blobs={sid:(pre/f'inputs/source_wkb/{meta[sid]["geometry_sha256"]}.wkb').read_bytes() for sid in all_ids}
+    @functools.lru_cache(maxsize=400)
+    def rebuild(cid,factor):return construct_source_offset_width(source,dict(paths[cid],component_id=cid),meta,blobs,factor)
+    represented=set();parts={};traces=[]
+    for r in constructions:
+        cid=r['component_id'];factor=result['selected_scales'][assignment[cid]];assert 1<=factor<=1.5
+        assert r['factor']==factor and r['complete_source_ids']==paths[cid]['source_ids']
+        reconstructed=rebuild(cid,factor)
+        assert represented.isdisjoint(r['complete_source_ids']);represented.update(r['complete_source_ids'])
+        assert {p['source_id'] for p in r['primitives']}==set(r['complete_source_ids'])
+        for p in r['primitives']:
+            sid=p['source_id'];width=scene.objects[sid]['trace_width_mm']
+            assert p['original_width_mm']==width and p['nominal_candidate_width_mm']==width*factor
+            assert p['uniform_radial_increase_mm']==width*(factor-1)/2 and p['nominal_outward_margin_mm']==0
+            blob=(proposal/'nominal_source_parts'/f'{sha(sid.encode())}.wkb').read_bytes()
+            assert sha(blob)==p['nominal_candidate_wkb_sha256']
+            candidate=from_wkb(blob);assert candidate.covers(scene.objects[sid]['geometry'])
+            assert to_wkb(reconstructed[1][sid])==blob,'NOMINAL_CONSTRUCTOR_REPLAY_MISMATCH'
+            parts[sid]=candidate
+        core=unary_union([scene.objects[sid]['geometry'] for sid in r['complete_source_ids']])
+        nominal=unary_union([parts[sid] for sid in r['complete_source_ids']])
+        assert sha(to_wkb(nominal))==r['nominal_copper_wkb_sha256']
+        traces.append(dict(id=cid,original=core,candidate=nominal,verified_original_width_mm=r['verified_original_width_mm']))
+    assert represented.isdisjoint(scene.replacements)
+    fixed=[dict(id=sid,geometry=scene.replacements.get(sid,r['geometry']),trace_width_mm=r['trace_width_mm']) for sid,r in scene.objects.items() if sid not in represented]
+    assert len(fixed)+len(represented)==17849
+    check=PreparedWidthScene(traces,fixed).check(traces,materialize_scene=True)
+    assert check['passed'] and check['evaluation_complete']
+    saved_check=json.loads((proposal/'FINAL_NOMINAL_CHECK.json').read_text())
+    assert check['candidate_union_wkb_sha256']==saved_check['candidate_union_wkb_sha256']
+    ids=sorted(scene.objects);current=[parts.get(sid,scene.replacements.get(sid,scene.objects[sid]['geometry'])) for sid in ids]
+    crop=box(*g['base']['bounds']);tree=STRtree(current)
+    after=unary_union([current[int(i)] for i in tree.query(crop,predicate='intersects')]).intersection(crop)
+    assert to_wkb(after)==(proposal/'after.wkb').read_bytes()
+    assert sha(to_wkb(after))==result['after_sha256']
+    solver=json.loads((proposal/'SOLVER.json').read_text());assert solver['selected_scales']==result['selected_scales']
+    indexes=json.loads((proposal/'CHECK_INDEX.json').read_text());assert len(indexes)==solver['evaluation_count']
+    for index,record in enumerate(indexes):
+        blob=(proposal/record['path']).read_bytes();assert sha(blob)==record['sha256']
+        item=json.loads(blob);evaluation=solver['evaluations'][index]
+        assert item['scales']==evaluation['scales'] and item['check']['passed']==evaluation['passed']
+        canonical=json.dumps(item['check'],sort_keys=True,separators=(',',':'),allow_nan=False).encode()
+        assert sha(canonical)==evaluation['report_sha256']
+        if evaluation['passed']:assert item['check']['evaluation_complete']
+    assert solver['maximum_established'] and all(r['proved'] for r in solver['maximum_proofs'])
+    assert set(r['group_id'] for r in solver['maximum_proofs'])==set(result['selected_scales'])
+    def envelope_traces(scales):
+        return [dict(id=cid,original=rebuild(cid,scales[assignment[cid]])[3],candidate=rebuild(cid,scales[assignment[cid]])[5],
+            verified_original_width_mm=paths[cid]['uniform_original_width_mm']) for cid in sorted(paths)]
+    checker=PreparedWidthScene(envelope_traces(result['selected_scales']),fixed)
+    final_envelope=checker.check(envelope_traces(result['selected_scales']))
+    assert final_envelope['passed'] and final_envelope['evaluation_complete']
+    upper_replays=[]
+    for proof in solver['maximum_proofs']:
+        gid=proof['group_id']
+        if proof['status']=='AT_HARD_CEILING':
+            assert result['selected_scales'][gid]==1.5
+            upper_replays.append(dict(group_id=gid,status='AT_HARD_CEILING_REPLAYED'))
+        else:
+            assert proof['status']=='FINAL_NEIGHBORS_REJECT_UPPER_BRACKET'
+            upper=proof['upper_factor'];assert 0<upper-result['selected_scales'][gid]<=solver['scale_tolerance']
+            trial=dict(result['selected_scales']);trial[gid]=upper
+            checked=checker.check(envelope_traces(trial),fail_fast=True)
+            assert not checked['passed'],'SAVED_UPPER_BOUND_REJECTION_NOT_REPRODUCED'
+            upper_replays.append(dict(group_id=gid,status='UPPER_REJECTION_REPLAYED',factor=upper,failures=checked['failures']))
+    out.mkdir();(out/'REPLAYED_NOMINAL_CHECK.json').write_text(json.dumps(check,indent=2,sort_keys=True)+'\n')
+    (out/'REPLAYED_MAXIMUM_PROOFS.json').write_text(json.dumps(upper_replays,indent=2)+'\n')
+    reconciliation=dict(status='PASS_SAME_ASSISTANT_SAVED_MODEL_RECONCILIATION',asset_integrity=integrity,
+        source_sha256=report['source_sha256'],land_predecessor_sha256=report['cumulative_sha256'],
+        crop_seed_primitives_accounted=d['crop_seed_count'],full_definition_primitives=d['source_members_after_same_width_expansion'],
+        visible_routes=len(paths),groups=len(groups['groups']),nominal_source_primitives=len(represented),fixed_source_objects=len(fixed),
+        all_source_objects=len(represented)+len(fixed),saved_checks_verified=len(indexes),
+        maximum_scope='Coordinate-wise model bound to declared 1e-6 factor bracket; no global aggregate optimum claim',
+        original_cores='PASS_ALL',fixed_lands='UNCHANGED_SOURCE_IDENTITY',routes='SOURCE_BOUND_FIXED; no route replacement',
+        crop_nominal_byte_replay='PASS',full_nominal_scene_clearance_replay='PASS',
+        source_nominal_constructor_byte_replay='PASS_ALL',upper_bracket_rejection_replay='PASS_ALL_NON_CEILING_GROUPS',
+        proposal_result_sha256=sha((proposal/'RESULT.json').read_bytes()),limitations='Not independent, native, electrical, manufacturing or final owner acceptance')
+    (out/'RECONCILIATION.json').write_text(json.dumps(reconciliation,indent=2)+'\n');print(json.dumps(reconciliation))
+
+
+if __name__=='__main__':main()
