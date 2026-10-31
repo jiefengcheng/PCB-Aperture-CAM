@@ -14,11 +14,11 @@ from src.crop_stage_growth import check_proposal,GrowthContract
 from tools.c03_sequence_scene import load_scene,sha,read,save
 from tools.render_c03_source_frame import render_source_frame as render
 
-def main(run):
+def main(run,*,scene_loader=load_scene):
  if not run.resolve().is_relative_to(ROOT/'out'):raise ValueError('PROJECT_LOCAL_RUN_REQUIRED')
  out=run/'T02'
  if out.exists():raise ValueError('FRESH_STAGE_REQUIRED')
- assets=verify_assets();scope,meta,original,current,protected,routes=load_scene(run,'T04');crop=box(*scope['viewport_mm']);rows=sorted([r for r in scope['records'] if r['scope_disposition']=='T02_RECTANGLE_TARGET_PROPOSAL'],key=lambda r:(original[r['source_id']].centroid.y,original[r['source_id']].centroid.x,r['source_id']));targets={r['source_id']:r for r in rows};aliases={s:sorted(i for i,m in meta.items() if m['kind']=='gr_poly' and m['geometry_sha256']==meta[s]['geometry_sha256']) for s in targets};land_ids=set(targets)
+ assets=verify_assets();scope,meta,original,current,protected,routes=scene_loader(run,'T04');crop=box(*scope['viewport_mm']);rows=sorted([r for r in scope['records'] if r['scope_disposition']=='T02_RECTANGLE_TARGET_PROPOSAL'],key=lambda r:(original[r['source_id']].centroid.y,original[r['source_id']].centroid.x,r['source_id']));targets={r['source_id']:r for r in rows};aliases={s:sorted(i for i,m in meta.items() if m['kind']=='gr_poly' and m['geometry_sha256']==meta[s]['geometry_sha256']) for s in targets};land_ids=set(targets)
  lands=[dict(id=s,original=original[s],candidate=original[s],native_source_kind='gr_poly',native_stroke_width_mm=0.) for s in sorted(land_ids)];fixed=[dict(id=s,geometry=g,trace_width_mm=meta[s]['trace_width_mm']) for s,g in current.items() if s not in land_ids];checker=PreparedLandScene(lands,fixed);selected={s:original[s] for s in land_ids};ports=[]
  # Pre-T04 source contacts define attachment permission; the wider current trace
  # cannot create a new T02 contact exception merely by touching a land.

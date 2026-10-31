@@ -1,0 +1,121 @@
+{
+  "schema": "prepared-native-region-pipeline/1",
+  "profile": "round-class-full-route-width-whole-rectangle-spindle/1",
+  "sequence": [
+    "T01",
+    "T03",
+    "T04",
+    "T02",
+    "T05"
+  ],
+  "t03_mode": "growth-only-no-route-change",
+  "inputs": {
+    "source": {
+      "path": "out/crop_dynamic_tasks/c02_focused_growth_coverage_20261028_05/inputs/ORG_source.kicad_pcb",
+      "sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+      "existing_project_archive_target": "/Volumes/LaCie/PCB_Aperture_CAM_V1_Codex_Handoff_temporary_20261029/out/crop_dynamic_tasks/c02_focused_growth_coverage_20261028_05/inputs/ORG_source.kicad_pcb"
+    },
+    "source_manifest": {
+      "path": "out/crop_dynamic_tasks/c02_focused_growth_coverage_20261028_05/inputs/source_manifest.json",
+      "sha256": "0c3e75925053a649a3c14e0449555a2faa7a814c061beb26ef1fc29a96605101",
+      "existing_project_archive_target": "/Volumes/LaCie/PCB_Aperture_CAM_V1_Codex_Handoff_temporary_20261029/out/crop_dynamic_tasks/c02_focused_growth_coverage_20261028_05/inputs/source_manifest.json"
+    },
+    "scope": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/T01/SUPPORTED_TARGETS.json",
+      "sha256": "77c4471d3e792b8817c01409836de6c73a43520b00861b9617cd5aaafae3e8d6"
+    },
+    "baseline": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/T01/C03_SOURCE_BASELINE.json",
+      "sha256": "cddb781a6646979ab79f43cad6515603867a42d78dadd57975057d121859d999"
+    },
+    "definitions": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/eligibility/UNIFORM_SOURCE_PATHS.json",
+      "sha256": "26c4843f65d49fe1a55203eed1d354b391918429fc72c9d014ba73fbcc3bf1d6"
+    },
+    "groups": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/groups/PARALLEL_MEMBERSHIP.json",
+      "sha256": "a26d5087d56726545c585fbd0b6bce7259df82f2e985b3819917c474cfeb70d9"
+    },
+    "bulk_roles": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/C03_FIXED_BULK_ROLES.json",
+      "sha256": "2c9d4022da8696c859dc03fb3455061656663711576e14196923a64515e4633e"
+    },
+    "warm_start": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/WARM_START.json",
+      "sha256": "4f5d84873ae5557805e9c47f282b2e18dfea8650e2450b77eba1a6e406a7ba6f"
+    },
+    "replay_T01": {
+      "path": "out/crop_dynamic_tasks/trace_first_pipeline_consolidation_20261030_271/T01_SNAPSHOT_FILES.json",
+      "sha256": "fb1c38b57580c56387f3cae5fb74f2c39d14c07cd9350a6193bd352e3d1140bb"
+    },
+    "replay_T03": {
+      "path": "out/crop_dynamic_tasks/trace_first_pipeline_consolidation_20261030_271/T03_SNAPSHOT_FILES.json",
+      "sha256": "e119829f8f681d2af58269839261973cde577bcde27bb70ab802d0c179d573de"
+    },
+    "replay_T04": {
+      "path": "out/crop_dynamic_tasks/trace_first_pipeline_consolidation_20261030_271/T04_SNAPSHOT_FILES.json",
+      "sha256": "17026eada421574763a69d75db6b4632522438800e6347e30899e4d68a7ba100"
+    },
+    "replay_T02": {
+      "path": "out/crop_dynamic_tasks/trace_first_pipeline_consolidation_20261030_271/T02_SNAPSHOT_FILES.json",
+      "sha256": "9bfefa8ab1dff58420afadc5cdf0876e92ae9a6905dd992bd772166ebcc66b38"
+    },
+    "replay_T05": {
+      "path": "out/crop_dynamic_tasks/trace_first_pipeline_consolidation_20261030_271/T05_SNAPSHOT_FILES.json",
+      "sha256": "cd29f9836cc0f6ffd226e8d1242a04969e38f9fa314bb0f133cb8bdf06ba742b"
+    },
+    "t01_manifest": {
+      "path": "out/crop_dynamic_tasks/trace_first_pipeline_consolidation_20261030_271/T01_SNAPSHOT_FILES.json",
+      "sha256": "fb1c38b57580c56387f3cae5fb74f2c39d14c07cd9350a6193bd352e3d1140bb"
+    },
+    "source_eligibility": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/eligibility/SOURCE_ELIGIBILITY.json",
+      "sha256": "dd07be66d2be0864512f3e73e2115353b38409a650f5f591b9ed1aa879651fe3"
+    }
+  },
+  "t01_snapshot": {
+    "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/T01"
+  },
+  "replay_stages": {
+    "T01": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/T01"
+    },
+    "T03": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/T03"
+    },
+    "T04": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/T04"
+    },
+    "T02": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/T02"
+    },
+    "T05": {
+      "path": "out/crop_dynamic_tasks/c03_sequence_20261030_269/T05"
+    }
+  },
+  "protected_freezes": [
+    {
+      "crop": "C01",
+      "path": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261",
+      "receipt_sha256": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013"
+    },
+    {
+      "crop": "C02",
+      "path": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266",
+      "receipt_sha256": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627"
+    },
+    {
+      "crop": "C03",
+      "path": "out/crop_dynamic_tasks/c03_final_so_far_freeze_20261030_270",
+      "receipt_sha256": "725863b9f8a5e82b6c70466b2c6a306c0bb1ccd0b866c7dbc39060c1235bd8a3"
+    }
+  ],
+  "limits": {
+    "max_source_objects": 20000,
+    "max_routes": 128,
+    "max_groups": 96,
+    "max_width_evaluations": 512
+  },
+  "registration": "PROVISIONAL_LOCATION_VALIDATION_SHORTFALL",
+  "scope": "Prepared C03 regression profile; not permission to run larger regions"
+}

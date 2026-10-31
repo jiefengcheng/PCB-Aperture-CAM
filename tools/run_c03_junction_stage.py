@@ -13,8 +13,8 @@ from tools.c03_sequence_scene import load_scene,read,save,sha,CACHE
 from tools.render_c03_source_frame import render_source_frame as render
 import sexpdata
 
-def load_junction_scene(run):
- scope,meta,original,current,protected,routes=load_scene(run,'T02');crop=box(*scope['viewport_mm']);raw=(CACHE/'ORG_source.kicad_pcb').read_bytes();groups={}
+def load_junction_scene(run,*,scene_loader=load_scene,source_cache=CACHE):
+ scope,meta,original,current,protected,routes=scene_loader(run,'T02');crop=box(*scope['viewport_mm']);raw=(source_cache/'ORG_source.kicad_pcb').read_bytes();groups={}
  for sid,r in meta.items():
   g=original[sid]
   if r['kind'] not in ('gr_circle','gr_poly') or not g.intersects(crop):continue
@@ -36,10 +36,10 @@ def load_junction_scene(run):
   visible.append(land)
  return scope,meta,original,current,protected,routes,crop,visible,skipped
 
-def main(run):
+def main(run,*,scene_loader=load_scene,source_cache=CACHE):
  out=run/'T05'
  if not run.resolve().is_relative_to(ROOT/'out') or out.exists():raise ValueError('PROJECT_LOCAL_FRESH_STAGE_REQUIRED')
- assets=verify_assets();scope,meta,original,current,protected,routes,crop,lands,skipped=load_junction_scene(run);ids=sorted(current);tree=STRtree([current[s] for s in ids]);before_blob=(run/'T02/after.wkb').read_bytes();before=from_wkb(before_blob);out.mkdir();(out/'patches').mkdir();accepted=[];decisions=[]
+ assets=verify_assets();scope,meta,original,current,protected,routes,crop,lands,skipped=load_junction_scene(run,scene_loader=scene_loader,source_cache=source_cache);ids=sorted(current);tree=STRtree([current[s] for s in ids]);before_blob=(run/'T02/after.wkb').read_bytes();before=from_wkb(before_blob);out.mkdir();(out/'patches').mkdir();accepted=[];decisions=[]
  for route in sorted(routes,key=lambda r:r['component_id']):
   rid=route['component_id'];sids=route['complete_source_ids'];trace=unary_union([current[s] for s in sids]);oldtrace=unary_union([original[s] for s in sids]);attached=[d for d in lands if oldtrace.intersection(d['original']).area>1e-12 and trace.intersection(d['geometry']).area>1e-12];row=dict(route_id=rid,source_ids=sids,nominal_width_mm=route['uniform_nominal_width_mm'],land_ids=[d['id'] for d in attached],land_kinds=[d['kind'] for d in attached],status='KEEP')
   if not attached:row['reason']='NO_EXPOSED_SOURCE_QUALIFIED_LAND_CONTACT';decisions.append(row);continue

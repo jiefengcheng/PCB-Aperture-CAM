@@ -1,8 +1,9 @@
 # T05 consolidated architecture
 
-- [Code structure and evidence](T05_CODE_STRUCTURE.md): actual module responsibilities, shared stage, crop-specific adapters and exact accepted-scene parity.
-- [Implemented construction contract](T05_CONSTRUCTION_CONTRACT.md): fixed parameters, source/contact requirements, additive invariants and explicit proof limits.
-- [Consolidation receipt](CONSOLIDATION_RECEIPT.json): code/test/accepted-scene bindings.
-- [T02 ChatGPT-agent ABI proposal](../t02_architecture_notes/T02_AGENT_ABI_PROPOSAL.md): requested design only; no ABI functions implemented.
+- [Independent T05 agent ABI suite](T05_AGENT_ABI_PROPOSAL.md): design only; junction treatment, not T02 rectangle operations.
+- [Implemented spindle contract](T05_CONSTRUCTION_CONTRACT.md): internal geometry family and limits.
+- [Code structure](T05_CODE_STRUCTURE.md): original consolidation map; its C03-not-started statements describe that earlier checkpoint, not current status.
+- [Historical consolidation receipt](CONSOLIDATION_RECEIPT.json): preserved original pins, not a regenerated receipt for these later documents.
+- [Modular stage composition](../AGENT_STAGE_COMPOSITION.md): explicit scene handoffs and independent T04/T02/T05 writable domains.
 
-C01 and C02 remain owner-accepted frozen results. C03 is not started. The next intended crop order is T01 → T03(if needed) → T04 → T02 → T05, subject to C03's own source/predecessor admission.
+C01, C02 and C03 are now owner-accepted frozen results. This documentation and T04 modular consolidation do not change them. The earlier link to T02 was a separate requested design, not the T05 suite; T02 retains its rectangle-only scope. ABI operations remain unimplemented.

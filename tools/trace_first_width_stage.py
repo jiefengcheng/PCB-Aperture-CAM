@@ -1,0 +1,127 @@
+"""Shared complete-route T04 adapter extracted from accepted C03 run269.
+
+Prepared source membership/groups are inputs, not discovered by this stage.
+"""
+from pathlib import Path
+import json,hashlib,subprocess,functools,time
+from shapely import STRtree,to_wkb,from_wkb
+from shapely.geometry import box
+from shapely.ops import unary_union
+from src.crop_circle_sources import verify_assets
+from src.crop_stage_growth import GrowthScene
+from src.source_offset_width import construct_source_offset_width,FAMILY
+from src.resumed_width_solver import solve_resumed_width_scales
+from src.bounded_width_solver import solve_width_scales
+from src.prepared_width_scene import PreparedWidthScene
+from src.trace_width_stage import SourceWidthStage
+from src.trace_first_scene import load_scene
+from tools.render_c03_source_frame import render_source_frame as render
+
+def sha(b):return hashlib.sha256(b).hexdigest()
+
+def run_width_stage(run,cache,*,initial_scales=None,prior_upper_factors=None,limits=None,replay_scales=None):
+    definitions=run/'eligibility';group_dir=run/'groups';out=run/'T04';freeze=run/'T01/PREDECESSOR_RECEIPT.json';assert not out.exists()
+    if limits is None:raise ValueError('EXPLICIT_WIDTH_BUDGET_REQUIRED')
+    integrity=verify_assets();receipt=json.loads(freeze.read_text())
+    assert receipt['cumulative_sha256']==sha((run/'T01/after.wkb').read_bytes())
+    scope,meta,original,current,replacements,_=load_scene(run,'T01',cache=cache)
+    raw=(cache/'ORG_source.kicad_pcb').read_bytes();scene=GrowthScene([dict(source_id=s,geometry=g,trace_width_mm=meta[s]['trace_width_mm']) for s,g in original.items()])
+    for sid,blob in replacements.items():scene.accept(sid,current[sid])
+    report=dict(cumulative_sha256=sha((run/'T01/after.wkb').read_bytes()),source_sha256=scope['source_sha256']);g=dict(after=from_wkb((run/'T01/after.wkb').read_bytes()),base=dict(bounds=scope['viewport_mm']))
+    assert report['cumulative_sha256']==receipt['cumulative_sha256']
+    assert report['source_sha256']==receipt['source_sha256']
+    definition_file=definitions/'UNIFORM_SOURCE_PATHS.json';group_file=group_dir/'PARALLEL_MEMBERSHIP.json'
+    d=json.loads(definition_file.read_text());gd=json.loads(group_file.read_text())
+    assert gd['source_definition_sha256']==sha(definition_file.read_bytes())
+    assert gd['proposed_cumulative_scene_sha256']==report['cumulative_sha256']==d['cumulative_land_scene_sha256']
+    chains={r['path_id']:dict(r,component_id=r['path_id']) for r in d['paths'] if r['definition_status']=='VISIBLE_COMPLETE_UNIFORM_PATH_PROPOSAL_CONTACT_CHECKS_RETAINED'}
+    groups=gd['groups'];assignment={cid:r['group_id'] for r in groups for cid in r['members']}
+    assert set(assignment)==set(chains) and len(assignment)==sum(len(r['members']) for r in groups)
+    assert all(r['status']=='SOURCE_MEMBERSHIP_PROPOSAL_COMPLETE_PATHS' for r in groups)
+    meta={r['id']:r for r in json.loads((cache/'source_manifest.json').read_text())['objects']}
+    represented={sid for c in chains.values() for sid in c['source_ids']}
+    assert len(represented)==sum(len(c['source_ids']) for c in chains.values())
+    assert represented.isdisjoint(scene.replacements)
+    blobs={sid:(cache/f'source_wkb/{meta[sid]["geometry_sha256"]}.wkb').read_bytes() for sid in represented}
+    fixed=[dict(id=sid,geometry=scene.replacements.get(sid,r['geometry']),trace_width_mm=r['trace_width_mm']) for sid,r in scene.objects.items() if sid not in represented]
+    assert len(represented)+len(fixed)==len(meta)
+    out.mkdir();(out/'checks').mkdir();calls=[];start=time.time()
+    model=SourceWidthStage(raw,chains,groups,meta,blobs,fixed_source_ids=scene.replacements)
+    construct=model.construct
+    build=model.build
+    original_scales={r['group_id']:1. for r in groups}
+    baseline,*_=build(original_scales);checker=PreparedWidthScene(baseline,fixed)
+    def evaluate(scales):
+        if len(calls)>=limits["max_width_evaluations"]:raise ValueError("WIDTH_SEARCH_BUDGET_EXHAUSTED")
+        try:traces,*_=build(scales)
+        except ValueError as e:
+            (out/'CONSTRUCTION_FAILURE.json').write_text(json.dumps(dict(scales=scales,error=str(e)),indent=2)+'\n')
+            raise
+        check=checker.check(traces,fail_fast=True)
+        filename=f'checks/{len(calls):05d}.json'
+        data=dict(scales=scales,check=check)
+        (out/filename).write_text(json.dumps(data,indent=2,sort_keys=True)+'\n')
+        calls.append(dict(path=filename,sha256=sha((out/filename).read_bytes()),passed=check['passed']))
+        if len(calls)%10==0:
+            progress=dict(evaluations=len(calls),elapsed_seconds=round(time.time()-start,2),positive_groups=sum(v>1 for v in scales.values()),last_passed=check['passed'])
+            (out/'PROGRESS.json').write_text(json.dumps(progress,indent=2)+'\n');print(json.dumps(progress),flush=True)
+        return check
+    binding=dict(asset_integrity=integrity,source_sha256=report['source_sha256'],land_predecessor_sha256=report['cumulative_sha256'],definition_sha256=sha(definition_file.read_bytes()),groups_sha256=sha(group_file.read_bytes()),freeze_receipt_sha256=sha(freeze.read_bytes()),visible_complete_routes=len(chains),group_count=len(groups),source_primitives=len(represented),fixed_source_objects=len(fixed),all_source_objects=len(represented)+len(fixed),route_change='NONE',nominal_geometry_family=FAMILY)
+    (out/'INPUT_BINDING.json').write_text(json.dumps(binding,indent=2)+'\n')
+    solver=solve_width_scales if initial_scales is None else functools.partial(solve_resumed_width_scales,initial_scales=initial_scales,prior_upper_factors=prior_upper_factors or {})
+    if replay_scales is None:
+        solution=solver([r['group_id'] for r in groups],evaluate,geometry_family=FAMILY)
+    else:
+        if set(replay_scales)!={r['group_id'] for r in groups} or any(not 1<=v<=1.5 for v in replay_scales.values()):raise ValueError('INVALID_REPLAY_SCALES')
+        q=evaluate(replay_scales)
+        solution=dict(passed=q['passed'],selected_scales=replay_scales,maximum_established=False,status='FIXED_SCALE_SOURCE_RECONSTRUCTION_NOT_NEW_OPTIMIZATION')
+    (out/'SOLVER.json').write_text(json.dumps(solution,indent=2,sort_keys=True)+'\n')
+    assert solution['passed'],'FULL_SOURCE_WIDTH_PROPOSAL_REJECTED'
+    traces,records,envelope_parts,nominal_parts=build(solution['selected_scales'])
+    final=checker.check(traces,materialize_scene=True);assert final['passed']
+    (out/'FINAL_ENVELOPE_CHECK.json').write_text(json.dumps(final,indent=2,sort_keys=True)+'\n')
+    nominal_traces=[]
+    for r in traces:
+        cid=r['id'];nominal=construct(cid,solution['selected_scales'][assignment[cid]])[4]
+        assert r['candidate'].covers(nominal) and nominal.covers(r['original'])
+        nominal_traces.append(dict(r,candidate=nominal))
+    nominal_check=checker.check(nominal_traces,materialize_scene=True);assert nominal_check['passed']
+    (out/'FINAL_NOMINAL_CHECK.json').write_text(json.dumps(nominal_check,indent=2,sort_keys=True)+'\n')
+    ids=sorted(scene.objects);crop=box(*g['base']['bounds'])
+    current={sid:nominal_parts.get(sid,scene.replacements.get(sid,scene.objects[sid]['geometry'])) for sid in ids}
+    tree=STRtree([current[sid] for sid in ids]);after=unary_union([current[ids[int(i)]] for i in tree.query(crop,predicate='intersects')]).intersection(crop)
+    before=g['after'];removed=before.difference(after).area;assert removed<=1e-12
+    for sid,geometry in scene.replacements.items():assert to_wkb(current[sid])==to_wkb(geometry)
+    (out/'nominal_source_parts').mkdir()
+    for sid,geometry in nominal_parts.items():(out/'nominal_source_parts'/f'{sha(sid.encode())}.wkb').write_bytes(to_wkb(geometry))
+    for name,geometry in [('before',before),('after',after),('added',after.difference(before))]:(out/f'{name}.wkb').write_bytes(to_wkb(geometry))
+    # One displayed/recorded expansion per common operation: union first,
+    # subtract the predecessor once. Per-source parts remain custody evidence.
+    (out/'growth_operations').mkdir()
+    operations=[]
+    for group in groups:
+        source_ids=sorted({sid for cid in group['members'] for sid in chains[cid]['source_ids']})
+        copper=unary_union([nominal_parts[sid] for sid in source_ids])
+        added=copper.intersection(crop).difference(before)
+        blob=to_wkb(added)
+        (out/'growth_operations'/f"{group['group_id']}.wkb").write_bytes(blob)
+        operations.append(dict(operation_id=group['group_id'],members=group['members'],source_ids=source_ids,
+            scale=solution['selected_scales'][group['group_id']],added_copper_sha256=sha(blob),
+            added_crop_area_mm2=added.area,display='ONE_UNIONED_EXPANSION_NOT_PER_SOURCE_STROKE'))
+    (out/'GROWTH_OPERATIONS.json').write_text(json.dumps(operations,indent=2,sort_keys=True)+'\n')
+    (out/'CONSTRUCTION.json').write_text(json.dumps(records,indent=2,sort_keys=True)+'\n')
+    (out/'CHECK_INDEX.json').write_text(json.dumps(calls,indent=2)+'\n')
+    result=dict(binding,status='COMPLETE_VISIBLE_SOURCE_MODEL_PROPOSAL_PENDING_BATCH_AUDIT',selected_scales=solution['selected_scales'],positive_groups=sum(v>1 for v in solution['selected_scales'].values()),ceiling_groups=sum(v==1.5 for v in solution['selected_scales'].values()),keep_groups=sum(v==1 for v in solution['selected_scales'].values()),maximum_established=solution['maximum_established'],added_crop_copper_mm2=after.difference(before).area,removed_predecessor_mm2=removed,after_sha256=sha(to_wkb(after)),fixed_lands_wkb_identity='PASS_ALL',width_role='NOMINAL_COPPER; separate conservative envelopes checked',T03='PASS_NO_ROUTE_CHANGE',T04='MODEL_PROPOSAL_NOT_NATIVE_OR_FINAL_ACCEPTANCE')
+    (out/'RESULT.json').write_text(json.dumps(result,indent=2)+'\n')
+    for label,copper in [('before',before),('after',after)]:
+        svg=out/f'{label}.svg'
+        render(svg,f'Prepared region / full visible-route width proposal / {label}',copper,copper.difference(before),g['base']['bounds'],[],{},[
+            f'{len(chains)} full visible source routes; {len(groups)} collective groups/singletons; all {len(meta)} source objects accounted for.',
+            'Red = cumulative nominal copper. Teal = actual added nominal copper; verification margins excluded.',
+            'Each complete trace has one uniform width factor; immediate parallel cohorts share that factor, maximum1.5x.',
+            'Full source routes, remote constraints and simultaneous finite-copper clearances checked. Routes and T01 circle and original lands unchanged.',
+            'Proposed model result pending batched audit; no native-board, electrical or manufacturing acceptance.'])
+        subprocess.run(['sips','-s','format','png',str(svg),'--out',str(out/f'{label}.png')],check=True,capture_output=True)
+    (out/'index.html').write_text('<!doctype html><meta charset="utf-8"><title>Prepared region complete visible-route width proposal</title><style>body{font:18px system-ui;max-width:1500px;margin:24px auto}img{width:100%}</style><h1>Prepared region cumulative nominal width proposal</h1><p>Full visible route scope; proposed, pending batched audit.</p><h2>Frozen land predecessor</h2><img src="before.png"><h2>Nominal width proposal</h2><img src="after.png"><p><a href="RESULT.json">Coverage and scales</a> · <a href="SOLVER.json">Bounds and retained rejected checks</a> · <a href="FINAL_NOMINAL_CHECK.json">Full nominal scene check</a></p>')
+    print(json.dumps({k:v for k,v in result.items() if k!='selected_scales'}),flush=True)
+

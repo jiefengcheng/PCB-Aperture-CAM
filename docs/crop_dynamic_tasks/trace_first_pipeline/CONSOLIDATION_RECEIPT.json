@@ -1,0 +1,96 @@
+{
+  "status": "CONSOLIDATED_PREPARED_REGION_PIPELINE_LOCAL_PARITY_PASS",
+  "tests": "65 PASS",
+  "sequence": [
+    "T01",
+    "T03",
+    "T04",
+    "T02",
+    "T05"
+  ],
+  "final_sha256": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323",
+  "saved_stage_replay": "PASS_PREPARED_REGION_PIPELINE_SAVED_STAGE_REPLAY",
+  "fresh_source_replay": "PASS_SAME_ASSISTANT_C03_FINAL_SOURCE_SEQUENCE_REPLAY",
+  "fresh_adapters": {
+    "status": "PASS_FRESH_SHARED_ADAPTER_GEOMETRY_PARITY",
+    "stages": {
+      "T01": {
+        "after_sha256": "ad9ffba4aa33934a51d145b6f5583911135e2c9d0b3082f4f9c3a315028bdfc1",
+        "exact_same_as_accepted": true
+      },
+      "T04": {
+        "after_sha256": "384e6dafaf775d7dcfa3dab039bb750e384ee30b01ba1d12b571fb5b06c01a5d",
+        "exact_same_as_accepted": true
+      },
+      "T02": {
+        "after_sha256": "dec1d1dd4dcd600e563870eaa82b44968536fd9b7af39ac957630509b48a86e6",
+        "exact_same_as_accepted": true
+      },
+      "T05": {
+        "after_sha256": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323",
+        "exact_same_as_accepted": true
+      }
+    },
+    "T01": "Bound existing snapshot reused",
+    "T03": "Fresh growth-only no-change check",
+    "T04": "Fresh source reconstruction at saved scales in274; no new search or maximum proof",
+    "T02": "Fresh shared-loader construction in274",
+    "T05": "Fresh shared-loader construction in275",
+    "failed_attempt_preserved": "out/crop_dynamic_tasks/trace_first_pipeline_adapter_reconstruction_20261030_274",
+    "independent": "NOT_RUN"
+  },
+  "protected_freezes": [
+    {
+      "path": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261",
+      "receipt_sha256": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013",
+      "files": 90
+    },
+    {
+      "path": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266",
+      "receipt_sha256": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627",
+      "files": 881
+    },
+    {
+      "path": "out/crop_dynamic_tasks/c03_final_so_far_freeze_20261030_270",
+      "receipt_sha256": "725863b9f8a5e82b6c70466b2c6a306c0bb1ccd0b866c7dbc39060c1235bd8a3",
+      "files": 19019
+    }
+  ],
+  "total_frozen_files": 19990,
+  "code_sha256": {
+    "src/trace_first_pipeline.py": "42cbf7b56325fb146b22aacb24100e741b2e06286a73971cd1389442df63bd4a",
+    "src/trace_first_scene.py": "a95b2d11a5ef363d3c511c057742e06d39a55440c8c01433074e892525f30d8c",
+    "tools/run_trace_first_pipeline.py": "91e1214a05fb56976c7773d8c35c81e00632eeff7702c0d585ea6962a53d4986",
+    "tools/trace_first_width_stage.py": "02cec74b79ce35ce29d8b38129412dafdd3f29f3a1b46272750ae8f3ce079bd9",
+    "tools/c03_sequence_scene.py": "95a626819041ce2417d01c89a461140928fec67ae36c383d8756e808ecfd2440",
+    "tools/run_c03_trace_first_rectangles.py": "45a56237e2aaa0da8f41ce7b0188db24d19b9b3907f564c60ecf0e1ae9733062",
+    "tools/run_c03_junction_stage.py": "12b2eba352a3bd8820e6a1bf61558c9f67e29f59ac4306b23537f02a753516ed",
+    "tools/run_c03_round_class_stage.py": "d118e59427dc3d4cd58a59e47ac9e18e459545562679f43f80c739055476d62b",
+    "src/bounded_width_solver.py": "70c27ace2cec8999a56b57d0449197b36605bcd84bf2391bc3ed8f0c8edc6c4f",
+    "src/resumed_width_solver.py": "446dfe1256728c51008735c91218a4cec53fdbe385c53d6916cf509eff1fa3c7",
+    "src/source_offset_width.py": "dad234a16f9c13100cff8a6155a9dedf0971ef99da5b5aa9d01a24200f95038c",
+    "src/prepared_width_scene.py": "f09f16c0c3104b638c15aadb0b8a59fa85d29f9cdc7bb9bcdff3630619fca6db",
+    "src/prepared_land_scene.py": "68a8339e08957146aa37b07077c99ee4ed1ce3a2df9f5d6bbb38ecd6e984f724",
+    "src/trace_width_clearance.py": "408e9b0f7466d4dd05ecba1fdf4959d593550eb8435cdeb654964b1aa227c809",
+    "src/joint_rectangle_growth.py": "ba6b5c2b79875d18db0a9b86086ec2a6e5932fb8b2c01ddbf9f71b0e23f9c5a2",
+    "src/crop_stage_growth.py": "f416d87ace52e3d21857032bc02e5fcf34442d1bbcf7c7e0033a14ae4fba9529",
+    "src/junction_spindle_stage.py": "aff0dcc4284a200f7fabc3273577305649e1b2633d3db5fc1be55a9183ab7798",
+    "src/junction_spindle_blend.py": "b842091cf691eb159438ad6ece61f4831eb12919c496705a5c0fc5ece793a1be",
+    "tests/test_trace_first_pipeline.py": "4d74f76a93a9e6c28dd481ff27dc7514b63ca9271a5a0aebf7918ddeffc366fd"
+  },
+  "runtime": {
+    "python": "3.14.5 (v3.14.5:5607950ef23, May 10 2026, 07:38:09) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "shapely": "2.1.2",
+    "geos": "3.13.1",
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O"
+  },
+  "scope": "C03 prepared-region regression; T01 reused; T04 reconstructed at saved scales, not fresh optimization; fresh T03/T02/T05 checks/construction",
+  "larger_regions": "NOT_RUN; readiness review documents remaining work",
+  "independent_review": "NOT_RUN: CHANNEL_UNAVAILABLE",
+  "native_electrical_manufacturing": "NOT_ESTABLISHED",
+  "ABI": "DESIGN_ONLY_UNCHANGED",
+  "failed_evidence": [
+    "PIPELINE_REPLAY.log: explicit LaCie archive binding missing in first config, no output created",
+    "run274: required source-eligibility ledger absent, fixed in input preparation; all failed evidence retained"
+  ]
+}

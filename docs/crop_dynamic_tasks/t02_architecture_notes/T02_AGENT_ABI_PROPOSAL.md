@@ -1,8 +1,12 @@
 # T02 ChatGPT-agent ABI suite — design only
 
-**PROPOSED / NOT_IMPLEMENTED.** This is the T02 suite requested alongside T05 consolidation. It deliberately concerns rectangle-land treatment, not a renamed T05 junction interface. No functions, stubs, runtime schemas, service endpoints, registry entries or new executable tests are implemented by this design. Existing v0.1 `cam_run` and `cam_verify` remain unavailable.
+**PROPOSED / NOT_IMPLEMENTED.** T02 owns rectangle-land growth and separately admitted inclusive rectangle consolidation only. The earlier request named T02 alongside T05 consolidation; standalone T04 and T05 suites are now specified separately. No route-width or junction-growth operations belong to T02. No functions, stubs, runtime schemas, service endpoints, registry entries or new executable tests are implemented by this design. Existing v0.1 `cam_run` and `cam_verify` remain unavailable.
 
 The [older deferred mapping](T02_AGENT_ABI_DEFERRED.md) and [v69 structure map](T02_CODE_STRUCTURE.md) remain historical references. This proposal covers both their evidence-inspection boundary and the newer trace-first T02 lineage, without pretending those profiles are interchangeable.
+
+## Scope clarification — 2026-10-31
+
+Review found no T05 selectors or spindle implementation inside this specification; no runtime scope restoration was necessary. T02's legitimate original ordinary/inclusive rectangle behavior is retained. Trace/land contact and clearance inspection is a constraint check, not permission to perform T03 routing, T04 width changes or T05 junction blending. Historical v69/v15 and trace-first profiles remain distinct. Stage order is an explicit profile/predecessor requirement, not a universal dependency on one named crop. See [T04](../t04_architecture_notes/T04_AGENT_ABI_PROPOSAL.md), [T05](../t05_architecture_notes/T05_AGENT_ABI_PROPOSAL.md) and [composition rules](../AGENT_STAGE_COMPOSITION.md).
 
 ## Agent workflow and operations
 

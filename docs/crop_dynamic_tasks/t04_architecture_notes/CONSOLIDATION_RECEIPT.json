@@ -1,0 +1,59 @@
+{
+  "status": "PASS_LOCAL_T04_MODULAR_PARITY_AND_T04_T05_ABI_DESIGN",
+  "date": "2026-10-31",
+  "tests": "76 PASS",
+  "T04": {
+    "status": "PASS_FRESH_T04_PURE_GROUP_MODEL_PARITY",
+    "checks": {
+      "after.wkb": true,
+      "before.wkb": true,
+      "CONSTRUCTION.json": true,
+      "GROWTH_OPERATIONS.json": true
+    },
+    "nominal_source_parts": 475,
+    "mode": "Fixed accepted scales, not a fresh search or renewed maximum proof",
+    "after_sha256": "384e6dafaf775d7dcfa3dab039bb750e384ee30b01ba1d12b571fb5b06c01a5d"
+  },
+  "T05": "Existing standalone pure spindle stage unchanged; new independent design specification",
+  "T02": "Rectangle and inclusive-fill scope retained; no T05 implementation/selectors found to remove; boundary clarified",
+  "ABI": "T04/T05 PROPOSED_NOT_IMPLEMENTED; live v0.1 unchanged",
+  "composition": "Design for explicit admitted scenes; current filesystem T04 adapter remains T01/no-route-change profile",
+  "protected_freezes": [
+    {
+      "path": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261",
+      "receipt_sha256": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013",
+      "files": 90
+    },
+    {
+      "path": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266",
+      "receipt_sha256": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627",
+      "files": 881
+    },
+    {
+      "path": "out/crop_dynamic_tasks/c03_final_so_far_freeze_20261030_270",
+      "receipt_sha256": "725863b9f8a5e82b6c70466b2c6a306c0bb1ccd0b866c7dbc39060c1235bd8a3",
+      "files": 19019
+    }
+  ],
+  "protected_files": 19990,
+  "files": {
+    "src/trace_width_stage.py": "3eef84036fcb23aefa9566faecb493e8e567c7c8d94e4869d5faec3e59706646",
+    "tools/trace_first_width_stage.py": "b7c69a366f1d7fbaa4b86f68e329e8677299ddfd4e5a3440a5debff6882dc081",
+    "tests/test_trace_width_stage.py": "8b47a3063818dc1fe06ca7c382490d5e753bae5be59e1fcaaba0bd27bb7f3ad9",
+    "docs/crop_dynamic_tasks/t04_architecture_notes/README.md": "fe857df2ace0f657c97285f116d524df3f6755242ab41e7255bc7c4267670cb7",
+    "docs/crop_dynamic_tasks/t04_architecture_notes/T04_AGENT_ABI_PROPOSAL.md": "34b67fdce59cbe1791fac547f4a8f09ec921aff1dfc901a9bb6222a4c9a0d7ba",
+    "docs/crop_dynamic_tasks/t05_architecture_notes/T05_AGENT_ABI_PROPOSAL.md": "70ac915d2a92f21eb9e0f2950912aafe73f5866436406065aed55997d04fcad4",
+    "docs/crop_dynamic_tasks/AGENT_STAGE_COMPOSITION.md": "0f060bbeffe44a99c5594d44a65c850b72f564992a5c29c006fc4bbdcf398322",
+    "docs/crop_dynamic_tasks/t02_architecture_notes/T02_AGENT_ABI_PROPOSAL.md": "ea30b8d27219caf01f92add7cef44689cebb3d4acead7d93b7a5a495cc8a7672",
+    "docs/crop_dynamic_tasks/t05_architecture_notes/README.md": "1a3c9ed977bb742ec559432c8ebf935b5df5ae4dc51400e06a45f5e1f4cab8a2",
+    "docs/agent_abi/README.md": "d9101c65da163ac68ef89dacca78efa8d083fdae52697cf490966afc5a33f833"
+  },
+  "runtime": {
+    "python": "3.14.5 (v3.14.5:5607950ef23, May 10 2026, 07:38:09) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "shapely": "2.1.2",
+    "geos": "3.13.1"
+  },
+  "independent_review": "NOT_RUN: CHANNEL_UNAVAILABLE",
+  "larger_regions": "NOT_RUN",
+  "native_electrical_manufacturing": "NOT_ESTABLISHED"
+}

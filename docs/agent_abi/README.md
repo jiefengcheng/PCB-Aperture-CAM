@@ -70,3 +70,15 @@ The [T03 suite proposal](../crop_dynamic_tasks/t03_architecture_notes/T03_AGENT_
 and [source implementation map](../crop_dynamic_tasks/t03_architecture_notes/T03_CODE_STRUCTURE.md)
 are documentation only. No T03 functions, schemas, registry entries or adapters
 are added; existing v0.1 run/verify availability is unchanged.
+
+
+## Separate stage suites — 2026-10-31
+
+| Suite | Ownership | Availability |
+|---|---|---|
+| [T02](../crop_dynamic_tasks/t02_architecture_notes/T02_AGENT_ABI_PROPOSAL.md) | Rectangle growth and qualified inclusive fills | Design only |
+| [T03](../crop_dynamic_tasks/t03_architecture_notes/T03_AGENT_ABI_PROPOSAL.md) | Bounded trace-route accommodation | Design only |
+| [T04](../crop_dynamic_tasks/t04_architecture_notes/T04_AGENT_ABI_PROPOSAL.md) | Complete-route nominal width optimization | Design only |
+| [T05](../crop_dynamic_tasks/t05_architecture_notes/T05_AGENT_ABI_PROPOSAL.md) | Local additive junction/spindle treatment | Design only |
+
+The [common composition design](../crop_dynamic_tasks/AGENT_STAGE_COMPOSITION.md) separates module ownership and explicit scene handoffs. These documents do not extend the live v0.1 dispatcher or expose construction tools. Current local module functions and proposed agent operations are different layers.
