@@ -1,0 +1,16 @@
+{
+  "archive": "/mnt/data/1_UPLOAD_THIS.zip",
+  "outer_sha256": "50705fb6db97ebc2c2c4b03edab91884c34526872530b2832d9b787faa33a449",
+  "manifest_count": 20340,
+  "zip_member_count": 20342,
+  "errors": [],
+  "manifest_sha256": "91dcdd300fabdb721b02d56f210d53d38cb4073b5e70a2bcacb10c8abf8c9aec",
+  "manifest_descriptor_valid": true,
+  "expected_count": 20340,
+  "zip_crc": "PASS (zipfile verified all streams)",
+  "uncompressed_bytes": 434689879,
+  "manifest_missing": [],
+  "manifest_extra": [],
+  "elapsed_seconds": 2.759205802999986,
+  "status": "PASS"
+}

@@ -1,0 +1,16 @@
+{
+  "status": "MATCHES_CURRENT_ABI_PACKET_MODEL_SCOPE_PASS",
+  "auditor_chat": "https://chatgpt.com/g/g-p-6accf804b5848191a5171de4ec8e83eb-pcb-ai-cam-proposal/c/6ae2a530-26a0-83ec-b82b-46ab0c5d1e27",
+  "acquisition": "Downloaded through Safari UI from user-designated audit conversation",
+  "evidence_zip_sha256": "a48989fa8475e7187d5b537970143c2ef2a4a0b444fdfca7d57d2c7880cd80f1",
+  "receipt_sha256": "edc77116c49f8118f6bc3e4dd95754814190d97c8dfe6c82ed87b99636fe0acf",
+  "reviewed_commit": "06c146e55bfcf97a49733e5d39063ae273e6e764",
+  "reviewed_original_zip_sha256": "50705fb6db97ebc2c2c4b03edab91884c34526872530b2832d9b787faa33a449",
+  "independent_status": "PASS_FOR_NEXT_SLICE_ABI_IMPLEMENTATION_ONLY",
+  "independent_tests": 313,
+  "subtests": 2,
+  "operations": 35,
+  "saved_native_replay": "NOT_RUN_ENVIRONMENT_MISMATCH",
+  "frozen_acceptance_changed": false,
+  "limits": "Independent code/contracts/model regression only. Historical REV234 and C03 localization unchanged. Full frozen payloads not independently rehashed."
+}

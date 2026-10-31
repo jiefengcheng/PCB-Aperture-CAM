@@ -2,6 +2,8 @@
 
 The executable [stage runtime version 1](STAGE_RUNTIME.md) provides all 35 T01/T03/T04/T02/T05 operations, including actual construction/search and verification for explicitly supported profiles. T05 is independent of T02. The historical v0.1 reader below retains its original frozen profile behavior.
 
+The [independent five-suite audit](audits/20261031_06c146e/README.md) passed all 313 tests plus 2 subtests and exercised all 35 CLI operations at commit `06c146e`. Its PASS_FOR_NEXT_SLICE applies to code/contracts/model scope. Exact-runtime saved native verification remains NOT_ESTABLISHED; historical C02/C03 qualifications and frozen acceptance are unchanged.
+
 ## Historical CAM Agent ABI v0.1
 
 This is a project-local JSON boundary around the current CAM evidence. It gives a future coordinator a small, typed vocabulary for describing available capabilities, inspecting hash-bound records, composing a deterministic plan, comparing registered runs, and retrieving saved review evidence.

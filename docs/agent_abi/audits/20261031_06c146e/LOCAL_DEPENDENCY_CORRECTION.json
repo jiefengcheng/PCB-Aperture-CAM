@@ -1,0 +1,36 @@
+{
+  "status": "LOCAL_DEPENDENCY_DELIVERY_CORRECTION_PREPARED",
+  "base_reviewed_commit": "06c146e55bfcf97a49733e5d39063ae273e6e764",
+  "independent_audit_receipt": "docs/agent_abi/audits/20261031_06c146e/evidence/ABI5_INDEPENDENT_AUDIT_RECEIPT_20261031.json",
+  "independent_verdict": "PASS_FOR_NEXT_SLICE_ABI_IMPLEMENTATION_ONLY",
+  "local_fix_finding": "ABI5-001",
+  "pin": "sexpdata==1.0.2",
+  "zip_sha256": "40e532c183b2ba8a0e60cdbc30fc9bd9a42d3acedd5d84a9d6b3c25913ee5c74",
+  "source_runtime_fingerprint": "8636a36610be1f13e6b6a2be516bdd6328df4794512a427fb8b9c12983211091",
+  "parser_fingerprint_contract_changed": false,
+  "followup_independent_review": "NOT_RUN_FOR_LOCAL_LOCKFILE_CORRECTION",
+  "protected_inputs": {
+    "assets": {
+      "status": "PASS",
+      "files": 70,
+      "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+    },
+    "protected_freezes": [
+      {
+        "path": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261",
+        "receipt_sha256": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013",
+        "files": 90
+      },
+      {
+        "path": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266",
+        "receipt_sha256": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627",
+        "files": 881
+      },
+      {
+        "path": "out/crop_dynamic_tasks/c03_final_so_far_freeze_20261030_270",
+        "receipt_sha256": "725863b9f8a5e82b6c70466b2c6a306c0bb1ccd0b866c7dbc39060c1235bd8a3",
+        "files": 19019
+      }
+    ]
+  }
+}

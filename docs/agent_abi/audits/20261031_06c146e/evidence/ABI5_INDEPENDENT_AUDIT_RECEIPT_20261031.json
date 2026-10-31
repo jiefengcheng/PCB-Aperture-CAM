@@ -1,0 +1,256 @@
+{
+  "audit_id": "ABI5_INDEPENDENT_CODE_AND_MODEL_AUDIT_20261031_SUPPLEMENT",
+  "cross_suite": {
+    "observations": "Tests exercise T01>T03>T04>T02>T05 with conditional verification admission and T03-derived route authority, job idempotency/conflict/process death/checkpoint; not equivalent to accepted native whole-board five-stage run",
+    "verdict": "PASS_FOR_NEXT_SLICE_MODEL_ORCHESTRATION_ONLY"
+  },
+  "dependency_supplement": {
+    "claimed_archive_sha256": "840e9f87002bccc9f98482129484031bdeb1fd081d46c6bb401911757d1aa47b",
+    "distribution_metadata_present": true,
+    "license_present": true,
+    "missing_from_original_requirements_dev": true,
+    "missing_from_original_requirements_lock": true,
+    "module_hash_matches_user_supplied": true,
+    "original_packet_and_production_sources_untouched": true,
+    "parser_bytes_source": "retained unchanged REV10 archive vendor/sexpdata.py (independent provenance, same exact supplied hash)",
+    "parser_sha256": "ceaa3bb54b53f159359e33d1d65bb3918614289b2c78e8f46b6e9e1f96673e3c",
+    "supplement_SHA256SUMS_verified": false,
+    "supplement_outer_sha256_verified": false,
+    "supplement_zip_available_to_auditor": false
+  },
+  "findings": [
+    {
+      "classification": "dependency packaging defect",
+      "evidence": "repo/requirements.lock.txt; repo/requirements-dev.txt; imports src/native_inventory.py:11 and src/crop_circle_sources.py:5",
+      "id": "ABI5-001",
+      "observation": "sexpdata is required but omitted from original dependency locks. 1.0.2 exact hash confirmed via retained REV10; supplement ZIP manifest not available",
+      "recommendation": "For next separately versioned delivery include the exact licensed parser and lock it; verify supplement outer hash where accessible.",
+      "severity": "MEDIUM_DELIVERY"
+    },
+    {
+      "classification": "runtime dependency fingerprint gap",
+      "evidence": "repo/src/stage_abi/service.py:16-19",
+      "id": "ABI5-002",
+      "observation": "runtime fingerprint covers source .py, Python, Shapely, GEOS but does not bind sexpdata byte identity; a different parser might not change that fingerprint",
+      "recommendation": "Future separately versioned runtime contract should explicitly bind native parser bytes/version without altering currently frozen plans.",
+      "severity": "LOW_PROVENANCE"
+    },
+    {
+      "classification": "environment mismatch",
+      "evidence": "repo/audit/replay_saved_cases.py:27-33; six REPORT.json fresh guard outcomes",
+      "id": "ABI5-003",
+      "observation": "All six saved source VERIFY cases correctly refused Python/platform fingerprint mismatch; saved native qualification not independently reexecuted",
+      "recommendation": "Perform fresh VERIFY only in an exact eligible runtime; do not rewrite fingerprints or reuse saved PASS.",
+      "severity": "EVIDENCE_LIMIT"
+    },
+    {
+      "classification": "frozen archive incompleteness",
+      "evidence": "FROZEN_BOUNDARY.json; freeze_boundary/{C01,C02,C03}",
+      "id": "ABI5-004",
+      "observation": "Supplied 8 frozen files present and hashed under packet manifest; 19,990 original frozen payloads not all supplied",
+      "recommendation": "Do not claim 19,990-file before-after checks independently repeated.",
+      "severity": "EVIDENCE_LIMIT"
+    },
+    {
+      "classification": "narrow supported families not defects",
+      "evidence": "repo/docs/agent_abi/STAGE_RUNTIME.md:103-120; repo/src/stage_abi/routes.py; lands.py; width.py",
+      "id": "ABI5-005",
+      "observation": "T01 non-round and T03 arbitrary native curves intentionally unsupported; T04 global optimum not proven, electrical connectivity not established",
+      "recommendation": "Keep these exclusions explicit in public claims and next slice.",
+      "severity": "SUPPORTED_SCOPE"
+    },
+    {
+      "classification": "prior qualification separate",
+      "evidence": "AUDIT_REQUEST.txt:28; prior REV234 receipt",
+      "id": "ABI5-006",
+      "observation": "Historical C02 strict exact replay REVISE and C03 provisional screenshot localization are not resolved by ABI tests",
+      "recommendation": "Do not close historical findings or alter C01/C02/C03 frozen assets.",
+      "severity": "HISTORICAL_OPEN"
+    }
+  ],
+  "frozen_supplied_subset": {
+    "C01": {
+      "all_payloads_present": false,
+      "geometry_expected": "587d10f5855c4b7afe2f37130277d3c0bdc711b84b74c0dd8c69f6d4ff932966",
+      "included_files": [
+        {
+          "inside_verified_manifest": true,
+          "matches_declared_sha256": true,
+          "path": "FREEZE_RECEIPT.json",
+          "sha256": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013"
+        },
+        {
+          "inside_verified_manifest": true,
+          "matches_declared_sha256": true,
+          "path": "frozen/after.wkb",
+          "sha256": "587d10f5855c4b7afe2f37130277d3c0bdc711b84b74c0dd8c69f6d4ff932966"
+        }
+      ],
+      "receipt_expected": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013"
+    },
+    "C02": {
+      "all_payloads_present": false,
+      "geometry_expected": "60f60b0012277f28fad494df16e14957fa8196fcd11475a5cafb42500918040a",
+      "included_files": [
+        {
+          "inside_verified_manifest": true,
+          "matches_declared_sha256": true,
+          "path": "FREEZE_RECEIPT.json",
+          "sha256": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627"
+        },
+        {
+          "inside_verified_manifest": true,
+          "matches_declared_sha256": true,
+          "path": "frozen/c02_t05_after_T02_20261030_263/after.wkb",
+          "sha256": "60f60b0012277f28fad494df16e14957fa8196fcd11475a5cafb42500918040a"
+        },
+        {
+          "inside_verified_manifest": true,
+          "matches_declared_sha256": null,
+          "path": "SHA256SUMS.json",
+          "sha256": "ee4013d1959eadd6d3dc9b4f92b65487d70ef4681c43f9c3f29de5a01710e24b"
+        }
+      ],
+      "receipt_expected": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627"
+    },
+    "C03": {
+      "all_payloads_present": false,
+      "geometry_expected": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323",
+      "included_files": [
+        {
+          "inside_verified_manifest": true,
+          "matches_declared_sha256": true,
+          "path": "FREEZE_RECEIPT.json",
+          "sha256": "725863b9f8a5e82b6c70466b2c6a306c0bb1ccd0b866c7dbc39060c1235bd8a3"
+        },
+        {
+          "inside_verified_manifest": true,
+          "matches_declared_sha256": true,
+          "path": "frozen/T05/after.wkb",
+          "sha256": "105bf97249ea677618aa0ce0455ccb253f7d1e0be305c24f67f9d5f258c53323"
+        },
+        {
+          "inside_verified_manifest": true,
+          "matches_declared_sha256": null,
+          "path": "SHA256SUMS.json",
+          "sha256": "a3dc77ba5052699d3c0a83dc2a5c74559c09d0ab171d384c64ed703296804a23"
+        }
+      ],
+      "receipt_expected": "725863b9f8a5e82b6c70466b2c6a306c0bb1ccd0b866c7dbc39060c1235bd8a3"
+    }
+  },
+  "independent_regression": {
+    "base_command": ".venv/bin/python -m pytest -q <unchanged 31 modules from REGRESSION_COMMAND.json> --basetemp out/<unique audit path>",
+    "collection": "313 tests across 31 supplied modules",
+    "command_source": "stage_abi_audit/REGRESSION_COMMAND.json",
+    "distinct_tests_failed": 0,
+    "distinct_tests_passed": 313,
+    "environment": "PYTHONPATH=<repo>:<sha-identical vendor from REV10>:/opt/pyvenv/lib/python3.13/site-packages; TMPDIR=<repo>/out/tmp; PYTHONDONTWRITEBYTECODE=1",
+    "execution_mode": "split unchanged original test modules/cases across subprocess invocations after a combined-run timeout; all selected test cases executed to PASS",
+    "full_monolithic_command_completed": false,
+    "runtime": {
+      "GEOS": "3.13.1",
+      "author_jsonschema": "4.25.1",
+      "author_numpy": "2.5.4",
+      "author_pytest": "9.1.1",
+      "author_python": "3.14.5 macOS arm64",
+      "jsonschema": "4.26.0",
+      "numpy": "2.3.5",
+      "os": "Linux x86_64",
+      "pytest": "9.0.2",
+      "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+      "python_execution": "3.13.5",
+      "shapely": "2.1.2"
+    },
+    "segments": [
+      {
+        "count": 186,
+        "log": "regression_abi_core.log",
+        "name": "stage_abi_core",
+        "result": "PASS"
+      },
+      {
+        "count": 122,
+        "log": "regression_geometry.log",
+        "name": "geometry_and_legacy",
+        "result": "PASS",
+        "subtests": 2
+      },
+      {
+        "count": 3,
+        "log": "regression_wire_4.log",
+        "name": "wire_t01_t02_t03",
+        "result": "PASSED lines seen; parent process timed out on t05"
+      },
+      {
+        "count": 1,
+        "log": "regression_wire_t04.log",
+        "name": "wire_t04",
+        "result": "PASS"
+      },
+      {
+        "count": 1,
+        "log": "regression_wire_t05.log",
+        "name": "wire_t05",
+        "result": "PASS"
+      }
+    ],
+    "subtests_passed": 2
+  },
+  "next_bounded_action": "Complete dependency package manifest with exact parser; run saved VERIFY in author-identical permitted environment; separately version parser binding hardening if desired; do not run native construction campaign or change crop acceptance.",
+  "no_native_construction_or_acceptance": true,
+  "operations": {
+    "actual_production_factory_wire_tests": "T01/T02/T03/T04/T05 all 5 PASS; each exercises 7 operations",
+    "per_suite": 7,
+    "tool_projections": 35
+  },
+  "packet": {
+    "abi": "stage-agent-abi/1.0",
+    "commit": "06c146e55bfcf97a49733e5d39063ae273e6e764",
+    "manifest_entries": 20340,
+    "operations": 35,
+    "outer_integrity_status": "PASS",
+    "outer_zip_sha256": "50705fb6db97ebc2c2c4b03edab91884c34526872530b2832d9b787faa33a449",
+    "packet": "STAGE-ABI-FIVE-SUITES-INDEPENDENT-AUDIT-20261031-01",
+    "zip_members": 20342
+  },
+  "per_suite": {
+    "T01": {
+      "limitations": "Explicit class-qualified polygonal circles only, 1.5 original diameter ceiling; historic non-round families UNSUPPORTED, actual native source fresh VERIFY blocked by fingerprint",
+      "verdict": "PASS_FOR_NEXT_SLICE_MODEL_SCOPE"
+    },
+    "T02": {
+      "limitations": "Separate ordinary/inclusive original-core-constrained rectangles, original axis ceiling 1.25; full source saved candidate fresh VERIFY unavailable",
+      "verdict": "PASS_FOR_NEXT_SLICE_MODEL_SCOPE"
+    },
+    "T03": {
+      "limitations": "Bounded constant-width exact polyline normal-offset/miter family; native case NO_CHANGE_REQUIRED; positive multi-route search only synthetic; curved native families UNSUPPORTED",
+      "verdict": "PASS_FOR_NEXT_SLICE_MODEL_SCOPE"
+    },
+    "T04": {
+      "limitations": "Complete source-qualified route and disjoint groups, one uniform scale up to 1.5, positive native saved candidate not independently VERIFIED; coordinatewise model upper proofs not global maximum",
+      "verdict": "PASS_FOR_NEXT_SLICE_MODEL_SCOPE"
+    },
+    "T05": {
+      "limitations": "Separate additive spindle family with source/current positive-area contacts and foreign checks; saved source case fresh VERIFY unavailable",
+      "verdict": "PASS_FOR_NEXT_SLICE_MODEL_SCOPE"
+    }
+  },
+  "saved_verification": {
+    "cases": {
+      "bundle_model": "NOT_RUN_ENVIRONMENT_MISMATCH",
+      "t01": "NOT_RUN_ENVIRONMENT_MISMATCH",
+      "t02": "NOT_RUN_ENVIRONMENT_MISMATCH",
+      "t03": "NOT_RUN_ENVIRONMENT_MISMATCH",
+      "t04": "NOT_RUN_ENVIRONMENT_MISMATCH",
+      "t05": "NOT_RUN_ENVIRONMENT_MISMATCH"
+    },
+    "expected_runtime_fingerprint": "8636a36610be1f13e6b6a2be516bdd6328df4794512a427fb8b9c12983211091",
+    "guard_modified": false,
+    "observed_runtime_fingerprint": "c928eacbad8a7b04cfc83bd39df3db4bde1569e4804d368fc751b00a25fc8334",
+    "old_jobs_reused": false,
+    "verification_run": false
+  },
+  "scoped_verdict": "Code/contracts/model regression PASS; fresh saved native-source ABI verification NOT_ESTABLISHED due exact runtime mismatch; no crop/native/electrical/manufacturing acceptance",
+  "status": "PASS_FOR_NEXT_SLICE_ABI_IMPLEMENTATION_ONLY"
+}
