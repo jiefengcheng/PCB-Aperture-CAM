@@ -1,0 +1,10 @@
+{
+  "source_path": "out/crop_dynamic_tasks/stage_abi_native_t02_20261031_286",
+  "file_count": 36381,
+  "uncompressed_manifest_sha256": "b1c34dce56027e4ac709e58ad37f3ed6edf53d93c322557fd5201c73ef856752",
+  "full_manifest_ref": {
+    "path": "LOCAL_EVIDENCE_MANIFEST.json.gz",
+    "sha256": "dcb9533b24a1095dfb03ae78ee865df16aa3de4f63881dc1988a5e181cbe4280"
+  },
+  "note": "Full native cache/runtime artifacts remain local. This manifest binds them; it is not a substitute for executing geometry verification."
+}

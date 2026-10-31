@@ -1,4 +1,8 @@
-# CAM Agent ABI v0.1
+# CAM agent interfaces
+
+The executable [stage runtime version 1](STAGE_RUNTIME.md) provides all 35 T01/T03/T04/T02/T05 operations, including actual construction/search and verification for explicitly supported profiles. T05 is independent of T02. The historical v0.1 reader below retains its original frozen profile behavior.
+
+## Historical CAM Agent ABI v0.1
 
 This is a project-local JSON boundary around the current CAM evidence. It gives a future coordinator a small, typed vocabulary for describing available capabilities, inspecting hash-bound records, composing a deterministic plan, comparing registered runs, and retrieving saved review evidence.
 
@@ -72,7 +76,7 @@ are documentation only. No T03 functions, schemas, registry entries or adapters
 are added; existing v0.1 run/verify availability is unchanged.
 
 
-## Separate stage suites — 2026-10-31
+## Historical stage design proposals — 2026-10-31
 
 | Suite | Ownership | Availability |
 |---|---|---|
@@ -81,4 +85,4 @@ are added; existing v0.1 run/verify availability is unchanged.
 | [T04](../crop_dynamic_tasks/t04_architecture_notes/T04_AGENT_ABI_PROPOSAL.md) | Complete-route nominal width optimization | Design only |
 | [T05](../crop_dynamic_tasks/t05_architecture_notes/T05_AGENT_ABI_PROPOSAL.md) | Local additive junction/spindle treatment | Design only |
 
-The [common composition design](../crop_dynamic_tasks/AGENT_STAGE_COMPOSITION.md) separates module ownership and explicit scene handoffs. These documents do not extend the live v0.1 dispatcher or expose construction tools. Current local module functions and proposed agent operations are different layers.
+The [common composition design](../crop_dynamic_tasks/AGENT_STAGE_COMPOSITION.md) separates module ownership and explicit scene handoffs. These proposals did not extend the v0.1 dispatcher. Their version-1 implementation now lives in `src/stage_abi/` and is documented above; the historical proposal envelopes are not the implemented schemas.

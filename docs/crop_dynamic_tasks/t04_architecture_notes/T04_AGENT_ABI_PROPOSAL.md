@@ -1,5 +1,7 @@
 # T04 ChatGPT-agent ABI suite
 
+Historical design proposal retained below. The separately versioned, executable [stage-agent-abi/1.0 runtime](../../agent_abi/STAGE_RUNTIME.md) now implements this suite for explicit supported families; use its schemas and qualification limits. This does not change the legacy v0.1 profiles or frozen crop evidence.
+
 **PROPOSED / NOT_IMPLEMENTED.** Standalone T04 width-optimization contract; not registered tools or callable ABI functions. Read with [common envelope and composition rules](../AGENT_STAGE_COMPOSITION.md) and [actual module map](README.md). Existing `cam_run` and `cam_verify` remain unavailable. No automatic execution is implied by a plan.
 
 Version proposal: `t04-proposed-0.1`. Proposed profile: `complete-source-uniform-width-proposed`, bound to an explicitly qualified source-offset family and surface-check contract. This name is not a live registry ID.

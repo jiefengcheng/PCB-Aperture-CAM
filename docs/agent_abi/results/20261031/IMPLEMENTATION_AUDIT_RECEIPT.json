@@ -1,0 +1,83 @@
+{
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_ALL_35_OPERATIONS_FOR_SUPPORTED_FAMILIES",
+  "review_method": "same-assistant implementation review and executed regression/source qualifications",
+  "abi_version": "stage-agent-abi/1.0",
+  "runtime_fingerprint": "8636a36610be1f13e6b6a2be516bdd6328df4794512a427fb8b9c12983211091",
+  "operations": [
+    "t01_describe",
+    "t01_inspect",
+    "t01_plan",
+    "t01_verify",
+    "t01_compare",
+    "t01_review",
+    "t01_run",
+    "t02_describe",
+    "t02_inspect",
+    "t02_plan",
+    "t02_verify",
+    "t02_compare",
+    "t02_review",
+    "t02_run",
+    "t03_describe",
+    "t03_inspect",
+    "t03_plan",
+    "t03_verify",
+    "t03_compare",
+    "t03_review",
+    "t03_search",
+    "t04_describe",
+    "t04_inspect",
+    "t04_plan",
+    "t04_verify",
+    "t04_compare",
+    "t04_review",
+    "t04_run",
+    "t05_describe",
+    "t05_inspect",
+    "t05_plan",
+    "t05_verify",
+    "t05_compare",
+    "t05_review",
+    "t05_run"
+  ],
+  "regression": "313 tests passed plus 2 subtests",
+  "protected_inputs": {
+    "assets": {
+      "status": "PASS",
+      "files": 70,
+      "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+    },
+    "protected_freezes": [
+      {
+        "path": "out/crop_dynamic_tasks/c01_final_so_far_freeze_20261030_261",
+        "receipt_sha256": "143ef4c8c61450766ce980a2d29580b23720cb4b0f7f4d7f0ccfdcf037392013",
+        "files": 90
+      },
+      {
+        "path": "out/crop_dynamic_tasks/c02_final_so_far_freeze_20261030_266",
+        "receipt_sha256": "7ee42ce0d32abda0883798541f34b24876bae79f9774dd7fbf52e495b3407627",
+        "files": 881
+      },
+      {
+        "path": "out/crop_dynamic_tasks/c03_final_so_far_freeze_20261030_270",
+        "receipt_sha256": "725863b9f8a5e82b6c70466b2c6a306c0bb1ccd0b866c7dbc39060c1235bd8a3",
+        "files": 19019
+      }
+    ]
+  },
+  "qualification_provenance_ref": {
+    "path": "PROVENANCE.json",
+    "sha256": "df8cb0e75a5f75e278328e1e38d1e1734b5dd156e155bcd0410f776e47a47fbf"
+  },
+  "independent": "NOT_RUN",
+  "native_electrical_manufacturing": "NOT_ESTABLISHED",
+  "frozen_acceptance_changed": false,
+  "historical_C02_independent_REVISE": "PRESERVED_NOT_CLOSED",
+  "C03_localization": "PROVISIONAL_PRESERVED",
+  "limits": [
+    "Versioned explicit source families; host-qualified source admission required",
+    "Actual native source executions are bounded selected operations, not a new full-board sequence",
+    "Positive adaptive bundle construction and five-stage composition are model qualifications",
+    "No production ChatGPT transport or installed tool registration is claimed"
+  ]
+}

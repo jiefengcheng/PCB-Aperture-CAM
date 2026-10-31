@@ -1,5 +1,7 @@
 # T02 ChatGPT-agent ABI suite — design only
 
+Historical design proposal retained below. The separately versioned, executable [stage-agent-abi/1.0 runtime](../../agent_abi/STAGE_RUNTIME.md) now implements this suite for explicit supported families; use its schemas and qualification limits. This does not change the legacy v0.1 profiles or frozen crop evidence.
+
 **PROPOSED / NOT_IMPLEMENTED.** T02 owns rectangle-land growth and separately admitted inclusive rectangle consolidation only. The earlier request named T02 alongside T05 consolidation; standalone T04 and T05 suites are now specified separately. No route-width or junction-growth operations belong to T02. No functions, stubs, runtime schemas, service endpoints, registry entries or new executable tests are implemented by this design. Existing v0.1 `cam_run` and `cam_verify` remain unavailable.
 
 The [older deferred mapping](T02_AGENT_ABI_DEFERRED.md) and [v69 structure map](T02_CODE_STRUCTURE.md) remain historical references. This proposal covers both their evidence-inspection boundary and the newer trace-first T02 lineage, without pretending those profiles are interchangeable.

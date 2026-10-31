@@ -1,0 +1,55 @@
+{
+  "status": "PASS_REAL_SOURCE_BOUNDED_T05",
+  "stage": "t05",
+  "runtime_fingerprint": "8636a36610be1f13e6b6a2be516bdd6328df4794512a427fb8b9c12983211091",
+  "asset_integrity": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "preparation": {
+    "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+    "source_manifest_sha256": "0c3e75925053a649a3c14e0449555a2faa7a814c061beb26ef1fc29a96605101",
+    "predecessor": "T02",
+    "viewport_mm": [
+      -0.2014567873677096,
+      -16.663049227354815,
+      12.287158691076955,
+      -8.101315108723439
+    ],
+    "source_run": "out/crop_dynamic_tasks/c03_sequence_20261030_269",
+    "scope": "One explicitly selected operation with complete original source context. C03 screenshot localization remains provisional; no new accepted scene.",
+    "native_complete_route": {
+      "component_id": "ER-004dd51f60570e98",
+      "source_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1766210:1766298",
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1768404:1768521"
+      ]
+    }
+  },
+  "native_source_objects": 17849,
+  "scene_objects": 17854,
+  "selected_source_ids": [
+    "route:ER-004dd51f60570e98"
+  ],
+  "before_sha256": "0c828a0ea09a2732ee888c9512fca88f2d8f7214be50b1cbc7b138a611b9a2e7",
+  "after_sha256": "919519fe92e8a58b4239d1db2bdc07087440c26aa6664d50af66938111dc9891",
+  "added_area_mm2": 0.006514554710827934,
+  "removed_area_mm2": 0.0,
+  "candidate_ref": {
+    "artifact_id": "candidate:3e257df4018e40cd9cb2911a3ad577e392efd1fe89fbb266c7e8cba84e8ed4ab",
+    "sha256": "3e257df4018e40cd9cb2911a3ad577e392efd1fe89fbb266c7e8cba84e8ed4ab"
+  },
+  "verification_ref": {
+    "artifact_id": "verification:bc8e753d7abc599ebabe63092d33be1bdd6bcd1d52f94918a14321a340cd84a5",
+    "sha256": "bc8e753d7abc599ebabe63092d33be1bdd6bcd1d52f94918a14321a340cd84a5"
+  },
+  "output_scene_ref": {
+    "artifact_id": "scene:11beb1d0835332771e47bd3248355f6d0ea97824e737246d63ad00b26146a3cf",
+    "sha256": "11beb1d0835332771e47bd3248355f6d0ea97824e737246d63ad00b26146a3cf"
+  },
+  "geometry_status": "PASS",
+  "owner": "NOT_GRANTED_FOR_NEW_SCENE",
+  "independent": "NOT_RUN",
+  "native_electrical_manufacturing": "NOT_ESTABLISHED"
+}

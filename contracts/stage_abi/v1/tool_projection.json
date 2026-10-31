@@ -1,0 +1,3698 @@
+{
+  "abi_version": "stage-agent-abi/1.0",
+  "format": "host-neutral-operation-projections/1",
+  "installed_tools": false,
+  "tools": [
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t01_describe"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "requested_contract_version": {
+                "enum": [
+                  null,
+                  "stage-agent-abi/1.0"
+                ]
+              }
+            },
+            "required": [
+              "requested_contract_version"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "type": "null"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t01_describe",
+      "name": "t01_describe"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t01_inspect"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "anyOf": [
+              {
+                "properties": {
+                  "source_ids": {
+                    "minItems": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "finding_ids": {
+                    "minItems": 1
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "cursor": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "finding_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "page_size": {
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "source_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "cursor",
+              "finding_ids",
+              "page_size",
+              "source_ids"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t01_inspect",
+      "name": "t01_inspect"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t01_plan"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "bounds_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "inspection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "predecessor_qualification_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "strategy": {
+                "const": "round_class_growth"
+              }
+            },
+            "required": [
+              "bounds_ref",
+              "inspection_ref",
+              "predecessor_qualification_ref",
+              "selection_ref",
+              "strategy"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t01_plan",
+      "name": "t01_plan"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t01_verify"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "proof_scope_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "verifier_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "proof_scope_ref",
+              "verifier_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t01_verify",
+      "name": "t01_verify"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t01_compare"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "left_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "right_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "viewport_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "evidence_selection_ref",
+              "left_ref",
+              "right_ref",
+              "viewport_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t01_compare",
+      "name": "t01_compare"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t01_review"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "decision_filters": {
+                "additionalProperties": false,
+                "properties": {
+                  "cursor": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/ref"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "page_size": {
+                    "maximum": 100,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "types": {
+                    "items": {
+                      "enum": [
+                        "owner",
+                        "independent",
+                        "local"
+                      ]
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "types",
+                  "page_size",
+                  "cursor"
+                ],
+                "type": "object"
+              },
+              "verification_ref": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "decision_filters",
+              "verification_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t01_review",
+      "name": "t01_review"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t01_run"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "output_scope_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "output_scope_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t01_run",
+      "name": "t01_run"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t02_describe"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "requested_contract_version": {
+                "enum": [
+                  null,
+                  "stage-agent-abi/1.0"
+                ]
+              }
+            },
+            "required": [
+              "requested_contract_version"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "type": "null"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t02_describe",
+      "name": "t02_describe"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t02_inspect"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "anyOf": [
+              {
+                "properties": {
+                  "source_ids": {
+                    "minItems": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "finding_ids": {
+                    "minItems": 1
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "cursor": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "finding_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "page_size": {
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "source_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "cursor",
+              "finding_ids",
+              "page_size",
+              "source_ids"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t02_inspect",
+      "name": "t02_inspect"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t02_plan"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "bounds_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "inspection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "predecessor_qualification_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "strategy": {
+                "const": "whole_rectangle_growth"
+              }
+            },
+            "required": [
+              "bounds_ref",
+              "inspection_ref",
+              "predecessor_qualification_ref",
+              "selection_ref",
+              "strategy"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t02_plan",
+      "name": "t02_plan"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t02_verify"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "proof_scope_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "verifier_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "proof_scope_ref",
+              "verifier_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t02_verify",
+      "name": "t02_verify"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t02_compare"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "left_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "right_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "viewport_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "evidence_selection_ref",
+              "left_ref",
+              "right_ref",
+              "viewport_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t02_compare",
+      "name": "t02_compare"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t02_review"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "decision_filters": {
+                "additionalProperties": false,
+                "properties": {
+                  "cursor": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/ref"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "page_size": {
+                    "maximum": 100,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "types": {
+                    "items": {
+                      "enum": [
+                        "owner",
+                        "independent",
+                        "local"
+                      ]
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "types",
+                  "page_size",
+                  "cursor"
+                ],
+                "type": "object"
+              },
+              "verification_ref": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "decision_filters",
+              "verification_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t02_review",
+      "name": "t02_review"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t02_run"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "output_scope_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "output_scope_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t02_run",
+      "name": "t02_run"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t03_describe"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "requested_contract_version": {
+                "enum": [
+                  null,
+                  "stage-agent-abi/1.0"
+                ]
+              }
+            },
+            "required": [
+              "requested_contract_version"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "type": "null"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t03_describe",
+      "name": "t03_describe"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t03_inspect"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "anyOf": [
+              {
+                "properties": {
+                  "source_ids": {
+                    "minItems": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "finding_ids": {
+                    "minItems": 1
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "cursor": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "finding_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "page_size": {
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "source_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "cursor",
+              "finding_ids",
+              "page_size",
+              "source_ids"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t03_inspect",
+      "name": "t03_inspect"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t03_plan"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "bounds_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "inspection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "predecessor_qualification_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "strategy": {
+                "const": "obstacle_directed_single_or_bundle"
+              }
+            },
+            "required": [
+              "bounds_ref",
+              "inspection_ref",
+              "predecessor_qualification_ref",
+              "selection_ref",
+              "strategy"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t03_plan",
+      "name": "t03_plan"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t03_verify"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "proof_scope_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "verifier_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "proof_scope_ref",
+              "verifier_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t03_verify",
+      "name": "t03_verify"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t03_compare"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "left_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "right_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "viewport_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "evidence_selection_ref",
+              "left_ref",
+              "right_ref",
+              "viewport_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t03_compare",
+      "name": "t03_compare"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t03_review"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "decision_filters": {
+                "additionalProperties": false,
+                "properties": {
+                  "cursor": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/ref"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "page_size": {
+                    "maximum": 100,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "types": {
+                    "items": {
+                      "enum": [
+                        "owner",
+                        "independent",
+                        "local"
+                      ]
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "types",
+                  "page_size",
+                  "cursor"
+                ],
+                "type": "object"
+              },
+              "verification_ref": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "decision_filters",
+              "verification_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t03_review",
+      "name": "t03_review"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t03_search"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "output_scope_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "output_scope_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t03_search",
+      "name": "t03_search"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t04_describe"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "requested_contract_version": {
+                "enum": [
+                  null,
+                  "stage-agent-abi/1.0"
+                ]
+              }
+            },
+            "required": [
+              "requested_contract_version"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "type": "null"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t04_describe",
+      "name": "t04_describe"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t04_inspect"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "anyOf": [
+              {
+                "properties": {
+                  "source_ids": {
+                    "minItems": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "finding_ids": {
+                    "minItems": 1
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "cursor": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "finding_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "page_size": {
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "source_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "cursor",
+              "finding_ids",
+              "page_size",
+              "source_ids"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t04_inspect",
+      "name": "t04_inspect"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t04_plan"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "bounds_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "inspection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "predecessor_qualification_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "strategy": {
+                "const": "collective_uniform_width"
+              }
+            },
+            "required": [
+              "bounds_ref",
+              "inspection_ref",
+              "predecessor_qualification_ref",
+              "selection_ref",
+              "strategy"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t04_plan",
+      "name": "t04_plan"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t04_verify"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "proof_scope_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "verifier_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "proof_scope_ref",
+              "verifier_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t04_verify",
+      "name": "t04_verify"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t04_compare"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "left_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "right_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "viewport_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "evidence_selection_ref",
+              "left_ref",
+              "right_ref",
+              "viewport_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t04_compare",
+      "name": "t04_compare"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t04_review"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "decision_filters": {
+                "additionalProperties": false,
+                "properties": {
+                  "cursor": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/ref"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "page_size": {
+                    "maximum": 100,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "types": {
+                    "items": {
+                      "enum": [
+                        "owner",
+                        "independent",
+                        "local"
+                      ]
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "types",
+                  "page_size",
+                  "cursor"
+                ],
+                "type": "object"
+              },
+              "verification_ref": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "decision_filters",
+              "verification_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t04_review",
+      "name": "t04_review"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t04_run"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "output_scope_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "output_scope_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t04_run",
+      "name": "t04_run"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t05_describe"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "requested_contract_version": {
+                "enum": [
+                  null,
+                  "stage-agent-abi/1.0"
+                ]
+              }
+            },
+            "required": [
+              "requested_contract_version"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "type": "null"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t05_describe",
+      "name": "t05_describe"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t05_inspect"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "anyOf": [
+              {
+                "properties": {
+                  "source_ids": {
+                    "minItems": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "finding_ids": {
+                    "minItems": 1
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "cursor": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "finding_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "page_size": {
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "source_ids": {
+                "items": {
+                  "maxLength": 512,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "cursor",
+              "finding_ids",
+              "page_size",
+              "source_ids"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t05_inspect",
+      "name": "t05_inspect"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t05_plan"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "bounds_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "inspection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "predecessor_qualification_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "strategy": {
+                "const": "bounded_additive_spindle"
+              }
+            },
+            "required": [
+              "bounds_ref",
+              "inspection_ref",
+              "predecessor_qualification_ref",
+              "selection_ref",
+              "strategy"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t05_plan",
+      "name": "t05_plan"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t05_verify"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "proof_scope_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "verifier_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "proof_scope_ref",
+              "verifier_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t05_verify",
+      "name": "t05_verify"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t05_compare"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_selection_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "left_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "right_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "viewport_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "evidence_selection_ref",
+              "left_ref",
+              "right_ref",
+              "viewport_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t05_compare",
+      "name": "t05_compare"
+    },
+    {
+      "effect": "Bounded local inspection/plan/comparison/recorded-review evidence; no acceptance promotion",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "type": "null"
+          },
+          "idempotency_key": {
+            "type": "null"
+          },
+          "operation": {
+            "const": "t05_review"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "candidate_ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "decision_filters": {
+                "additionalProperties": false,
+                "properties": {
+                  "cursor": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/ref"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "page_size": {
+                    "maximum": 100,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "types": {
+                    "items": {
+                      "enum": [
+                        "owner",
+                        "independent",
+                        "local"
+                      ]
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "types",
+                  "page_size",
+                  "cursor"
+                ],
+                "type": "object"
+              },
+              "verification_ref": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ref"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "candidate_ref",
+              "decision_filters",
+              "verification_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "type": "null"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t05_review",
+      "name": "t05_review"
+    },
+    {
+      "effect": "New immutable local candidate/evidence; registered authority and idempotency required",
+      "input_schema": {
+        "$defs": {
+          "ref": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "abi_version": {
+            "const": "stage-agent-abi/1.0"
+          },
+          "authorization_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "idempotency_key": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "operation": {
+            "const": "t05_run"
+          },
+          "payload": {
+            "additionalProperties": false,
+            "properties": {
+              "output_scope_ref": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "required": [
+              "output_scope_ref"
+            ],
+            "type": "object"
+          },
+          "plan_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "policy_ref": {
+            "$ref": "#/$defs/ref"
+          },
+          "profile_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "request_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "scene_ref": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "required": [
+          "abi_version",
+          "authorization_ref",
+          "idempotency_key",
+          "operation",
+          "payload",
+          "plan_ref",
+          "policy_ref",
+          "profile_id",
+          "request_id",
+          "scene_ref"
+        ],
+        "type": "object"
+      },
+      "local_dispatch_operation": "t05_run",
+      "name": "t05_run"
+    }
+  ],
+  "transport": "tools/stage_agent_abi.py one JSON request/response"
+}

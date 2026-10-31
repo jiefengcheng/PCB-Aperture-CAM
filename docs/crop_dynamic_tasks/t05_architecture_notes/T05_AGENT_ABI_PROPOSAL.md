@@ -1,5 +1,7 @@
 # Independent T05 ChatGPT-agent ABI suite
 
+Historical design proposal retained below. The separately versioned, executable [stage-agent-abi/1.0 runtime](../../agent_abi/STAGE_RUNTIME.md) now implements this suite for explicit supported families; use its schemas and qualification limits. This does not change the legacy v0.1 profiles or frozen crop evidence.
+
 **PROPOSED / NOT_IMPLEMENTED.** This suite owns junction treatment only. It is independent of [T02's rectangle suite](../t02_architecture_notes/T02_AGENT_ABI_PROPOSAL.md), not an alias, extension or renamed phase of it. Read with [common envelope and composition rules](../AGENT_STAGE_COMPOSITION.md), [T05 code map](T05_CODE_STRUCTURE.md) and [implemented spindle contract](T05_CONSTRUCTION_CONTRACT.md). No functions, schemas, registry entries or endpoints are installed. Existing `cam_run`/`cam_verify` availability is unchanged.
 
 Version proposal: `t05-proposed-0.1`. Proposed profile: `land-sized-additive-spindle-proposed`, bound to internal family `land-sized-additive-spindle/1`. Earlier short-taper geometry is a separate family and cannot silently substitute its limits or claims.

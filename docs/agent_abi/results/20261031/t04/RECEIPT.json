@@ -1,0 +1,35 @@
+{
+  "status": "PASS_REAL_SOURCE_SINGLE_COMPLETE_ROUTE_ABI_EXECUTION_AND_REPLAY",
+  "runtime_fingerprint": "8636a36610be1f13e6b6a2be516bdd6328df4794512a427fb8b9c12983211091",
+  "asset_integrity": {
+    "status": "PASS",
+    "files": 70,
+    "manifest_sha256": "48e15ff38e178eb32962fe0107ebe25bb8c8272938ced9ea1602910b47b0b49c"
+  },
+  "imported": {
+    "scene_ref": {
+      "artifact_id": "scene:4e4038afc2535a4ba663f5ad1135e8bcc54d1e45e21ad047cf2f529f8a5144d5",
+      "sha256": "4e4038afc2535a4ba663f5ad1135e8bcc54d1e45e21ad047cf2f529f8a5144d5"
+    },
+    "target_ids": [
+      "route:ER-004dd51f60570e98"
+    ],
+    "source_objects": 17849,
+    "scene_objects": 17848,
+    "selected_native_members": 2,
+    "unchanged_native_members": 17847
+  },
+  "selected_scales": {
+    "singleton": 1.5
+  },
+  "native_parts": 2,
+  "candidate_ref": {
+    "artifact_id": "candidate:ac045455b196ffa1ff5388b4f2f398ae265e3cf7c52c68403be3aeef30470c05",
+    "sha256": "ac045455b196ffa1ff5388b4f2f398ae265e3cf7c52c68403be3aeef30470c05"
+  },
+  "verification_ref": {
+    "artifact_id": "verification:937529b430e8df602dc828923fbf327e924f47290dade649cdecb9177297d7bb",
+    "sha256": "937529b430e8df602dc828923fbf327e924f47290dade649cdecb9177297d7bb"
+  },
+  "scope": "Actual full C03 source context and one prepared native full route; not all routes, stage composition, independent/native-export/electrical/manufacturing qualification"
+}

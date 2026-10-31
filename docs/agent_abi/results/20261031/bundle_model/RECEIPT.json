@@ -1,0 +1,71 @@
+{
+  "status": "PASS_SYNTHETIC_ADAPTIVE_BUNDLE_AND_NATIVE_DERIVED_WIDTH_COMPOSITION",
+  "runtime_fingerprint": "8636a36610be1f13e6b6a2be516bdd6328df4794512a427fb8b9c12983211091",
+  "fixture": "tests.test_stage_abi_routes.case",
+  "actual_board": false,
+  "chosen": {
+    "distance_mm": 0.015101000000000002,
+    "expanded_indices": [
+      2,
+      4
+    ],
+    "extension_mm": 2.0,
+    "initial_indices": [
+      3,
+      3
+    ],
+    "moving": [
+      "low",
+      "upper"
+    ],
+    "recursion_depth": 1,
+    "reference_points_mm": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        2.0000000000000013,
+        0.015101000000000002
+      ],
+      [
+        3.0000000000000013,
+        0.015101000000000002
+      ],
+      [
+        4.000000000000002,
+        0.015101000000000002
+      ],
+      [
+        5,
+        0
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        8,
+        0
+      ]
+    ],
+    "vector": [
+      8.881784197001257e-14,
+      1.0
+    ]
+  },
+  "output_scene_ref": {
+    "artifact_id": "scene:2ec3aff264ae6528c2d3568a126967ce785d56b4c6646132978b410842de4d3d",
+    "sha256": "2ec3aff264ae6528c2d3568a126967ce785d56b4c6646132978b410842de4d3d"
+  },
+  "owner": "NOT_GRANTED",
+  "independent_native_electrical_manufacturing": "NOT_ESTABLISHED"
+}

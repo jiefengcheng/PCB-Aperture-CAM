@@ -1,5 +1,7 @@
 # T03 ChatGPT-agent ABI suite — design proposal only
 
+Historical design proposal retained below. The separately versioned, executable [stage-agent-abi/1.0 runtime](../../agent_abi/STAGE_RUNTIME.md) now implements this suite for explicit supported families; use its schemas and qualification limits. This does not change the legacy v0.1 profiles or frozen crop evidence.
+
 **PROPOSED / NOT_IMPLEMENTED.** This is a host-neutral JSON contract design, not
 registered ChatGPT tools, a callable server or an extension to the live v0.1 ABI.
 No functions, stubs, adapters, runtime schemas or executor wiring are implemented.

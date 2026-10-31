@@ -37,14 +37,16 @@ def validate_width_partition(chains, groups, *, fixed_source_ids=()):
 
 class SourceWidthStage:
     """Build one uniform source family per complete trace; cohorts share scale."""
-    def __init__(self, raw, chains, groups, meta, blobs, *, fixed_source_ids=()):
+    def __init__(self, raw, chains, groups, meta, blobs, *, fixed_source_ids=(), sources=None):
         self.assignment, self.represented = validate_width_partition(
             chains, groups, fixed_source_ids=fixed_source_ids)
         self.chains = chains
         self.group_ids = set(self.assignment.values())
+        if sources is not None and (set(sources)!=set(chains) or any(type(v) is not bytes for v in sources.values())):
+            raise ValueError('EXACT_BOUND_CHAIN_SOURCES_REQUIRED')
         self._construct = functools.lru_cache(maxsize=800)(
             lambda cid, factor: construct_source_offset_width(
-                raw, chains[cid], meta, blobs, factor))
+                raw if sources is None else sources[cid], chains[cid], meta, blobs, factor))
 
     def construct(self, cid, factor):
         if cid not in self.chains or type(factor) not in (int, float) or not math.isfinite(factor) or not 1 <= factor <= 1.5:
