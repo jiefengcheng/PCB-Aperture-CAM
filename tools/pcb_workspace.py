@@ -28,6 +28,19 @@ def configure():
     return work
 
 
+def guard_mountpoint():
+    """An absent external volume must leave an unwritable internal directory."""
+    if os.path.ismount(WORK):raise RuntimeError('CANNOT_GUARD_MOUNTED_VOLUME')
+    WORK.mkdir(parents=True,exist_ok=True)
+    old_mode=WORK.stat().st_mode&0o777
+    os.chmod(WORK,0o700)
+    try:
+        if any(WORK.iterdir()):raise RuntimeError('MOUNTPOINT_NOT_EMPTY: preserve existing files')
+    except BaseException:
+        os.chmod(WORK,old_mode);raise
+    os.chmod(WORK,0)
+
+
 def prepare():
     info=plistlib.loads(subprocess.check_output(['diskutil','info','-plist',str(VOLUME)]))
     if info.get('VolumeUUID')!=IDENTITY or info.get('MountPoint')!=str(VOLUME):
@@ -35,7 +48,7 @@ def prepare():
     if not IMAGE.exists():raise RuntimeError('LACIE_APFS_IMAGE_MISSING')
     WORK.mkdir(parents=True,exist_ok=True)
     if not os.path.ismount(WORK):
-        if any(WORK.iterdir()):raise RuntimeError('MOUNTPOINT_NOT_EMPTY: preserve existing files')
+        guard_mountpoint()
         subprocess.run(['hdiutil','attach',str(IMAGE),'-mountpoint',str(WORK),'-nobrowse'],check=True)
     images=plistlib.loads(subprocess.check_output(['hdiutil','info','-plist']))['images']
     if not any(Path(i.get('image-path',''))==IMAGE and any(e.get('mount-point')==str(WORK) for e in i.get('system-entities',[])) for i in images):

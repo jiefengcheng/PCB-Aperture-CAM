@@ -37,3 +37,19 @@ def test_low_external_space_halts_before_run(monkeypatch):
 
 def test_pytest_cache_is_external(request):
     assert request.config.cache._cachedir.is_relative_to(storage.WORK)
+
+
+def test_unmounted_cache_path_cannot_create_internal_fallback(tmp_path,monkeypatch):
+    mountpoint=tmp_path/'guarded';monkeypatch.setattr(storage,'WORK',mountpoint)
+    storage.guard_mountpoint()
+    try:
+        assert mountpoint.stat().st_mode&0o777==0
+        with pytest.raises(PermissionError):(mountpoint/'local_code').mkdir()
+    finally:mountpoint.chmod(0o700)
+
+
+def test_guard_preserves_nonempty_unmounted_directory(tmp_path,monkeypatch):
+    mountpoint=tmp_path/'existing';mountpoint.mkdir();(mountpoint/'keep').write_text('preserved')
+    monkeypatch.setattr(storage,'WORK',mountpoint)
+    with pytest.raises(RuntimeError,match='NOT_EMPTY'):storage.guard_mountpoint()
+    assert (mountpoint/'keep').read_text()=='preserved'
