@@ -1,0 +1,13 @@
+{
+  "schema":"pcb-c01-file-route/1",
+  "authority":"User authorized separate C01 KiCad/Gerber write-back through the local route. EDIT is the representation reference; geometry and protected roles, not byte identity, govern file checks. No owner/independent/manufacturing acceptance.",
+  "source_sha256":"850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "edit_sha256":"ec141305a9d93db87709124ba5aa9378135485ae5458f019e47a342d099496a5",
+  "operations":["pcb_kicad_write","pcb_kicad_verify","pcb_gerber_export","pcb_gerber_verify","pcb_export_controls"],
+  "base":"ORG + verified T01; filled-polygon representation follows EDIT. No unrelated EDIT geometry is imported.",
+  "precision":{"grid_mm":0.000001,"mode":"valid_output fixed-grid topology normalization; raw area/boundary changes reported","polygon_fidelity_mm":0.000002,"unchanged_analytic_circle_vs_source_approximation_mm":0.000014},
+  "preservation":"Unmodified native objects semantically equal; unmodified plot primitives and layer roles equal. Byte identity is not required.",
+  "proof":"Fresh native KiCad 10.99.0 exports, pinned executable hash; independent stored-file reparsing of KiCad and Gerber against verified T01 targets; three deliberately corrupted copies rejected for their expected reason.",
+  "limits":["Only C01 T01 graphic copper lands","No T02-T05 construction","No frozen writes","No global changes, installs, MCP or network","No net-aware pad conversion or electrical/manufacturing acceptance"],
+  "references":["https://shapely.readthedocs.io/en/2.1.2/reference/shapely.set_precision.html","https://dev-docs.kicad.org/en/file-formats/sexpr-pcb/"]
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "pcb-t01-terminal-machine-audit/1",
+  "mode": "DETERMINISTIC_MACHINE_AUDIT",
+  "entry": "tools/Run_T01_Board.command --input-dir <raw KiCad/Gerber directory>",
+  "scope": "Same 18 native raw-directory source, T01 and export slices. No rendering or later stages.",
+  "auditor": "src/pcb_data_abi/machine_audit.py",
+  "audit": "After each successful native attempt, verify original receipt, process exit, ABI correlation, full raw response, source/artifact hashes and gate-specific predicates. Persist observed operands, expected values and PASS/FAIL. Native route independently recalculates the proof before accepting its existing technical audit gate.",
+  "sequence": ["pcb_inputs_verify", "pcb_board_scope", "pcb_board_verify", "t01_compile", "t01_discover", "t01_inspect", "t01_plan", "t01_run", "t01_verify", "t01_compare", "t01_review", "t01_negative_compile", "board_candidate_check", "pcb_kicad_write", "pcb_kicad_verify", "pcb_gerber_export", "pcb_gerber_verify", "pcb_export_controls"],
+  "fail_closed": "Missing, false, unsupported, stale or altered evidence halts before the next slice. Retain failures and mark remaining operations NOT_RUN. No retries, resume, input substitution, synthetic observations or acceptance promotion.",
+  "custody": "Immutable machine proofs are included in original native audit checkpoints. Native wire token PASS_SLICE_OBSERVATION_AUDIT is retained for compatibility; its note links an explicit machine proof, never an agent observation. Final report distinguishes 18 machine audits and zero human/agent observations.",
+  "acceptance": {"owner": "PENDING_USER", "human_or_agent_observations": "NOT_RUN", "independent": "NOT_RUN: CHANNEL_UNAVAILABLE", "electrical_manufacturing": "NOT_ESTABLISHED"},
+  "invariants": "Raw inputs and excluded companions byte-identical; frozen C01/C02/C03, shared clearance and T02-T05 unchanged. All original native verification and corruption controls remain. Machine predicates do not change growth geometry, file-grid rules or numerical acceptance bands.",
+  "setup": "Native project Python, existing macOS file adapter and runner/contracts, owned by one Terminal command. No pre-opened launcher, agent, MCP, network, installation or global settings. Explicit raw directory mandatory; shared job lock prevents concurrency.",
+  "rendering": "NOT_REQUESTED; no renderer capability, calls or native board images"
+}

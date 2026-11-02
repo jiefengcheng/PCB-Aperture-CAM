@@ -1,0 +1,14 @@
+{
+  "schema": "pcb-c01-full-operator/1",
+  "intent": "Reproduce C01 through T01, export separate KiCad and Gerber files, and show and check them side by side",
+  "entry": "python3 tools/pcb_c01_full_operator.py start",
+  "review": "python3 tools/pcb_c01_full_operator.py review <one observation>",
+  "operations": ["t01_compile", "t01_discover", "t01_inspect", "t01_plan", "t01_run", "t01_verify", "t01_compare", "t01_review", "t01_negative_compile", "c01_reproduction_check", "pcb_kicad_write", "pcb_kicad_verify", "pcb_gerber_export", "pcb_gerber_verify", "pcb_export_controls", "render_c01_compare", "render_c01_verify", "render_c01_controls"],
+  "gates": "Each operation retains its native checks and requires a separate agent observation. Audited compile registers the policy; audited plan grants exact run authority. After all nine T01 audits, post-construction frozen comparison checks exact contours and semantics. Only its audited checkpoint permits fresh export; only five audited export operations permit rendering those exact files.",
+  "source": "Pinned original ORG and C01 English interaction policy; no historical candidate contours feed construction. EDIT is the file representation reference, not the board base.",
+  "permitted_execution": "First tool action is start. Only start, 18 review calls and their completion polls. No existence/list/pwd/file/git/environment probes, wrappers, retries, no-op or extra terminal commands. On terminal REPORT_AND_STOP, deliver directly without another tool call.",
+  "delivery": "Embed returned comparison PNG using its absolute path. Provide candidate KiCad, candidate Gerber folder and HTML evidence links with concise scope/status. Do not repeat hash tables or full audit details.",
+  "failure": "HALTED on an actual native/check/audit failure; retain evidence and stop. No retry or repair within that session.",
+  "scope": "C01 T01 only; fresh separate candidates; frozen C01/C02/C03, shared clearance rules and T02-T05 unchanged. Owner PENDING_USER; independent NOT_RUN; electrical/manufacturing NOT_ESTABLISHED.",
+  "setup": "Project-local macOS launcher and prepared native environment; no MCP, service install, network or global configuration. Ordinary English selects this bounded intent; this is not a general English compiler or a sandbox for the app's other tools."
+}

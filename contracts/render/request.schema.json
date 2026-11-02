@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bounded PCB render request / 1",
+  "type": "object", "additionalProperties": false,
+  "required": ["abi_version", "request_id", "operation"],
+  "properties": {
+    "abi_version": {"const": "pcb-render-abi/1"},
+    "request_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"},
+    "operation": {"enum": ["render_c01_compare", "render_c01_verify", "render_c01_controls"]}
+  }
+}

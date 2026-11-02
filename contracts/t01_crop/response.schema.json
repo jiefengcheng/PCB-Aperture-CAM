@@ -1,0 +1,1320 @@
+{
+  "$defs": {
+    "ref": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "t01-crop-abi/2/response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_describe"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "execution": {
+              "type": "string"
+            },
+            "owner_acceptance": {
+              "const": "NOT_GRANTED_BY_ABI"
+            },
+            "profiles": {
+              "type": "object"
+            },
+            "stage": {
+              "enum": [
+                "t01",
+                "t02",
+                "t03",
+                "t04",
+                "t05"
+              ]
+            }
+          },
+          "required": [
+            "execution",
+            "owner_acceptance",
+            "profiles",
+            "stage"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_inspect"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "acceptance": {
+              "type": "object"
+            },
+            "inspection_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "next_cursor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ref"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "policy_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "profile_id": {
+              "type": "string"
+            },
+            "records": {
+              "type": "array"
+            },
+            "scene_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "selected_finding_ids": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "selected_source_ids": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "total_records": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "acceptance",
+            "inspection_ref",
+            "next_cursor",
+            "policy_ref",
+            "profile_id",
+            "records",
+            "scene_ref",
+            "selected_finding_ids",
+            "selected_source_ids",
+            "total_records"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_plan"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "construction_status": {
+              "const": "NOT_RUN"
+            },
+            "plan": {
+              "type": "object"
+            },
+            "plan_ref": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "required": [
+            "construction_status",
+            "plan",
+            "plan_ref"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_verify"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "job": {
+              "additionalProperties": false,
+              "properties": {
+                "binding_sha256": {
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "checkpoint_ref": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ref"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "created_epoch": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "created_monotonic": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "job_id": {
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "owner": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "host": {
+                          "type": "string"
+                        },
+                        "pid": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "start": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "host",
+                        "pid",
+                        "start"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "request_binding_ref": {
+                  "$ref": "#/$defs/ref"
+                },
+                "result_ref": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ref"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "resume_count": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "status": {
+                  "enum": [
+                    "RUNNING",
+                    "COMPLETED",
+                    "FAILED"
+                  ]
+                }
+              },
+              "required": [
+                "binding_sha256",
+                "checkpoint_ref",
+                "created_epoch",
+                "created_monotonic",
+                "job_id",
+                "owner",
+                "request_binding_ref",
+                "result_ref",
+                "resume_count",
+                "status"
+              ],
+              "type": "object"
+            },
+            "result": {
+              "anyOf": [
+                {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "candidate": {
+                          "type": "object"
+                        },
+                        "candidate_ref": {
+                          "$ref": "#/$defs/ref"
+                        },
+                        "execution_evidence": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "elapsed_seconds": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "fresh_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "logical_output_bytes": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "mode": {
+                              "enum": [
+                                "FRESH_EXECUTION",
+                                "OWN_ATTEMPT_PREFIX_REPLAY"
+                              ]
+                            },
+                            "replayed_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "total_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "elapsed_seconds",
+                            "fresh_events",
+                            "logical_output_bytes",
+                            "mode",
+                            "replayed_events",
+                            "total_events"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "candidate",
+                        "candidate_ref",
+                        "execution_evidence"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "execution_evidence": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "elapsed_seconds": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "fresh_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "logical_output_bytes": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "mode": {
+                              "enum": [
+                                "FRESH_EXECUTION",
+                                "OWN_ATTEMPT_PREFIX_REPLAY"
+                              ]
+                            },
+                            "replayed_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "total_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "elapsed_seconds",
+                            "fresh_events",
+                            "logical_output_bytes",
+                            "mode",
+                            "replayed_events",
+                            "total_events"
+                          ],
+                          "type": "object"
+                        },
+                        "verification": {
+                          "type": "object"
+                        },
+                        "verification_ref": {
+                          "$ref": "#/$defs/ref"
+                        }
+                      },
+                      "required": [
+                        "execution_evidence",
+                        "verification",
+                        "verification_ref"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "error": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "pattern": "^[A-Z][A-Z0-9_]*$",
+                              "type": "string"
+                            },
+                            "message": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "message"
+                          ],
+                          "type": "object"
+                        },
+                        "status": {
+                          "const": "FAIL"
+                        }
+                      },
+                      "required": [
+                        "error",
+                        "status"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reused": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "job",
+            "result",
+            "reused"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_compare"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "added_area_mm2": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "added_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "comparison_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "left_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "removed_area_mm2": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "removed_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "right_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "source_changes": {
+              "type": "array"
+            },
+            "viewport_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "visuals": {
+              "additionalProperties": false,
+              "properties": {
+                "after": {
+                  "$ref": "#/$defs/ref"
+                },
+                "before": {
+                  "$ref": "#/$defs/ref"
+                }
+              },
+              "required": [
+                "after",
+                "before"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "added_area_mm2",
+            "added_ref",
+            "comparison_ref",
+            "left_ref",
+            "removed_area_mm2",
+            "removed_ref",
+            "right_ref",
+            "source_changes",
+            "viewport_ref",
+            "visuals"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_review"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "independent_status": {
+              "type": "string"
+            },
+            "next_cursor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ref"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "owner_status": {
+              "type": "string"
+            },
+            "records": {
+              "type": "array"
+            }
+          },
+          "required": [
+            "independent_status",
+            "next_cursor",
+            "owner_status",
+            "records"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_run"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "job": {
+              "additionalProperties": false,
+              "properties": {
+                "binding_sha256": {
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "checkpoint_ref": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ref"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "created_epoch": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "created_monotonic": {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "job_id": {
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "owner": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "host": {
+                          "type": "string"
+                        },
+                        "pid": {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        "start": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "host",
+                        "pid",
+                        "start"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "request_binding_ref": {
+                  "$ref": "#/$defs/ref"
+                },
+                "result_ref": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ref"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "resume_count": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "status": {
+                  "enum": [
+                    "RUNNING",
+                    "COMPLETED",
+                    "FAILED"
+                  ]
+                }
+              },
+              "required": [
+                "binding_sha256",
+                "checkpoint_ref",
+                "created_epoch",
+                "created_monotonic",
+                "job_id",
+                "owner",
+                "request_binding_ref",
+                "result_ref",
+                "resume_count",
+                "status"
+              ],
+              "type": "object"
+            },
+            "result": {
+              "anyOf": [
+                {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "candidate": {
+                          "type": "object"
+                        },
+                        "candidate_ref": {
+                          "$ref": "#/$defs/ref"
+                        },
+                        "execution_evidence": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "elapsed_seconds": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "fresh_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "logical_output_bytes": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "mode": {
+                              "enum": [
+                                "FRESH_EXECUTION",
+                                "OWN_ATTEMPT_PREFIX_REPLAY"
+                              ]
+                            },
+                            "replayed_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "total_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "elapsed_seconds",
+                            "fresh_events",
+                            "logical_output_bytes",
+                            "mode",
+                            "replayed_events",
+                            "total_events"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "candidate",
+                        "candidate_ref",
+                        "execution_evidence"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "execution_evidence": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "elapsed_seconds": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "fresh_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "logical_output_bytes": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "mode": {
+                              "enum": [
+                                "FRESH_EXECUTION",
+                                "OWN_ATTEMPT_PREFIX_REPLAY"
+                              ]
+                            },
+                            "replayed_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "total_events": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "elapsed_seconds",
+                            "fresh_events",
+                            "logical_output_bytes",
+                            "mode",
+                            "replayed_events",
+                            "total_events"
+                          ],
+                          "type": "object"
+                        },
+                        "verification": {
+                          "type": "object"
+                        },
+                        "verification_ref": {
+                          "$ref": "#/$defs/ref"
+                        }
+                      },
+                      "required": [
+                        "execution_evidence",
+                        "verification",
+                        "verification_ref"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "error": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "pattern": "^[A-Z][A-Z0-9_]*$",
+                              "type": "string"
+                            },
+                            "message": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "message"
+                          ],
+                          "type": "object"
+                        },
+                        "status": {
+                          "const": "FAIL"
+                        }
+                      },
+                      "required": [
+                        "error",
+                        "status"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reused": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "job",
+            "result",
+            "reused"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "type": "object"
+        },
+        "operation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "result": {
+          "type": "null"
+        },
+        "status": {
+          "const": "REJECTED"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_compile"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "construction_status": {
+              "const": "NOT_RUN"
+            },
+            "policy": {
+              "type": "object"
+            },
+            "policy_ref": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "required": [
+            "construction_status",
+            "policy",
+            "policy_ref"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_discover"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "construction_status": {
+              "const": "NOT_RUN"
+            },
+            "discovery": {
+              "type": "object"
+            },
+            "discovery_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "selection_ref": {
+              "$ref": "#/$defs/ref"
+            }
+          },
+          "required": [
+            "construction_status",
+            "discovery",
+            "discovery_ref",
+            "selection_ref"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_inspect_all"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "acceptance": {
+              "type": "object"
+            },
+            "inspection_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "next_cursor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ref"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "page_count": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pagination_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "policy_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "profile_id": {
+              "type": "string"
+            },
+            "records": {
+              "type": "array"
+            },
+            "scene_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "selected_finding_ids": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "selected_source_ids": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "total_records": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "acceptance",
+            "inspection_ref",
+            "next_cursor",
+            "page_count",
+            "pagination_ref",
+            "policy_ref",
+            "profile_id",
+            "records",
+            "scene_ref",
+            "selected_finding_ids",
+            "selected_source_ids",
+            "total_records"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "abi_version": {
+          "const": "stage-agent-abi/1.0"
+        },
+        "error": {
+          "type": "null"
+        },
+        "operation": {
+          "const": "t01_compare_all"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "added_area_mm2": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "added_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "comparison_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "left_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "page_count": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pagination_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "removed_area_mm2": {
+              "minimum": 0,
+              "type": "number"
+            },
+            "removed_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "right_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "source_changes": {
+              "type": "array"
+            },
+            "viewport_ref": {
+              "$ref": "#/$defs/ref"
+            },
+            "visuals": {
+              "additionalProperties": false,
+              "properties": {
+                "after": {
+                  "$ref": "#/$defs/ref"
+                },
+                "before": {
+                  "$ref": "#/$defs/ref"
+                }
+              },
+              "required": [
+                "after",
+                "before"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "added_area_mm2",
+            "added_ref",
+            "comparison_ref",
+            "left_ref",
+            "page_count",
+            "pagination_ref",
+            "removed_area_mm2",
+            "removed_ref",
+            "right_ref",
+            "source_changes",
+            "viewport_ref",
+            "visuals"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "const": "OK"
+        }
+      },
+      "required": [
+        "abi_version",
+        "error",
+        "operation",
+        "request_id",
+        "result",
+        "status"
+      ],
+      "type": "object"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "t01-operator-progress-policy/1",
+  "scope": "Coordinator supervision of operator JSON authoring and report audits only; never native ABI execution deadlines",
+  "checkpoint_seconds": 90,
+  "no_artifact_stop_seconds": 180,
+  "write_grace_seconds": 60,
+  "maximum_attempts": 2,
+  "maximum_start_context_tokens": 32768,
+  "allowed_operator_tools": ["none", "file_read", "file_write"],
+  "poll_interval_seconds": 30,
+  "permissions": "Observational guard only. It neither grants tools/authority nor invokes/stops an app or ABI. Codex acts on its result."
+}

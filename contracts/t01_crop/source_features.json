@@ -1,0 +1,17 @@
+{
+  "schema": "t01-source-feature-directives/1",
+  "sources": {
+    "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0": {
+      "reviewed_pairs": [
+        [
+          "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1539974:1540098",
+          "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1540482:1540606"
+        ]
+      ],
+      "recess_source_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1633996:1634120"
+      ],
+      "authority": "Previously owner-reviewed source identities; follow these features in any ROI, not a crop name"
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "pcb-macos-adapter-contract/1",
+  "status": "IMPLEMENTED_PENDING_QUALIFICATION",
+  "architecture": [
+    "system-specific adapter",
+    "native runner",
+    "T01 ABI"
+  ],
+  "scope": "Local macOS, same user; setup by default, full source-bound C01 T01 only with --profile c01",
+  "transport": "local files; no MCP, HTTP, socket or network listener",
+  "bootstrap": ".venv/bin/python -B tools/t01_macos_adapter.py --session <fresh project out directory>",
+  "discovery": "One agent_setup.json descriptor per native runner session",
+  "request": {
+    "schema": "pcb-native-call/1",
+    "required_keys": [
+      "schema",
+      "request_id",
+      "route_id",
+      "agent",
+      "operation",
+      "arguments"
+    ],
+    "additional_fields": false,
+    "id_pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$",
+    "max_bytes": 65536,
+    "publication": "Publish complete JSON atomically without replacing an existing request ID"
+  },
+  "operations": [
+    "native_route.info",
+    "native_route.conformance",
+    "native_route.verify_receipt",
+    "t01_describe"
+  ],
+  "native_core_contract": "NativeRoute.call(operation, arguments, caller) -> result/error plus actual attempt receipt",
+  "reply": "replies/<request_id>.json; matching route/request IDs and submitted request digest",
+  "progress": [
+    "calls/<request_id>/started.json",
+    "attempts/<attempt_id>/<operation>/started.json",
+    "attempts/<attempt_id>/<operation>/completed.json",
+    "terminal reply and receipts"
+  ],
+  "custody": [
+    "Exclusive attempt IDs",
+    "Exact native stdout/stderr/exit status",
+    "Interpreter/dependency and source/registry identity",
+    "Request and response hashes",
+    "Failed attempts retained",
+    "Receipt digest checked against native process memory"
+  ],
+  "interruption": "Never automatically replay claimed calls. A client timeout is incomplete evidence, not cancellation or permission to repeat. Inspect retained evidence and start a new session if the runner was interrupted.",
+  "extension_rule": "Additional system adapters implement the same native call/result contract without changing ABI semantics, policy, source/authority binding or shared clearance rules.",
+  "trust": "Same-user local integrity and provenance; not protection against a process able to rewrite the checkout. Agent labels are self-reported, not authentication.",
+  "qualification_limits": [
+    "Session 304 qualifies the earlier setup route only; each extension requires fresh proof",
+    "One operation per client invocation; operator chooses steps and audits actual results",
+    "C01 contour oracle only after construction",
+    "No T02-T05",
+    "No Apple Intelligence compatibility claim",
+    "No global configuration, installation or new permissions"
+  ],
+  "optional_profiles": {
+    "setup": "Existing four setup operations only; default",
+    "c01": {
+      "contract": "contracts/t01/c01_route.json",
+      "bootstrap_suffix": "--profile c01",
+      "extra_operations": [
+        "t01_compile",
+        "t01_discover",
+        "t01_inspect",
+        "t01_plan",
+        "t01_run",
+        "t01_verify",
+        "t01_compare",
+        "t01_review",
+        "t01_negative_compile",
+        "native_route.audit"
+      ]
+    },
+    "c01-files": {
+      "contract": "contracts/t01/c01_files.json",
+      "bootstrap_suffix": "--profile c01-files",
+      "extra_operations": [
+        "pcb_kicad_write",
+        "pcb_kicad_verify",
+        "pcb_gerber_export",
+        "pcb_gerber_verify",
+        "pcb_export_controls",
+        "native_route.audit"
+      ]
+    }
+  }
+}

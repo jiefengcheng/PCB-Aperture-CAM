@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bounded PCB render response / 1",
+  "type": "object", "additionalProperties": false,
+  "required": ["abi_version", "request_id", "operation", "status", "result", "error"],
+  "properties": {
+    "abi_version": {"const": "pcb-render-abi/1"},
+    "request_id": {"type": ["string", "null"]},
+    "operation": {"type": ["string", "null"]},
+    "status": {"enum": ["OK", "REJECTED"]},
+    "result": {"type": ["object", "null"]},
+    "error": {"type": ["object", "null"]}
+  },
+  "oneOf": [
+    {"properties": {"status": {"const": "OK"}, "result": {"type": "object"}, "error": {"type": "null"}}},
+    {"properties": {"status": {"const": "REJECTED"}, "result": {"type": "null"}, "error": {"type": "object"}}}
+  ]
+}

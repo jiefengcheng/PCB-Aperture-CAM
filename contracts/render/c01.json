@@ -1,0 +1,22 @@
+{
+  "schema": "pcb-c01-render-contract/1",
+  "abi_version": "pcb-render-abi/1",
+  "operations": ["render_c01_compare", "render_c01_verify", "render_c01_controls"],
+  "authority": "Read-only C01 display from the separately exported session306 files. No construction, frozen writes, other-stage execution or acceptance promotion.",
+  "inputs": {
+    "kicad": {"path": "out/crop_dynamic_tasks/t01_file_writeback_20261031_306/run/data_output/candidate/board.kicad_pcb", "sha256": "204fab5c27345b88e74702fab0210435d7b2570f6baafd37b7122d13fcc529bf"},
+    "gerber": {"path": "out/crop_dynamic_tasks/t01_file_writeback_20261031_306/run/data_output/candidate/gerbers/board-F_Cu.gbr", "sha256": "0f7120b19f36eca73a16b202468eb9e941e41adb29b0871e73dc707b0980e396"}
+  },
+  "layer": "F.Cu",
+  "frame": "native-kicad-mm",
+  "bounds_mm": [1.2858444444444446, -15.687077777777787, 4.508066666666666, -12.975966666666665],
+  "pixels": [1280, 1077],
+  "raster_boundary_error_mm": {"kicad": 0.001, "gerber": 0.005},
+  "coordinate_mapping": "SVG uses native X,Y directly. Gerber X=native X, Gerber Y=-native Y. No fitted registration, automatic crop or geometry edits.",
+  "cli_version": "10.99.0",
+  "cli_sha256": "9b06a97e609f8ff61753a6e2ca5e4710572df77643630366c8c2ad1428b4b497",
+  "sips_version": "sips-316",
+  "dependencies": {"Pillow": "13.0.0", "numpy": "2.5.4", "sexpdata": "1.0.2", "gerbonara": "1.6.3", "shapely": "2.1.2"},
+  "negative_controls": ["mirrored_gerber", "blank_kicad", "wrong_svg_viewport", "changed_input_hash"],
+  "limits": ["C01 F.Cu only", "Fresh rendering of stored files, not fresh T01 construction", "Raster curve approximations are measured; not a clearance or connectivity proof", "Owner PENDING_USER; independent NOT_RUN; electrical and manufacturing NOT_ESTABLISHED", "Same-user local files; no MCP or network service"]
+}

@@ -1,0 +1,76 @@
+{
+  "schema": "t01-compilation-gate/1",
+  "gate_id": "T01-COMPILE-01",
+  "scope": "Controlled English to typed T01 policy only; no discovery, planning or geometry execution",
+  "applies_to": "Any language agent; record agent, model, interface revision and native or assisted transport",
+  "abi_version": "stage-agent-abi/1.0",
+  "interface_version": "t01-interaction-abi/1.1",
+  "operation": "t01_compile",
+  "bound_files": {
+    "contracts/t01/c01.english.txt": "de8d8b8869d5b13efac074115087efe20b272ba72a73ddad98015278baaa2aa7",
+    "contracts/t01/c01.binding.json": "67cfde8e9bf6be998fb15573d6022b6e2111bbec84936ab2699b1c75e2d3c21e",
+    "contracts/t01/request.schema.json": "4da20b4615b6644dfe623d339d21b305b3c789bfc651dfa4f53c36ab05e07794",
+    "contracts/t01/response.schema.json": "91c0dd94ca88a93cf12d26b2594d40064714f85c805366a8965e458cfd09ee4d",
+    "contracts/t01/policy.schema.json": "5dfebe6898b355dc2805d20e61682f1f6029cbde785e697b7c564da42b0f0721"
+  },
+  "expected": {
+    "status": "OK",
+    "construction_status": "NOT_RUN",
+    "family": "t01-priority-companion/1",
+    "clause_ids": [
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "R05",
+      "R06",
+      "R07",
+      "R08",
+      "R09",
+      "R10",
+      "R11",
+      "R12",
+      "R13",
+      "R14",
+      "R15"
+    ],
+    "english_sha256": "de8d8b8869d5b13efac074115087efe20b272ba72a73ddad98015278baaa2aa7",
+    "policy_sha256_for_c01_binding": "e4688f09265edc7df7723c8e0d6f1372d72c4c217d46965fccd98c65fddb44be"
+  },
+  "regression_test_nodes": [
+    "tests/test_t01_interaction_abi.py::test_every_english_clause_is_mandatory_and_has_a_typed_meaning",
+    "tests/test_t01_interaction_abi.py::test_no_paraphrase_or_clearance_change_can_silently_compile",
+    "tests/test_t01_interaction_abi.py::test_compiled_policy_matches_closed_machine_contract",
+    "tests/test_t01_interaction_abi.py::test_wire_schemas_match_delivered_contracts",
+    "tests/test_t01_interaction_abi.py::test_english_reference_compiles_to_identical_policy_without_transcription",
+    "tests/test_t01_interaction_abi.py::test_english_reference_cannot_bypass_rules_or_artifact_kind",
+    "tests/test_t01_interaction_abi.py::test_reference_and_literal_english_cannot_be_mixed"
+  ],
+  "required_agent_evidence": [
+    "agent-authored positive request and read-back audit",
+    "actual CLI response and unchanged-byte transport receipt",
+    "agent audit of actual policy, clauses, binding, settings and NOT_RUN",
+    "agent-authored negative request with one changed R14 value",
+    "actual semantic rejection and agent audit of rejection reason",
+    "coordinator acceptance limited to compilation"
+  ],
+  "failure_assessment_fields": [
+    "ABI implementation or contract or packaging effectiveness",
+    "agent comprehension and correct operation",
+    "transport or host limitations",
+    "observed evidence versus untested hypotheses"
+  ],
+  "verdicts": [
+    "PASS_COMPILATION_ONLY",
+    "FAIL",
+    "NOT_RUN",
+    "NOT_ESTABLISHED"
+  ],
+  "forbidden_inferences": [
+    "geometry correctness",
+    "C01 reproduction",
+    "general natural-language understanding",
+    "independent, owner, electrical or manufacturing acceptance",
+    "permission to execute another operation or T02-T05"
+  ]
+}

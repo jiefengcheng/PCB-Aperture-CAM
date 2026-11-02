@@ -1,0 +1,15 @@
+{
+  "schema": "pcb-c01-operator-ui/1",
+  "intent": "Show and check the expanded C01 terminals from the existing exported KiCad and Gerber files side by side",
+  "entry": "python3 tools/pcb_c01_operator.py start",
+  "permitted_execution": "First tool action is start, without existence/environment probes. Only start and three review commands; poll their tool sessions if needed. No ls/file/pwd/git, wrappers, listing or output probes. The facade validates files and returns absolute display paths.",
+  "delivery": "Display the returned PNG using its absolute path, add the returned concise report text and HTML link, then stop. Full measurements and hashes stay in evidence unless requested.",
+  "review": "python3 tools/pcb_c01_operator.py review <one short observation>",
+  "slices": ["render_c01_compare", "render_c01_verify", "render_c01_controls"],
+  "audit_strength": "All original native checks, exact digests/facts, receipt checks, per-slice observation notes and gate order remain required. Only clerical copying and state lookup move into the stdlib client. Agent observes and supplies one note per slice; no automatic approval or full-workflow loop.",
+  "observation_custody": "Full agent observations are retained verbatim. A short SHA256 reference passes through the unchanged native300-character note field. Client checks link full notes, displayed summaries and exact audit fields to native-owned audit requests; no truncation or discarded observation.",
+  "terminal": "REPORT_AND_STOP; final paths, actual formats, sizes, dimensions, hashes and scope supplied",
+  "failure": "Latch HALTED; never retry or probe around failure",
+  "language_scope": "Bounded intent selected by the agent using project instructions, not a general English parser. Other crops, files, edits or later stages are unsupported.",
+  "setup": "One local foreground native launcher is required; no MCP, installed service or global configuration. This layer does not sandbox another agent's other tools."
+}

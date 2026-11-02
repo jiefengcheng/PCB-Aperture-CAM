@@ -1,0 +1,83 @@
+{
+  "schema": "t01-operator-setup-gate/1",
+  "status": "OBSERVED_BOUNDED_MACOS_C01_RECOVERY_PASS_GENERAL_QUALIFICATION_NOT_ESTABLISHED",
+  "scope": "Prerequisite setup for a bounded autonomous C01 T01 operator",
+  "S01_native_route": {
+    "required": [
+      "operator-origin actual native T01 invocation",
+      "interpreter and dependency/kernel identity",
+      "implementation/runtime and registry hashes",
+      "actual positive read-only ABI response",
+      "actual semantic-negative ABI rejection"
+    ],
+    "forbidden_substitutes": [
+      "Codex transports each request",
+      "model fabricates response",
+      "unqualified interpreter substitution",
+      "sandbox escape or permission workaround"
+    ],
+    "current_Local_Code_status": "PASS_SETUP_ONLY_MACOS_FILE_ADAPTER",
+    "previous_Local_Code_status": "NOT_PASSED_NATIVE_CHANNEL_UNAVAILABLE"
+  },
+  "S02_result_custody": {
+    "required": [
+      "unique fresh scope per attempt",
+      "trusted write-once request/stdout/stderr/exit/receipt",
+      "input/output and registry/runtime hashes",
+      "failed attempts retained",
+      "native progress correlated with attempt ID"
+    ],
+    "negative_controls": [
+      "overwrite rejected",
+      "request mutation rejected",
+      "response mutation detected",
+      "registry/runtime mismatch rejected",
+      "missing native channel explicit",
+      "retry cannot erase failure"
+    ],
+    "current_Local_Code_status": "LIVE_RECEIPTS_AND_23_FOCUSED_CONTROLS_PASS_FULL_GATE_NOT_DECLARED",
+    "previous_Local_Code_status": "NOT_PASSED_SAME_STDERR_PATH_REUSED"
+  },
+  "S03_autonomous_trial": {
+    "prerequisites": [
+      "S01 PASS",
+      "S02 PASS",
+      "explicit source/policy/authority bounds"
+    ],
+    "required": [
+      "one initiating instruction",
+      "operator chooses actual ABI actions",
+      "zero per-step coordinator transports or guidance",
+      "real progress events",
+      "exact C01 result and controls",
+      "instruction compliance"
+    ],
+    "current_status": "OBSERVED_BOUNDED_C01_RECOVERY_PASS_SOURCE_SCOPE_ONLY",
+    "previous_status": "NOT_RUN_AS_QUALIFIED_AUTONOMOUS_LOOP",
+    "evidence": "out/crop_dynamic_tasks/t01_c01_macos_recovery_20261031_305/"
+  },
+  "verdicts": [
+    "PASS",
+    "FAIL",
+    "NOT_RUN",
+    "NOT_ESTABLISHED"
+  ],
+  "limits": "The macOS setup probe passes; full S02 qualification and S03 autonomous C01 remain separate. No geometry, owner, independent, electrical or manufacturing acceptance follows.",
+  "architecture": {
+    "core": "native runner and contracts",
+    "adapter": "system-specific; local macOS file mailbox in this slice",
+    "excluded": [
+      "MCP",
+      "network listener",
+      "global configuration changes"
+    ],
+    "extension": "Other system adapters preserve native call/result and ABI semantics"
+  },
+  "evidence": "out/crop_dynamic_tasks/t01_macos_native_adapter_20261031_304/",
+  "previous_status": "LOCAL_MACOS_SETUP_PROBE_PASS_FULL_AUTONOMY_NOT_RUN",
+  "recovery_scope": {
+    "authorization": "Latest user request to recover the prior successful Local Code route through the macOS adapter",
+    "observed": "9 operations and 9 observation audits from one instruction; zero per-step coordinator transport/prompts; exact C01 contours and candidate data",
+    "qualification": "Observed bounded operating procedure only; broader S02/general agent qualification and owner/independent/electrical/manufacturing acceptance not promoted"
+  }
+}

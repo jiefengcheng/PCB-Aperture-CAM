@@ -1,0 +1,14 @@
+{
+  "schema": "pcb-loaded-project-inputs/1",
+  "scope": "Loaded full-board original source pair; no target crop or expected result registered. Agent may bind explicitly attached replacement files.",
+  "inputs": {
+    "kicad": {
+      "path": "out/crop_dynamic_tasks/c03_final_so_far_freeze_20261030_270/frozen/setup/inputs/ORG_source.kicad_pcb",
+      "sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0"
+    },
+    "gerber": {
+      "path": "out/crop_dynamic_tasks/t01_file_writeback_20261031_306/run/data_output/before/gerbers/board-F_Cu.gbr",
+      "sha256": "4cc250e501a3aa7a216a187a90c0ef5980472c11e68a2779226f1db112bb07b3"
+    }
+  }
+}

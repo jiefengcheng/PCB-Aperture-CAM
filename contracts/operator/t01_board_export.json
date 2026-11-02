@@ -1,0 +1,53 @@
+{
+  "schema": "pcb-board-directory-export-operator/1",
+  "intent": "Fresh whole-board T01 from one explicitly supplied raw KiCad/Gerber directory; audited native export; no rendering",
+  "entry": "python3 tools/pcb_t01_board_export_operator.py start --input-dir <directory>",
+  "review": "python3 tools/pcb_t01_board_export_operator.py review <one observation>",
+  "task_scope": "full-board-export-only",
+  "operations": [
+    "pcb_inputs_verify",
+    "pcb_board_scope",
+    "pcb_board_verify",
+    "t01_compile",
+    "t01_discover",
+    "t01_inspect",
+    "t01_plan",
+    "t01_run",
+    "t01_verify",
+    "t01_compare",
+    "t01_review",
+    "t01_negative_compile",
+    "board_candidate_check",
+    "pcb_kicad_write",
+    "pcb_kicad_verify",
+    "pcb_gerber_export",
+    "pcb_gerber_verify",
+    "pcb_export_controls"
+  ],
+  "input": "One mandatory directory. Native launcher inventories actual bytes; embedded client sends only its explicit absolute path. Exactly one .kicad_pcb and a uniquely verified F.Cu Gerber required. Exact-X2 profile retained. For legacy raw Gerbers: absolute millimetre 3.3/4.6 data, explicit positive legacy polarity/name metadata, no registration fit; flat imported-graphic count filter then full ordered-image correspondence to fresh source plots. No input filename role guessing. Ambiguity halts. Other unmatched Gerbers are explicitly excluded companions, retained and delivered byte-identically with geometry/layer NOT_ESTABLISHED, never counted as qualified layers. Non-PCB files and symlinks reject; .DS_Store recorded metadata only.",
+  "roles": [
+    "F.Cu",
+    "B.Cu",
+    "F.Mask",
+    "B.Mask",
+    "F.Paste",
+    "B.Paste",
+    "F.SilkS",
+    "B.SilkS",
+    "Edge.Cuts"
+  ],
+  "source": "Native-only complete raw inventory, content/role manifest, fresh immutable job snapshot and identification evidence. Original raw bytes retained. First native source gate independently reparses qualified originals against another fresh native plot with recorded input precision and arc bounds plus three correspondence corruptions. All F.Cu source-scope/T01/export audits unchanged. Input correspondence tolerance is separate from unchanged shared clearance.",
+  "audit": "Eighteen native slices and eighteen distinct factual observations; full source, port, inspection/comparison pagination, fresh construction and separate reconstruction, complete native write/reread and Gerber export/reparse, three source-scope controls, unsupported-English control, neighbor controls and three export corruptions all retained.",
+  "policy": "Unchanged whole-board T01 English policy, geometry/kernel, source-specific directives, shared clearance and file-grid representation. Supported flat graphic F.Cu circle profile only; unsupported data halts.",
+  "rendering": "NOT_REQUESTED. No render operations, tile allocation, SVG/PNG/PDF generation or renderer capability. Native Gerber export is data output, not image rendering.",
+  "output": "Separate candidate KiCad, nine-layer native Gerber export, original raw directory manifest, receipts and text/HTML audit report. Owner PENDING_USER; independent NOT_RUN: CHANNEL_UNAVAILABLE; electrical/manufacturing NOT_ESTABLISHED.",
+  "setup": "Same project-local macOS native launcher, updated once per session. Automatic file-message intake for every explicit directory; no embedded source-folder access, per-directory setup, OS self-grant, MCP, network, install or global configuration. A genuine native access denial retains exact errno/path and an evidence receipt, without asserting TCC.",
+  "lifecycle": "One shared managed slot/lock; preserve active, failed and completed jobs. No replacement of incomplete jobs, no retries around failures, no rename escape from failed content identity. New bytes or implementation require a fresh job. Wrong facade cannot mutate another profile.",
+  "failure": "HALTED with retained native request/response evidence even before job allocation; OS access errors carry errno/path. No rendering fallback, input substitution, shortened source, retries, policy edits or acceptance promotion.",
+  "native_timeout_seconds": {
+    "default": 300,
+    "t01_run": 1800,
+    "t01_verify": 1800
+  },
+  "terminal": "COMPLETE_AUDITED_BOARD_EXPORT_SEQUENCE after all eighteen accepted observations. Return ready_markdown at REPORT_AND_STOP and stop. Completed-report retrieval verifies retained hashes without reexecution."
+}

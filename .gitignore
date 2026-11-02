@@ -13,3 +13,6 @@ external/sources/
 
 # Local client datasets: raw inputs, provenance and offline verification bundles.
 /dataset/
+
+# Local Code runtime/context cache: never snapshot large mutable databases.
+.localc/

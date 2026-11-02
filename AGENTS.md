@@ -1,4 +1,221 @@
+## Required LaCie storage policy — 2026-11-02
+
+All new test artifacts, temporary files, caches, engineering intermediates and
+T01 operational jobs must use `out/lacie_work/`, an APFS volume backed by
+`/Volumes/LaCie/PCB_Aperture_CAM_Workspace/PCB_CAM_Work.sparsebundle`.
+Run `tools/Prepare_LaCie_Workspace.command` before engineering writes.
+Use `tools/Run_PCB_Tests.command <pytest arguments>` for tests. Root conftest
+also redirects pytest temporary files/cache and rejects internal --basetemp.
+Use the existing Run_T01_Board.command for Terminal work; it prepares storage.
+Local Code requires reopening Start_T01_Native_Launcher.command after this change.
+Never create fallback directories on internal storage when LaCie is missing.
+Do not use an internal --state-dir. Keep all new audit reports/logs under the
+external workspace too. Historical sealed/frozen files stay in place and remain
+read-only; no automatic migration, cleanup or acceptance change is authorized.
+The only internal writes in this work are source code and small documentation.
+No global environment or OS storage settings are changed by this policy.
+
 # Repository-scoped instructions for Codex
+
+## Single-command Terminal raw-directory T01 — deterministic machine audits
+
+When the user requests unattended Terminal execution, use
+`tools/Run_T01_Board.command --input-dir "<explicit raw directory>"`.
+This native-only entry owns its macOS adapter/runner lifecycle and requires no
+pre-opened launcher or agent. It executes the same 18 source/T01/export slices.
+Every gate requires a separate, hash-bound deterministic machine predicate proof
+from actual native evidence, re-evaluated by the route before advancement. The
+original verification, pagination, reconstruction and corruption checks remain.
+Do not invent human/agent observations, feed generic success strings to review,
+or label machine predicates as independent/owner review. Final output states
+18 machine audits and zero human/agent observations; owner remains pending.
+On any failed/missing/altered predicate or native check, stop with retained
+failure evidence and remaining operations NOT_RUN; no retries or substitutions.
+No rendering, later stages, shared-clearance changes, MCP or global settings.
+Contract: contracts/operator/t01_board_auto.json. Recipe:
+docs/agent_abi/T01_SINGLE_COMMAND.md. The existing English/stepped review route
+below is unchanged; never silently switch its audit mode.
+
+## Fresh whole-board T01 from an explicit raw-input directory — no rendering
+
+For fresh whole-board T01 using one supplied directory of KiCad/Gerber inputs and
+no rendering, use `python3 tools/pcb_t01_board_export_operator.py start --input-dir "<supplied directory>"`.
+The directory is required: if absent, request it; never use loaded-project defaults,
+a crop, remembered file, prior job or previously constructed candidate. Native
+input discovery belongs to the PCB data ABI and stays inside that explicit root.
+Use the existing project-local macOS launcher once per session; no per-directory
+coordinator setup, MCP, installation or global settings. Every
+participating Gerber layer must match fresh native source plotting. The embedded
+client sends only the explicit directory path; intake runs in the native launcher.
+Do not list, stat, search or read the external directory in Local Code. An old
+launcher reports NATIVE_LAUNCHER_UPDATE_REQUIRED; ask the user to close its Terminal
+and reopen tools/Start_T01_Native_Launcher.command once. Do not suggest broad OS
+permissions from EPERM alone. Native access failures retain errno/path and evidence.
+Legacy Gerber layer identity uses source geometry, never filenames. Unmatched
+Gerbers are retained byte-identically as explicitly excluded companions with
+layer/geometry NOT_ESTABLISHED, under the user-adopted companion policy. They do
+not qualify as verified layers or regenerated exports. Missing/ambiguous F.Cu,
+unsupported participating geometry or non-PCB inputs halt; never pick a first match.
+Read each REVIEW_REQUIRED result and submit one distinct observation with
+`python3 tools/pcb_t01_board_export_operator.py review "one observation"`.
+Continue all 18 native slices and observations autonomously, polling existing
+commands as needed. All source/port/inspection/comparison pages, fresh construction
+and reconstruction, native write/reread, actual export/reparse and corruption
+controls remain mandatory. No render operations, tile budgets, SVG/PNG/PDFs,
+renderer calls, later stages or shared clearance changes. Inputs and frozen
+results stay read-only; candidates/receipts/reports are separate. HALTED preserves
+the error and stops; no retries, substitutions, probes or acceptance promotion.
+On REPORT_AND_STOP return ready_markdown and its absolute file links unchanged,
+then stop. Rendering NOT_REQUESTED; owner PENDING_USER; independent NOT_RUN;
+electrical/manufacturing NOT_ESTABLISHED. Contract: contracts/operator/t01_board_export.json.
+Recipe: docs/agent_abi/RAW_DIRECTORY_T01_EXPORT.md.
+
+## Finishing a retained whole-board run without rendering
+
+When asked to finish an existing whole-board pipeline with rendering violations
+reported as failed findings and no new renders, use
+`python3 tools/pcb_t01_board_operator.py finalize` (or `finalize --job "<supplied retained job>"`).
+This is a report-only action requiring no launcher. It verifies the complete
+19-slice source/growth/export/display-production audit prefix and the retained
+pixel-tolerance rejection, then writes a separate COMPLETED_WITH_FAILED_FINDINGS
+completion outside the original job. Keep native render FAIL and subsequent
+NOT_RUN dispositions; never claim all 21 native checks passed or mark the renderer
+qualified. Source/export/integrity/observation failures still halt. No native
+operations, rendering, geometry/export work, audit submission, retry or edits to
+old evidence are allowed during finalization. Return supplied ready_markdown at
+REPORT_AND_STOP. Frozen results, shared clearance and T02–T05 stay unchanged.
+
+## Whole-board ordinary-English T01 requests
+
+When asked to apply/run T01 across the entire board using the loaded KiCad/Gerber
+pair, use `python3 tools/pcb_t01_board_operator.py start` as the first execution
+command. No crop, screenshot, coordinates or named-C01 reproduction is required.
+Optional replacement input attachments use --kicad-attachment and
+--gerber-attachment with the current app-staged filenames. The same project-local
+Start_T01_Native_Launcher.command must be open once per working session; there is
+no per-board setup, MCP, installation or global configuration.
+Read each REVIEW_REQUIRED result and submit one distinct observation with
+`python3 tools/pcb_t01_board_operator.py review "one observation"` until terminal.
+Continue through the native slices and observations autonomously; all 21 planned
+slices must have an explicit PASS, FAIL or NOT_RUN disposition. A retained
+render_verify pixel-tolerance failure after the 19 accepted prefix slices closes
+as COMPLETED_WITH_FAILED_FINDINGS through report-only finalization. It does not
+re-run pixels or controls or turn their FAIL/NOT_RUN status into PASS. The PCB data ABI
+proves complete original F.Cu source and eligible circle occurrence coverage;
+T01 uses the full source pool and unchanged interaction/clearance rules. All
+source, port, inspection and comparison pages must be covered. All native display
+tiles and their pixels must be audited for render qualification; report-only
+completion retains FAIL/NOT_RUN for incomplete checks. The board overview is navigation only.
+Only start, review and completion polls are needed. Do not probe, search folders,
+author audit JSON, invoke later stages, edit sources/settings or retry failures.
+Long operations report actual native tile progress; let the existing command
+finish. If a setup, unsupported-source, resource, geometry or audit gate fails,
+report HALTED with the retained evidence and stop without substituting a crop.
+The supported retained pixel-tolerance finding alone can complete the report
+under the report-only path above; other failed gates remain HALTED.
+On REPORT_AND_STOP deliver the supplied complete Markdown unchanged and make no
+further tool call. Keep frozen results, shared clearance and T02–T05 unchanged.
+Owner PENDING_USER; independent NOT_RUN; electrical/manufacturing NOT_ESTABLISHED.
+Contract: contracts/operator/t01_board.json. Details:
+docs/agent_abi/FULL_BOARD_T01_OPERATOR.md.
+
+## Crop-driven ordinary-English T01 requests
+
+When the user attaches a crop and asks to apply/run T01, use the crop-driven
+route, not a named C01 reproduction. Use the current attachment's filename from
+app-provided metadata. Local Code's native Attach action stages the actual file
+in the project root. First execution command:
+`python3 tools/pcb_t01_operator.py start --attachment "<attached filename>"`.
+The adapter reads that app-staged copy, never its original Desktop pathname.
+It performs no directory search. It accepts canonical Unicode spelling and the
+macOS narrow-space/ordinary-space timestamp difference; conflicting bytes halt.
+If the user attached KiCad/Gerber replacements, pass their attachment names using
+--kicad-attachment and --gerber-attachment; otherwise use the loaded input pair.
+The project native launch bridge must be running: the user opens
+`tools/Start_T01_Native_Launcher.command` once per working session and leaves its
+Terminal window open. Local Code's embedded Python cannot spawn OS processes.
+Start checks that bridge first, then automatically creates a fresh job and asks
+the native bridge to launch its runner through project-local files. No per-crop
+coordinator setup is needed. If NATIVE_LAUNCHER_REQUIRED is returned, stop and
+report that single setup action; do not probe, spawn, bypass or retry. One job is active per checkout. New crops get separate jobs after the
+previous job terminates; unfinished jobs cannot be replaced. Prior results remain
+read-only. Same inputs and implementation cannot retry a failed managed job.
+Read each REVIEW_REQUIRED result and call
+`python3 tools/pcb_t01_operator.py review "one observation"` until terminal.
+There are 21 native slices and 21 distinct observations, including three PCB
+data ABI location gates. No user coordinates, crop name, expected candidate or
+manual audit JSON is needed. Continue without per-step permission prompts.
+Source/inspection/comparison inventories are completely paginated at 100 records
+per page. This is not a 100-target cap; there is no fixed 20,000-object limit.
+Read the returned page counts and full-coverage facts. All 21 observation gates
+remain mandatory; no first-page-only audit, missing record or shortened crop may
+substitute for complete source/selection coverage.
+Only start, review and their completion polls are needed. No existence/list/pwd/
+file/git/environment probes, wrappers, retries, no-op commands or source/settings
+edits. If the attachment name or app-staged bytes are unavailable, report
+ATTACHMENT_BYTES_UNAVAILABLE and stop; never inspect Desktop, search for files,
+substitute a remembered image or reconstruct screenshot pixels from vision. Location ambiguity or unsupported data must halt.
+On REPORT_AND_STOP deliver the supplied complete markdown unchanged, including
+absolute image and file links. The two panels are candidate KiCad versus
+candidate Gerber, not before versus after. Do not make another tool call.
+ROI location and source-pair qualification belong to the PCB data ABI suite;
+T01 uses its verified binding and source geometry, not screenshot pixels.
+Frozen results, shared clearance and T02-T05 stay unchanged; no later stages.
+Contract: contracts/operator/t01_crop.json. No MCP or global configuration.
+
+
+## Ordinary-English full C01 reproduction requests
+
+When asked to reproduce C01 through T01, export KiCad/Gerber and show/check the
+result side by side, use the prepared full C01 route. First tool action:
+`python3 tools/pcb_c01_full_operator.py start`. Read the compact native facts,
+then use `python3 tools/pcb_c01_full_operator.py review "one observation"` for
+each REVIEW_REQUIRED result. Continue autonomously through all 18 distinct
+observations; only the next audited slice executes. Do not ask for per-step
+continuation or author audit JSON. The launcher must already be prepared.
+Only start, the 18 review commands and their completion polls are needed. No
+existence/list/pwd/file/git/environment probes, wrappers, retries, extra terminal
+commands or no-op commands (including true). On REPORT_AND_STOP, embed the
+returned PNG directly, link the supplied KiCad, Gerber folder and HTML, give the
+concise returned report and stop without another tool call. On HALTED, report
+the failure and stop; no partial success claim or workaround.
+This freshly constructs only the pinned C01 T01 policy, then exports separate
+candidates from that result. EDIT is a representation reference. All original
+native checks and observation gates remain; frozen C01/C02/C03, shared clearance
+and T02-T05 are unchanged. Owner review stays pending. No independent,
+electrical or manufacturing approval. Other crops/policies require separate
+scope. Contract: `contracts/operator/c01_full.json`. No MCP or global changes.
+For a display-only request about existing exports, use the separate route below.
+
+## Ordinary-English C01 display requests — project-local operator route
+
+When a user asks to show/check the existing exported C01 KiCad and Gerber files
+side by side, use `python3 tools/pcb_c01_operator.py start` through the existing
+supported Python tool. The local native launcher must already be running.
+For this prepared task, the first tool action is that exact start command. Do
+not check that the script exists, list directories, run pwd, or inspect the
+environment before starting. The permitted execution commands for the entire
+task are only start and the three review calls below; poll their running tool
+sessions if necessary. No ls, file, pwd, git, shell wrappers, directory searches,
+or output-existence probes before or after any slice. The facade checks setup,
+source files and output existence itself and returns absolute display paths.
+Read each compact result. For `REVIEW_REQUIRED`, submit one short observation
+with `python3 tools/pcb_c01_operator.py review "your observation"`. That reviews
+the current native slice and runs only the next permitted slice. Three native
+checks and three distinct observation audits remain mandatory; the client carries
+verified digests/facts automatically. Do not author audit JSON or copy parameters.
+On `REPORT_AND_STOP` or `HALTED`, report the returned result and stop. Final paths,
+formats, byte counts, dimensions and hashes are supplied: do not run ls, file,
+git, environment probes or extra verification commands. No retries/workarounds.
+Deliver the returned comparison PNG using its absolute path, followed by the
+returned concise report text. Keep the full evidence in the returned HTML link;
+do not repeat its hashes, tables and audit details in the chat unless requested.
+Observations concern native facts; do not
+claim visual inspection or cross-file geometry/aperture approval from raster JSON.
+This route is read-only rendering of one fixed C01 file pair; it grants no T01
+construction, frozen-result, T02-T05 or manufacturing authority. Other requests
+need their own scope. No global settings, installation, network service or MCP.
+See `contracts/operator/c01_render.json` for the bounded contract.
 
 You are implementing **PCB Aperture CAM V1**, a newly isolated project. This file is authoritative for every agent acting within this checkout.
 

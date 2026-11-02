@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "t01-priority-companion/1/policy",
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "sha256"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "binding_ref",
+    "clause_trace",
+    "dialect",
+    "diameter_classes_mm",
+    "english",
+    "english_sha256",
+    "family",
+    "rules",
+    "settings",
+    "stage"
+  ],
+  "properties": {
+    "stage": {
+      "const": "t01"
+    },
+    "family": {
+      "const": "t01-priority-companion/1"
+    },
+    "dialect": {
+      "const": "T01 controlled English version 1."
+    },
+    "english": {
+      "const": "T01 controlled English version 1.\nR01: Use the bound original F.Cu source and complete exact geometry cache; change only the bound crop circle sites and their exact aliases.\nR02: Discover all filled source circles intersecting the crop, including covered circles and complete edge circles; merge byte-identical aliases and cross-check raw source spans.\nR03: Use each exact source polygon centroid as its computational center and the mean of its bounding-box width and height divided by four as its computational radius.\nR04: Compute physical contact components from intersecting original F.Cu surfaces across the whole board; keep these distinct from growth competition pairs.\nR05: Keep the bound reviewed pair first; greedily pair remaining competing sites by normalized center distance and stable source identities, leaving unpaired singletons.\nR06: Choose the largest source-qualified round priority per physical component, breaking ties by source identity; remove only the bound recess exceptions from round priority status.\nR07: Prefer each pair's largest common admissible diameter from the bound palette; otherwise use individual classes; preserve exact source geometry when no class is feasible.\nR08: Reduce constrained priorities by whole classes; jointly demote conflicting round priorities without scaling down their companions automatically.\nR09: For each pair, use the priority anchor or first pair member as A; bound B's envelope by the facing side of A's enlarged-circle inscribed square at minus 45 degrees, with construction gap and safety.\nR10: Recover feasible next-class round promotions by greatest area gain and source-identity tie-break without shrinking other targets; recompute square bounds from final radii.\nR11: Construct round priorities in source-identity order, then companions in centroid Y, X, identity order; each accepted enlarged contour replaces all its aliases in the current scene.\nR12: Clip only optional companion copper against the current scene; retain source cores and attached additions; allow original trace contacts only inside fixed source-derived ports.\nR13: For each bound recess exception, remove one optional lobe using its enlarged-circle square and the greatest actual obstacle conflict, breaking ties by source identity; apply all ordinary obstacle constraints afterward.\nR14: Use a 1.5 growth cap, diameter palette 0.038 0.0761 0.2749 0.2999 0.3374 0.3749 0.4499 mm, construction gap 0.02002 mm, hard gap 0.020 mm, safety 0.00002 mm, 128 quadrant segments, area epsilon 0.0000000001 mm2 and event epsilon 0.00000001 mm2.\nR15: Verify every saved contour by source-bound reconstruction and final assembled finite-surface checks; retain rejected hypotheses and neighbor-restoration controls; never grant owner, independent or manufacturing acceptance.\n"
+    },
+    "english_sha256": {
+      "const": "de8d8b8869d5b13efac074115087efe20b272ba72a73ddad98015278baaa2aa7"
+    },
+    "binding_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "rules": {
+      "const": {
+        "source": "bound-original-full-cache",
+        "eligibility": "all-filled-intersecting-circles",
+        "circle_measurement": "exact-polygon-centroid-and-mean-half-extents",
+        "components": "whole-source-exact-intersects",
+        "grouping": "reviewed-pair-then-nearest-disjoint-pairs",
+        "priorities": "source-qualified-largest-per-component-with-bound-exceptions",
+        "classes": "largest-common-physical-diameter",
+        "reservation": "finite-class-joint-demotion",
+        "pair_interaction": "final-A-square-support-bounds-B-envelope",
+        "promotion": "maximal-discrete-greedy",
+        "schedule": "priorities-first-live-alias-scene",
+        "companions": "live-finite-surface-clipping-with-fixed-original-ports",
+        "recess": "one-bound-exception-primary-conflict-square-lobe",
+        "numeric_model": "frozen-C01-numerics",
+        "verification": "complete-reconstruction-and-assembled-checks"
+      }
+    },
+    "settings": {
+      "const": {
+        "hard_factor": 1.5,
+        "construction_gap": 0.02002,
+        "hard_gap": 0.02,
+        "safety": 2e-05,
+        "orientation": -45,
+        "qsegs": 128,
+        "area_epsilon": 1e-10,
+        "event_epsilon": 1e-08
+      }
+    },
+    "diameter_classes_mm": {
+      "const": [
+        0.038,
+        0.0761,
+        0.2749,
+        0.2999,
+        0.3374,
+        0.3749,
+        0.4499
+      ]
+    },
+    "clause_trace": {
+      "const": [
+        {
+          "clause": "R01",
+          "english": "Use the bound original F.Cu source and complete exact geometry cache; change only the bound crop circle sites and their exact aliases.",
+          "contract_field": "source",
+          "value": "bound-original-full-cache"
+        },
+        {
+          "clause": "R02",
+          "english": "Discover all filled source circles intersecting the crop, including covered circles and complete edge circles; merge byte-identical aliases and cross-check raw source spans.",
+          "contract_field": "eligibility",
+          "value": "all-filled-intersecting-circles"
+        },
+        {
+          "clause": "R03",
+          "english": "Use each exact source polygon centroid as its computational center and the mean of its bounding-box width and height divided by four as its computational radius.",
+          "contract_field": "circle_measurement",
+          "value": "exact-polygon-centroid-and-mean-half-extents"
+        },
+        {
+          "clause": "R04",
+          "english": "Compute physical contact components from intersecting original F.Cu surfaces across the whole board; keep these distinct from growth competition pairs.",
+          "contract_field": "components",
+          "value": "whole-source-exact-intersects"
+        },
+        {
+          "clause": "R05",
+          "english": "Keep the bound reviewed pair first; greedily pair remaining competing sites by normalized center distance and stable source identities, leaving unpaired singletons.",
+          "contract_field": "grouping",
+          "value": "reviewed-pair-then-nearest-disjoint-pairs"
+        },
+        {
+          "clause": "R06",
+          "english": "Choose the largest source-qualified round priority per physical component, breaking ties by source identity; remove only the bound recess exceptions from round priority status.",
+          "contract_field": "priorities",
+          "value": "source-qualified-largest-per-component-with-bound-exceptions"
+        },
+        {
+          "clause": "R07",
+          "english": "Prefer each pair's largest common admissible diameter from the bound palette; otherwise use individual classes; preserve exact source geometry when no class is feasible.",
+          "contract_field": "classes",
+          "value": "largest-common-physical-diameter"
+        },
+        {
+          "clause": "R08",
+          "english": "Reduce constrained priorities by whole classes; jointly demote conflicting round priorities without scaling down their companions automatically.",
+          "contract_field": "reservation",
+          "value": "finite-class-joint-demotion"
+        },
+        {
+          "clause": "R09",
+          "english": "For each pair, use the priority anchor or first pair member as A; bound B's envelope by the facing side of A's enlarged-circle inscribed square at minus 45 degrees, with construction gap and safety.",
+          "contract_field": "pair_interaction",
+          "value": "final-A-square-support-bounds-B-envelope"
+        },
+        {
+          "clause": "R10",
+          "english": "Recover feasible next-class round promotions by greatest area gain and source-identity tie-break without shrinking other targets; recompute square bounds from final radii.",
+          "contract_field": "promotion",
+          "value": "maximal-discrete-greedy"
+        },
+        {
+          "clause": "R11",
+          "english": "Construct round priorities in source-identity order, then companions in centroid Y, X, identity order; each accepted enlarged contour replaces all its aliases in the current scene.",
+          "contract_field": "schedule",
+          "value": "priorities-first-live-alias-scene"
+        },
+        {
+          "clause": "R12",
+          "english": "Clip only optional companion copper against the current scene; retain source cores and attached additions; allow original trace contacts only inside fixed source-derived ports.",
+          "contract_field": "companions",
+          "value": "live-finite-surface-clipping-with-fixed-original-ports"
+        },
+        {
+          "clause": "R13",
+          "english": "For each bound recess exception, remove one optional lobe using its enlarged-circle square and the greatest actual obstacle conflict, breaking ties by source identity; apply all ordinary obstacle constraints afterward.",
+          "contract_field": "recess",
+          "value": "one-bound-exception-primary-conflict-square-lobe"
+        },
+        {
+          "clause": "R14",
+          "english": "Use a 1.5 growth cap, diameter palette 0.038 0.0761 0.2749 0.2999 0.3374 0.3749 0.4499 mm, construction gap 0.02002 mm, hard gap 0.020 mm, safety 0.00002 mm, 128 quadrant segments, area epsilon 0.0000000001 mm2 and event epsilon 0.00000001 mm2.",
+          "contract_field": "numeric_model",
+          "value": "frozen-C01-numerics"
+        },
+        {
+          "clause": "R15",
+          "english": "Verify every saved contour by source-bound reconstruction and final assembled finite-surface checks; retain rejected hypotheses and neighbor-restoration controls; never grant owner, independent or manufacturing acceptance.",
+          "contract_field": "verification",
+          "value": "complete-reconstruction-and-assembled-checks"
+        }
+      ]
+    }
+  }
+}

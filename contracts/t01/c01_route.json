@@ -1,0 +1,11 @@
+{
+  "schema": "pcb-c01-native-route/1",
+  "authority": "User-authorized recovery of C01 T01 through the local macOS adapter. Codex-authored conditional technical gates; no owner or independent acceptance.",
+  "operations": ["t01_compile", "t01_discover", "t01_inspect", "t01_plan", "t01_run", "t01_verify", "t01_compare", "t01_review", "t01_negative_compile"],
+  "between_operations": "Each actual ABI result must pass native checks, then a Local Code observation audit bound to the response digest. Only then may the next operation execute.",
+  "plan_authority": "The trusted runner registers compile output and grants run/verify authority only for the exact checked plan after its observation audit passes. Operators cannot supply or mint authority.",
+  "expected": {"source_objects":17849, "sites":51, "aliases":53, "groups":34, "physical_components":26, "round_priorities":25, "exceptions":1, "neighbor_controls":34, "neighbor_response_sites":18, "counts":{"GROW_COMPANION":24,"KEEP_CONSTRAINED":2,"KEEP_PRIORITY":7,"ROUND_GROW_PRIORITY":18}},
+  "bounds": "Existing source-bound capsule, profile, policy, budget, output scope and implementation/runtime hashes; no custom commands, source cases, geometry inputs or output paths.",
+  "oracle": "Frozen C01 contours may be opened by the post-construction coordinator audit only, never used to generate the candidate.",
+  "scope_exclusions": ["T02-T05", "shared clearance changes", "frozen result writes", "one-shot reproduction script", "MCP/network", "global configuration", "owner/independent/electrical/manufacturing acceptance"]
+}

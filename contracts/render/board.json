@@ -1,0 +1,55 @@
+{
+  "schema": "pcb-board-render-contract/1",
+  "abi_version": "pcb-render-abi/1",
+  "operations": [
+    "render_compare",
+    "render_verify",
+    "render_controls"
+  ],
+  "authority": "Whole-board T01 audited exports; complete tiled native review; no later stages or owner promotion",
+  "inputs": {},
+  "layer": "F.Cu",
+  "frame": "native-kicad-mm",
+  "bounds_mm": null,
+  "pixels": null,
+  "raster_boundary_error_mm": {
+    "kicad": 0.001,
+    "gerber": 0.005
+  },
+  "coordinate_mapping": "SVG uses native X,Y directly. Gerber X=native X, Gerber Y=-native Y. No fitted registration, automatic crop or geometry edits.",
+  "cli_version": "10.99.0",
+  "cli_sha256": "9b06a97e609f8ff61753a6e2ca5e4710572df77643630366c8c2ad1428b4b497",
+  "sips_version": "sips-316",
+  "dependencies": {
+    "Pillow": "13.0.0",
+    "numpy": "2.5.4",
+    "sexpdata": "1.0.2",
+    "gerbonara": "1.6.3",
+    "shapely": "2.1.2"
+  },
+  "negative_controls": [
+    "mirrored_gerber",
+    "blank_kicad",
+    "wrong_svg_viewport",
+    "changed_input_hash"
+  ],
+  "limits": [
+    "F.Cu supported native graphic circle profile; all other source contributions fixed",
+    "Native panels cover the entire source/growth window through complete tiles; overview is navigation only",
+    "Unchanged per-tile 1/5 micrometre raster bands; not clearance or connectivity proof",
+    "Owner PENDING_USER; independent NOT_RUN; electrical/manufacturing NOT_ESTABLISHED",
+    "Local files and native runner; no MCP or network"
+  ],
+  "tile_policy": {
+    "tile_span_mm": 6.0,
+    "pixel_policy": {
+      "minimum_width": 1280,
+      "maximum_pixel_pitch_mm": 0.002,
+      "maximum_axis_pixels": 16384,
+      "maximum_pixels_per_panel": 16000000
+    },
+    "maximum_total_pixels_per_panel": 2000000000
+  },
+  "tiles": null,
+  "gerber_panel_renderer": "Qualified Gerbonara 1.6.3 SVG curves, explicit Y inversion, native SIPS rasterization; actual Gerber unchanged"
+}

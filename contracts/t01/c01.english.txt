@@ -1,0 +1,16 @@
+T01 controlled English version 1.
+R01: Use the bound original F.Cu source and complete exact geometry cache; change only the bound crop circle sites and their exact aliases.
+R02: Discover all filled source circles intersecting the crop, including covered circles and complete edge circles; merge byte-identical aliases and cross-check raw source spans.
+R03: Use each exact source polygon centroid as its computational center and the mean of its bounding-box width and height divided by four as its computational radius.
+R04: Compute physical contact components from intersecting original F.Cu surfaces across the whole board; keep these distinct from growth competition pairs.
+R05: Keep the bound reviewed pair first; greedily pair remaining competing sites by normalized center distance and stable source identities, leaving unpaired singletons.
+R06: Choose the largest source-qualified round priority per physical component, breaking ties by source identity; remove only the bound recess exceptions from round priority status.
+R07: Prefer each pair's largest common admissible diameter from the bound palette; otherwise use individual classes; preserve exact source geometry when no class is feasible.
+R08: Reduce constrained priorities by whole classes; jointly demote conflicting round priorities without scaling down their companions automatically.
+R09: For each pair, use the priority anchor or first pair member as A; bound B's envelope by the facing side of A's enlarged-circle inscribed square at minus 45 degrees, with construction gap and safety.
+R10: Recover feasible next-class round promotions by greatest area gain and source-identity tie-break without shrinking other targets; recompute square bounds from final radii.
+R11: Construct round priorities in source-identity order, then companions in centroid Y, X, identity order; each accepted enlarged contour replaces all its aliases in the current scene.
+R12: Clip only optional companion copper against the current scene; retain source cores and attached additions; allow original trace contacts only inside fixed source-derived ports.
+R13: For each bound recess exception, remove one optional lobe using its enlarged-circle square and the greatest actual obstacle conflict, breaking ties by source identity; apply all ordinary obstacle constraints afterward.
+R14: Use a 1.5 growth cap, diameter palette 0.038 0.0761 0.2749 0.2999 0.3374 0.3749 0.4499 mm, construction gap 0.02002 mm, hard gap 0.020 mm, safety 0.00002 mm, 128 quadrant segments, area epsilon 0.0000000001 mm2 and event epsilon 0.00000001 mm2.
+R15: Verify every saved contour by source-bound reconstruction and final assembled finite-surface checks; retain rejected hypotheses and neighbor-restoration controls; never grant owner, independent or manufacturing acceptance.
