@@ -16,21 +16,24 @@ STEPS=(*ROI,*T01,CHECK,*FILES)
 CONTRACT=ROOT/'contracts/operator/t01_board_export.json'
 PRODUCERS=['tools/t01_board_export_route.py','tools/t01_board_export_jobs.py','tools/t01_directory_intake_worker.py','tools/pcb_t01_board_export_operator.py','tools/start_t01_board_export_operator.py','tools/pcb_directory_data_abi.py','src/pcb_data_abi/input_directory.py','src/pcb_data_abi/directory_scope.py','src/pcb_data_abi/raw_directory.py','contracts/operator/t01_board_export.json']
 
-def initialize(session):
-    root=board_initialize(session)
+def initialize(session,*,storage_root=None):
+    root=board_initialize(session) if storage_root is None else board_initialize(session,storage_root=storage_root)
     fresh(root/'EXPORT_ONLY_START.json',dict(rendering='NOT_REQUESTED',producer_files={p:digest((ROOT/p).read_bytes())for p in PRODUCERS}))
     return root
 
 class ExportOnlyRoute(BoardRoute):
+    CONTRACT=CONTRACT
+    STEPS=STEPS
+    TASK_SCOPE="full-board-export-only"
     OPERATION_AUTHORITY='Explicit raw directory → complete F.Cu source → T01 → audited KiCad/Gerber export; no rendering or T02-T05'
     def __init__(self,session,runner=subprocess.run):
         self.session=local(session,True);self.identity=dict(require_native(),board_implementation=BoardAdapter().describe()['implementation'])
         self.route_id='route-'+uuid.uuid4().hex;self.lock=threading.RLock();self.receipt_hashes={};self.runner=self._bounded_runner(runner)
-        self.cap={};self.operations=list(STEPS);self.position=0;self.pending=None;self.responses={};self.accepted=[];self.audit_hashes={};self.bound_outputs={};self.submitted=False;self.halted=False
-        (self.session/'audits').mkdir();(self.session/'operator').mkdir();fresh(self.session/'DECISION_POLICY.json',read(CONTRACT))
+        self.cap={};self.operations=list(self.STEPS);self.position=0;self.pending=None;self.responses={};self.accepted=[];self.audit_hashes={};self.bound_outputs={};self.submitted=False;self.halted=False
+        (self.session/'audits').mkdir();(self.session/'operator').mkdir();fresh(self.session/'DECISION_POLICY.json',read(self.CONTRACT))
     def _bounded_runner(self,runner):
         def run(argv,**kwargs):
-            budget=read(CONTRACT)['native_timeout_seconds'];kwargs['timeout']=budget.get(self.operations[self.position],budget['default'])
+            budget=read(self.CONTRACT)['native_timeout_seconds'];kwargs['timeout']=budget.get(self.operations[self.position],budget['default'])
             return runner(argv,**kwargs)
         return run
     def info(self):
@@ -43,7 +46,7 @@ class ExportOnlyRoute(BoardRoute):
         if self.submitted or self.position or self.halted:raise ValueError('EXPORT_ONLY_INTAKE_CLOSED')
         closed(args,{'kicad','gerber'});check(self.session)
         job=read(self.session.parent/'job.json')
-        if job.get('task_scope')!='full-board-export-only'or args!=job['staged']:raise ValueError('EXPLICIT_DIRECTORY_JOB_REQUIRED')
+        if job.get('task_scope')!=self.TASK_SCOPE or args!=job['staged']:raise ValueError('EXPLICIT_DIRECTORY_JOB_REQUIRED')
         manifest=local(job['input_directory'])
         if digest(manifest.read_bytes())!=job['input_directory_sha256']:raise ValueError('INPUT_DIRECTORY_MANIFEST_CHANGED')
         paths=verify_snapshot(read(manifest),manifest.parent/'raw_inputs')

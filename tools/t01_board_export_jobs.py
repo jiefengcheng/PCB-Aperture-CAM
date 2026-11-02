@@ -8,7 +8,7 @@ from src.pcb_data_abi.input_directory import collect,validate,verify_snapshot
 
 SCOPE='full-board-export-only'
 
-def allocate(manifest,blobs):
+def allocate(manifest,blobs,*,task_scope=SCOPE):
     validate(manifest)
     if set(blobs)!={r['relative_path']for r in manifest['files']}:raise ValueError('INPUT_DIRECTORY_BLOB_SET_CHANGED')
     # Companion identity uses the sorted content multiset, not filenames: a
@@ -22,7 +22,7 @@ def allocate(manifest,blobs):
     paths={('kicad'if r['kind']=='kicad'else r['layer']):snapshot/r['relative_path']for r in manifest['files']if r['kind']!='companion'}
     mp=job/'INPUT_DIRECTORY.json';publish(mp,encode(manifest))
     staged=dict(kicad=str(paths['kicad']),gerber=str(paths['F.Cu']))
-    row=dict(schema='pcb-crop-job/1',task_scope=SCOPE,job=str(job),input_sha256=key,implementation_sha256=version,inputs=rows,staged=staged,input_directory=str(mp),input_directory_sha256=jobs.digest(mp.read_bytes()),rendering='NOT_REQUESTED')
+    row=dict(schema='pcb-crop-job/1',task_scope=task_scope,job=str(job),input_sha256=key,implementation_sha256=version,inputs=rows,staged=staged,input_directory=str(mp),input_directory_sha256=jobs.digest(mp.read_bytes()),rendering='NOT_REQUESTED')
     publish(job/'job.json',encode(row))
     try:
         for r in manifest['files']:
@@ -39,7 +39,7 @@ class NativeIntakeError(ValueError):
         self.details=result.get('error_details');self.evidence=str(evidence)
         super().__init__(result.get('error','NATIVE_DIRECTORY_INTAKE_FAILED'))
 
-def native_intake(value,timeout=1200):
+def native_intake(value,timeout=1200,*,action="directory_intake",task_scope=SCOPE):
     """File-only client: never list, stat, read or launch against the input dir."""
     import time
     from tools.t01_route_client import decode
@@ -47,7 +47,7 @@ def native_intake(value,timeout=1200):
     if host.get('directory_intake')!='native-directory/1':raise ValueError('NATIVE_LAUNCHER_UPDATE_REQUIRED: close the old launcher Terminal and reopen tools/Start_T01_Native_Launcher.command; no input scan or job started')
     directory=str(Path(value).expanduser().absolute())
     rid='intake-'+uuid.uuid4().hex
-    request=dict(action='directory_intake',launcher_id=host['launcher_id'],input_directory=directory,companion_policy='PRESERVE_EXCLUDED')
+    request=dict(action=action,launcher_id=host['launcher_id'],input_directory=directory,companion_policy='PRESERVE_EXCLUDED')
     publish(jobs.output(jobs.LAUNCHER/'inbox'/(rid+'.json')),encode(request))
     until=time.monotonic()+timeout;last=0.
     evidence=jobs.output(jobs.LAUNCHER/'calls'/rid)
@@ -59,7 +59,7 @@ def native_intake(value,timeout=1200):
             if result.get('launcher_id')!=host['launcher_id']:raise NativeIntakeError(dict(error='NATIVE_INTAKE_REPLY_CHANGED'),evidence)
             if result['status']!='INTAKE_READY':raise NativeIntakeError(result,evidence)
             job=jobs.output(result['job']);row=decode((job/'job.json').read_bytes())
-            if result['job_sha256']!=jobs.digest((job/'job.json').read_bytes())or row.get('task_scope')!=SCOPE:raise NativeIntakeError(dict(error='NATIVE_INTAKE_JOB_BINDING_CHANGED'),evidence)
+            if result['job_sha256']!=jobs.digest((job/'job.json').read_bytes())or row.get('task_scope')!=task_scope:raise NativeIntakeError(dict(error='NATIVE_INTAKE_JOB_BINDING_CHANGED'),evidence)
             return job,row
         if time.monotonic()-last>10:
             import sys

@@ -8,9 +8,12 @@ from .crop import sexpdata,re
 
 
 class BoardDataService(CropDataService):
-    def __init__(self,host):
+    def predecessor_root(self,host):
         from .board_custody import validate_host
-        root=validate_host(host,'data')
+        return validate_host(host,'data')
+
+    def __init__(self,host):
+        root=self.predecessor_root(host)
         self.host=host;self.out=root/'data_output';self.previous=root
         self.versions={p:version(p) for p in ('gerbonara','sexpdata','shapely')}
         if self.versions!={'gerbonara':'1.6.3','sexpdata':'1.0.2','shapely':'2.1.2'}:raise ValueError('PCB_EXPORT_DEPENDENCY_VERSION_CHANGED')

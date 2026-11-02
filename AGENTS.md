@@ -274,3 +274,43 @@ The user adopted docs/consolidation/CODEX_CONSOLIDATION_HANDOFF.md with docs/con
 ## Active client Gerber operation authorization — 2026-10-15
 
 The user accepted the detailed one-region client-board plan and requested its full implementation, review, and preparation for video recording. This authorizes a bounded Gerber MovePadWithConnections demonstration on a qualified bottom-copper surface pad, an explicit demonstration contract, actual candidate export/reparse, independent local checks, disconnected/bridge controls, rollback evidence, and the existing workbench's guided replay. A controlled offset of real supplied geometry is authorized when the original already meets the objective; label it separately from the original. Source checkouts/assets/history remain immutable; derived geometry, files and recordings stay under out/. No whole-board electrical/manufacturing claim, HALPI2 editing, V3, external publication, unrelated lanes or wholesale pcb_Z integration. Cursor review only through a verified direct channel; otherwise report NOT_RUN: CHANNEL_UNAVAILABLE and perform local review without claiming independence.
+
+## Fresh U02 raw-directory operation — 2026-11-02
+
+For ordinary-English fresh U02 (T01 → T03, no rendering) use
+`python3 tools/pcb_u02_board_operator.py start --input-dir "<explicit absolute raw directory>"`.
+Use the existing project-native launcher once per session; an old launcher must
+be reopened to load U02 support. The embedded client sends only that path; native
+intake owns all external-directory discovery. Read and review each of the 25
+native gates with one distinct factual observation using
+`python3 tools/pcb_u02_board_operator.py review "one observation"`.
+Continue autonomously until terminal; no manual audit JSON or per-step prompts.
+For automatic Terminal operation use
+`tools/Run_U02_Board.command --input-dir "<explicit absolute raw directory>"`.
+This route owns its adapter/process lifecycle and records 25 deterministic machine
+audits, zero human/agent observations and no rendering. Never substitute audit modes.
+
+U02's supported T03 family retains valid native paths after exact verified fresh
+T01. It inventories every source trace/arc/graphic stroke, regenerates source ports,
+checks all applicable growth/trace finite-copper interactions, reconstructs and
+compares complete pages, and retains deliberate negative controls. NO_CHANGE_REQUIRED
+means zero moved traces, not a demonstrated whole-board router. Any required route
+movement halts as U02_T03_MOVEMENT_NOT_QUALIFIED with retained evidence and remaining
+operations NOT_RUN. No retry, substitute, historical route, inferred electrical
+intent, later U stage, shared-clearance edit or T02/T04/T05 authority is granted.
+All new jobs/exports/reports/temp/test data use out/lacie_work exclusively. U02 has
+its own namespace/contract/checkpoints; frozen results and T01 behavior remain.
+On HALTED report the retained failure and stop; on REPORT_AND_STOP return supplied
+ready_markdown unchanged. Owner PENDING_USER; independent NOT_RUN unless a genuine
+channel exists; electrical/manufacturing NOT_ESTABLISHED. Details:
+`docs/agent_abi/U02_SINGLE_COMMAND.md`, `contracts/operator/u02_board.json`.
+
+## Local Code project cache — LaCie relocation, 2026-11-02
+
+The checkout `.localc` entry is a symbolic link to the project-specific cache on
+`out/lacie_work/local_code/PCB_Aperture_CAM_V1_Codex_Handoff/.localc`.
+Open Local Code with `tools/Start_Local_Code.command` to prepare/verify storage.
+Never replace a broken `.localc` link with an internal directory. The unmounted
+workspace directory is guarded against writes; mount through the preparation
+command. Keep `/.localc` ignored by Git, including when it is a symbolic link.
+Do not unmount LaCie/APFS workspace while Local Code or native jobs are active.

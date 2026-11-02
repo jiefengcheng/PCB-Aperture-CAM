@@ -15,10 +15,10 @@ from tools.t01_c01_route import C01Route
 from tools.t01_operator_host import ROOT,HANDOFF,read,fresh,check
 from tools import t01_board_host as host
 
-def initialize(session):
+def initialize(session,*,storage_root=ROOT):
     session=local(session,True)
     if session.exists():raise ValueError('FRESH_PROJECT_OUTPUT_REQUIRED')
-    if shutil.disk_usage(ROOT).free < 2_000_000_000:
+    if shutil.disk_usage(storage_root).free < 2_000_000_000:
         raise ValueError('BOARD_STORAGE_PREFLIGHT_FAILED: at least 2 GB free required')
     identity=require_native();session.mkdir(parents=True)
     files=producer_files()+list((ROOT/'src/t01_crop').glob('*.py'))+list((ROOT/'src/t01_board').glob('*.py'))+list((ROOT/'contracts/t01_crop').glob('*'))+list((ROOT/'contracts/t01_board').glob('*'))+[ROOT/'tools'/n for n in ('t01_board_route.py','t01_board_host.py','t01_board_abi.py','pcb_board_candidate_check.py','pcb_t01_board_operator.py','start_t01_board_operator.py','t01_board_jobs.py','pcb_board_data_abi.py','pcb_board_render_abi.py','start_t01_crop_operator.py','t01_crop_jobs.py','t01_crop_attachments.py','t01_crop_launcher.py','Start_T01_Native_Launcher.command')]
