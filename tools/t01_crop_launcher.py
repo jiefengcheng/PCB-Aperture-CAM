@@ -26,7 +26,7 @@ class Launcher:
         for name in ('inbox','replies','calls'):(self.registry/name).mkdir(exist_ok=True)
         self.heartbeat('READY')
     def heartbeat(self,status):
-        jobs.replace(self.registry/'current.json',dict(schema='pcb-native-launcher/1',launcher_id=self.id,status=status,updated_at=time.time(),network=False,directory_intake='native-directory/1',u02_board='native-u02/1'))
+        jobs.replace(self.registry/'current.json',dict(schema='pcb-native-launcher/1',launcher_id=self.id,status=status,updated_at=time.time(),network=False,directory_intake='native-directory/1',u02_board='native-u02/1',u03_board='native-u03/1',u03_crops='native-u03-crops/1'))
     def process(self,path):
         from tools.t01_route_client import safe_id
         rid=safe_id(path.stem);call=self.registry/'calls'/rid
@@ -35,12 +35,19 @@ class Launcher:
         job=None
         try:
             request=decode(path.read_bytes());publish(call/'request.json',encode(request))
-            if request.get('action') in ('directory_intake','u02_directory_intake'):
-                if set(request)!={'action','launcher_id','input_directory','companion_policy'}or request['launcher_id']!=self.id or request['companion_policy']!='PRESERVE_EXCLUDED'or type(request['input_directory'])is not str or len(request['input_directory'])>8192:raise ValueError('DIRECTORY_INTAKE_REQUEST_INVALID_OR_STALE')
+            if request.get('action') in ('directory_intake','u02_directory_intake','u03_directory_intake'):
+                allowed={'action','launcher_id','input_directory','companion_policy'}
+                if request['action']=='u03_directory_intake' and 'crop' in request:
+                    if type(request['crop']) is not str or not Path(request['crop']).is_absolute():raise ValueError('U03_ABSOLUTE_CROP_PATH_REQUIRED')
+                    allowed.add('crop')
+                if set(request)!=allowed or request['launcher_id']!=self.id or request['companion_policy']!='PRESERVE_EXCLUDED'or type(request['input_directory'])is not str or len(request['input_directory'])>8192:raise ValueError('DIRECTORY_INTAKE_REQUEST_INVALID_OR_STALE')
                 if any(p.poll()is None for p in self.intakes.values()):raise ValueError('NATIVE_DIRECTORY_INTAKE_IN_PROGRESS')
                 managed=jobs.MANAGED
                 if request['action']=='u02_directory_intake':
                     from tools.u02_board_jobs import MANAGED
+                    managed=MANAGED
+                elif request['action']=='u03_directory_intake':
+                    from tools.u03_board_jobs import MANAGED
                     managed=MANAGED
                 argv=[str(ROOT/'.venv/bin/python'),'-B',str(ROOT/'tools/t01_directory_intake_worker.py'),'--call',str(call),'--registry',str(self.registry),'--managed',str(managed)]
                 with(call/'stdout').open('xb')as stdout,(call/'stderr').open('xb')as stderr:
@@ -50,12 +57,14 @@ class Launcher:
             if set(request)!={'launcher_id','job','job_sha256'} or request['launcher_id']!=self.id:raise ValueError('LAUNCH_REQUEST_INVALID_OR_STALE')
             job=jobs.output(request['job'])
             from tools.u02_board_jobs import MANAGED as U02_MANAGED
-            if job.parent not in (jobs.MANAGED/'jobs',U02_MANAGED/'jobs'):raise ValueError('MANAGED_JOB_REQUIRED')
+            from tools.u03_board_jobs import MANAGED as U03_MANAGED
+            if job.parent not in (jobs.MANAGED/'jobs',U02_MANAGED/'jobs',U03_MANAGED/'jobs'):raise ValueError('MANAGED_JOB_REQUIRED')
             if jobs.digest((job/'job.json').read_bytes())!=request['job_sha256']:raise ValueError('JOB_RECORD_CHANGED')
             if (job/'launch.json').exists() or (job/'halted.json').exists():raise ValueError('FRESH_UNHALTED_JOB_REQUIRED')
             record=decode((job/'job.json').read_bytes())
             if record['job']!=str(job):raise ValueError('JOB_RECORD_PATH_CHANGED')
             if (record.get('task_scope')=='u02-board')!=(job.parent==U02_MANAGED/'jobs'):raise ValueError('JOB_SCOPE_NAMESPACE_MISMATCH')
+            if (record.get('task_scope')=='u03-board')!=(job.parent==U03_MANAGED/'jobs'):raise ValueError('JOB_SCOPE_NAMESPACE_MISMATCH')
             argv=[str(ROOT/'.venv/bin/python'),'-B',str(ROOT/'tools/start_t01_crop_operator.py'),'--managed-worker','--session',str(job/'native')]
             with (job/'worker.stdout').open('xb') as stdout,(job/'worker.stderr').open('xb') as stderr:
                 process=subprocess.Popen(argv,cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True,close_fds=True)

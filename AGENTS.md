@@ -314,3 +314,85 @@ Never replace a broken `.localc` link with an internal directory. The unmounted
 workspace directory is guarded against writes; mount through the preparation
 command. Keep `/.localc` ignored by Git, including when it is a symbolic link.
 Do not unmount LaCie/APFS workspace while Local Code or native jobs are active.
+
+## Fresh U03 raw-directory operation — 2026-11-02
+
+The user authorized full U03 implementation after committing/pushing the existing
+U02/cache checkpoint. For fresh U03 (T01 → T03 → T04, no rendering), use
+`python3 tools/pcb_u03_board_operator.py start --input-dir "<explicit absolute raw directory>"`.
+Read every REVIEW_REQUIRED result and submit one distinct factual observation
+with `python3 tools/pcb_u03_board_operator.py review "one observation"` until
+terminal. No per-step user prompts. The embedded client sends only the path;
+native intake owns external-directory discovery. Reopen the existing project
+native launcher once if it lacks U03 support. The owner performs the manual
+Local Code trial; do not operate their app for them.
+
+For automatic Terminal execution use `tools/Run_U03_Board.command --input-dir
+"<explicit absolute raw directory>"`. It owns the native process lifecycle and
+uses the same operations/policy with separate deterministic machine proofs and
+zero human/agent observations. Never substitute audit modes. The implemented
+sequence has 33 operations, derived from the U03 contract; a failed run must
+retain FAIL and subsequent NOT_RUN dispositions rather than claim all passed.
+
+T03 retains qualified native paths after exact fresh T01; required movement
+halts. T04 admits complete source-bound uniform native junction paths and
+geometrically evidenced parallel groups/singletons. Every source occurrence and
+protected current-scene contribution must be accounted for. Exact fully covered
+paths remain KEEP; partial coverage is not a skip. Unqualified source families
+halt with retained identities. Keep the existing T04 1..1.5 factor, scalar and
+finite-copper policies. No land edits, rerouting, neck-down, global optimum claim,
+rendering, T02/T05 or later U stage. Candidate trace copper is serialized as
+source-bound filled contours and audited by actual native export/reparse.
+
+All new operational/test/audit data use out/lacie_work only. Preserve prior
+jobs, frozen C01/C02/C03 and T01/U02 behavior. Stop on failed/missing/altered
+native checks or predicates; no retry, resume, substitution, resealing or
+acceptance promotion. On REPORT_AND_STOP return supplied ready_markdown
+unchanged. Owner PENDING_USER; independent NOT_RUN absent a genuine channel;
+electrical/manufacturing NOT_ESTABLISHED. See
+`docs/agent_abi/U03_SINGLE_COMMAND.md`, `contracts/operator/u03_board.json`.
+
+## U03 implementation continuation — 2026-11-02
+
+After the first U03 qualification halted at T04 inspection, the user requested
+that Codex keep going to finish U03 without requiring owner operation. This
+authorizes implementation corrections, regression tests and fresh independent
+qualification jobs on the corrected implementation within the existing U03
+scope. Preserve each failed job unchanged; never resume it, bypass the same-input
+and same-implementation failure latch, or promote its dispositions. A failed
+native run still stops its pipeline with remaining operations NOT_RUN. Further
+engineering corrections do not change that historical outcome. Keep all earlier
+storage, isolation, audit, no-rendering and acceptance boundaries.
+
+## U03 runtime priority — 2026-11-03
+
+The user prioritized optimizing the whole-board runtime before another costly
+ORG qualification. Measure retained native cases, preserve failed evidence and
+complete the authorized U03 implementation. No source coverage, native gate,
+machine predicate, scalar bound, clearance threshold or fresh verification may
+be removed to improve timing. Report bounded benchmark timing separately from a
+fresh whole-board run; retained-result regression is not fresh qualification.
+
+
+## U03 crop-image extension — 2026-11-03
+
+The user requested crop processing and corrected the interface: `--crop` takes
+an explicit absolute **image-file path**, not a name such as C01/C02/C03. Use
+`tools/Run_U03_Board.command --input-dir "<absolute raw directory>" --crop
+"<absolute crop image>"`, or the same flags on `pcb_u03_board_operator.py start`.
+Omitting crop keeps the existing whole-board default; `--whole-board` is the
+explicit Terminal alternative. Native intake alone reads/stages the external
+image, retaining its exact bytes/hash. No remembered crop, alias or saved result.
+
+Crop runs preserve the original 33 gates and add two separately audited PCB-data
+location/verification gates (35 total). Reuse unchanged ROI matching, boundary,
+landmark and corruption predicates; an unsupported or ambiguous crop halts.
+NPY masks are internal location evidence, not board/candidate rendering.
+Complete growth envelopes and complete native paths/parallel groups must fit
+inside the verified window after edge uncertainty. Crossing/outside features
+stay unchanged. Full-board copper remains obstacle context; full candidate
+native write/reopen, nine-layer export/reparse and controls remain mandatory.
+No primitive trimming, threshold changes, historical candidate reuse, T02/T05,
+new render, retry of a failed/stopped job, acceptance promotion or publication.
+Keep LaCie-only outputs and all stopped/frozen evidence. Local Code requires
+reopening its existing launcher once for the new crop-image capability.
