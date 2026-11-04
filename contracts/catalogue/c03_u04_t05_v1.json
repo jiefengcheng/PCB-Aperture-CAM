@@ -1,0 +1,78 @@
+{
+  "schema": "pcb-c03-representations/1",
+  "authority": "Stage A contract and retained-result baseline only; Stage B not started",
+  "scope": "Exact corrected C03 U04 predecessor and attachment-complete U05 continuation",
+  "representations": {
+    "source": "Immutable artifact bytes and revision-scoped occurrences; retain native parameters and Gerber aperture/order/polarity semantics in their original stream",
+    "engineering": "Source-bound complete paths, width groups, lands, alias sets, inclusive members, local clusters, attachments and separate permissions",
+    "execution": "Rebuildable geometry references, frame/units, conservative bounds, dependency versions and reusable measurements"
+  },
+  "identities": {
+    "source_occurrence": ["source_sha256", "byte_start", "byte_end"],
+    "engineering_object": ["scene_revision", "object_id", "source_members"],
+    "attachment": ["scene_revision", "cluster_id", "attachment_id", "land_id", "original_contact_basis"],
+    "complete_path": ["source_sha256", "path_id", "complete_source_ids"],
+    "spatial_fragment": ["geometry_version", "fragment_id", "complete_path_id", "width_group_id"]
+  },
+  "coverage": {
+    "source_occurrences": 17849,
+    "trace_occurrences": 15858,
+    "complete_paths": 7427,
+    "t04_admitted_paths": 14,
+    "t04_admitted_groups": 14,
+    "reference_clusters": 97,
+    "reference_positive_clusters": 85,
+    "required_reference_attachments": 162,
+    "t05_clusters": 108,
+    "attachment_records": 180,
+    "outside_write_context_contacts": 11,
+    "blocked_nonreference_attachments": 4
+  },
+  "permissions": {
+    "T04": "Complete qualified native path/group uniform width only; existing 1..1.5 factors and scalar/crop rules",
+    "T05": "Independent source-bound local attachment admission; preserve all U04 contributions; additive copper inside the exact approved write region",
+    "T04_KEEP": "No T05 eligibility verdict",
+    "protected_copper": "Existing contribution must not change; distinct from a no-addition region",
+    "contact": "Physical relation only; supplies neither electrical intent nor writable authority",
+    "cluster_view": "References contributors; empty native ownership; must not duplicate effective copper",
+    "covered_land": "Remains in membership, radius, window and attachment verification"
+  },
+  "numerical_policy": {
+    "construction_gap_mm": 0.02010,
+    "barrier_gap_mm": 0.02011,
+    "actual_hard_gap_mm": 0.02000,
+    "area_epsilon_mm2": 1e-12,
+    "minimum_visible_addition_mm2": 1e-8,
+    "radius_scales": [1, 0.75, 0.5, 0.25],
+    "buffer_quad_segs": 64,
+    "file_uncertainty_mm": 0.000002,
+    "scope_exception": "Only J-966bf7ea0116147b; exact existing hash-pinned mask; no general boundary expansion"
+  },
+  "reuse_and_invalidation": {
+    "geometry_key": ["operand_bytes_sha256", "constructor_version", "construction_parameters", "frame", "units", "numerical_model"],
+    "measurement_key": ["ordered_operand_geometry_versions", "predicate_or_metric", "frame", "units", "numerical_model"],
+    "decision_key": ["measurement_binding", "stage_policy_hash", "complete_membership", "permissions_hash", "neighbor_membership_and_versions", "search_order", "scene_revision"],
+    "invalidation": ["changed source or operand bytes", "changed geometry implementation or precision", "changed complete path/group/alias/land membership", "changed policy or write mask", "changed or newly possible spatial interaction", "rejected trial rollback", "missing or altered artifact/evidence"],
+    "new_interactions": "Query conservative permitted growth envelopes or old/new neighborhoods; existing reverse edges alone cannot prove complete discovery",
+    "measurement_vs_decision": "A valid distance may survive a policy change; its acceptance decision must be recomputed",
+    "storage": "Durable source/engineering snapshots; rebuildable execution data; bounded resident sets; no internal-storage fallback",
+    "index_strategy": "Existing U03 conservative packed index is scoped reuse evidence; base-plus-overlay consolidation remains unadopted"
+  },
+  "mandatory_closure": [
+    "Complete source partition, including unchanged and unsupported dispositions",
+    "Independent required attachment denominator and full approved extent",
+    "Full reconstruction including KEEP and rejected attempts",
+    "Simultaneous final assembled-scene verification",
+    "Actual native write/reread and nine-layer export/reparse",
+    "Model and actual-export corruption controls, including clear primitive polarity",
+    "Both fresh process-bound machine evaluations at every native gate",
+    "Immutable retained FAIL/NOT_RUN evidence and acceptance boundaries"
+  ],
+  "stage_a_limits": [
+    "Projection is an additive audit, not a new authoritative production database",
+    "No new physical components or electrical relationships are inferred",
+    "Gerber primitive semantics stay in hash-bound original streams and existing native evidence; no new parser qualification",
+    "Diagnostic replay timing is not fresh native qualification or whole U04-to-U05 end-to-end time",
+    "No production treatment/cache/index changes; show findings before Stage B"
+  ]
+}

@@ -44,6 +44,9 @@ def managed_worker(session):
     # Dispatch the explicit whole-board scope without replacing the Mac bridge.
     from tools.t01_route_client import decode
     record=decode((Path(session).parent/'job.json').read_bytes())
+    if record.get('task_scope')=='u04-board':
+        from tools.start_u04_board_operator import managed_worker as u04_worker
+        return u04_worker(session)
     if record.get('task_scope')=='u03-board':
         from tools.start_u03_board_operator import managed_worker as u03_worker
         return u03_worker(session)

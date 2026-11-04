@@ -16,7 +16,11 @@ def process(call,registry,managed):
     request=decode((call/'request.json').read_bytes());job=None
     u02=request.get('action')=='u02_directory_intake'
     u03=request.get('action')=='u03_directory_intake'
+    u04=request.get('action')=='u04_directory_intake'
     try:
+        if u04:
+            from tools.u04_board_jobs import MANAGED
+            if jobs.MANAGED!=MANAGED:raise ValueError('U04_MANAGED_NAMESPACE_REQUIRED')
         if u03:
             from tools.u03_board_jobs import MANAGED
             if jobs.MANAGED!=MANAGED:raise ValueError('U03_MANAGED_NAMESPACE_REQUIRED')
@@ -26,10 +30,10 @@ def process(call,registry,managed):
         def cancelled():
             if(call/'cancel_requested.json').exists():raise ValueError('NATIVE_INTAKE_CANCELLED: retained client timeout; no job promotion')
         allowed={'action','launcher_id','input_directory','companion_policy'}
-        if u03 and 'crop' in request:
+        if (u03 or u04) and 'crop' in request:
             if type(request['crop']) is not str or not Path(request['crop']).is_absolute():raise ValueError('U03_ABSOLUTE_CROP_PATH_REQUIRED')
             allowed.add('crop')
-        if set(request)!=allowed or request['action']not in ('directory_intake','u02_directory_intake','u03_directory_intake')or request['companion_policy']!='PRESERVE_EXCLUDED':raise ValueError('DIRECTORY_INTAKE_REQUEST_INVALID')
+        if set(request)!=allowed or request['action']not in ('directory_intake','u02_directory_intake','u03_directory_intake','u04_directory_intake')or request['companion_policy']!='PRESERVE_EXCLUDED':raise ValueError('DIRECTORY_INTAKE_REQUEST_INVALID')
         if Path(request['input_directory']).is_absolute()is not True:raise ValueError('EXPLICIT_ABSOLUTE_INPUT_DIRECTORY_REQUIRED')
         # The client does not hold this lock. Native custody covers discovery,
         # qualification, staging and slot publication as one bounded operation.
@@ -58,7 +62,10 @@ def process(call,registry,managed):
             # Detect raw modifications during potentially lengthy qualification.
             _,again,again_ignored=collect_raw(root)
             if blobs!=again or ignored!=again_ignored:raise ValueError('INPUT_DIRECTORY_CHANGED_DURING_QUALIFICATION')
-            if u03:
+            if u04:
+                from tools.u04_board_jobs import allocate
+                job,row=allocate(manifest,blobs,crop=request.get('crop'))
+            elif u03:
                 from tools.u03_board_jobs import allocate
                 job,row=allocate(manifest,blobs,crop=request.get('crop'))
             else:job,row=directory_jobs.allocate(manifest,blobs,task_scope='u02-board') if u02 else directory_jobs.allocate(manifest,blobs)

@@ -396,3 +396,117 @@ No primitive trimming, threshold changes, historical candidate reuse, T02/T05,
 new render, retry of a failed/stopped job, acceptance promotion or publication.
 Keep LaCie-only outputs and all stopped/frozen evidence. Local Code requires
 reopening its existing launcher once for the new crop-image capability.
+
+
+## Fresh U04 authorization — corrected 2026-11-03
+
+The user corrected and confirmed U04 = U03 + T02, then requested implementation
+to proceed. U04 is fresh T01 → T03 → T04 → T02; U05 will later be U04 + T05.
+The preceding mistaken U04/T05 work is superseded, saved separately on LaCie,
+and not qualification for either stage. Preserve its stopped job/evidence.
+
+Reuse the unchanged U03 geometry/width/crop kernels and the existing executable
+T02 whole-rectangle/inclusive family. Preserve source, source-port, coverage,
+clearance, scalar, nominal/envelope, reconstruction, native write/export/reparse
+and corruption gates. T02 keeps centers and whole rectangles within original
+1.25× per-axis caps; inclusive fill requires connected source support, at most
+20% shortage and actual foreign clearance. No trace rerouting, width changes,
+T05, second T04 pass, arbitrary contour editing or inferred electrical intent.
+U04 has 41 whole-board or 43 crop gates in a separate namespace/contract.
+
+Terminal: `tools/Run_U04_Board.command --input-dir "<explicit absolute raw directory>"
+[--crop "<explicit absolute image path>" | --whole-board]`. Local Code uses
+`python3 tools/pcb_u04_board_operator.py start` with those explicit paths, then
+one distinct factual review observation per gate. Reopen the existing launcher
+once for U04 support; the owner performs the manual app trial. Terminal uses
+separate deterministic machine proofs with zero human/agent observations.
+Do not substitute modes, use historical candidates as fresh inputs, retry/resume
+halted jobs, or start a real-board job from a remembered raw directory.
+Engineering corrections use new independent jobs and preserve failed evidence.
+LaCie-only artifacts/jobs/cache/tests/reports; no internal fallback.
+Owner PENDING_USER; independent NOT_RUN absent a genuine authenticated channel;
+electrical/manufacturing NOT_ESTABLISHED. No commit/push/publication implied.
+See contracts/operator/u04_board.json and docs/agent_abi/U04_SINGLE_COMMAND.md.
+
+
+## U04 accepted-C03 reconciliation and T02 runtime correction — 2026-11-03
+
+The user authorized reconciliation with the accepted C03 workflow, a T02
+performance correction without weakened checks, and a fresh U04 job on the
+explicit previously supplied ORG directory and /Users/geoffcheng/Downloads/C03.png.
+Preserve the failed 20261103T103751Z U04 job unchanged. Source-hash-bound reviewed
+original bulk/fixed contributors remain protected; entire affected native paths
+and groups stay fixed. These annotations never supply crop location or candidate
+copper. Keep fresh image/source qualification and complete-path crop admission.
+T02 uses complete native-member predecessor geometry, original native contact
+widths, original centroid Y/X/ID target order and original-rectangle inclusive
+alignment. Defer only derived trial scene assembly; keep every finite predicate,
+full final reconstruction, controls and actual native export/reparse. Immutable
+preparation and content-addressed replay reuse are operation-local, with complete
+context/operand hash revalidation; separate gates/audits reconstruct independently.
+No timeout, search bound, threshold, gate or acceptance boundary is relaxed.
+U03/U02 shared kernels and frozen C03 geometry remain unchanged.
+
+## U05 continuation authorization — 2026-11-03
+
+The user requested the last U05 stage, explicitly U04 + T05. This authorizes
+implementation, regression/native qualification and T05 continuation of the exact
+completed C03 U04 job from this chat. Preserve that U04 job, the previous failed
+U04 run and all frozen/accepted results unchanged. The new U05 namespace verifies
+the retained U04 receipt, all native/machine evidence and final hashes; it must
+label that prefix RETAINED_VERIFIED, never freshly rerun. Fresh T05 construction
+and actual native write/reread and nine-layer export/reparse remain mandatory.
+Use the existing spindle family and all fixed source, alias, original-contact,
+crop, finite-copper, simultaneous, reconstruction and negative-control checks.
+Only append qualified T05 copper; all U04 native nodes remain protected. No
+source rerouting/width change, land edits, rendering, later U stage or acceptance
+promotion. Terminal uses Run_U05_Board.command --u04-job with an explicit absolute
+completed job path. New artifacts/tests/logs/temp/cache remain LaCie-only. Stop
+failed jobs without retry/resume; corrected implementations use new jobs.
+Owner PENDING_USER; independent NOT_RUN absent a genuine channel;
+electrical/manufacturing NOT_ESTABLISHED. No commit/push/publication implied.
+
+## U05 runtime and native-union correction — 2026-11-03
+
+The user identified time performance as the major issue while U05 was running.
+Preserve failed C03 U05 job 20261103T143902Z-3c3c3b23e8be4477be31ef892be0473d
+unchanged. Its actual Gerber topology check remains FAIL and export controls
+NOT_RUN. Corrected implementations require separate jobs, never a resume/reseal.
+Check actual connectivity on the direct plotted owner-plus-contour union and
+retain the unchanged delta-consistency, window, source-owner, clearance and
+protection predicates. No rounding, connectivity, area or gap exemption is added.
+Reuse only operation-local prepared contexts with complete receipt/context and
+operand-byte SHA-256 revalidation. Every artifact access still reads and hashes
+the actual bytes; atomic no-follow opens preserve file-type and symlink guards.
+Two complete machine evaluations may run concurrently in separate processes;
+both actual process-bound canonical proofs must match and pass before advancing.
+All 14 native gates, two fresh evaluations per gate, controls, coverage and fixed
+spindle thresholds remain mandatory. Record bounded and fresh-run timing separately.
+
+## U05 attachment coverage restoration — 2026-11-04
+
+The owner rejected the 20261103T160119Z C03 U05 outcome and approved the exact
+T04/T05 separation and per-attachment rules in docs/agent_abi/U05_ATTACHMENT_RULES.md.
+Finalize and implement them, restoring the earlier C03 junction coverage and
+verifying each attachment in actual exports. This supersedes inherited T04
+eligibility and whole-path/group crop exclusion solely for T05 local additive
+treatment. T04 width rules and all prior runs remain unchanged. Covered lands
+stay in the T05 cluster, radius and window. Native source/role/alias/contact,
+finite clearance, simultaneous, reconstruction, corruption and actual export
+checks remain mandatory; missing required attachment treatment is FAIL.
+Use separate fresh jobs and preserve historical receipts, including all rejected
+and failed jobs. Performance is a major requirement; benchmark restored work and
+retain complete proof scope. No retry/resume of old jobs, source geometry edits,
+clearance/tolerance relaxation, global changes, publication or acceptance promotion.
+
+## Approved C03 U05 boundary exception — 2026-11-04
+
+The owner approved only J-966bf7ea0116147b's documented source-bound extension:
+0.107678 mm beyond C03's right boundary and 0.001834706 mm² outside. The versioned
+U05 attachment profile pins that exact mask plus existing file uncertainty.
+Every other cluster retains the original writable boundary and all clearance
+checks remain mandatory. Current native source strokes may be bound through a
+fresh isolated native source plot and exact full-plot atom equality, retaining
+U03's existing nominal-stroke/endpoint bounds. Loaded execution contexts must
+recheck complete scene/policy metadata and every read operand before returning
+a verdict; input mutation or tampering must reject before advancement.
