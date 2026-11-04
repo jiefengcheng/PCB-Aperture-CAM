@@ -1,5 +1,6 @@
 """U03 crop T03: same retained-path predicates, crop-selected fresh T01 sites."""
 from pathlib import Path
+from src.u02_board.ports import source_port_binding
 from shapely import from_wkb,to_wkb,STRtree
 from src.stage_abi.store import canonical,digest
 from src.t01_crop.paging import read_pages
@@ -9,6 +10,17 @@ from .crop_t01 import context
 
 class CropRetainPathsAdapter(RetainPathsAdapter):
     def assess(self):
+        policy=self.store.get_json(self.cap['policy_ref'],kind='policy')
+        from src.t01_board.policy import HEADER,validate_policy
+        if policy.get('dialect')==HEADER:
+            # Canonical T01 is complete-source construction. A crop is only a
+            # view here; retain every original T03 source/port/pair check.
+            from .selection import for_root,validate
+            chosen=for_root(self.root)
+            if chosen is None:raise ValueError('U03_VERIFIED_CROP_VIEW_REQUIRED')
+            validate(chosen,self.scene['source_sha256'])
+            validate_policy(policy)
+            return super().assess()
         original=self.store.get_json(self.receipt['scene_ref'],kind='scene')
         policy=self.store.get_json(self.cap['policy_ref'],kind='policy')
         b,raw,rows,shapes,sites=context(self.store,original,policy)
@@ -19,7 +31,7 @@ class CropRetainPathsAdapter(RetainPathsAdapter):
         if current!=expected:raise ValueError('U02_EXACT_T01_PREDECESSOR_REQUIRED')
         ws=WorkingScene(raw,rows,shapes,sites,CropSettings(**policy['settings']))
         plan=self.store.get_json(self.cap['plan_ref'],kind='plan');ports=plan['details']['allocation']['ports']
-        port_rows,index=read_pages(self.store,ports['index_ref'],binding=dict(source_sha256=b['source_sha256'],site_ids_sha256=digest(canonical(sorted(s['source_id'] for s in sites))),viewport_mm=b['viewport_mm']),kind='t01-board-ports',identity=lambda r:r['source_id'])
+        port_rows,index=read_pages(self.store,ports['index_ref'],binding=source_port_binding(policy,raw,shapes,sites,plan['details']['allocation']),kind='t01-board-ports',identity=lambda r:r['source_id'])
         stored={r['source_id']:{sid:self.store.get(ref,kind='t01-port-geometry') for sid,ref in r['ports'].items()} for r in port_rows}
         regenerated={sid:{oid:to_wkb(g,byte_order=1) for oid,g in zones.items()} for sid,zones in ws.ports.items()}
         if stored!=regenerated:raise ValueError('U02_SOURCE_PORT_RECONSTRUCTION_MISMATCH')

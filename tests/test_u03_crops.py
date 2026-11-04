@@ -83,43 +83,58 @@ def test_crop_requires_updated_launcher_before_directory_intake(monkeypatch):
 
 def test_crop_T01_T03_T04_uses_full_native_context_and_protects_outside(tmp_path,monkeypatch):
     from tests.test_u02_board import native_session
-    from src.u03_board.crop_t01 import ImageCropService,PROFILE,english
+    from src.u03_board.crop_t01 import ImageCropService
     from src.u03_board.crop_t03 import CropRetainPathsAdapter
     from src.u03_board.adapter import WidthGates
     from src.u03_board.custody import T03,T04
-    from src.stage_abi.scene import validate_scene
+    from src.stage_abi.scene import validate_scene,composed
+    from src.stage_abi.contracts import StageABIError
+    from src.t01_canonical import marker
+    # Use the current real canonical T01 construction/reconstruction fixture.
+    # A crop cannot authorize a second or partial T01 write.
+    with pytest.raises(StageABIError) as retired:ImageCropService(None,{})
+    assert retired.value.code=='T01_CROP_WRITE_RETIRED'
     baseline=native_session(tmp_path);store=baseline.store
-    old_policy=store.get_json(baseline.cap['policy_ref'],kind='policy');binding_ref=old_policy['binding_ref'];binding=store.get_json(binding_ref,kind='t01-binding')
-    chosen=verified_window(tmp_path,binding['source_sha256'],[-1,-1,1,1]);(tmp_path/'U03_SELECTION.json').write_bytes(canonical(chosen))
-    crop_ref=store.put_json('u03-crop-selection',chosen);scene=baseline.receipt['scene_ref']
-    bounds=store.put_json('bounds',dict(max_source_objects=3,max_targets=3,max_evaluations=10000,max_output_bytes=200000000,max_seconds=120));vr=store.put_json('verifier',{})
-    host=dict(schema='u03-image-crop-t01-host/1',compiler_binding_refs=[binding_ref],crop_selection_ref=crop_ref,stage_registry=dict(schema='stage-agent-registry/1',profiles={},authorization_refs=[],decision_refs=[]));pref=None
-    def call(verb,payload,plan_ref=None,authorization_ref=None,key=None):
-        request=dict(abi_version='stage-agent-abi/1.0',request_id='crop-'+verb,operation='t01_'+verb,profile_id=None if verb=='compile' else PROFILE,scene_ref=None if verb=='compile' else scene,policy_ref=pref,plan_ref=plan_ref,authorization_ref=authorization_ref,idempotency_key=key,payload=payload)
-        response=ImageCropService(store,host).dispatch(request);assert response['status']=='OK',response
-        return response['result']
-    pref=call('compile',dict(english=english(),binding_ref=binding_ref))['policy_ref'];host['stage_registry']['profiles'][PROFILE]=dict(stage='t01',adapter=PROFILE,policy_ref=pref,scene_refs=[scene],bounds_ref=bounds,verifier_ref=vr)
-    discovery=call('discover',dict(bounds_ref=bounds));assert discovery['discovery']['unique_sites']==1 and discovery['discovery']['source_objects']==3
-    inspection=call('inspect_all',dict(selection_ref=discovery['selection_ref'],page_size=100));qualification=store.put_json('verification',dict(scene_ref=scene,geometric_status='PASS'))
-    planned=call('plan',dict(inspection_ref=inspection['inspection_ref'],selection_ref=discovery['selection_ref'],predecessor_qualification_ref=qualification,bounds_ref=bounds,strategy='priority_companion_growth'));pr=planned['plan_ref']
-    out=store.put_json('output-scope',dict(kind='immutable-local-artifacts'));auth=store.put_json('authorization',dict(profile_id=PROFILE,scene_ref=scene,policy_ref=pref,plan_ref=pr,operations=['t01_run','t01_verify'],authority='Synthetic crop regression',output_scope_ref=out));host['stage_registry']['authorization_refs'].append(auth)
-    ran=call('run',dict(output_scope_ref=out),pr,auth,'crop-fresh-run')['result'];proof=store.put_json('proof-scope',dict(scope='complete-board-t01-source-reconstruction'))
-    verified=call('verify',dict(candidate_ref=ran['candidate_ref'],verifier_ref=vr,proof_scope_ref=proof),pr,auth,'crop-fresh-verify')['result'];assert verified['verification']['geometric_status']=='PASS'
-    candidate=ran['candidate'];assert candidate['unique_sites']==1 and len(candidate['replacements'])==1
+    policy=store.get_json(baseline.cap['policy_ref'],kind='policy');binding_ref=policy['binding_ref'];binding=store.get_json(binding_ref,kind='t01-binding')
+    assert policy['canonical_t01']==marker()
+    plan=store.get_json(baseline.cap['plan_ref'],kind='plan')
+    candidate=baseline.candidate;scene=baseline.receipt['scene_ref']
     original=validate_scene(store,scene);after=validate_scene(store,candidate['output_scene_ref'])
-    assert len(after['objects'])==3
+    assert candidate['unique_sites']==2 and len(candidate['replacements'])==2
+    assert len(plan['details']['allocation']['priority_pool_source_ids'])==2
+    assert len(original['objects'])==len(after['objects'])==3
     assert all(a['geometry_ref']==b['geometry_ref'] for a,b in zip(original['objects'],after['objects']) if a['source_id'] not in candidate['replacements'])
-    (tmp_path/'RECEIPT.json').write_bytes(canonical(dict(status='PASS_BOARD_T01_VERIFIED',binding_ref=binding_ref,source_sha256=binding['source_sha256'],scene_ref=scene,candidate_ref=ran['candidate_ref'],verification_ref=verified['verification_ref'])))
-    (tmp_path/'capsule_02.json').write_bytes(canonical(dict(store_path=str(store.root),policy_ref=pref,plan_ref=pr)))
+    chosen=verified_window(tmp_path,binding['source_sha256'],[-1,-1,1,1]);(tmp_path/'U03_SELECTION.json').write_bytes(canonical(chosen))
+    region=selection.window(chosen)
+    original_byid={r['source_id']:r for r in original['objects']};after_byid={r['source_id']:r for r in after['objects']}
+    from shapely import from_wkb
+    outside=[sid for sid in candidate['replacements'] if not from_wkb(store.get(original_byid[sid]['original_ref'],kind='geometry')).intersects(region)]
+    assert len(outside)==1
+    # Full-source T01 really includes the circle outside this read-only view.
+    assert after_byid[outside[0]]['geometry_ref']!=original_byid[outside[0]]['geometry_ref']
+    receipt=dict(baseline.receipt,binding_ref=binding_ref,source_sha256=binding['source_sha256'])
+    (tmp_path/'RECEIPT.json').write_bytes(canonical(receipt))
     (tmp_path/'data_board').mkdir();(tmp_path/'data_board/source_manifest.json').write_bytes(store.get(binding['manifest_ref'],kind='native-manifest'))
     t03=CropRetainPathsAdapter(tmp_path)
     for op in T03:t03.dispatch(op)
+    proof=json.loads((tmp_path/'u02_t03/t03_verify.json').read_bytes())
+    inspection=json.loads((tmp_path/'u02_t03/t03_inspect.json').read_bytes())
+    assert proof['facts']['fresh_reconstruction'] and inspection['facts']['canonical_sites']==2
+    assert inspection['facts']['source_objects']==3 and proof['facts']['trace_occurrences']==1
+    # The full-source current scene survives T03 unchanged, including outside.
+    assert store.get_json(json.loads((tmp_path/'u02_t03/t03_search.json').read_bytes())['candidate']['output_scene_ref'])==after
     gates=WidthGates(tmp_path)
     for op in T04:gates.dispatch(op)
     width=json.loads((tmp_path/'u03_t04/t04_verify.json').read_bytes())
     assert width['facts']['fresh_reconstruction'] and width['facts']['changed_native_parts']==1
     inventory=json.loads((tmp_path/'u03_t04/t04_inspect.json').read_bytes())
     assert inventory['facts']['complete_source_coverage']
+    width_candidate=json.loads((tmp_path/'u03_t04/t04_run.json').read_bytes())['result']['candidate']
+    width_scene=validate_scene(store,width_candidate['output_scene_ref'])
+    width_byid={r['source_id']:r for r in width_scene['objects']}
+    assert width_byid[outside[0]]['geometry_ref']==after_byid[outside[0]]['geometry_ref']
+    assert composed(store,width_scene).difference(region).symmetric_difference(composed(store,after).difference(region)).area<=1e-10
+    assert len(json.loads((tmp_path/'u03_t04/t04_controls.json').read_bytes())['controls'])==7
 
 
 def test_image_path_reader_never_resolves_crop_alias_or_relative_path(tmp_path):
@@ -283,7 +298,27 @@ def test_absolute_image_command_completes_35_native_gates_and_protects_outside(t
     # Locate the original outside circle by its immutable native bytes.
     fragment=b'(gr_circle (center 30 30) (end 30.12497 30) (stroke (width 0) (type solid)) (fill yes) (layer "F.Cu"))'
     before_circle=next(r for r in inv['objects'] if raw[slice(*r['source_span'])]==fragment)
-    assert before_circle['geometry_sha256'] in {r['geometry_sha256'] for r in changed['objects'] if r['kind']=='gr_circle'}
+    # Canonical T01 covers this source even outside the image; T04 must keep
+    # that verified predecessor contribution exact, rather than undoing T01.
+    from src.stage_abi.store import ArtifactStore
+    from src.pcb_data_abi.board_geometry import export_reference,fidelity
+    from src.native_inventory import geometry
+    from src.source_locators import locate
+    from shapely import from_wkb
+    import sexpdata
+    store=ArtifactStore(session/'runtime');handoff=json.loads((session/'RECEIPT.json').read_bytes())
+    t01=store.get_json(handoff['candidate_ref'],kind='candidate');sid=before_circle['id']
+    assert sid in t01['replacements']
+    width=json.loads((session/'u03_t04/t04_run.json').read_bytes())['result']['candidate']
+    assert width['protected_source_refs'][sid]==t01['replacements'][sid]
+    spans=locate(raw);top=[s for s in spans if s.parent_start==spans[0].start]
+    index=next(i+1 for i,s in enumerate(top) if s.identity==sid)
+    node=sexpdata.loads(candidate.read_text())[index]
+    target=from_wkb(store.get(t01['replacements'][sid],kind='geometry'))
+    assert fidelity(export_reference(target)[0],geometry(node,str(node[0])))['passed']
+    t01_policy=store.get_json(json.loads((session/'capsule_02.json').read_bytes())['policy_ref'],kind='policy')
+    from src.t01_canonical import marker
+    assert t01_policy['canonical_t01']==marker()
     report=(session/'U03_REPORT.md').read_text()
     assert str(image) in report and '--crop' in report and '35 native gates' in report
     assert json.loads((session/'adapter_stopped.json').read_bytes())['status']=='STOPPED'

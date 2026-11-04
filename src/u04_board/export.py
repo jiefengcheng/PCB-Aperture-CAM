@@ -1,3 +1,5 @@
+from src.native_preparation import native_view,mutable_copy
+from src.native_preparation import native_loads
 """U04 T01+T04+T02 contour writeback and actual native Gerber reparse.
 
 Changed trace copper uses the same qualified filled-polygon/file-grid format
@@ -31,6 +33,7 @@ def required_export_controls(measured):
     else:required['wrong_layer_role']='FCU_FILE_ROLE_UNSUPPORTED'
     if measured['rectangle_parts']:required['missing_rectangle_copper']='U04_RECTANGLE_POLYGON_NOT_IN_GERBER'
     if measured['inclusive_parts']:required['missing_inclusive_copper']='U04_INCLUSIVE_POLYGON_NOT_IN_GERBER'
+    if measured.get('c03_positive_copper_required'):required['clear_polarity']='C03_FCU_CLEAR_POLARITY_UNSUPPORTED'
     return required
 
 
@@ -84,7 +87,7 @@ class U04DataService(BoardDataService):
 
     def native_body(self):
         body,rows=native.write_board(self.raw,self.edit,self.decisions,self.targets)
-        tree=sexpdata.loads(body.decode());spans=locate(self.raw)
+        tree=native_loads(body.decode());spans=locate(self.raw)
         top=[s for s in spans if s.parent_start==spans[0].start];positions={s.identity:i+1 for i,s in enumerate(top)}
         template=native.edit_template(self.edit);width_rows=[]
         for sid,g in sorted(self.width_targets.items()):
@@ -106,20 +109,20 @@ class U04DataService(BoardDataService):
         return native.board_bytes(tree),rows,width_rows
 
     def native_check(self,body,rows,width_rows):
-        before=sexpdata.loads(self.raw.decode());after=sexpdata.loads(body.decode())
+        before=native_view(self.raw.decode());after=native_view(body.decode())
         if len(after)!=len(before)+len(self.inclusive_targets):raise ValueError('PROTECTED_NATIVE_OBJECT_CHANGED:U04 object count')
         reconstructed,t01,expected_width=self.native_body()
         if rows!=t01 or width_rows!=expected_width:raise ValueError('U03_WIDTH_NATIVE_MAP_CHANGED')
-        expected=sexpdata.loads(reconstructed.decode())
+        expected=native_view(reconstructed.decode())
         if after!=expected:raise ValueError('PROTECTED_NATIVE_OBJECT_CHANGED:U03 complete reconstruction')
         # Separately reparse actual output contours, then restore the original
         # trace nodes for the unchanged T01 native verifier.
-        restored=copy.deepcopy(after[:len(before)]);proofs=[];rectangle_proofs=[];inclusive_proofs=[]
+        restored=mutable_copy(after[:len(before)]);proofs=[];rectangle_proofs=[];inclusive_proofs=[]
         spans=locate(self.raw);positions={r.identity:i+1 for i,r in enumerate([s for s in spans if s.parent_start==spans[0].start])}
         for sid,g in sorted(self.rectangle_targets.items()):
             index=positions[sid];node=after[index]
             if str(node[0])!='gr_poly' or str(one(node,'layer',[''])[0])!='F.Cu':raise ValueError('U04_RECTANGLE_NATIVE_ROLE_CHANGED')
-            rectangle_proofs.append(dict(source_id=sid,**fidelity(g,geometry(node,'gr_poly'))));restored[index]=before[index]
+            rectangle_proofs.append(dict(source_id=sid,**fidelity(g,geometry(node,'gr_poly'))));restored[index]=mutable_copy(before[index])
         for i,(sid,g) in enumerate(sorted(self.inclusive_targets.items()),len(before)):
             node=after[i]
             if str(node[0])!='gr_poly' or str(one(node,'layer',[''])[0])!='F.Cu':raise ValueError('U04_INCLUSIVE_NATIVE_ROLE_CHANGED')
@@ -128,7 +131,7 @@ class U04DataService(BoardDataService):
             sid=r['source_id'];node=after[r['index']]
             if str(node[0])!='gr_poly' or str(one(node,'layer',[''])[0])!='F.Cu':raise ValueError('U03_WIDTH_OUTPUT_ROLE_CHANGED')
             proofs.append(dict(source_id=sid,**fidelity(self.width_targets[sid],geometry(node,'gr_poly'))))
-            restored[r['index']]=before[r['index']]
+            restored[r['index']]=mutable_copy(before[r['index']])
         checked=native.verify_board(self.raw,native.board_bytes(restored),rows,self.decisions,self.targets)
         return dict(checked,rectangle_targets=rectangle_proofs,inclusive_targets=inclusive_proofs,rectangle_parts=len(rectangle_proofs),inclusive_parts=len(inclusive_proofs),width_targets=proofs,changed_native_trace_parts=len(proofs),source_paths_unchanged=True,
                     width_representation='Source-bound nominal copper contours, same existing 1 nm file-grid normalization; no net-intent claim')
@@ -203,7 +206,7 @@ class U04DataService(BoardDataService):
         """
         prefix,start,end=sid.rsplit(':',2);start,end=int(start),int(end)
         fragment=self.raw[start:end]
-        if prefix!=digest(self.raw)+':bytes' or digest(fragment)!=primitive['fragment_sha256'] or str(sexpdata.loads(fragment.decode())[0])!='arc':
+        if prefix!=digest(self.raw)+':bytes' or digest(fragment)!=primitive['fragment_sha256'] or str(native_loads(fragment.decode())[0])!='arc':
             raise ValueError('U03_ISOLATED_ARC_SOURCE_CHANGED')
         folder=self.out/'source_trace_probes'/f'{start}-{end}';receipt=folder/'RECEIPT.json'
         binding=dict(source_sha256=digest(self.raw),source_id=sid,fragment_sha256=digest(fragment),cli_sha256=CLI_SHA,
@@ -216,7 +219,7 @@ class U04DataService(BoardDataService):
         else:
             if not getattr(self,'allow_source_plot_probes',False):raise ValueError('U03_ISOLATED_ARC_EVIDENCE_MISSING')
             folder.mkdir(parents=True,exist_ok=False)
-            root=sexpdata.loads(self.raw.decode())
+            root=native_loads(self.raw.decode())
             metadata={'version','generator','generator_version','general','paper','layers','setup','net','net_class','embedded_fonts'}
             prefix_nodes=[n for n in root[1:] if isinstance(n,list) and str(n[0]) in metadata]
             # Keep the original native arc fragment byte-for-byte in the
@@ -270,7 +273,7 @@ class U04DataService(BoardDataService):
             index=measured[key][0]['plot_index'];which=sum(isinstance(o,go.Region) for o in parsed.objects[:index])
             span=list(re.finditer(rb'G36\*.*?G37\*',blob,re.S))[which];missing=directory/(name+'.gbr');fresh(missing,blob[:span.start()]+blob[span.end():])
             expect(name+'_copper',prefix,lambda path=missing:self.plot_check(path))
-        root=sexpdata.loads(self.board.read_text());rows=read(self.out/'TARGET_MAP.json');wr=read(self.out/'WIDTH_TARGET_MAP.json')
+        root=native_loads(self.board.read_text());rows=read(self.out/'TARGET_MAP.json');wr=read(self.out/'WIDTH_TARGET_MAP.json')
         changed={r['index'] for r in rows if r['growing']}|{r['index'] for r in wr}
         index=next((i for i,n in enumerate(root[1:],1) if i not in changed and isinstance(n,list) and str(n[0]) in ('gr_poly','gr_circle','segment','arc')),1)
         root[index].append([sexpdata.Symbol('property'),'u03-corrupt-control','1']);badbody=native.board_bytes(root);fresh(directory/'protected_changed.kicad_pcb',badbody)

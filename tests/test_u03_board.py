@@ -427,6 +427,9 @@ def test_U03_runner_keeps_supervision_and_no_false_observations():
     assert "action='u03_directory_intake'" in text and 'len(operator.steps)' in text
 
 
+from src.stage_abi.preparation import native_operation as _prepared_native_test
+
+@_prepared_native_test
 def test_actual_native_width_write_reopen_export_and_corruption_controls(tmp_path,monkeypatch):
     from src.u03_board.custody import T04
     from src.u03_board.export import U03DataService

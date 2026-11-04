@@ -7,9 +7,11 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from src.stage_abi.store import ArtifactStore,digest
 from src.stage_abi.contracts import StageABIError
 from src.stage_abi.cli import unique_object
-from src.u03_board.crop_t01 import ImageCropService
+from src.t01_board.service import BoardService
 from tools.t01_operator_host import read
 
+
+from src.stage_abi.preparation import prepared_dispatch
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--registry',type=Path);p.add_argument('--registry-sha256');p.add_argument('--store',type=Path);p.add_argument('--session',required=True,type=Path);p.add_argument('--input',required=True,type=Path);a=p.parse_args();request={}
@@ -25,7 +27,8 @@ def main():
             response=dict(abi_version=request['abi_version'],request_id=request['request_id'],operation=request['operation'],status='OK',result=execute(a.session),error=None)
         else:
             if not a.registry.is_relative_to(a.session) or not a.store.is_relative_to(a.session) or digest(a.registry.read_bytes())!=a.registry_sha256:raise ValueError('U03_CROP_HOST_CHANGED')
-            response=ImageCropService(ArtifactStore(a.store),read(a.registry)).dispatch(request)
+            service=BoardService
+            response=prepared_dispatch(lambda:service(ArtifactStore(a.store),read(a.registry)),request)
     except Exception as e:
         import traceback
         traceback.print_exc(file=sys.stderr)

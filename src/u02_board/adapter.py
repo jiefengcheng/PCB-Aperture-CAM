@@ -5,6 +5,7 @@ unchanged-path support is retained and rejected before candidate publication.
 """
 import copy
 from pathlib import Path
+from src.u02_board.ports import source_port_binding
 from shapely import from_wkb, to_wkb, STRtree
 from src.stage_abi.store import ArtifactStore, canonical, digest
 from src.stage_abi.scene import validate_scene
@@ -12,6 +13,9 @@ from src.t01_board.source import context
 from src.t01_crop.paging import store_pages, read_pages
 from src.crop_balanced_t01 import WorkingScene, CropSettings
 from tools.t01_operator_host import read, state, fresh, ROOT
+from src.stage_abi.preparation import prepared_tree as STRtree
+
+from src.stage_abi.preparation import prepared_tree as STRtree,decode_geometry as from_wkb
 
 CONTRACT = ROOT/'contracts/operator/u02_board.json'
 FAMILY = 'native-whole-board-retain-valid-paths/1'
@@ -86,7 +90,7 @@ class RetainPathsAdapter:
         if current!=expected:raise ValueError('U02_EXACT_T01_PREDECESSOR_REQUIRED')
         ws=WorkingScene(raw,rows,shapes,sites,CropSettings(**policy['settings']))
         plan=self.store.get_json(self.cap['plan_ref'],kind='plan');ports=plan['details']['allocation']['ports']
-        port_rows,index=read_pages(self.store,ports['index_ref'],binding=dict(source_sha256=b['source_sha256'],site_ids_sha256=digest(canonical(sorted(s['source_id'] for s in sites))),viewport_mm=b['viewport_mm']),kind='t01-board-ports',identity=lambda r:r['source_id'])
+        port_rows,index=read_pages(self.store,ports['index_ref'],binding=source_port_binding(policy,raw,shapes,sites,plan['details']['allocation']),kind='t01-board-ports',identity=lambda r:r['source_id'])
         stored={r['source_id']:{sid:self.store.get(ref,kind='t01-port-geometry') for sid,ref in r['ports'].items()} for r in port_rows}
         regenerated={sid:{oid:to_wkb(g,byte_order=1) for oid,g in zones.items()} for sid,zones in ws.ports.items()}
         if stored!=regenerated:raise ValueError('U02_SOURCE_PORT_RECONSTRUCTION_MISMATCH')

@@ -144,12 +144,16 @@ class DependencyWidthScene(IncrementalWidthScene):
         if materialize_scene or not fail_fast:
             # Full closure still executes the untouched PreparedWidthScene path.
             self.routes.clear();self.pairs.clear();self.graph.clear()
-        versions={r['id']:self.cached_sha(r['candidate']) for r in traces}
-        self.pending_changes=set(versions) if self.last_trial_versions is None else {
-            s for s,v in versions.items() if self.last_trial_versions.get(s)!=v}
+        versions,self.pending_changes=self.trial_versions(traces)
         result=super().check(traces,materialize_scene=materialize_scene,fail_fast=fail_fast)
         self.last_trial_versions=versions
         return result
+
+    def trial_versions(self,traces):
+        versions={r['id']:self.cached_sha(r['candidate']) for r in traces}
+        changed=set(versions) if self.last_trial_versions is None else {
+            s for s,v in versions.items() if self.last_trial_versions.get(s)!=v}
+        return versions,changed
 
     def spatial_index(self,current):
         old=self.index_views.get(id(current))

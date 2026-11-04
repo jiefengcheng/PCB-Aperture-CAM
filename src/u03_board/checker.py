@@ -117,6 +117,20 @@ class IncrementalWidthScene(PreparedWidthScene):
             self.set_visible(sid,entry)
         return entry[1]
 
+    def prepare_trial(self,traces):
+        """Reference preparation; optimized immutable snapshots validate deltas."""
+        if len(traces) != len(self.trace_ids) or {r['id'] for r in traces} != set(self.trace_ids):
+            raise ValueError('COMPLETE_TRACE_IDENTITIES_CHANGED')
+        current = dict(self.original); rows = {r['id']:r for r in traces}
+        for sid, r in rows.items():
+            cached=self.geometry_hashes.get(id(r['candidate']))
+            if cached is None or cached[0] is not r['candidate']:self.valid_geometry(r['candidate'])
+            if self.cached_sha(r['original']) != self.trace_ids[sid] or r['verified_original_width_mm'] != self.widths[sid]:
+                raise ValueError('ORIGINAL_TRACE_BINDING_CHANGED')
+            current[sid] = r['candidate']
+        changed = set(rows) if self.accepted_current is None else {s for s in rows if self.cached_sha(current[s]) != self.cached_sha(self.accepted_current[s])}
+        return current,rows,changed
+
     def check(self, traces, *, materialize_scene=False, fail_fast=False):
         if materialize_scene or not fail_fast:
             self.use_width_union_window=False
@@ -133,18 +147,9 @@ class IncrementalWidthScene(PreparedWidthScene):
                 self.added_cache.update(self.addition_visibility)
                 self.incremental_ports.update({key:value[0] for key,value in self.ports.items()})
             return result
-        if len(traces) != len(self.trace_ids) or {r['id'] for r in traces} != set(self.trace_ids):
-            raise ValueError('COMPLETE_TRACE_IDENTITIES_CHANGED')
-        current = dict(self.original); rows = {r['id']:r for r in traces}
-        for sid, r in rows.items():
-            cached=self.geometry_hashes.get(id(r['candidate']))
-            if cached is None or cached[0] is not r['candidate']:self.valid_geometry(r['candidate'])
-            if self.cached_sha(r['original']) != self.trace_ids[sid] or r['verified_original_width_mm'] != self.widths[sid]:
-                raise ValueError('ORIGINAL_TRACE_BINDING_CHANGED')
-            current[sid] = r['candidate']
+        current,rows,changed=self.prepare_trial(traces)
         c = self.contract; tree = self.spatial_index(current)
         self.use_width_union_window=True
-        changed = set(rows) if self.accepted_current is None else {s for s in rows if self.cached_sha(current[s]) != self.cached_sha(self.accepted_current[s])}
         self.original_union_targets=changed
         self.invalidate_proofs(changed)
         affected = set(changed)
@@ -198,7 +203,7 @@ class IncrementalWidthScene(PreparedWidthScene):
                         gap=None if neighbor.is_empty else checked.distance(neighbor)
                         self.original_union_boundary_rechecks+=1
                     bad = gap is not None and gap+c.comparison_epsilon_mm < c.construction_gap_mm
-                    pairs.append(dict(neighbor_id=oid, port_sha256=None if port is None else sha(port), gap_mm=gap, passed=not bad))
+                    pairs.append(dict(neighbor_id=oid, port_sha256=None if port is None else self.cached_sha(port), gap_mm=gap, passed=not bad))
                     if bad:
                         failures.append(dict(trace_id=sid,neighbor_id=oid,reason='NEW_EXPOSED_COPPER_BELOW_CONSTRUCTION_GUARD')); break
             failures.extend(dict(trace_id=sid,reason=r) for r in reasons)

@@ -6,15 +6,17 @@ from src.stage_abi.width import WidthAdapter
 from src.stage_abi.scene import composed
 from src.stage_abi.runtime import Budget, output_scene
 from src.stage_abi.store import canonical, digest
-from .source_union import SourceUnionWidthScene
+from .separators import SeparatorWidthScene
 from .solver import solve
 from .assembly import GroupCandidateAssembly
+from .templates import install_route_templates
 
 
 class WholeBoardWidthAdapter(WidthAdapter):
     def describe(self):
         base = super().describe()
-        base['implementation'] = digest(canonical(dict(base=base, files={p.name:digest(p.read_bytes()) for p in Path(__file__).parent.glob('*.py')})))
+        graph_source=Path(__file__).parents[1]/'u03_analysis/graph.py'
+        base['implementation'] = digest(canonical(dict(base=base, files={p.name:digest(p.read_bytes()) for p in Path(__file__).parent.glob('*.py')},separator_graph=digest(graph_source.read_bytes()))))
         return base
 
     def _model(self, store, scene, policy, details):
@@ -30,9 +32,10 @@ class WholeBoardWidthAdapter(WidthAdapter):
         # The historical 800-entry cache thrashes on this whole-board source.
         # Bound it to two full current vectors plus a finite search margin.
         model._construct = functools.lru_cache(maxsize=2*len(chains)+128)(model._construct.__wrapped__)
+        install_route_templates(model,raw,meta,blobs)
         baseline = model.build(dict.fromkeys(model.group_ids,1.))[0]
         fixed = [dict(id=s,geometry=g,trace_width_mm=rows[s]['metadata'].get('nominal_width_mm',0.)) for s,g in current.items() if s not in chains]
-        return rows,current,model,SourceUnionWidthScene(baseline,fixed,groups=model.assignment,source_binding=scene['source_sha256']),raw,chains,meta,blobs
+        return rows,current,model,SeparatorWidthScene(baseline,fixed,groups=model.assignment,source_binding=scene['source_sha256']),raw,chains,meta,blobs
 
     def run(self,store,scene,policy,plan,checkpoint):
         details=plan['details'];rows,current,model,checker,*_=self._model(store,scene,policy,details)

@@ -47,8 +47,8 @@ class U03Route(ExportOnlyRoute):
         self.crop=read(self.session.parent/'job.json').get('crop')
         self.selection=for_root(self.session)
         if self.crop is not None:
-            from src.u03_board.crop_t01 import ImageCropAdapter
-            self.identity['board_implementation']=ImageCropAdapter().describe()['implementation']
+            from src.t01_board.adapter import BoardAdapter
+            self.identity['board_implementation']=BoardAdapter().describe()['implementation']
 
     def info(self):
         result=super().info()
@@ -134,9 +134,9 @@ class U03Route(ExportOnlyRoute):
             raise
 
     def _t01_host(self):
-        if self.selection is None:return host
-        from tools import u03_crop_host
-        return u03_crop_host
+        # A verified image remains a T04/view scope. Canonical T01 always uses
+        # the same complete-source host, English and implementation.
+        return host
 
     def _selection_files(self):
         return [self.session/n for n in ('U03_SELECTION.json','U03_CROP_INPUT.json','data_board/crop_location.json','data_board/crop_location_hypotheses.json','data_board/crop_verified.json','data_board/crop_landmark_witness.json','data_board/crop_mask.npy')] if self.selection is not None else []

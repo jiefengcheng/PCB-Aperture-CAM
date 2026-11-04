@@ -14,7 +14,10 @@ from src.u03_board.selection import for_root
 from src.t01_crop.paging import read_pages
 from src.u03_board.paging import get as get_pages
 
+from src.stage_abi.preparation import native_operation
 
+
+@native_operation
 def evaluate(root,attempt):
     root=Path(root);proof=_evaluate(root,attempt);selection=for_root(root)
     crop=read(root.parent/'job.json').get('crop')
@@ -44,7 +47,11 @@ def _evaluate(root,attempt):
             if op in T03:
                 from tools.u03_crop_t03_audit import evaluate as evaluator
             elif op.startswith('t01_') or op=='board_candidate_check':
-                from tools.u03_crop_t01_audit import evaluate as evaluator
+                # Full-source canonical T01 keeps its complete predicate set;
+                # crop identity/location checks remain in evaluate/crop_proof.
+                from src.c03_input_family import selected
+                if selected(root):
+                    from tools.u03_crop_t01_audit import evaluate as evaluator
         proof=evaluator(root,attempt)
         proof.update(schema='pcb-u03-machine-audit/1',contract_sha256=digest(CONTRACT.read_bytes()));return proof
     verified=verify_attempt(folder);e=Evidence(root)

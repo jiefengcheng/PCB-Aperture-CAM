@@ -7,11 +7,21 @@ from .crop_t01 import context
 from .custody import verify_prefix,operation_steps
 
 def execute(session):
+    from src.c03_input_family import selected
+    context_factory=context
+    if selected(session):
+        from src.c03_round_adapter import context as context_factory
     steps=operation_steps(session);rs=verify_prefix(session,steps[:steps.index('board_candidate_check')]);cap=state(session);store=ArtifactStore(Path(cap['store_path']))
     candidate_ref=rs['t01_run']['result']['result']['candidate_ref'];candidate=store.get_json(candidate_ref,kind='candidate')
     verification_ref=rs['t01_verify']['result']['result']['verification_ref'];v=store.get_json(verification_ref,kind='verification')
     policy=store.get_json(cap['policy_ref'],kind='policy');scene=store.get_json(cap['scene_ref'],kind='scene')
-    b,raw,rows,shapes,sites=context(store,scene,policy);ids={s['source_id'] for s in sites};aliases={a for s in sites for a in s['aliases']}
+    from src.t01_board.policy import HEADER,validate_policy
+    if policy.get('dialect')==HEADER:
+        validate_policy(policy)
+        from src.t01_board.source import context as context_factory
+        from .selection import for_root,validate
+        validate(for_root(session),scene['source_sha256'])
+    b,raw,rows,shapes,sites=context_factory(store,scene,policy);ids={s['source_id'] for s in sites};aliases={a for s in sites for a in s['aliases']}
     if (v['geometric_status']!='PASS' or v['candidate_ref']!=candidate_ref or not v['check']['passed'] or v['check']['failures'] or
         {d['source_id'] for d in candidate['decisions']}!=ids or set(candidate['replacements'])!=aliases or
         len(candidate['final_checks'])!=len(ids) or not all(r['check']['passed'] for r in candidate['final_checks']) or
