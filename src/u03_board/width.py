@@ -9,6 +9,7 @@ from src.stage_abi.store import canonical, digest
 from .separators import SeparatorWidthScene
 from .solver import solve
 from .assembly import GroupCandidateAssembly
+from .templates import install_route_templates
 
 
 class WholeBoardWidthAdapter(WidthAdapter):
@@ -31,6 +32,7 @@ class WholeBoardWidthAdapter(WidthAdapter):
         # The historical 800-entry cache thrashes on this whole-board source.
         # Bound it to two full current vectors plus a finite search margin.
         model._construct = functools.lru_cache(maxsize=2*len(chains)+128)(model._construct.__wrapped__)
+        install_route_templates(model,raw,meta,blobs)
         baseline = model.build(dict.fromkeys(model.group_ids,1.))[0]
         fixed = [dict(id=s,geometry=g,trace_width_mm=rows[s]['metadata'].get('nominal_width_mm',0.)) for s,g in current.items() if s not in chains]
         return rows,current,model,SeparatorWidthScene(baseline,fixed,groups=model.assignment,source_binding=scene['source_sha256']),raw,chains,meta,blobs

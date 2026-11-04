@@ -203,7 +203,7 @@ class IncrementalWidthScene(PreparedWidthScene):
                         gap=None if neighbor.is_empty else checked.distance(neighbor)
                         self.original_union_boundary_rechecks+=1
                     bad = gap is not None and gap+c.comparison_epsilon_mm < c.construction_gap_mm
-                    pairs.append(dict(neighbor_id=oid, port_sha256=None if port is None else sha(port), gap_mm=gap, passed=not bad))
+                    pairs.append(dict(neighbor_id=oid, port_sha256=None if port is None else self.cached_sha(port), gap_mm=gap, passed=not bad))
                     if bad:
                         failures.append(dict(trace_id=sid,neighbor_id=oid,reason='NEW_EXPOSED_COPPER_BELOW_CONSTRUCTION_GUARD')); break
             failures.extend(dict(trace_id=sid,reason=r) for r in reasons)
