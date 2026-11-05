@@ -49,6 +49,14 @@ Both fresh native workers bind the resulting actual-material image used by the
 final rendering and remaining-defect audit. No source or generated file is edited
 by this verification step.
 
+For T05, the exporter first tries the existing redundant owner-overlap forms.
+If both fail their physical-equivalence predicates, the Gerber-only route can
+serialize the qualified addition directly. This avoids intersection vertices
+introduced solely by duplicated existing copper. All four original support,
+addition, physical-union and scope predicates retain the same area epsilon;
+the actual parsed-file tip fidelity and complete physical checks remain mandatory.
+The KiCad export route and its overlap construction are unchanged.
+
 Large contour metrics use all vertices and bounded
 spatial indexes, never display sampling or simplification.
 

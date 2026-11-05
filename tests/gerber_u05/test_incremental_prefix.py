@@ -48,3 +48,15 @@ def test_reuse_binding_is_itself_a_hash_bound_job_input(tmp_path,monkeypatch):
  assert str(tmp_path/'REUSED_PREFIX_BINDING.json')in seal['job_inputs']
  (tmp_path/'REUSED_PREFIX_BINDING.json').write_text('{"scope":"different"}')
  with pytest.raises(ValueError,match='JOB_INPUT_CHANGED'):guard.verify_sources(tmp_path)
+
+
+def test_only_t05_support_function_may_change_in_absorption_module(tmp_path):
+ old=tmp_path/'old';new=tmp_path/'new';relative='src/gerber_u05/export_absorption.py'
+ before='import math\ndef supported_region(a,b,c):return a\ndef prepare_export_region():return 4\n'
+ after=before.replace('return a','return b')
+ for root,body in((old,before),(new,after)):
+  path=root/relative;path.parent.mkdir(parents=True);path.write_text(body)
+ original={'files':{str(old/relative):hashlib.sha256((old/relative).read_bytes()).hexdigest()}}
+ assert verify_code(original,new,old)[0]['scope'].startswith('Only supported_region')
+ (new/relative).write_text(after.replace('return 4','return 5'))
+ with pytest.raises(ValueError,match='UPSTREAM_EXPORT_SUPPORT_CHANGED'):verify_code(original,new,old)

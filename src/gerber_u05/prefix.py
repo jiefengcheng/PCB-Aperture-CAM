@@ -33,6 +33,14 @@ def verify_code(original,root,old_root):
   if actual==expected:continue
   if relative=='src/gerber_u05/pipeline.py':
    results.append(dict(path=relative,proof=pipeline_prefix_same(path.read_text(),current.read_text())));continue
+  if relative=='src/gerber_u05/export_absorption.py':
+   # Upstream completion calls native_before with junction_result=None and
+   # never invokes supported_region. Bind every other statement unchanged.
+   def upstream(text):
+    return [ast.dump(n,include_attributes=False)for n in ast.parse(text).body
+            if not(isinstance(n,ast.FunctionDef)and n.name=='supported_region')]
+   if upstream(path.read_text())!=upstream(current.read_text()):raise ValueError('REUSED_UPSTREAM_EXPORT_SUPPORT_CHANGED')
+   results.append(dict(path=relative,scope='Only supported_region changed; called exclusively for T05 junctions'));continue
   if relative in DOWNSTREAM:
    results.append(dict(path=relative,scope='T05/export/verification only; not an upstream generation dependency'));continue
   proof=EQUIVALENT.get(relative)
