@@ -34,7 +34,8 @@ def test_foreign_prior_cannot_disappear_from_new_spindle_checks(monkeypatch):
  current_a=box(0,0,.06,.02);current_b=box(.20,0,.24,.02);prior_a=current_a;prior_b=box(.18,0,.24,.02)
  monkeypatch.setattr(cc,'ACTIVE',SimpleNamespace(binding='source-bound',reserved={'A':prior_a,'B':prior_b}))
  monkeypatch.setattr(BaseCoverageAdapter,'_operands',lambda self,*args:(current_a,.01,box(-.1,-.1,.3,.1),[('owner:B',current_b)]))
- adapter=CoverageAdapter(box(-1,-1,1,1));adapter._snapshot=object();adapter._copper_owners={'A':current_a,'B':current_b};adapter.owner_for_route=lambda sid:'A'
+ charged=[]
+ adapter=CoverageAdapter(box(-1,-1,1,1));adapter._snapshot=SimpleNamespace(retain_derived=lambda shape:charged.append(shape)or shape);adapter._copper_owners={'A':current_a,'B':current_b};adapter.owner_for_route=lambda sid:'A'
  _,_,_,foreign=adapter._operands(None,None,None,None,{'source_id':'route'})
  proposed=box(0,0,.155,.02)
  assert proposed.distance(current_b)>.04
@@ -42,6 +43,9 @@ def test_foreign_prior_cannot_disappear_from_new_spindle_checks(monkeypatch):
  assert dict(foreign)['owner:B'].covers(prior_b)
  # The owner's own source-connected prior never becomes internal clearance.
  assert set(dict(foreign))=={'owner:B'}
+ assert len(charged)==2
+ adapter._operands(None,None,None,None,{'source_id':'route'})
+ assert len(charged)==2  # reused once per immutable context, within snapshot budget
 
 
 def test_original_owner_inventory_is_frozen():

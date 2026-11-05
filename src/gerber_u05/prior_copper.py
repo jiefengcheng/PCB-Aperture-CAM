@@ -41,7 +41,7 @@ class CoverageAdapter(BaseCoverageAdapter):
   if cc.ACTIVE is None:return owner,radius,domain,foreign
   context=cc.ACTIVE;key=(id(self._snapshot),context.binding)
   if getattr(self,'_prior_protected_key',None)!=key:
-   self._prior_protected_owners=protected_owners(self._copper_owners,context.reserved);self._prior_protected_key=key
+   self._prior_protected_owners={o:self._snapshot.retain_derived(g)for o,g in protected_owners(self._copper_owners,context.reserved).items()};self._prior_protected_key=key
   own=self.owner_for_route(row['source_id']);query=domain.buffer(CONTRACT.barrier_gap_mm)
   foreign=[('owner:'+o,g)for o,g in self._prior_protected_owners.items()if o!=own and g.intersects(query)]
   return owner,radius,domain,foreign
