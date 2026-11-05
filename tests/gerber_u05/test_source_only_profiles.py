@@ -54,3 +54,21 @@ def test_job_reference_and_policy_snapshots_are_hash_bound(tmp_path,monkeypatch)
  guard.seal(tmp_path,'fixture');guard.verify_sources(tmp_path)
  (tmp_path/'REFERENCE_BINDING.json').write_text('{"generated_sha256":"forged"}')
  with pytest.raises(ValueError,match='GERBER_JOB_INPUT_CHANGED'):guard.verify_sources(tmp_path)
+
+def test_valid_large_identical_wkb_has_exact_zero_without_index_allocation(monkeypatch):
+ from src import native_boundary_metric as metric
+ a=Point(0,0).buffer(1,quad_segs=600)
+ assert get_num_coordinates(a)>2048
+ def forbidden(*args,**kwargs):raise AssertionError('unnecessary index allocation')
+ monkeypatch.setattr(metric,'indexed_distance',forbidden)
+ assert metric.distance(a,a)==a.hausdorff_distance(a)==0.
+
+def test_invalid_large_identical_wkb_keeps_indexed_validation_path(monkeypatch):
+ from src import native_boundary_metric as metric
+ a=Polygon([(i*.001,(-1)**i)for i in range(2400)])
+ assert not a.is_valid and get_num_coordinates(a)>2048
+ calls=[]
+ def checked(first,second):
+  calls.append((first,second));return(first.hausdorff_distance(second),{})
+ monkeypatch.setattr(metric,'indexed_distance',checked)
+ assert metric.distance(a,a)==a.hausdorff_distance(a)and len(calls)==1

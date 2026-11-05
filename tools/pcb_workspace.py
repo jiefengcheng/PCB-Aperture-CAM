@@ -8,13 +8,38 @@ WORK=ROOT/'out/lacie_work'
 IDENTITY='5E178CE8-A7FF-37D9-B307-F0D08FBB4D14'
 
 
+def snapshot_backing():
+    """Recognize a source snapshot already inside this verified APFS image.
+
+    Its out/lacie_work is a job namespace on the existing image, not another
+    mount request. A missing/other image never permits an internal fallback.
+    """
+    if os.path.ismount(WORK):return None
+    images=plistlib.loads(subprocess.check_output(['hdiutil','info','-plist']))['images']
+    mounts=[Path(e['mount-point'])for i in images if Path(i.get('image-path',''))==IMAGE
+            for e in i.get('system-entities',[])if e.get('mount-point')]
+    for mount in mounts:
+        if (not os.path.ismount(mount)or not ROOT.resolve().is_relative_to(mount.resolve())
+                or not WORK.resolve().is_relative_to(ROOT/'out')):continue
+        marker=mount/'STORAGE_IDENTITY.json'
+        identity=json.loads(marker.read_bytes())
+        if identity.get('lacie_volume_uuid')!=IDENTITY or Path(identity.get('image',''))!=IMAGE:
+            raise RuntimeError('LACIE_WORKSPACE_IDENTITY_MISMATCH')
+        probe=WORK
+        while not probe.exists():probe=probe.parent
+        if ROOT.stat().st_dev!=mount.stat().st_dev or probe.stat().st_dev!=mount.stat().st_dev:raise RuntimeError('LACIE_SNAPSHOT_DEVICE_MISMATCH')
+        return mount
+    return None
+
+
 def require_storage():
-    if not os.path.ismount(VOLUME) or not os.path.ismount(WORK):
+    backing=snapshot_backing()
+    if not os.path.ismount(VOLUME) or (backing is None and not os.path.ismount(WORK)):
         raise RuntimeError('LACIE_WORKSPACE_UNAVAILABLE: run tools/Prepare_LaCie_Workspace.command; no internal fallback')
-    marker=WORK/'STORAGE_IDENTITY.json'
+    marker=(backing or WORK)/'STORAGE_IDENTITY.json'
     if not marker.is_file() or json.loads(marker.read_text()).get('lacie_volume_uuid')!=IDENTITY:
         raise RuntimeError('LACIE_WORKSPACE_IDENTITY_MISMATCH')
-    if WORK.stat().st_dev==ROOT.stat().st_dev:
+    if backing is None and WORK.stat().st_dev==ROOT.stat().st_dev:
         raise RuntimeError('LACIE_WORKSPACE_IS_INTERNAL')
     if min(shutil.disk_usage(WORK).free,shutil.disk_usage(VOLUME).free)<5*1024**3:
         raise RuntimeError('LACIE_LOW_SPACE: at least 5 GiB reserve required')
@@ -46,6 +71,11 @@ def prepare():
     if info.get('VolumeUUID')!=IDENTITY or info.get('MountPoint')!=str(VOLUME):
         raise RuntimeError('LACIE_VOLUME_IDENTITY_MISMATCH')
     if not IMAGE.exists():raise RuntimeError('LACIE_APFS_IMAGE_MISSING')
+    backing=snapshot_backing()
+    if backing is not None:
+        # Identity/device checks precede every engineering directory write.
+        WORK.mkdir(parents=True,exist_ok=True)
+        configure();return
     WORK.mkdir(parents=True,exist_ok=True)
     if not os.path.ismount(WORK):
         guard_mountpoint()

@@ -150,33 +150,68 @@ def original_contact_port(overlap,width,contact):
     return port,dict(original_contact=True,raw_source_port_sha256=p.digest(p.to_wkb(raw)),native_port_sha256=p.digest(p.to_wkb(port)),file_uncertainty_mm=POLYGON_TOLERANCE_MM)
 
 
-def native_model_reference(run,store,before):
+def native_model_reference(run,store,before,*,include_parents=False):
     binding=p.load(run/'source.json');source=store.get_json(binding['scene_ref'],kind='scene');source_rows={r['source_id']:r for r in source['objects']};value=p.load(run/'t05.json');final=store.get_json(value['output_scene_ref'],kind='scene');references=[];inventory=[]
-    def prepare(shape,sid):
+    def prepare(shape,sid,stage):
         normalized=native_grid(shape);area=shape.symmetric_difference(normalized).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
         if normalized.is_empty or not normalized.is_valid or normalized.geom_type not in('Polygon','MultiPolygon')or area>bound:raise ValueError('NATIVE_MODEL_REFERENCE_NORMALIZATION_FAILED:'+sid)
         parts=[normalized]if normalized.geom_type=='Polygon'else list(normalized.geoms)
         for part in parts:
-            reference,proof=export_reference(part);references.append(reference);inventory.append(dict(source_id=sid,qualified_sha256=p.digest(p.to_wkb(shape)),native_reference_sha256=p.digest(p.to_wkb(reference)),normalization_area_mm2=area,normalization_area_bound_mm2=bound))
+            reference,proof=export_reference(part);references.append(reference);inventory.append(dict(stage=stage,source_id=sid,qualified_sha256=p.digest(p.to_wkb(shape)),native_reference_sha256=p.digest(p.to_wkb(reference)),normalization_area_mm2=area,normalization_area_bound_mm2=bound))
     if not set(source_rows)<={r['source_id']for r in final['objects']}:raise ValueError('NATIVE_REFERENCE_SOURCE_OCCURRENCE_MISSING')
-    aliases=0
-    for row in final['objects']:
-        # Trace rows are immutable reference views; CoverageAdapter's material
-        # ledger excludes them. Original material strokes remain included.
-        if row['kind']=='trace':aliases+=1;continue
-        if row['kind']=='junction_addition':continue
-        sid=row['source_id']
-        if sid not in source_rows or row['geometry_ref']!=source_rows[sid]['geometry_ref']:prepare(p.geometry(store,row['geometry_ref']),sid)
+    aliases=sum(row['kind']=='trace'for row in final['objects'])
+    # The file is append-only. Native-grid rounding is not a monotone map:
+    # compiling only the last scene can omit earlier qualified positive copper.
+    # Recompile every source-bound stage contribution, never the output ledger.
+    _,current,_=p.operands(store,source)
+    for stage in ORDER[:-1]:
+        result=p.load(run/(stage+'.json'));scene=store.get_json(result['output_scene_ref'],kind='scene');rows,after,_=p.operands(store,scene)
+        for sid,shape in sorted(after.items()):
+            if sid not in current or p.to_wkb(shape)!=p.to_wkb(current[sid]):prepare(shape,sid,stage+'_finish'if rows[sid]['kind']=='component_remedy'else stage)
+        current=after
     prepared=store.get_json(value['plan']['scene_ref'],kind='scene');policy=store.get_json(value['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']))
     try:
         for d in value['candidate']['decisions']:
             if d['status']!='GROWN':continue
-            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_=prepare_export_region(store,value,adapter,owner,domain,d,foreign);prepare(region,d['source_id'])
+            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_=prepare_export_region(store,value,adapter,owner,domain,d,foreign);prepare(region,d['source_id'],'t05')
     finally:adapter.close()
-    expected=union_all([before,*references],grid_size=GRID_MM)
+    final_rows={row['source_id']:row for row in final['objects']}
+    for fill in value['intra']['fills']:
+        sid=fill['source_id'];prepare(p.geometry(store,final_rows[sid]['geometry_ref']),sid,'t05_finish')
+    expected=assemble_native_material(before,references,grid_mm=GRID_MM)
     if expected.is_empty or not expected.is_valid or expected.area<=0:raise ValueError('NATIVE_AGGREGATE_REFERENCE_INVALID')
-    return expected,dict(basis='Immutable original source plus independently prepared source/model native contours on the existing file grid; no generated ledger used',source_objects=len(source_rows),nonmaterial_route_views=aliases,reference_parts=len(references),grid_mm=GRID_MM,inventory=inventory,raw_decision_image_ref=value['intra']['after_native_ref'])
+    proof=dict(basis='Immutable original source plus every qualified intermediate/final source-stage native contribution on the existing file grid; independently compiled, no generated ledger/file used',source_objects=len(source_rows),nonmaterial_route_views=aliases,reference_parts=len(references),grid_mm=GRID_MM,inventory=inventory,raw_decision_image_ref=value['intra']['after_native_ref'])
+    if include_parents:return expected,proof,[((row['stage'],row['source_id'],row['native_reference_sha256']),shape)for row,shape in zip(inventory,references)]
+    return expected,proof
 
+
+from .native_assembly import assemble as assemble_native_material,weld as weld_native_material
+
+def canonical_source_image(raw):
+    base,_=canonical_base(raw);parsed=parse((base+'M02*\n').encode('ascii'))
+    return p.affine_scale(p.source_profile.ordered((p.source_profile.object_geometry(o)[0],o.polarity_dark)for o in parsed.objects),1,-1,origin=(0,0))
+
+def encoding_support_parents(store,records,value):
+    """Retain the existing bounded one-grid support as explicit extra material.
+
+    These supports still face the full scope, foreign-clearance and aggregate
+    2 nm checks. Fresh export reconstruction binds their source derivation.
+    """
+    grown={d['source_id']for d in value['candidate']['decisions']if d['status']=='GROWN'};parents={}
+    for row in records:
+        support=row.get('encoding_support')
+        if support is None:continue
+        if row['stage']!='t05'or row['source_id']not in grown or support['cap_radius_mm']!=GRID_MM or not 0<support['component_area_mm2']<=GRID_MM**2 or not 0<=support['gap_to_encoded_owner_mm']<=GRID_MM:raise ValueError('NATIVE_ENCODING_SUPPORT_UNQUALIFIED')
+        shape=p.geometry(store,row['raw_qualified_ref']);native,proof=export_reference(shape)
+        from .native_material import normal_form
+        shell,holes=normal_form(native,grid_mm=GRID_MM)
+        if holes or len(shell)!=4:raise ValueError('NATIVE_ENCODING_SUPPORT_SHAPE_CHANGED')
+        xs=[a[0]for a in shell];ys=[a[1]for a in shell];x,y=(min(xs)+max(xs))//2,(min(ys)+max(ys))//2
+        if set(shell)!={(x-1,y),(x,y-1),(x+1,y),(x,y+1)}:raise ValueError('NATIVE_ENCODING_SUPPORT_SIZE_CHANGED')
+        identity=(row['stage'],row['source_id'],p.digest(p.to_wkb(native)))
+        if identity[2]!=row['component_reference_proof']['partition_parent_reference_proof']['export_reference_sha256']:raise ValueError('NATIVE_ENCODING_SUPPORT_PARENT_CHANGED')
+        parents[identity]=native
+    return list(parents.items())
 
 def check(run,body,ledger):
     verify_sources(run);store,binding=context(run);raw=store.get(binding['source_ref'],kind='gerber-source');original,_,_=p.source_profile.parse_source(raw);actual=parse(body);n=len(original.objects)
@@ -189,9 +224,21 @@ def check(run,body,ledger):
         if type(a)!=type(b)or a.polarity_dark!=b.polarity_dark or ga.hausdorff_distance(gb)>1e-8 or ga.symmetric_difference(gb).area>2*ga.length*1e-8:raise ValueError('ORIGINAL_PLOTTING_ATOM_CHANGED:'+str(i))
         source_shapes.append((gb,b.polarity_dark));reference_source_shapes.append((ga,a.polarity_dark))
     before=p.affine_scale(p.source_profile.ordered(source_shapes),1,-1,origin=(0,0));by_stage=collections.defaultdict(dict);observed=[]
+    reference_before=canonical_source_image(raw)
+    if p.to_wkb(before)!=p.to_wkb(reference_before):raise ValueError('CANONICAL_SOURCE_PREFIX_GEOMETRY_CHANGED')
+    expected,reference_proof,native_parents=native_model_reference(run,store,reference_before,include_parents=True)
     for i,(obj,row)in enumerate(zip(actual.objects[n:],ledger['records'])):
         if not obj.polarity_dark or not isinstance(obj,p.go.Region):raise ValueError('APPENDED_REGION_ROLE_OR_POLARITY_CHANGED')
         g,_=p.source_profile.object_geometry(obj);g=p.affine_scale(g,1,-1,origin=(0,0));reference=p.geometry(store,row['geometry_ref']);proofs.append(dict(ordinal=n+i,stage=row['stage'],source_id=row['source_id'],**fidelity(reference,g)));observed.append(g);d=by_stage[row['stage']];d.setdefault(row['source_id'],[]).append(g)
+    raw_observed=observed
+    support_parents=encoding_support_parents(store,ledger['records'],p.load(run/'t05.json'))
+    welded,material_proof=weld_native_material(ledger['records'],raw_observed,[*native_parents,*support_parents],grid_mm=GRID_MM)
+    observed=[];by_stage=collections.defaultdict(dict);material_parents=[]
+    for (stage,sid,sha),shape in welded:
+        observed.append(shape);by_stage[stage].setdefault(sid,[]).append(shape)
+        material_parents.append(dict(stage=stage,source_id=sid,native_parent_sha256=sha,geometry_ref=p.geomref(store,shape)))
+    material_proof['material_parents']=material_parents
+    material_proof['bounded_encoding_support_parents']=len(support_parents)
     # Actual Gerber is an exact append-only constructive set: the original
     # source prefix is independently verified above, all additions are parsed
     # positive regions, and every later stage adds to its exact predecessor.
@@ -301,14 +348,15 @@ def check(run,body,ledger):
     for stage_map in by_stage.values():
         for sid,pieces in stage_map.items():all_observed.setdefault(sid,[]).extend(pieces)
     actual_owner_groups=decoded_groups(before,all_observed);checks['whole_board_owner_clearance']=native_clearance(source_groups,actual_owner_groups);checks['whole_board_void_inventory']=final_inventory(before,actual_owner_groups)
-    after=before.union(p.unary_union(observed));reference_before=p.affine_scale(p.source_profile.ordered(reference_source_shapes),1,-1,origin=(0,0));expected,reference_proof=native_model_reference(run,store,reference_before);actual_grid=union_all([before,*observed],grid_size=GRID_MM);distance,metric=image_hausdorff(actual_grid,expected,tolerance=POLYGON_TOLERANCE_MM);area=actual_grid.symmetric_difference(expected).area;bound=2*expected.length*POLYGON_TOLERANCE_MM
+    after=before.union(p.unary_union(observed));actual_grid=assemble_native_material(before,observed,grid_mm=GRID_MM);distance,metric=image_hausdorff(actual_grid,expected,tolerance=POLYGON_TOLERANCE_MM);area=actual_grid.symmetric_difference(expected).area;bound=2*expected.length*POLYGON_TOLERANCE_MM
+    raw_grid=union_all([before,*raw_observed],grid_size=GRID_MM);raw_distance,raw_metric=image_hausdorff(raw_grid,expected,tolerance=POLYGON_TOLERANCE_MM);raw_overlay_diagnostic=dict(status='DIAGNOSTIC_ONLY_NOT_PHYSICAL_MATERIAL',hausdorff_mm=raw_distance,symmetric_difference_mm2=raw_grid.symmetric_difference(expected).area,metric=raw_metric,basis='Unwelded triangle overlays can create numerical seams; physical qualification uses exact parsed integer-material proofs before assembly')
     raw_decision_image=p.from_wkb(store.get(value['intra']['after_native_ref'],kind='geometry'));raw_area=after.symmetric_difference(raw_decision_image).area;raw_area_bound=2*raw_decision_image.length*POLYGON_TOLERANCE_MM
     if not raw_decision_image.is_valid or raw_area>raw_area_bound:raise ValueError('RAW_MODEL_IMAGE_AREA_FIDELITY_FAILED')
     if not all(math.isfinite(v) for v in (distance,area,bound)) or distance>POLYGON_TOLERANCE_MM or area>bound or before.difference(after).area>1e-12:raise ValueError('ACTUAL_FINAL_COPPER_FIDELITY_OR_PRESERVATION_FAILED')
     prior=cc.ACTIVE.reserved;coverage=after.buffer(POLYGON_TOLERANCE_MM);prior_missing=sum(g.difference(coverage).area for g in prior.values());checks['prior_positive_retention']=dict(passed=prior_missing<=1e-12,missing_area_mm2=prior_missing,prior_sha256=cc.ACTIVE.reservation_sha256,contour_uncertainty_mm=POLYGON_TOLERANCE_MM)
     if prior_missing>1e-12:raise ValueError('PRIOR_QUALIFIED_POSITIVE_COPPER_MISSING:'+str(prior_missing))
     store.verify_reads();verify_sources(run)
-    return dict(status='PASS',geometry_producer_binding_sha256=p.digest((run/'PRODUCER_BINDING.json').read_bytes()),remedy_policy_snapshot_sha256=p.digest((run/'REMEDY_POLICY_SNAPSHOT.json').read_bytes()),original_ownership_sha256=cc.ACTIVE.index.fingerprint,source_objects_preserved=n,source_clear_operations_preserved=sum(not o.polarity_dark for o in original.objects),appended_positive_regions=len(observed),actual_hard_gap_mm=p.HARD_GAP_MM,contour_proofs=proofs,actual_scene_checks=checks,exact_append_only_core_proofs=core_evidence,native_model_reference=reference_proof,aggregate_metric=metric,raw_model_image_comparison=dict(reference_type=raw_decision_image.geom_type,symmetric_difference_mm2=raw_area,area_bound_mm2=raw_area_bound,role="Decision image; native boundary fidelity uses the declared file-grid reference"),final_copper=dict(hausdorff_mm=distance,symmetric_difference_mm2=area,area_bound_mm2=bound,original_area_mm2=before.area,final_area_mm2=after.area,added_area_mm2=after.difference(before).area),generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()))
+    return dict(status='PASS',geometry_producer_binding_sha256=p.digest((run/'PRODUCER_BINDING.json').read_bytes()),remedy_policy_snapshot_sha256=p.digest((run/'REMEDY_POLICY_SNAPSHOT.json').read_bytes()),original_ownership_sha256=cc.ACTIVE.index.fingerprint,source_objects_preserved=n,source_clear_operations_preserved=sum(not o.polarity_dark for o in original.objects),appended_positive_regions=len(raw_observed),native_material_assembly=material_proof,actual_material_image_ref=p.geomref(store,after),raw_region_overlay_diagnostic=raw_overlay_diagnostic,actual_hard_gap_mm=p.HARD_GAP_MM,contour_proofs=proofs,actual_scene_checks=checks,exact_append_only_core_proofs=core_evidence,native_model_reference=reference_proof,aggregate_metric=metric,raw_model_image_comparison=dict(reference_type=raw_decision_image.geom_type,symmetric_difference_mm2=raw_area,area_bound_mm2=raw_area_bound,role="Decision image; native boundary fidelity uses the declared file-grid reference"),final_copper=dict(hausdorff_mm=distance,symmetric_difference_mm2=area,area_bound_mm2=bound,original_area_mm2=before.area,final_area_mm2=after.area,added_area_mm2=after.difference(before).area),generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()))
 
 if __name__=='__main__':
     p.configure();run=Path(sys.argv[1]);mode=sys.argv[2]

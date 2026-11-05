@@ -25,13 +25,31 @@ admission, nominal/envelope final geometry, and every final upper rejection.
 This preserves the previously qualified width-prefix audit criteria. T05 retains
 all source attachments and complete assembly checks.
 
-Export preserves source commands and uses the existing 1 nm file grid. Where a
+Export preserves source commands and uses the existing 1 nm file grid. A cut-in
+is retained only when its parsed integer boundaries reproduce the complete native
+material exactly. Rounded hole bridges that alter that material are rejected; an
+exact axial bridge is tried within a fixed resource budget. Where a faithful
 legal axial cut-in is unavailable, constrained triangulation emits equivalent
 simple positive regions under the same source identity. Exact integer area and
 signed atomic boundary equality prove no hole was filled and no positive triangle
 was omitted. Export/reparse, all source/scalar/attachment/clearance/fidelity and
 physical partition checks, deliberate corruptions and the remaining-defect audit
-must pass before delivery. Large contour metrics use all vertices and bounded
+must pass before delivery. The independent whole-image reference recompiles
+every intermediate positive contribution as well as the final scene, matching
+the append-only source-stage contract without reading the generated file ledger.
+The actual-file verifier proves every parsed region against the independently
+compiled native parent inventory before assembling complete physical copper.
+Exact integer boundaries and area, complete part indices, source/owner identity
+and all holes must match. Only then are internal triangle edges removed from
+the physical assembly; stable integer ring and operand order makes it independent
+of region count and floating precision tags. The raw unwelded overlay metric is
+retained as a diagnostic. The physical 2 nm boundary limit, production clearance,
+source preservation, scope, connectivity and negative controls remain gates.
+Both fresh native workers bind the resulting actual-material image used by the
+final rendering and remaining-defect audit. No source or generated file is edited
+by this verification step.
+
+Large contour metrics use all vertices and bounded
 spatial indexes, never display sampling or simplification.
 
 All generation, logs, tests and caches require the prepared LaCie APFS image;

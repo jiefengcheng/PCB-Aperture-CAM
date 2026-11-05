@@ -12,7 +12,9 @@ from .guard import install_read_fence
 install_read_fence(run.parent);e.verify_sources(run);store,binding=e.context(run);proofs=[p.load(run/'export'/('proof_'+m+'.json'))for m in('1','2')]
 if p.canonical(proofs[0])!=p.canonical(proofs[1])or proofs[0]['status']!='PASS':raise ValueError('PAIRED_NATIVE_PROOFS_REQUIRED')
 body=(run/'export/top.art.gbr').read_bytes();parsed=e.parse(body);ledger=p.load(run/'export/ledger.json');n=binding['source_objects'];observed={}
-for obj,row in zip(parsed.objects[n:],ledger['records']):observed.setdefault(row['source_id'],[]).append(p.affine_scale(p.source_profile.object_geometry(obj)[0],1,-1,origin=(0,0)))
+if p.digest(body)!=proofs[0]['generated_sha256']or len(parsed.objects)!=n+proofs[0]['appended_positive_regions']:raise ValueError('NATIVE_AUDITED_MATERIAL_BYTES_CHANGED')
+if any(not obj.polarity_dark or not isinstance(obj,p.go.Region)for obj in parsed.objects[n:]):raise ValueError('NATIVE_AUDITED_APPEND_ROLE_CHANGED')
+for row in proofs[0]['native_material_assembly']['material_parents']:observed.setdefault(row['source_id'],[]).append(p.geometry(store,row['geometry_ref']))
 groups=decoded_groups(cc.ACTIVE.index.source,observed);current=cc.joined(groups.values());source=cc.ACTIVE.index.source;_,contracts=read_job(run);reports=[];eligible=[]
 source_parts=parts(source);reservations={i:cc.ACTIVE.reserved[cc.ACTIVE.index.membership(g)[0]]for i,g in enumerate(source_parts)}
 for contract in contracts:

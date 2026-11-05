@@ -122,11 +122,26 @@ def contours(shape, bridge, *, grid_mm):
     for ring in [shape.exterior, *shape.interiors]:
         _ring_points(ring, grid_mm)
     from src.validator import Unsupported
+    material_changed=False
     try:
         points = bridge(shape)
-        return [(shape, points)], dict(status='ORIGINAL_CUT_IN_ENCODING')
+        from src.gerber_image import contour
+        from .native_material import equality
+        native=[(round(x/grid_mm)*grid_mm,round(y/grid_mm)*grid_mm)for x,y in points]
+        try:
+            exact=equality(shape,contour(native+[native[0]]),grid_mm=grid_mm)
+        except ValueError:
+            material_changed=True
+            raise
+        return [(shape, points)], dict(status='ORIGINAL_CUT_IN_ENCODING',native_material=exact)
     except (ValueError, Unsupported) as error:
         bridge_error = str(error)
+    if material_changed:
+        from .exact_cut_in import bridge as exact_bridge
+        try:
+            points,exact=exact_bridge(shape,grid_mm=grid_mm)
+            return [(shape,points)],dict(status='EXACT_AXIAL_CUT_IN_ENCODING',original_cut_in_rejection=bridge_error,native_material=exact)
+        except(ValueError,Unsupported):pass
     pieces, proof = partition(shape, grid_mm=grid_mm)
     proof['original_cut_in_rejection'] = bridge_error
     from src.gerber_image import contour
