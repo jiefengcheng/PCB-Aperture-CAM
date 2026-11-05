@@ -43,9 +43,9 @@ def test_foreign_prior_cannot_disappear_from_new_spindle_checks(monkeypatch):
  assert dict(foreign)['owner:B'].covers(prior_b)
  # The owner's own source-connected prior never becomes internal clearance.
  assert set(dict(foreign))=={'owner:B'}
- assert len(charged)==2
+ assert len(charged)==0
  adapter._operands(None,None,None,None,{'source_id':'route'})
- assert len(charged)==2  # reused once per immutable context, within snapshot budget
+ assert len(charged)==0  # current and prior shapes are reused; no derived board-sized duplicate
 
 
 def test_original_owner_inventory_is_frozen():

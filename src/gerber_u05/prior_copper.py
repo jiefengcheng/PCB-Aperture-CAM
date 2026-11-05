@@ -21,7 +21,7 @@ def local_floor(current,prior,*,tolerance_mm=POLYGON_TOLERANCE_MM,support_mm=.00
  if missing.is_empty:return None,dict(required=False,missing_mm2=0.)
  # The window adds only already-existing material from either proved surface.
  # One region per original owner is retained, not one object per missing patch.
- allowed=unary_union([current,prior]);window=missing.buffer(tolerance_mm+support_mm,quad_segs=32);region=filled_surface(allowed.intersection(window))
+ allowed=unary_union([current,prior]);window=missing.buffer(tolerance_mm+support_mm,quad_segs=1,join_style='mitre');region=filled_surface(allowed.intersection(window))
  if region.difference(allowed).area>1e-12:raise ValueError('PRIOR_FLOOR_MATERIAL_SCOPE_CHANGED')
  after=unary_union([current,region]);remaining=prior.difference(after.buffer(tolerance_mm)).area
  if remaining>1e-12:raise ValueError('PRIOR_FLOOR_RECONSTRUCTION_MISSING')
@@ -39,11 +39,12 @@ class CoverageAdapter(BaseCoverageAdapter):
  def _operands(self,store,scene,policy,details,row):
   owner,radius,domain,foreign=super()._operands(store,scene,policy,details,row)
   if cc.ACTIVE is None:return owner,radius,domain,foreign
-  context=cc.ACTIVE;key=(id(self._snapshot),context.binding)
-  if getattr(self,'_prior_protected_key',None)!=key:
-   self._prior_protected_owners={o:self._snapshot.retain_derived(g)for o,g in protected_owners(self._copper_owners,context.reserved).items()};self._prior_protected_key=key
+  context=cc.ACTIVE
+  if set(self._copper_owners)!=set(context.reserved):raise ValueError('PRIOR_ORIGINAL_OWNER_INVENTORY_CHANGED')
   own=self.owner_for_route(row['source_id']);query=domain.buffer(CONTRACT.barrier_gap_mm)
-  foreign=[('owner:'+o,g)for o,g in self._prior_protected_owners.items()if o!=own and g.intersects(query)]
+  # Separate operands give the same distance/barrier union while reusing the
+  # already resident shapes. No second board-sized protected union is retained.
+  foreign=[*foreign,*[('owner:'+o,g)for o,g in context.reserved.items()if o!=own and g.intersects(query)]]
   return owner,radius,domain,foreign
 
 
