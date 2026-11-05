@@ -510,3 +510,25 @@ fresh isolated native source plot and exact full-plot atom equality, retaining
 U03's existing nominal-stroke/endpoint bounds. Loaded execution contexts must
 recheck complete scene/policy metadata and every read operand before returning
 a verdict; input mutation or tampering must reject before advancement.
+
+
+## Production clearance default authorization — 2026-11-05
+
+The owner explicitly changed the production 0.020 mm clearance policy to
+0.040 mm by default. This supersedes earlier no-shared-clearance-change clauses
+solely for this versioned numeric migration across normal app and Terminal
+T01 → T03 → T04 → T02 → T05. The shared production authority is
+`contracts/clearance/production.json`, exposed by `src/clearance_policy.py`.
+The hard floor is 0.04000 mm; construction 0.04010 mm, contact buffer
+0.04002 mm and T05 barrier 0.04011 mm retain the established margins.
+All source/contact/coverage/scalar/reconstruction/export and negative controls
+remain. Existing source contacts retain their source-bound authority; no
+rerouting or new foreign-contact exemption is granted.
+Historical 0.020 mm contracts, source snapshots, jobs, failures and acceptance
+remain unchanged and do not qualify 0.040 mm. The .DS_Store custody failures
+remain explicit and unwaived. Owner/independent/electrical/manufacturing
+acceptance stays separate. Coverage recovery continues independently.
+The owner requested a full remaining clearance-literal sweep into shared
+constants after this rung; preserve geometry dimensions, recognition tolerances
+and historical evidence. Once whole-board qualification passes, no additional
+crop test is required for this rung.

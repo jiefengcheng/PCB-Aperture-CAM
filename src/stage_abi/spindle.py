@@ -16,6 +16,8 @@ from .store import canonical
 from .runtime import Budget
 from .journal import ACTIVE
 
+from src.stage_abi.preparation import prepared_tree as STRtree,decode_geometry as from_wkb,prepared_buffer
+
 def filled_circle(core):
  """Admit a regular filled source-circle tessellation, never a ring or box."""
  if core.geom_type!='Polygon' or core.interiors:return False
@@ -63,7 +65,12 @@ class SpindleAdapter:
   # Recheck actual source contacts at execution and replay, not stored booleans.
   for lid in row['land_ids']:
    if original[sid].intersection(original[lid]).area<=1e-12 or current[sid].intersection(current[lid]).area<=1e-12:fail('SOURCE_CONTACT_NOT_ESTABLISHED',lid)
-  owner,radius,window=prepare_spindle_context(current[sid],lands,crop);allowed={sid,*row['land_ids']};foreign=[(k,v) for k,v in sorted(current.items()) if k not in allowed and v.intersects(window.buffer(CONTRACT.barrier_gap_mm))]
+  owner,radius,window=prepare_spindle_context(current[sid],lands,crop);allowed={sid,*row['land_ids']}
+  # Complete source vector; envelope preselection retains the original exact
+  # intersects test and sorted witness order. Added patches remain separate.
+  ordered=list(current);tree=STRtree([current[k] for k in ordered]);query=prepared_buffer(window,CONTRACT.barrier_gap_mm)
+  neighbors={ordered[int(i)] for i in tree.query(query.envelope)}
+  foreign=[(k,current[k]) for k in sorted(neighbors) if k not in allowed and current[k].intersects(query)]
   return owner,radius,window,foreign
  def run(self,store,scene,policy,plan,checkpoint):
   details=plan['details'];bounds=details['bounds'];objects,current,_,crop=self._context(store,scene,policy,details);before=unary_union([current[k] for k in sorted(current)]).intersection(crop);accepted=[];decisions=[];used=0;started=time.monotonic();output_bytes=0;meter=Budget(bounds)

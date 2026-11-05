@@ -237,7 +237,17 @@ def test_absolute_image_command_completes_43_native_gates_and_protects_outside(t
     # Locate the original outside circle by its immutable native bytes.
     fragment=b'(gr_circle (center 30 30) (end 30.12497 30) (stroke (width 0) (type solid)) (fill yes) (layer "F.Cu"))'
     before_circle=next(r for r in inv['objects'] if raw[slice(*r['source_span'])]==fragment)
-    assert before_circle['geometry_sha256'] in {r['geometry_sha256'] for r in changed['objects'] if r['kind']=='gr_circle'}
+    # T01 is source-wide even for a view. Its complete decision map proves
+    # this original source is retained or grown under the same canonical policy.
+    cap=json.loads(sorted(session.glob('capsule_*.json'))[-1].read_bytes())
+    store=ArtifactStore(Path(cap['store_path']))
+    run=next(json.loads((p/'abi/stdout.json').read_bytes())['result'] for p in (session/'attempts').iterdir() if (p/'receipt.json').exists() and json.loads((p/'receipt.json').read_bytes())['tool']=='t01_run')
+    result=store.get_json(run['result']['candidate_ref'],kind='candidate')
+    assert before_circle['id'] in result['replacements']
+    from shapely import from_wkb
+    original=from_wkb((session/'data_board/source_wkb'/f'{before_circle["geometry_sha256"]}.wkb').read_bytes())
+    replacement=from_wkb(store.get(result['replacements'][before_circle['id']],kind='geometry'))
+    assert original.difference(replacement).area<=1e-10
     report=(session/'U04_REPORT.md').read_text()
     assert str(image) in report and '--crop' in report and '43 native gates' in report
     assert json.loads((session/'adapter_stopped.json').read_bytes())['status']=='STOPPED'

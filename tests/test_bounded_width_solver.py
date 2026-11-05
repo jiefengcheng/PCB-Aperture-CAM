@@ -19,7 +19,7 @@ def source_evaluator(ys,groups,*,remote=False,source_offset=False):
                     _,_,_,original,_,candidate=construct_source_offset_width(source,chains[cid],rows,blobs,scales[gid])
                 else:_,_,original,candidate=construct_uniform_width(source,chains[cid],rows,blobs,scales[gid])
                 traces.append(dict(id=cid,original=original,candidate=candidate,verified_original_width_mm=.1))
-        fixed=[dict(id='remote',geometry=box(29,.09,31,.2))] if remote else []
+        fixed=[dict(id='remote',geometry=box(29,.11,31,.2))] if remote else []
         return verify_width_scene(traces,fixed)
     return evaluate
 
@@ -38,7 +38,7 @@ class BoundedWidthSolverTests(unittest.TestCase):
 
     def test_parallel_traces_share_one_common_scale(self):
         r=solve_width_scales(['g'],source_evaluator([0,.17],{'g':['0','1']}),geometry_family=FAMILY)
-        self.assertTrue(r['maximum_established']);self.assertAlmostEqual(r['selected_scales']['g'],1.4988,delta=1e-6)
+        self.assertTrue(r['maximum_established']);self.assertAlmostEqual(r['selected_scales']['g'],1.2988,delta=1e-6)
 
     def test_group_order_is_stable_and_final_joint_scene_valid(self):
         evaluate=source_evaluator([0,.17],{'a':['0'],'b':['1']})
@@ -61,7 +61,7 @@ class BoundedWidthSolverTests(unittest.TestCase):
     def test_source_offset_parallel_group_obeys_same_collective_bound(self):
         r=solve_width_scales(['g'],source_evaluator([0,.17],{'g':['0','1']},source_offset=True),geometry_family=OFFSET_FAMILY)
         self.assertTrue(r['maximum_established'])
-        self.assertAlmostEqual(r['selected_scales']['g'],1.4988,delta=1e-6)
+        self.assertAlmostEqual(r['selected_scales']['g'],1.2988,delta=1e-6)
 
     def test_source_offset_remote_clearance_limits_complete_trace(self):
         r=solve_width_scales(['g'],source_evaluator([0],{'g':['0']},remote=True,source_offset=True),geometry_family=OFFSET_FAMILY)

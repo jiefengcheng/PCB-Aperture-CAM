@@ -61,7 +61,7 @@
   "family": "native-whole-board-retain-valid-paths/1",
   "scope": "Fresh complete T01 followed by growth-remediation T03. Whole-board native trace inventory, exact predecessor and source-port policy; valid unchanged paths only. Any movement objective halts as U02_T03_MOVEMENT_NOT_QUALIFIED; no historical route reuse or inferred bundle/branch/curve movement qualification.",
   "policy": {
-    "hard_gap_mm": 0.02,
+    "hard_gap_mm": 0.04,
     "area_epsilon_mm2": 1e-10,
     "quad_segs": 128,
     "original_widths": "RETAIN",
@@ -82,5 +82,10 @@
     "t03_inspect": 900,
     "t03_verify": 900,
     "t03_controls": 900
+  },
+  "production_clearance": {
+    "path": "contracts/clearance/production.json",
+    "sha256": "cab61452f4f1f99c99d2e1959b9de50c84569944728a4685d101810b78d67ac1",
+    "hard_gap_mm": 0.04
   }
 }

@@ -10,6 +10,7 @@ from .junctions import parameters
 from .scene import prepare
 from .custody import ROOT
 from tools.t01_operator_host import read
+from src.stage_abi.preparation import decode_geometry as from_wkb
 
 PROFILE=ROOT/'contracts/operator/u05_attachment_profile.json'
 
@@ -37,7 +38,9 @@ def work_scene(store,predecessor,bound):
     definitions=read(reference/'T05/DECISIONS.json')
     if len(definitions)!=97 or sum(d['status']=='GROWN' for d in definitions)!=85 or sum(len(d['land_ids']) for d in definitions if d['status']=='GROWN')!=162:raise ValueError('U05_REFERENCE_OBLIGATION_COVERAGE_CHANGED')
     # Source contributors remain distinct; engineering trace clusters are views.
-    rows=copy.deepcopy(scene['objects'])
+    # prepare produced private deep-copied rows. Transfer those owned rows;
+    # immutable predecessor artifacts and constructor inputs remain untouched.
+    rows=scene['objects']
     for r in rows:
         if r['kind']=='trace':r['kind']='fixed_source'
     byid={r['source_id']:r for r in rows};land_aliases={}
@@ -48,9 +51,12 @@ def work_scene(store,predecessor,bound):
         if len({r['geometry_ref']['sha256'] for r in alias_rows})!=1:raise ValueError('U05_LAND_ALIAS_CONFLICT')
         ids=sorted(r['source_id'] for r in alias_rows)
         for r in alias_rows:r['metadata']['alias_source_ids']=ids
+    inclusive_index={}
+    for s,r in byid.items():
+        if r['kind']=='inclusive_rectangle':inclusive_index.setdefault(frozenset(r['metadata']['members']),[]).append(s)
     def map_land(lid):
         if lid.startswith('inclusive:'):
-            want=set(inclusive[lid.split(':',1)[1]]['rectangle_members']);found=[s for s,r in byid.items() if r['kind']=='inclusive_rectangle' and set(r['metadata']['members'])==want]
+            want=set(inclusive[lid.split(':',1)[1]]['rectangle_members']);found=inclusive_index.get(frozenset(want),[])
             if len(found)!=1:raise ValueError('U05_REFERENCE_INCLUSIVE_MEMBERSHIP_UNQUALIFIED:'+lid)
             lid=found[0]
         if lid not in byid or not byid[lid]['metadata'].get('qualified_land'):raise ValueError('U05_REFERENCE_LAND_UNQUALIFIED:'+lid)

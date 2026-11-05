@@ -3,6 +3,7 @@
 This audit does not author prose observations, grant owner approval, reconstruct
 copper, or change policy. Native verifiers still execute through the original ABI.
 """
+from src.clearance_policy import HARD_GAP_MM
 from pathlib import Path
 import math
 from src.stage_abi.store import ArtifactStore,digest,canonical
@@ -13,6 +14,8 @@ from src.pcb_data_abi.input_directory import verify_snapshot
 from src.pcb_data_abi.board_custody import ROI,T01,CHECK,FILES
 from tools.t01_native_route import verify_attempt
 from tools.t01_route_client import decode,safe_id
+
+from src.stage_abi.preparation import native_operation
 
 ROOT=Path(__file__).resolve().parents[2]
 CONTRACT=ROOT/'contracts/operator/t01_board_auto.json'
@@ -44,6 +47,7 @@ class TrackedStore(ArtifactStore):
     def get(self,ref,*,kind=None):
         blob=super().get(ref,kind=kind);self.evidence.files[str((self.root/'artifacts'/ref['artifact_id']).relative_to(self.evidence.root))]=digest(blob);return blob
 
+@native_operation
 def evaluate(root,attempt):
     root=Path(root);safe_id(attempt);e=Evidence(root);contract=decode(CONTRACT.read_bytes());folder=root/'attempts'/attempt
     verified=verify_attempt(folder);receipt=e.read(folder/'receipt.json');op=receipt['tool']
@@ -94,7 +98,9 @@ def evaluate(root,attempt):
                 if len(matches)!=1:raise ValueError('MACHINE_AUDIT_PRIOR_ATTEMPT_AMBIGUOUS:'+name)
                 return e.read(matches[0]/'abi/stdout.json')['result']
             if op=='t01_compile':
-                policy=r['policy'];e.eq('sixteen_clauses',len(policy['clause_trace']),16);e.eq('hard_gap_unchanged',policy['settings']['hard_gap'],.02);e.eq('policy_artifact_matches',store.get_json(r['policy_ref'],kind='policy'),policy);e.eq('compile_no_construction',r['construction_status'],'NOT_RUN')
+                from src.t01_canonical import marker,require
+                require(r['policy']);e.eq('one_canonical_T01_contract',r['policy']['canonical_t01'],marker())
+                policy=r['policy'];e.eq('sixteen_clauses',len(policy['clause_trace']),16);e.eq('hard_gap_matches_production_default',policy['settings']['hard_gap'],HARD_GAP_MM);e.eq('policy_artifact_matches',store.get_json(r['policy_ref'],kind='policy'),policy);e.eq('compile_no_construction',r['construction_status'],'NOT_RUN')
                 e.eq('binding_matches_request',policy['binding_ref'],request['payload']['binding_ref'])
             elif op=='t01_discover':
                 d=r['discovery'];e.eq('discovery_site_count',d['unique_sites'],n);e.eq('discovery_occurrences',d['occurrences'],aliases);e.eq('discovery_source_count',d['source_objects'],total);e.eq('unique_site_ids',len(set(d['source_ids'])),n)
@@ -108,14 +114,29 @@ def evaluate(root,attempt):
                 e.eq('inspection_count',len(rows),n);e.eq('inspection_records_match',rows,r['records']);e.ids('inspection_id_set',[q['record']['source_id']for q in rows],d['source_ids']);e.eq('inspection_cursor_exhausted',r['next_cursor'],None);e.eq('inspection_page_count',r['page_count'],len(index['pages']))
             elif op=='t01_plan':
                 p=r['plan'];d=prior('t01_discover')['discovery'];e.eq('plan_artifact_matches',store.get_json(r['plan_ref'],kind='plan'),p);e.ids('plan_target_set',p['details']['targets'],d['source_ids']);e.eq('plan_runtime_unchanged',p['runtime'],runtime_fingerprint());e.eq('plan_implementation_unchanged',p['implementation'],BoardAdapter().describe()['implementation']);e.eq('plan_no_construction',r['construction_status'],'NOT_RUN');e.eq('port_site_count',p['details']['allocation']['ports']['sites'],n)
+                from src.t01_canonical import specification
+                protected=specification()['permissions'].get(job['inputs']['kicad']['sha256'],{}).get('keep_original_source_ids',[])
+                e.ids('immutable_source_permissions',p['details']['allocation']['permission_keep_source_ids'],protected)
                 capsule=e.read(sorted(root.glob('capsule_*.json'))[-1]);b=store.get_json(capsule['binding_ref'],kind='t01-binding');ports=p['details']['allocation']['ports']
-                port_rows,port_index=read_pages(store,ports['index_ref'],binding=dict(source_sha256=b['source_sha256'],site_ids_sha256=digest(canonical(sorted(d['source_ids']))),viewport_mm=b['viewport_mm']),kind='t01-board-ports',identity=lambda q:q['source_id'])
+                port_rows,port_index=read_pages(store,ports['index_ref'],binding=dict(source_sha256=b['source_sha256'],site_ids_sha256=digest(canonical(sorted(d['source_ids']))),viewport_mm=p['details']['allocation']['analysis_bounds_mm']),kind='t01-board-ports',identity=lambda q:q['source_id'])
                 e.eq('port_pages_exhausted',len(port_rows),n);e.eq('port_page_count',len(port_index['pages']),ports['pages']);e.ids('port_id_set',[q['source_id']for q in port_rows],d['source_ids']);e.eq('port_zone_count',sum(len(q['ports'])for q in port_rows),ports['zones'])
                 for q in port_rows:
                     for ref in q['ports'].values():store.get(ref,kind='t01-port-geometry')
             elif op in('t01_run','t01_verify'):
                 e.eq('fresh_job_completed',r['job']['status'],'COMPLETED');e.eq('no_reuse',r['reused'],False);e.eq('fresh_execution_mode',r['result']['execution_evidence']['mode'],'FRESH_EXECUTION')
                 if op=='t01_run':
+                    from src.t01_canonical import marker,fingerprint,specification
+                    c=r['result']['candidate'];e.eq('canonical_T01_identity',c['canonical_t01'],marker());e.eq('canonical_per_source_fingerprint',c['canonical_result_sha256'],fingerprint(job['inputs']['kicad']['sha256'],c))
+                    surface=c['full_surface_check'];e.eq('full_surface_complete',surface['evaluation_complete'],True);e.eq('full_surface_passed',surface['passed'],True);e.eq('full_surface_land_count',surface['checked_land_count'],n);e.eq('full_surface_failures',surface['failures'],[])
+                    capsule=e.read(sorted(root.glob('capsule_*.json'))[-1]);original=store.get_json(capsule['scene_ref'],kind='scene');original_by_id={o['source_id']:o for o in original['objects']};protected=specification()['permissions'].get(job['inputs']['kicad']['sha256'],{}).get('keep_original_source_ids',[])
+                    decisions={a:d for d in c['decisions']for a in d['aliases']}
+                    for sid in protected:
+                        e.yes('blocked_source_present:'+sid,sid in original_by_id)
+                        if sid in decisions:
+                            e.yes('blocked_circle_not_grown:'+sid,decisions[sid]['decision']not in ('GROW_COMPANION','ROUND_GROW_PRIORITY'))
+                            e.eq('blocked_circle_exact_original:'+sid,digest(store.get(decisions[sid]['candidate_ref'],kind='geometry')),digest(store.get(original_by_id[sid]['geometry_ref'],kind='geometry')))
+                    e.eq('interaction_response_accounting',c['neighbor_response_sites'],len({q['target_source_id']for q in c['events']}))
+                    e.eq('companion_response_accounting',c['evolving_companion_response_sites'],len({q['target_source_id']for q in c['events']if q['neighbor_role']=='earlier accepted companion'}))
                     c=r['result']['candidate'];e.eq('candidate_artifact_matches',store.get_json(r['result']['candidate_ref'],kind='candidate'),c);e.eq('candidate_site_count',c['unique_sites'],n);e.eq('candidate_occurrences',c['source_occurrences'],aliases);e.eq('candidate_source_count',c['source_objects'],total);e.eq('assembled_check_count',len(c['final_checks']),n);e.all('assembled_checks_pass',(q['check']['passed']for q in c['final_checks']));e.eq('candidate_owner_pending',c['owner_status'],'PENDING');e.eq('candidate_independent_not_run',c['independent_status'],'NOT_RUN')
                 else:
                     v=r['result']['verification'];e.eq('verification_artifact_matches',store.get_json(r['result']['verification_ref'],kind='verification'),v);e.eq('fresh_geometry_verified',v['geometric_status'],'PASS');e.eq('verified_candidate_binding',v['candidate_ref'],prior('t01_run')['result']['candidate_ref']);e.eq('verified_owner_pending',v['owner_status'],'PENDING');e.eq('verified_independent_not_run',v['independent_status'],'NOT_RUN')

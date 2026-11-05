@@ -3,6 +3,7 @@
 Original finite ports and clearance thresholds are unchanged. Only the four
 declared source relationships are eligible in the calling diagnostic packet.
 """
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 from dataclasses import dataclass
 import hashlib
 from shapely import from_wkb, to_wkb
@@ -81,8 +82,8 @@ def bind_overlapping_feed_attachment(source, target_id, obstacle_id, feed_id):
 
 
 def check_attachment_diagnostic(core, candidate, neighbors, binding, *, crop, cap, contract):
-    if (contract.hard_gap_mm != .02000 or contract.construction_gap_mm != .02010
-            or contract.attachment_buffer_gap_mm != .02002 or contract.quad_segs != 128
+    if (contract.hard_gap_mm != HARD_GAP_MM or contract.construction_gap_mm != CONSTRUCTION_GAP_MM
+            or contract.attachment_buffer_gap_mm != CONTACT_BUFFER_MM or contract.quad_segs != 128
             or contract.comparison_epsilon_mm != 1e-12 or contract.area_epsilon_mm2 != 1e-12):
         raise ValueError('DIAGNOSTIC_REQUIRES_UNCHANGED_CONTRACT')
     expected = from_wkb(binding.target_wkb)

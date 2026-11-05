@@ -77,7 +77,7 @@
   "family": "native-whole-board-junction-bound-width/1",
   "scope": "Fresh T01 \u2192 exact retain-valid-paths T03 \u2192 source-bound T04 uniform complete native junction paths; unchanged numeric width/clearance policy; no rendering or later stages.",
   "policy": {
-    "hard_gap_mm": 0.02,
+    "hard_gap_mm": 0.04,
     "area_epsilon_mm2": 1e-10,
     "quad_segs": 128,
     "original_widths": "RETAIN",
@@ -114,9 +114,9 @@
     "ceiling": 1.5,
     "scale_tolerance": 1e-06,
     "max_steps": 36,
-    "hard_gap_mm": 0.02,
-    "construction_gap_mm": 0.0201,
-    "original_port_buffer_gap_mm": 0.02002,
+    "hard_gap_mm": 0.04,
+    "construction_gap_mm": 0.0401,
+    "original_port_buffer_gap_mm": 0.04002,
     "comparison_epsilon_mm": 1e-12,
     "port_quad_segs": 128,
     "route_definition": "Existing source_junction_paths: complete same-width paths with exact original junction boundaries; no electrical inference",
@@ -169,5 +169,10 @@
     "acceptance": "Existing minimum six landmarks, 80 percent matches, .020 mm tolerance, image IoU/boundary/uniqueness predicates and negative controls unchanged",
     "source_coverage": "Image-landmark eligibility does not omit any native copper from source inventory, T01, T03, T04 or clearance context",
     "audit": "Independently recompute the full census and matches; altered classifications halt even if their metadata hash is updated"
+  },
+  "production_clearance": {
+    "path": "contracts/clearance/production.json",
+    "sha256": "cab61452f4f1f99c99d2e1959b9de50c84569944728a4685d101810b78d67ac1",
+    "hard_gap_mm": 0.04
   }
 }

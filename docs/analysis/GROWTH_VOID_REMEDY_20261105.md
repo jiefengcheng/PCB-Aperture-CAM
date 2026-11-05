@@ -1,0 +1,9 @@
+# Growth-created copper pockets — 2026-11-05
+
+Owner request: investigate the small holes and gaps marked in the annotated HFlex U05 output, preserve inherent source features, and extend the existing T02 connected inclusive-fill technique to growth-created pockets. Work remains isolated under `out/lacie_work/evidence/growth_void_remedy_20261105/`; no integration is authorized by this note. Keep coverage recovery independent and all prior proofs, failed runs and .DS_Store custody findings unchanged.
+
+Standing visual delivery requirement from this request: always provide the actual source, actual generated result, and a common-coordinate overlay highlighting added copper in green. Retain exact source/output hashes and a detailed growth view. The highlighted comparison should be a principal result view, not an optional diagnostic. Raster images are for review; measured geometry and scoped verdicts come from actual parsed exports.
+
+Initial actual-file inventory: source 127 physical copper components/129 holes; generated U05 127 components/141 holes. Component-bound attribution identifies 12 newly enclosed holes (7 first appear after T04, 5 after T05) and 129 inherited holes. A containing plane's broad interior ring must not incorrectly classify every hole in a separate copper island as inherited. T02's existing inclusive merger is limited to selected rectangle groups and records zero applicable fills on this board.
+
+The isolated extension uses source-component identity, local connected support, T02's maximum 20% missing-area rule, complete foreign-surface clearance and preserved source-hole/notch masks. New pocket fill is a separate additive stage; the five predecessor stages and original Gerber prefix keep their original evidence and are not relabeled. The engineering packet owns evolving findings and qualification. Until it reports passing native export/reparse proofs, no corrected result or performance acceptance is claimed.

@@ -68,7 +68,11 @@ def test_original_width_limits_ports_after_predecessor_widening(tmp_path):
  trace=next(r for r in scene['objects'] if r['metadata']['native_source_kind']=='segment');trace['metadata'].update(original_width_mm=.1,nominal_width_mm=.15)
  from shapely import from_wkb
  trace['geometry_ref']=store.put('geometry',to_wkb(scale(from_wkb(store.get(trace['geometry_ref'],kind='geometry')),1,1.5,origin='centroid')))
- sid=next(r['source_id'] for r in scene['objects'] if r['kind']=='rectangle');a=NativeRectangleAdapter();_,current,original,checker,_=a._context(store,scene,dict(stage='t02',parameters=parameters()),dict(targets=[sid]))
+ sid=next(r['source_id'] for r in scene['objects'] if r['kind']=='rectangle');a=NativeRectangleAdapter()
+ from src.shape_containment import records
+ from src.stage_abi.runtime import operands
+ _,current,_=operands(store,scene)
+ _,current,original,checker,_=a._context(store,scene,dict(stage='t02',parameters=parameters()),dict(targets=[sid],containment=records(current,[sid])))
  assert checker.widths[trace['source_id']]==.1
  expected=original[sid].intersection(original[trace['source_id']]).buffer(.1+checker.contract.original_port_buffer_gap_mm,quad_segs=checker.contract.port_quad_segs)
  assert checker.ports[(sid,trace['source_id'])][0].equals_exact(expected,0)
@@ -76,7 +80,10 @@ def test_original_width_limits_ports_after_predecessor_widening(tmp_path):
 
 def test_prepared_context_reuses_only_identical_hash_validated_source(tmp_path,monkeypatch):
  from src.stage_abi.lands import LandAdapter
- store,scene,_,_=native_scene(tmp_path,[rect()]);sid=scene['objects'][0]['source_id'];policy=dict(stage='t02',parameters=parameters());details=dict(targets=[sid]);a=NativeRectangleAdapter();calls=[];base=LandAdapter._context
+ store,scene,_,_=native_scene(tmp_path,[rect()]);sid=scene['objects'][0]['source_id'];policy=dict(stage='t02',parameters=parameters());a=NativeRectangleAdapter();calls=[];base=LandAdapter._context
+ from src.shape_containment import records
+ from src.stage_abi.runtime import operands
+ details=dict(targets=[sid],containment=records(operands(store,scene)[1],[sid]))
  def tracked(*args):calls.append(1);return base(*args)
  monkeypatch.setattr(LandAdapter,'_context',tracked)
  first=a._context(store,scene,policy,details)

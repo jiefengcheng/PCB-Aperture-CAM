@@ -142,3 +142,7 @@ These document available patterns and rendering capabilities, not proof that any
 - KiCad CLI: native SVG and fabrication exports, structured DRC: https://docs.kicad.org/10.0/en/cli/cli.html
 - Gerbonara rendering / SVG: https://gerbolyze.gitlab.io/gerbonara/cli.html
 - Codex repository instructions: https://developers.openai.com/codex/guides/agents-md/
+
+## Owner-adopted growth comparison default — 2026-11-05
+
+For subsequent growth results, always retain the actual source view, the actual generated result and a common-coordinate overlay with added copper highlighted in green. Make the highlighted comparison a principal result view and include a useful detail view, exact source/output hashes and scoped check evidence. Derive the overlay from parsed source/generated artifacts; preserve source-inherent holes separately from growth-created defects. This presentation requirement adds no geometry, acceptance, renderer or manufacturing waiver. See `docs/analysis/GROWTH_VOID_REMEDY_20261105.md` for the originating request and isolated engineering packet.

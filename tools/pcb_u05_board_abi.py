@@ -8,6 +8,9 @@ from tools.pcb_workspace import configure
 from tools.t01_operator_host import read,fresh
 from src.u05_board.custody import session,verify_u04,T05,FILES,require_operation
 
+from src.stage_abi.preparation import native_operation
+
+@native_operation
 def execute(root,op):
     start=session(root);require_operation(root,op)
     if op=='u04_predecessor_verify':

@@ -3,6 +3,7 @@
 No net or physical-component label is consumed. The original port is recomputed
 from the original intersection; callers cannot supply an enlarged permission area.
 """
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 from dataclasses import dataclass
 import hashlib
 from shapely import from_wkb, to_wkb
@@ -72,11 +73,11 @@ def qualify_original_support(core, neighbor, neighbors, support, contract):
     """Fail closed on stale geometry, unrelated neighbors or changed port policy."""
     if neighbor['source_id'] != support.obstacle_id:
         return None
-    if contract.attachment_buffer_gap_mm != .02002:
+    if contract.attachment_buffer_gap_mm != CONTACT_BUFFER_MM:
         raise ValueError('ATTACHMENT_PORT_POLICY_CHANGED')
     if contract.quad_segs != 128 or contract.comparison_epsilon_mm > 1e-12:
         raise ValueError('ATTACHMENT_NUMERICAL_POLICY_CHANGED')
-    if contract.hard_gap_mm < .02000 or contract.construction_gap_mm < .02010:
+    if contract.hard_gap_mm < HARD_GAP_MM or contract.construction_gap_mm < CONSTRUCTION_GAP_MM:
         raise ValueError('ATTACHMENT_CLEARANCE_POLICY_WEAKENED')
     target = from_wkb(support.target_wkb)
     obstacle = from_wkb(support.obstacle_wkb)

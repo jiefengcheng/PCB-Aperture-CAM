@@ -1,4 +1,5 @@
 """U03: fresh T01 prefix, T03 gates, native-width T04 gates and audited native export gates."""
+from src.clearance_policy import weakened_english
 import sys,uuid,subprocess
 from pathlib import Path
 from src.stage_abi.store import ArtifactStore,digest
@@ -110,7 +111,7 @@ class U03Route(ExportOnlyRoute):
                 selected_host=self._t01_host()
                 self.cap=selected_host.prepare(self.session);self.store=ArtifactStore(Path(self.cap['store_path']))
                 text=self.store.get(self.cap['english_ref'],kind='english-spec')
-                self.negative=self.store.put('english-spec',text.replace(b'hard gap 0.020 mm',b'hard gap 0.001 mm'))
+                self.negative=self.store.put('english-spec',weakened_english(text))
             elif op=='t01_compile':self.cap=self._t01_host().register(self.session,p['path']/'abi/stdout.json')
             elif op=='t01_plan':self.cap=self._t01_host().grant(self.session,p['path']/'abi/stdout.json')
             elif op==CHECK:

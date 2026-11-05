@@ -8,8 +8,20 @@ from tools.u03_machine_audit import evaluate as inherited_evaluate
 from src.u04_board.custody import CONTRACT, T02, T04, operation_steps
 from src.pcb_data_abi.board_custody import FILES
 
+from src.stage_abi.preparation import native_operation
 
+
+@native_operation
 def evaluate(root,attempt):
+    proof=_evaluate(root,attempt)
+    marker=Path(root)/'C03_BASELINE_CUSTODY.json'
+    if marker.exists() or marker.is_symlink():
+        from tools.c03_custody_audit import augment
+        proof=augment(root,proof)
+    return proof
+
+
+def _evaluate(root,attempt):
     root=Path(root);folder=root/'attempts'/attempt;op=read(folder/'receipt.json')['tool']
     if op not in operation_steps(root):raise ValueError('U04_MACHINE_OPERATION_UNSUPPORTED')
     if op not in (*T02,*FILES):
@@ -63,8 +75,8 @@ def evaluate(root,attempt):
                 except ValueError as error:e.eq('actual_control:'+control['name'],str(error),control['error'])
                 else:e.yes('control_must_reject:'+control['name'],False)
         elif op in FILES:
-            from src.u04_board.export import U04DataService
-            service=U04DataService(e.read(root/'u04_data_host.json'))
+            from src.c03_native_export import data_service
+            service=data_service(root,e.read(root/'u04_data_host.json'))
             if op in ('pcb_kicad_write','pcb_kicad_verify'):
                 checked=service.native_check(service.board.read_bytes(),e.read(root/'data_output/TARGET_MAP.json'),e.read(root/'data_output/WIDTH_TARGET_MAP.json'))
                 e.yes('fresh_native_reread',checked['passed']);e.eq('every_native_rectangle_part',checked['rectangle_parts'],len(service.rectangle_targets));e.eq('every_native_inclusive_part',checked['inclusive_parts'],len(service.inclusive_targets))
@@ -81,13 +93,14 @@ def evaluate(root,attempt):
                 validate_export_controls(result,measured)
                 expected=required_export_controls(measured)
                 e.eq('all_required_export_faults',{r['name']:r['expected'] for r in result['controls']},expected)
-                e.eq('export_control_count',len(result['controls']),3+bool(service.rectangle_targets)+bool(service.inclusive_targets))
+                e.eq('export_control_count',len(result['controls']),3+bool(service.rectangle_targets)+bool(service.inclusive_targets)+bool(measured.get('c03_positive_copper_required')))
                 from src.pcb_data_abi import gerber
                 paths=root/'data_output/controls'
                 for control in result['controls']:
                     name=control['name']
                     try:
-                        if name=='gerber_units':gerber.parse(paths/'wrong_units.gbr')
+                        if name=='clear_polarity':service.plot_check(paths/'clear_polarity.gbr')
+                        elif name=='gerber_units':gerber.parse(paths/'wrong_units.gbr')
                         elif name=='native_protected_object':service.native_check((paths/'protected_changed.kicad_pcb').read_bytes(),read(root/'data_output/TARGET_MAP.json'),read(root/'data_output/WIDTH_TARGET_MAP.json'))
                         else:service.plot_check(paths/('missing_rectangle.gbr' if name=='missing_rectangle_copper' else 'missing_inclusive.gbr' if name=='missing_inclusive_copper' else 'wrong_role.gbr' if name=='wrong_layer_role' else 'missing_width.gbr'))
                     except ValueError as error:e.yes('actual_export_control:'+name,str(error).startswith(control['expected']))

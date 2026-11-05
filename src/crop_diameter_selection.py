@@ -15,7 +15,7 @@ def admissible_diameters(radius, palette):
     return [d for d in palette if 2*radius < d <= 3*radius]
 
 
-def select_targets(sites, groups, priorities, scene, settings, palette):
+def select_targets(sites, groups, priorities, scene, settings, palette, *, round_guard=None, round_separation_gap_mm=None):
     """Freeze classes before construction, using ORG and fixed source ports only.
 
     Pairs prefer their largest shared physical class. Full-round priority
@@ -44,9 +44,12 @@ def select_targets(sites, groups, priorities, scene, settings, palette):
         for diameter in sorted([d for d in choices[sid] if d/2 <= targets[sid]], reverse=True):
             candidate=unary_union([s['core'],Point(*s['center']).buffer(diameter/2,quad_segs=settings.qsegs)])
             check=verify_addition(s['core'],candidate,candidate,obs,settings=settings.kernel())
-            if check['passed']:
+            guard=dict(passed=True)if round_guard is None else round_guard(s,candidate)
+            if check['passed'] and guard['passed']:
                 targets[sid]=diameter/2;break
-            records[sid]['limits'].append({'reason':'ROUND_PRIORITY_SOURCE_CLEARANCE','rejected_diameter_mm':diameter,'verification':check})
+            limit={'reason':'ROUND_PRIORITY_SOURCE_CLEARANCE','rejected_diameter_mm':diameter,'verification':check}
+            if round_guard is not None:limit['full_surface_guard']=guard
+            records[sid]['limits'].append(limit)
         else: targets[sid]=s['radius']
     # Every step strictly descends a finite palette (or reaches exact source).
     def demote(sid,reason):
@@ -61,7 +64,8 @@ def select_targets(sites, groups, priorities, scene, settings, palette):
             for bid in priority_ids[i+1:]:
                 a,b=byid[aid],byid[bid]
                 if targets[aid]==a['radius'] and targets[bid]==b['radius']:continue
-                if math.dist(a['center'],b['center'])-targets[aid]-targets[bid] < settings.construction_gap+settings.safety:
+                gap=settings.construction_gap+settings.safety if round_separation_gap_mm is None else max(settings.construction_gap+settings.safety,round_separation_gap_mm)
+                if math.dist(a['center'],b['center'])-targets[aid]-targets[bid] < gap:
                     conflicts.append((aid,bid))
         if not conflicts:break
         to_demote=sorted({sid for pair in conflicts for sid in pair if targets[sid]>byid[sid]['radius']})
@@ -89,7 +93,7 @@ def select_targets(sites, groups, priorities, scene, settings, palette):
     return targets,records,limits
 
 
-def promote_round_priorities(sites, groups, priorities, scene, settings, targets, records):
+def promote_round_priorities(sites, groups, priorities, scene, settings, targets, records, *, round_guard=None, round_separation_gap_mm=None):
     """Recover feasible discrete steps discarded by simultaneous demotions.
 
     Greedy largest area gain, stable source-ID tie break; a maximal allocation,
@@ -102,10 +106,14 @@ def promote_round_priorities(sites, groups, priorities, scene, settings, targets
         source_check=verify_addition(s['core'],candidate,candidate,scene.obstacles(s,0),settings=settings.kernel())
         blockers=[]
         if not source_check['passed']:blockers.append({'reason':'ORIGINAL_COPPER_OR_SOURCE_PORT_CLEARANCE','verification':source_check})
+        if round_guard is not None:
+            guard=round_guard(s,candidate)
+            if not guard['passed']:blockers.append({'reason':'FULL_SOURCE_VISIBLE_SURFACE_GUARD','verification':guard})
         for other in priority_ids:
             if other==sid:continue
             n=byid[other]
-            if math.dist(s['center'],n['center'])-radius-targets[other] < settings.construction_gap+settings.safety:
+            gap=settings.construction_gap+settings.safety if round_separation_gap_mm is None else max(settings.construction_gap+settings.safety,round_separation_gap_mm)
+            if math.dist(s['center'],n['center'])-radius-targets[other] < gap:
                 blockers.append({'reason':'OTHER_FULL_ROUND_RESERVATION','source_id':other,'diameter_mm':2*targets[other]})
         for group in groups:
             if len(group['site_ids'])!=2 or not group.get('apply_square_bound', True):continue

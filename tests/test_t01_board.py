@@ -76,7 +76,7 @@ def test_policy_preserves_all_numeric_settings_and_concentric_interaction():
     ref=dict(artifact_id='t01-binding:'+'a'*64,sha256='a'*64);p=compile_policy(english(),ref);old=crop(crop_english(),ref)
     assert p['settings']==old['settings']and p['diameter_classes_mm']==old['diameter_classes_mm']
     assert p['rules']['pair_interaction']==old['rules']['pair_interaction']
-    with pytest.raises(StageABIError):compile_policy(english().replace('hard gap 0.020 mm','hard gap 0.019 mm'),ref)
+    with pytest.raises(StageABIError):compile_policy(english().replace('hard gap 0.040 mm','hard gap 0.019 mm'),ref)
 
 
 def test_board_plan_requires_data_gates_and_distinct_observation(tmp_path):
@@ -94,7 +94,8 @@ def test_board_public_abi_constructs_and_reconstructs_entire_selection(tmp_path)
     qualified=store.put_json('verification',dict(scene_ref=req('x',{})['scene_ref'],geometric_status='PASS'))
     planned=ok(req('plan',dict(inspection_ref=inspected['inspection_ref'],selection_ref=discovered['selection_ref'],predecessor_qualification_ref=qualified,bounds_ref=bounds,strategy='priority_companion_growth')))
     allocation=planned['plan']['details']['allocation'];assert len(allocation['priority_pool_source_ids'])==3 and allocation['boundary_keep_source_ids']==[]
-    assert sum('concentric_source_proof'in g for g in allocation['groups'])==1
+    assert len(allocation['contained_keep_source_ids'])==1
+    assert all(not(set(g['site_ids'])&set(allocation['contained_keep_source_ids']))or len(g['site_ids'])==1 for g in allocation['groups'])
     output=store.put_json('output-scope',dict(kind='immutable-local-artifacts'));plan_ref=planned['plan_ref'];authorization=store.put_json('authorization',dict(profile_id=PROFILE,scene_ref=req('x',{})['scene_ref'],policy_ref=req('x',{})['policy_ref'],plan_ref=plan_ref,operations=['t01_run','t01_verify'],authority='Whole-board unit fixture',output_scope_ref=output));host['stage_registry']['authorization_refs'].append(authorization);service=BoardService(store,host)
     r=dict(req('run',dict(output_scope_ref=output)),plan_ref=plan_ref,authorization_ref=authorization,idempotency_key='board-test-run');ran=ok(r)['result'];candidate=ran['candidate']
     assert candidate['unique_sites']==3 and candidate['source_occurrences']==4 and len(candidate['final_checks'])==3

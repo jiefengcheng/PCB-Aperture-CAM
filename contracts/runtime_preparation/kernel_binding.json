@@ -1,0 +1,14 @@
+{
+  "schema": "pcb-runtime-kernel-binding/1",
+  "authorization": "Owner-approved B/C/D integration; policy and coverage unchanged",
+  "kernels": {
+    "src/crop_balanced_t01.py": {
+      "original_sha256": "e9d87b4719b622252c335f74364962e50c00665746e1793429dcd76c682a038a",
+      "prepared_sha256": "171104730981df03c2b30f0483da1b9b47dfbd433d8ab6a942f3c567c7d15b17"
+    },
+    "src/native_inventory.py": {
+      "original_sha256": "b7f0dc9dfe369127a9b9a22d6d1d4c55f82a6a44ee805f3fcca7463e470330b2",
+      "prepared_sha256": "5f19045fa6716671aeae8cf3a0a13b75a5f81a4f58c9ef2679847c2c4702ee11"
+    }
+  }
+}

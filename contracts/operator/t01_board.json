@@ -36,7 +36,7 @@
   "lifecycle": "One active job per checkout; overlapping commands/starts halt without replacing it. Completed jobs stay read-only. New inputs create a fresh job after a terminal outcome. Same inputs and implementation cannot automatically retry a failed job. Idle/interrupted workers halt; never resume. Runner stops at terminal outcome.",
   "attachment_ingestion": "Optional native app-staged KiCad/Gerber replacement labels; defaults are the loaded source pair. No crop/desktop dependency.",
   "pagination": "Complete 100-record source/inspection/comparison pages. Display has a complete physical tile partition; no source/target count caps and no silently omitted pages.",
-  "policy": "Whole-board controlled English version 1, 16 clauses. The existing T01 numeric, interaction, concentric, source-specific, clearance and port rules are retained; R01/R16 select the complete native F.Cu circle pool without an image.",
+  "policy": "Canonical whole-source controlled English version 2, 16 clauses; complete original-source priority/companion construction with immutable source permissions and unchanged legacy plus full-visible-surface checks. No crop or C03 substitute.",
   "native_timeout_seconds": {
     "default": 300,
     "t01_run": 1800,

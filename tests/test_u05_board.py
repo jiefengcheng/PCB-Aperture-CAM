@@ -107,9 +107,9 @@ def test_operation_order_rejects_a_skipped_gate(tmp_path):
     with pytest.raises(ValueError,match='OPERATION_ORDER'):require_operation(tmp_path,'t05_run')
 
 
-def test_original_historical_spindle_contract_is_unchanged():
+def test_production_spindle_contract_preserves_margins_and_shape_controls():
     from src.junction_spindle_stage import CONTRACT
-    assert (CONTRACT.barrier_gap_mm,CONTRACT.construction_gap_mm,CONTRACT.hard_gap_mm)==(.02011,.02010,.02000)
+    assert (CONTRACT.barrier_gap_mm,CONTRACT.construction_gap_mm,CONTRACT.hard_gap_mm)==(.04011,.04010,.04000)
     assert CONTRACT.radius_scales==(1.,.75,.5,.25) and CONTRACT.buffer_quad_segs==64
 
 

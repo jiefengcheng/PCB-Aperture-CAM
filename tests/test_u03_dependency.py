@@ -137,7 +137,7 @@ def test_geometry_cache_keys_are_unambiguous_for_source_ids_containing_delimiter
 
 def test_existing_epsilon_boundary_fallback_still_runs_after_reuse():
     core=LineString([(0,0),(1,0)]).buffer(.05)
-    neighbor=LineString([(0,.1251-1.2e-12),(1,.1251-1.2e-12)]).buffer(.05)
+    neighbor=LineString([(0,.1451-1.2e-12),(1,.1451-1.2e-12)]).buffer(.05)
     rows=[dict(id=str(i),original=g,candidate=g,verified_original_width_mm=.1) for i,g in enumerate((core,neighbor))]
     d=DependencyWidthScene(rows,[]);assert d.check(rows,fail_fast=True)['passed']
     d.visible_cache['1']=(d.cached_sha(neighbor),translate(neighbor,yoff=.4e-12))

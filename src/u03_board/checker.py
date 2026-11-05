@@ -1,3 +1,4 @@
+from src.indexed_polygon_distance import distance as indexed_distance
 """Incremental whole-scene evaluation of the unchanged T04 surface predicate.
 
 Passing unchanged checks are carried only when neither their own candidate nor
@@ -106,7 +107,7 @@ class IncrementalWidthScene(PreparedWidthScene):
     def route_proof(self,sid,current,tree):return None
     def save_route_proof(self,sid,current,tree,result,failures):pass
     def checked_copper(self,sid,oid,candidate,added,port):return added if port is None else added.difference(port)
-    def exact_distance(self,sid,oid,checked,neighbor):return checked.distance(neighbor)
+    def exact_distance(self,sid,oid,checked,neighbor):return indexed_distance(checked,neighbor)
     def set_visible(self,sid,entry):self.visible_cache[sid]=entry
     def pair_visibility(self,sid,oid,checked,current):return self.visible_geometry(oid,current)
     def visible_geometry(self,sid,current):
@@ -200,7 +201,7 @@ class IncrementalWidthScene(PreparedWidthScene):
                         # original query before deciding; never widen epsilon.
                         neighbor=current[oid].difference(self.exact_other_original_union(oid,current[oid]))
                         self.set_visible(oid,(self.cached_sha(current[oid]),neighbor))
-                        gap=None if neighbor.is_empty else checked.distance(neighbor)
+                        gap=None if neighbor.is_empty else indexed_distance(checked,neighbor)
                         self.original_union_boundary_rechecks+=1
                     bad = gap is not None and gap+c.comparison_epsilon_mm < c.construction_gap_mm
                     pairs.append(dict(neighbor_id=oid, port_sha256=None if port is None else self.cached_sha(port), gap_mm=gap, passed=not bad))

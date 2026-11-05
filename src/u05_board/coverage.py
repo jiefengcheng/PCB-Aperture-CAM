@@ -10,11 +10,25 @@ from src.stage_abi.scene import validate_scene,composed
 from src.junction_spindle_stage import CONTRACT,prepare_spindle_context
 from src.junction_spindle_blend import spindle_blend,check_spindle
 from .junctions import NativeSpindleAdapter
+from src import component_clearance as cc
 from src.stage_abi.loaded_geometry import GeometrySnapshot,GeometryMemo,SNAPSHOT_BYTES,MEMO_BYTES,MEMO_ENTRIES,SIGNATURE_ENTRIES,budget
 from src.stage_abi.spatial_queries import SpatialQueries
 
 EPS=CONTRACT.area_epsilon_mm2
 VISIBLE=CONTRACT.minimum_visible_addition_mm2
+
+def addition_source_id(decision):
+    # Distinct route obligations may share immutable geometry on one owner.
+    if cc.ACTIVE is None:return 't05-addition:'+decision['patch_ref']['sha256']
+    return 't05-addition:'+digest(canonical([decision['source_id'],decision['patch_ref']]))
+
+def verify_assembled_output(snapshot,store,scene,expected_rows,output,after_ref):
+    # Rebuild the declared leaf operands in the scene's canonical order.
+    # A cached union of unions is not the scene composition contract.
+    after=snapshot.composed(store,dict(scene,objects=expected_rows))
+    if store.get(after_ref,kind='geometry')!=to_wkb(after):raise ValueError('U05_ATTACHMENT_AFTER_CHANGED')
+    if snapshot.composed(store,output).symmetric_difference(after).area>EPS:raise ValueError('U05_ATTACHMENT_ASSEMBLY_CHANGED')
+    return after
 
 def loaded_execution(fn):
     @wraps(fn)
@@ -46,6 +60,12 @@ class CoverageAdapter(NativeSpindleAdapter):
                 self._ids=sorted(sid for sid in s.current if s.objects[sid]['kind']!='trace')
                 self._spatial=SpatialQueries({sid:s.current[sid] for sid in self._ids},context=key[1],versions={sid:s.objects[sid]['geometry_ref']['sha256'] for sid in self._ids})
                 self._before=s.retain_derived(unary_union([s.current[sid] for sid in self._ids]))
+                if cc.ACTIVE is not None:
+                    cc.ACTIVE.register_scene(store,scene)
+                    self._copper_owners={o:s.retain_derived(g)for o,g in cc.ACTIVE.project({sid:s.current[sid]for sid in self._ids}).items()}
+                    self._surface_owners={}
+                    for o,g in self._copper_owners.items():
+                        for part in cc.surfaces(g):self._surface_owners[digest(to_wkb(part))]=o
             except BaseException:
                 self.close();raise
         return self._hot
@@ -54,7 +74,7 @@ class CoverageAdapter(NativeSpindleAdapter):
         if self._geometry is not None:self._geometry.close();self._geometry=None
         if getattr(self,'_spatial',None) is not None:self._spatial.close()
         if self._snapshot is not None:self._snapshot.close();self._snapshot=None
-        for field in ('_hot','_hot_key','_ids','_spatial','_before'):
+        for field in ('_hot','_hot_key','_ids','_spatial','_before','_copper_owners','_surface_owners'):
             self.__dict__.pop(field,None)
     def _scope_binding(self):
         return digest(canonical([to_wkb(self.write).hex(),{k:to_wkb(v).hex() for k,v in sorted(self.exceptions.items())}]))
@@ -75,8 +95,23 @@ class CoverageAdapter(NativeSpindleAdapter):
     def _difference(self,a,b):return a.difference(b) if self._geometry is None else self._geometry.difference(a,b)
     def _difference_empty(self,a,b):return a.difference(b).is_empty if self._geometry is None else self._geometry.difference_empty(a,b)
     def _buffer(self,g,r):return g.buffer(r,quad_segs=64) if self._geometry is None else self._geometry.buffer(g,r,quad_segs=64)
-    def _blend(self,owner,radius,domain):return spindle_blend(owner,radius,domain,geometry=self._geometry)
-    def _check(self,owner,candidate,addition,window,foreign):return check_spindle(owner,candidate,addition,window,foreign,gap=CONTRACT.construction_gap_mm,geometry=self._geometry)
+    def _blend(self,owner,radius,domain):
+        candidate,addition=spindle_blend(owner,radius,domain,geometry=self._geometry)
+        if cc.ACTIVE is not None:
+            from shapely.geometry import Polygon
+            own=self._surface_owners[digest(to_wkb(owner))]
+            source_void=unary_union([Polygon(r)for g in cc.surfaces(cc.ACTIVE.cores[own])for r in g.interiors])
+            addition=addition.difference(source_void);candidate=owner.union(addition)
+        return candidate,addition
+    def owner_for_route(self,sid):return cc.ACTIVE.owner(sid,self._hot[2][sid])
+    def _foreign_for(self,owner,foreign):
+        if cc.ACTIVE is None:return foreign
+        own=self._surface_owners[digest(to_wkb(owner))];out=[]
+        for sid,g in foreign:
+            other=sid[6:]if sid.startswith('owner:')else (cc.ACTIVE.ids.get(sid)or[None])[0]
+            if other!=own:out.append((sid,g))
+        return out
+    def _check(self,owner,candidate,addition,window,foreign):return check_spindle(owner,candidate,addition,window,self._foreign_for(owner,foreign),gap=CONTRACT.construction_gap_mm,geometry=self._geometry)
     def plan(self,store,scene,policy,selection,bounds):
         from .junctions import parameters
         if policy!={'stage':'t05','parameters':parameters()} or set(selection)!={'stage','scene_ref','source_ids'} or selection['stage']!='t05' or set(bounds)!={'max_source_objects','max_targets','max_evaluations','max_output_bytes','max_seconds'} or any(type(v) is not int or v<=0 for v in bounds.values()) or len(scene['objects'])>bounds['max_source_objects']:raise ValueError('U05_ATTACHMENT_POLICY_OR_BOUNDS_INVALID')
@@ -100,6 +135,14 @@ class CoverageAdapter(NativeSpindleAdapter):
         for lid in row['land_ids']:
             if original[sid].intersection(original[lid]).area<=EPS or current[sid].intersection(current[lid]).area<=EPS:raise ValueError('U05_ATTACHMENT_SOURCE_CONTACT_CHANGED')
         owner,radius,domain=prepare_spindle_context(current[sid],[current[l] for l in row['land_ids']],crop)
+        if cc.ACTIVE is not None:
+            own=self.owner_for_route(sid);whole=self._copper_owners[own]
+            pieces=[g for g in cc.surfaces(whole)if g.intersection(current[sid]).area>EPS]
+            if len(pieces)!=1:raise ValueError('QUALIFIED_ROUTE_OWNER_NOT_ONE_FILLED_SURFACE')
+            owner=pieces[0];self._surface_owners[digest(to_wkb(owner))]=own
+            query=domain.buffer(CONTRACT.barrier_gap_mm)
+            foreign=[('owner:'+o,g)for o,g in self._copper_owners.items()if o!=own and g.intersects(query)]
+            return owner,radius,domain,foreign
         allowed={sid,*row['land_ids'],*objects[sid]['metadata']['reference_source_ids']}
         for lid in row['land_ids']:
             allowed.update(objects[lid]['metadata']['alias_source_ids'])
@@ -124,7 +167,7 @@ class CoverageAdapter(NativeSpindleAdapter):
             if not row['land_ids']:d.update(reason='NO_DECLARED_SOURCE_CONTACT',attachment_outcomes=[]);decisions.append(d);continue
             owner,radius,domain,foreign=self._operands(store,scene,policy,plan['details'],row);desired=self._blend(owner,radius,domain)[1].difference(before);needs=self.needs(current,row,radius,desired)
             if not any(a['needed'] for a in needs):d.update(reason='PREDECESSOR_ALREADY_SATISFIES',attachment_outcomes=self.outcomes(needs,Polygon(),row));decisions.append(d);continue
-            all_foreign=foreign+[(a['id'],a['addition']) for a in accepted];barriers=unary_union([self._buffer(g,CONTRACT.barrier_gap_mm) for _,g in all_foreign if not self._difference_empty(g,owner)]);scope=self.scope(row)
+            all_foreign=self._foreign_for(owner,foreign+[(a['id'],a['addition']) for a in accepted]);barriers=unary_union([self._buffer(g,CONTRACT.barrier_gap_mm) for _,g in all_foreign if not self._difference_empty(g,owner)]);scope=self.scope(row)
             for scale in CONTRACT.radius_scales:
                 used+=1
                 if used>bounds['max_evaluations']:raise ValueError('U05_ATTACHMENT_EVALUATION_BUDGET')
@@ -146,7 +189,8 @@ class CoverageAdapter(NativeSpindleAdapter):
             checks.append(dict(id=a['id'],check=q))
         after=before.union(unary_union([a['addition'] for a in accepted]));output=dict(scene,objects=list(scene['objects']),lineage=scene['lineage']+[dict(stage='t05',predecessor_ref=plan['scene_ref'],policy_ref=plan['policy_ref'],implementation=plan['implementation'],plan_ref=store.put_json('plan',plan))],acceptance=dict(owner='PENDING_USER',independent='NOT_RUN',native_electrical_manufacturing='NOT_ESTABLISHED'))
         for d in decisions:
-            if d['status']=='GROWN':output['objects'].append(dict(source_id='t05-addition:'+d['patch_ref']['sha256'],kind='junction_addition',geometry_ref=d['patch_ref'],original_ref=d['patch_ref'],metadata=dict(origin='t05-derived-addition',owner_trace=d['source_id'],predecessor_ref=plan['scene_ref'])))
+            if d['status']=='GROWN':output['objects'].append(dict(source_id=addition_source_id(d),kind='junction_addition',geometry_ref=d['patch_ref'],original_ref=d['patch_ref'],metadata=dict(origin='t05-derived-addition',owner_trace=d['source_id'],predecessor_ref=plan['scene_ref'])))
+        if cc.ACTIVE is not None:after=self._snapshot.composed(store,output)
         return dict(status='CONSTRUCTED',before_ref=store.put('geometry',to_wkb(before)),after_ref=store.put('geometry',to_wkb(after)),output_scene_ref=store.put_json('scene',output),decisions=decisions,checks=checks,protected_source_refs={s:r['geometry_ref'] for s,r in objects.items()},evaluations=used,coverage=dict(targets=len(decisions),grown=len(accepted),attachment_outcomes=sum(len(d['attachment_outcomes']) for d in decisions)))
     @loaded_execution
     def verify(self,store,scene,policy,plan,candidate,proof_scope,checkpoint):
@@ -162,7 +206,7 @@ class CoverageAdapter(NativeSpindleAdapter):
             owner,radius,domain,foreign=self._operands(store,scene,policy,plan['details'],row);desired=self._blend(owner,radius,domain)[1].difference(before);needs=self.needs(current,row,radius,desired)
             if d['status']=='GROWN':
                 if d['scale'] not in CONTRACT.radius_scales:raise ValueError('U05_ATTACHMENT_SCALE_CHANGED')
-                barriers=unary_union([self._buffer(g,CONTRACT.barrier_gap_mm) for _,g in foreign+[(a['id'],a['addition']) for a in patches] if not self._difference_empty(g,owner)]);expected=self._blend(owner,radius*d['scale'],domain)[1].difference(barriers)
+                barriers=unary_union([self._buffer(g,CONTRACT.barrier_gap_mm) for _,g in self._foreign_for(owner,foreign+[(a['id'],a['addition']) for a in patches]) if not self._difference_empty(g,owner)]);expected=self._blend(owner,radius*d['scale'],domain)[1].difference(barriers)
                 if store.get(d['patch_ref'],kind='geometry')!=to_wkb(expected):raise ValueError('U05_ATTACHMENT_DIRECT_PATCH_REPLAY_FAILED')
                 physical=expected.difference(before)
                 if physical.difference(self.scope(row)).area>EPS:raise ValueError('U05_ATTACHMENT_WRITE_BOUNDARY')
@@ -177,11 +221,12 @@ class CoverageAdapter(NativeSpindleAdapter):
             q=self._check(a['owner'],a['owner'].union(a['addition']),a['addition'],a['window'],a['foreign']+[(b['id'],b['addition']) for b in patches if b['id']!=a['id']])
             if not q['passed']:raise ValueError('U05_ATTACHMENT_FINAL_GEOMETRY_FAILED')
         after=before.union(unary_union([a['addition'] for a in patches]))
-        if store.get(candidate['after_ref'],kind='geometry')!=to_wkb(after):raise ValueError('U05_ATTACHMENT_AFTER_CHANGED')
+        if cc.ACTIVE is None and store.get(candidate['after_ref'],kind='geometry')!=to_wkb(after):raise ValueError('U05_ATTACHMENT_AFTER_CHANGED')
         output=validate_scene(store,candidate['output_scene_ref']);expected_rows=list(scene['objects'])
         for d in candidate['decisions']:
-            if d['status']=='GROWN':expected_rows.append(dict(source_id='t05-addition:'+d['patch_ref']['sha256'],kind='junction_addition',geometry_ref=d['patch_ref'],original_ref=d['patch_ref'],metadata=dict(origin='t05-derived-addition',owner_trace=d['source_id'],predecessor_ref=plan['scene_ref'])))
+            if d['status']=='GROWN':expected_rows.append(dict(source_id=addition_source_id(d),kind='junction_addition',geometry_ref=d['patch_ref'],original_ref=d['patch_ref'],metadata=dict(origin='t05-derived-addition',owner_trace=d['source_id'],predecessor_ref=plan['scene_ref'])))
         expected_lineage=scene['lineage']+[dict(stage='t05',predecessor_ref=plan['scene_ref'],policy_ref=plan['policy_ref'],implementation=plan['implementation'],plan_ref=store.put_json('plan',plan))]
         if output['objects']!=expected_rows or output['lineage']!=expected_lineage or any(output[k]!=scene[k] for k in ('source_sha256','frame','units','layer','viewport_mm','findings')):raise ValueError('U05_ATTACHMENT_OUTPUT_BINDING_CHANGED')
-        if self._snapshot.composed(store,output).symmetric_difference(after).area>EPS:raise ValueError('U05_ATTACHMENT_ASSEMBLY_CHANGED')
+        if cc.ACTIVE is not None:after=verify_assembled_output(self._snapshot,store,scene,expected_rows,output,candidate['after_ref'])
+        elif self._snapshot.composed(store,output).symmetric_difference(after).area>EPS:raise ValueError('U05_ATTACHMENT_ASSEMBLY_CHANGED')
         return dict(passed=True,failures=[],reconstructed_patches=len(patches),removed_area_mm2=before.difference(after).area,verified_attachments=sum(len(d['attachment_outcomes']) for d in candidate['decisions']))

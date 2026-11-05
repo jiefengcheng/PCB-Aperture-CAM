@@ -8,6 +8,8 @@ class ReadOnlyStore(ArtifactStore):
     def __init__(self,root):
         self.root=Path(root)
         if not self.root.is_dir() or self.root.is_symlink():raise ValueError('U05_RETAINED_STORE_REQUIRED')
+        # Immutable pathname preparation only; filesystem state is never cached.
+        self._artifact_path=(self.root,str(self.root/'artifacts')+os.sep)
     def put(self,*a,**k):raise ValueError('U05_PREDECESSOR_WRITE_FORBIDDEN')
     def get(self,reference,*,kind=None):
         validate_ref(reference,'artifact_ref');aid=reference['artifact_id'];parts=aid.split(':',1)
@@ -15,7 +17,10 @@ class ReadOnlyStore(ArtifactStore):
         # One atomic no-follow open replaces separate symlink/stat/open walks.
         # Bytes are never cached: every access still reads and SHA-256 checks.
         try:
-            fd=os.open(self.root/'artifacts'/aid,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+            root=self.root;prepared_root,prefix=self._artifact_path
+            if root is not prepared_root:
+                prefix=str(root/'artifacts')+os.sep;self._artifact_path=(root,prefix)
+            fd=os.open(prefix+aid,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
             with os.fdopen(fd,'rb') as stream:
                 if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):raise StageABIError('ARTIFACT_MISSING_OR_UNSAFE',aid)
                 body=stream.read()

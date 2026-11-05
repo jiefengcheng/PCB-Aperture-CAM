@@ -56,6 +56,6 @@ def test_terminal_U05_follows_verified_U04_and_exports_real_spindles(tmp_path):
         for i,worker in enumerate(workers,1):
             output=path.parent/'evaluations'/f'{i}.stdout.json';value=json.loads(output.read_bytes())
             assert worker['exit_code']==0 and digest(output.read_bytes())==worker['stdout_sha256'] and value['pid']==worker['pid'] and value['proof']==json.loads(path.read_bytes())
-    exported=json.loads((job/'data_output/pcb_gerber_verify.json').read_bytes())['verification'];assert exported['actual_hard_gap_mm']==.02000 and exported['junction_parts']>0 and len(exported['protected_layers_equal'])==8
+    exported=json.loads((job/'data_output/pcb_gerber_verify.json').read_bytes())['verification'];assert exported['actual_hard_gap_mm']==.04000 and exported['junction_parts']>0 and len(exported['protected_layers_equal'])==8
     controls=json.loads((job/'data_output/pcb_export_controls.json').read_bytes());assert {r['name'] for r in controls['controls']}=={'units','role','protected_U04','missing_spindle'}
     assert all(r['status']=='PASS_EXPECTED_REJECTION' for r in controls['controls']) and result['owner']=='PENDING_USER'

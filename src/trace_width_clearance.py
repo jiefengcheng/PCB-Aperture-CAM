@@ -4,6 +4,7 @@ Visibility is computed against predecessor copper only. New candidates must neve
 hide one another's bridges. The input scene must include all source objects; its
 provenance/completeness is the responsibility of the source-bound caller.
 """
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 from dataclasses import dataclass,asdict
 import hashlib
 import math
@@ -15,9 +16,9 @@ from shapely.ops import unary_union
 @dataclass(frozen=True)
 class TraceWidthContract:
     version: str = 'trace-width-visible-surface/1'
-    hard_gap_mm: float = .02000
-    construction_gap_mm: float = .02010
-    original_port_buffer_gap_mm: float = .02002
+    hard_gap_mm: float = HARD_GAP_MM
+    construction_gap_mm: float = CONSTRUCTION_GAP_MM
+    original_port_buffer_gap_mm: float = CONTACT_BUFFER_MM
     comparison_epsilon_mm: float = 1e-12
     port_quad_segs: int = 128
 

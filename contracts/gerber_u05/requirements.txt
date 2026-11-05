@@ -1,0 +1,2 @@
+# Additive to the existing frozen requirements.lock.txt.
+matplotlib==3.10.9

@@ -1,6 +1,6 @@
 """Board-only grid normalization and legal axial cut-ins for filled polygons."""
 import math
-from shapely import set_precision,to_wkb
+from shapely import set_precision,to_wkb,get_coordinates
 from shapely.geometry import Polygon,LineString,Point
 from shapely.geometry.polygon import orient
 from src.stage_abi.store import digest
@@ -8,9 +8,21 @@ from .geometry import GRID_MM,POLYGON_TOLERANCE_MM,CIRCLE_TOLERANCE_MM
 from .crop_quantization import export_reference as crop_reference
 
 
+def file_grid(shape):
+    # Reconstructed Gerber contours lose the GEOS precision tag. Running the
+    # topology reducer again can delete an otherwise valid minimum-grid triangle.
+    # Exact file-grid vertices need no rounding or topological reduction.
+    coords=get_coordinates(shape)
+    exact=(not shape.is_empty and shape.is_valid and
+        shape.geom_type in ('Polygon','MultiPolygon') and
+        all(math.isfinite(float(v)) and float(v)==round(float(v),6)
+            for row in coords for v in row))
+    return set_precision(shape,GRID_MM,mode='pointwise' if exact else 'valid_output')
+
+
 def quantize(shape):
     if shape.geom_type not in('Polygon','MultiPolygon')or shape.is_empty or not shape.is_valid:raise ValueError('UNSUPPORTED_TARGET_POLYGON')
-    q=set_precision(shape,GRID_MM,mode='valid_output')
+    q=file_grid(shape)
     if q.geom_type=='MultiPolygon'and len(q.geoms)==1:q=q.geoms[0]
     if q.geom_type!='Polygon'or q.is_empty or not q.is_valid:raise ValueError('BOARD_FILE_GRID_MULTIPART_NOT_SUPPORTED')
     area=shape.symmetric_difference(q).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
@@ -27,9 +39,10 @@ def export_reference(shape):
 
 def fidelity(reference,actual,*,native_circle=False):
     if actual.is_empty or not actual.is_valid:raise ValueError('REOPENED_GEOMETRY_INVALID')
-    expected=reference if native_circle else quantize(reference)[0];observed=actual if native_circle else set_precision(actual,GRID_MM,mode='valid_output');tol=CIRCLE_TOLERANCE_MM if native_circle else POLYGON_TOLERANCE_MM
+    expected=reference if native_circle else quantize(reference)[0];observed=actual if native_circle else file_grid(actual);tol=CIRCLE_TOLERANCE_MM if native_circle else POLYGON_TOLERANCE_MM
+    if expected.is_empty or observed.is_empty or not expected.is_valid or not observed.is_valid:raise ValueError('FILE_GRID_COMPARISON_GEOMETRY_INVALID')
     distance=expected.hausdorff_distance(observed);area=expected.symmetric_difference(observed).area;bound=2*expected.length*tol+math.pi*tol**2
-    result=dict(passed=distance<=tol and area<=bound,comparison='native analytic circle vs bounded source approximation'if native_circle else'file-grid verified contour, including preserved holes',hausdorff_mm=distance,symmetric_difference_mm2=area,tolerance_mm=tol,area_bound_mm2=bound)
+    result=dict(passed=all(math.isfinite(v) for v in (distance,area,bound)) and distance<=tol and area<=bound,comparison='native analytic circle vs bounded source approximation'if native_circle else'file-grid verified contour, including preserved holes',hausdorff_mm=distance,symmetric_difference_mm2=area,tolerance_mm=tol,area_bound_mm2=bound)
     if not result['passed']:raise ValueError('CONTOUR_FIDELITY_FAILED:'+str(result))
     return result
 

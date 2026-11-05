@@ -3,11 +3,15 @@
 Unlike a trace-width-capped taper, closing fills concave circle/trace shoulders.
 It never changes source operands or invents an attachment between separate owners.
 """
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 import math
 from shapely.geometry import box
 
 
 def spindle_blend(owner, radius, window, *, geometry=None):
+    if geometry is None:
+        from src.stage_abi.preparation import geometry_memo
+        geometry=geometry_memo()
     if not math.isfinite(radius) or radius<=0:raise ValueError('POSITIVE_BLEND_RADIUS_REQUIRED')
     if owner.is_empty or not owner.is_valid or owner.geom_type!='Polygon':
         raise ValueError('ONE_CONNECTED_QUALIFIED_OWNER_REQUIRED')
@@ -22,7 +26,10 @@ def spindle_blend(owner, radius, window, *, geometry=None):
     return geometry.union(owner,addition),addition
 
 
-def check_spindle(owner, candidate, addition, window, foreign, gap=.0201, *, geometry=None):
+def check_spindle(owner, candidate, addition, window, foreign, gap=CONSTRUCTION_GAP_MM, *, geometry=None):
+    if geometry is None:
+        from src.stage_abi.preparation import geometry_memo
+        geometry=geometry_memo()
     failures=[];pairs=[]
     difference=(lambda a,b:a.difference(b)) if geometry is None else geometry.difference
     union=(lambda a,b:a.union(b)) if geometry is None else geometry.union

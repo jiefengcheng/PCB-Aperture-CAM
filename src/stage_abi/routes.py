@@ -3,6 +3,7 @@
 A versioned polyline/miter family, not an alias for the historical fixed-width
 C2 launcher. Native curved families must be separately admitted, never coerced.
 """
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 import hashlib,math
 from pathlib import Path
 from shapely import to_wkb
@@ -17,7 +18,7 @@ from .runtime import Budget,bounds_check,operands,output_scene,check_output
 from .derived_routes import route_authorities
 
 
-def route_parameters():return dict(family='bounded-parallel-polyline-miter/1',construction_gap_mm=.02010,hard_gap_mm=.02000,epsilon_mm=1e-12,quad_segs=128,max_source_quad_segs=512,miter_limit=4.,displacement_multipliers=[1.,1.5,2.,4.])
+def route_parameters():return dict(family='bounded-parallel-polyline-miter/1',construction_gap_mm=CONSTRUCTION_GAP_MM,hard_gap_mm=HARD_GAP_MM,epsilon_mm=1e-12,quad_segs=128,max_source_quad_segs=512,miter_limit=4.,displacement_multipliers=[1.,1.5,2.,4.])
 EXTRA={'max_displacement_um','max_members','max_extension_um','max_extension_steps','max_recursion_depth'}
 
 class RouteAdapter:
@@ -57,7 +58,7 @@ class RouteAdapter:
   if not set(obstacles)<=set(rows) or any(rows[s]['kind']=='trace' for s in obstacles):fail('FIXED_OBSTACLE_REQUIRED','primary obstacles')
   if selection['objective']=='growth-clearance' and all(current[s].equals(original[s]) for s in [*seed,*obstacles]):fail('NO_GROWTH_CAUSED_OBJECTIVE','unchanged inherited relationships need explicit authority')
   for sid in member_ids:
-   width=rows[sid]['metadata']['nominal_width_mm'];p=rows[sid]['metadata']['route_points_mm'];ports=Point(p[0]).buffer(width+.02002).union(Point(p[-1]).buffer(width+.02002))
+   width=rows[sid]['metadata']['nominal_width_mm'];p=rows[sid]['metadata']['route_points_mm'];ports=Point(p[0]).buffer(width+CONTACT_BUFFER_MM).union(Point(p[-1]).buffer(width+CONTACT_BUFFER_MM))
    for other,g in current.items():
     if other==sid or rows[other]['kind']!='trace':continue
     contact=current[sid].intersection(g)
@@ -67,7 +68,7 @@ class RouteAdapter:
   q=journalled('route-candidate-check',dict(paths=paths,moving=sorted(moving),require_objective=require_objective),lambda:self._check_impl(store,scene,details,paths,moving,require_objective=require_objective)[0])
   return q,None
  def _check_impl(self,store,scene,details,paths,moving,*,require_objective=True):
-  rows,current,original=operands(store,scene);updated=dict(current);failures=[];pairs=[];corridor=geometry(store,details['corridor_ref']);gap=.0201;epsilon=1e-12
+  rows,current,original=operands(store,scene);updated=dict(current);failures=[];pairs=[];corridor=geometry(store,details['corridor_ref']);gap=CONSTRUCTION_GAP_MM;epsilon=1e-12
   for sid in moving:
    p=paths[sid];old=rows[sid]['metadata']['route_points_mm'];width=rows[sid]['metadata']['nominal_width_mm']
    if p[0]!=old[0] or p[-1]!=old[-1]:failures.append(dict(source_id=sid,reason='CUT_PORT_CHANGED'))
@@ -78,17 +79,17 @@ class RouteAdapter:
    candidate=updated[sid];old=current[sid];added=candidate.difference(old)
    for other in sorted(updated):
     if other==sid:continue
-    g=updated[other];contact=original[sid].intersection(original[other]);d0=old.distance(current[other]);d=candidate.distance(g);port=None if contact.is_empty else contact.buffer(rows[sid]['metadata']['nominal_width_mm']+.02002,quad_segs=128);exposed=added if port is None else added.difference(port);dg=None if exposed.is_empty else exposed.distance(g);reasons=[]
+    g=updated[other];contact=original[sid].intersection(original[other]);d0=old.distance(current[other]);d=candidate.distance(g);port=None if contact.is_empty else contact.buffer(rows[sid]['metadata']['nominal_width_mm']+CONTACT_BUFFER_MM,quad_segs=128);exposed=added if port is None else added.difference(port);dg=None if exposed.is_empty else exposed.distance(g);reasons=[]
     if not contact.is_empty and candidate.intersection(g).is_empty:reasons.append('REQUIRED_ATTACHMENT_LOST')
     if contact.is_empty and candidate.intersects(g) and not old.intersects(current[other]):reasons.append('NEW_COPPER_CONTACT')
-    if contact.is_empty and ((d0>=.02 and d+epsilon<.02) or (d0<.02 and d+epsilon<d0)):reasons.append('CLEARANCE_WORSENED')
+    if contact.is_empty and ((d0>=HARD_GAP_MM and d+epsilon<HARD_GAP_MM) or (d0<HARD_GAP_MM and d+epsilon<d0)):reasons.append('CLEARANCE_WORSENED')
     if dg is not None and dg+epsilon<gap:reasons.append('ADDED_ROUTE_COPPER_BELOW_GAP')
     if other in details['obstacle_ids'] and require_objective and d+epsilon<gap:reasons.append('OBJECTIVE_NOT_MET')
     if reasons:failures.append(dict(source_id=sid,neighbor_id=other,reasons=reasons))
     pairs.append(dict(source_id=sid,neighbor_id=other,gap_mm=d,added_gap_mm=dg,failures=reasons))
   return dict(passed=not failures,failures=failures,pairs=pairs),updated
  def _candidates(self,details,rows,current):
-  gap=.0201;seed=details['seed_ids'];obstacles=details['obstacle_ids'];sid,oid=min(((s,o) for s in seed for o in obstacles),key=lambda pair:current[pair[0]].distance(current[pair[1]]));a,b=nearest_points(current[sid],current[oid]);dx,dy=a.x-b.x,a.y-b.y
+  gap=CONSTRUCTION_GAP_MM;seed=details['seed_ids'];obstacles=details['obstacle_ids'];sid,oid=min(((s,o) for s in seed for o in obstacles),key=lambda pair:current[pair[0]].distance(current[pair[1]]));a,b=nearest_points(current[sid],current[oid]);dx,dy=a.x-b.x,a.y-b.y
   if math.hypot(dx,dy)<1e-15:dx,dy=current[sid].centroid.x-current[oid].centroid.x,current[sid].centroid.y-current[oid].centroid.y
   length=math.hypot(dx,dy)
   if length<1e-15:fail('DISPLACEMENT_DIRECTION_UNRESOLVED','coincident obstacle/route')
@@ -102,7 +103,7 @@ class RouteAdapter:
     if d<=bounds['max_displacement_um']/1000:yield dict(initial_indices=[start,end],expanded_indices=[i,j],extension_mm=extension_distance(reference,[start,end],[i,j]),vector=vector,distance_mm=d)
  def run(self,store,scene,policy,plan,checkpoint):
   details=plan['details'];rows,current,_=self._context(store,scene,policy,details);budget=Budget(details['bounds']);members={m['source_id']:m['offset_mm'] for m in details['bundle']['members']};attempts=[];chosen=None;chosen_paths={};chosen_moving=[]
-  already=all(current[s].distance(current[o])>=.0201 for s in details['seed_ids'] for o in details['obstacle_ids'])
+  already=all(current[s].distance(current[o])>=CONSTRUCTION_GAP_MM for s in details['seed_ids'] for o in details['obstacle_ids'])
   if not already:
    for spec in self._candidates(details,rows,current):
     try:reference=displaced_reference(details['bundle']['reference_points_mm'],*spec['expanded_indices'],spec['vector'],spec['distance_mm'])
@@ -137,7 +138,7 @@ class RouteAdapter:
     g=route_copper(paths[sid],rows[sid]['metadata']['nominal_width_mm'],quad_segs=rows[sid]['metadata'].get('route_quad_segs',128));replacements[sid]=store.put('geometry',to_wkb(g));metadata[sid]=dict(rows[sid]['metadata'],route_points_mm=paths[sid],route_family=route_parameters()['family'])
    for sid,p in paths.items():proof.append(dict(source_id=sid,offset_mm=offsets[sid],reference='ONE_SHARED_DISPLACED_REFERENCE',proof='Analytic constant normal offsets on every segment with common bounded miter joins; full finite copper checked, not sampled alignment'))
   else:
-   met=all(current[s].distance(current[o])>=.0201 for s in details['seed_ids'] for o in details['obstacle_ids'])
+   met=all(current[s].distance(current[o])>=CONSTRUCTION_GAP_MM for s in details['seed_ids'] for o in details['obstacle_ids'])
    if not met:q=dict(passed=False,failures=[dict(reason='NO_IMPROVEMENT_OBJECTIVE_UNRESOLVED')],pairs=[])
   if replacements!=candidate['replacement_refs'] or candidate['protected_source_refs']!={s:r['geometry_ref'] for s,r in rows.items() if s not in replacements}:fail('ROUTE_RECONSTRUCTION_MISMATCH','selected replacement/fixed partitions')
   if candidate['objective_satisfied']!=q['passed']:fail('OBJECTIVE_CLAIM_MISMATCH','candidate status')

@@ -2,6 +2,7 @@
 from shapely import from_wkb
 from src.stage_abi.scene import composed,validate_scene
 from src.stage_abi.store import digest,canonical
+from src.stage_abi.preparation import decode_geometry as from_wkb
 
 
 def materialize(store,width,candidate,grouped_ref):

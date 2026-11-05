@@ -16,6 +16,9 @@ from src.u03_board.export import U03DataService
 from src.u03_board.selection import retain_paths
 
 
+from src.stage_abi.preparation import native_operation
+
+@native_operation
 def execute(session,request,registry=None,registry_sha256=None):
     if set(request)!={'abi_version','request_id','operation'} or request['abi_version']!='pcb-u03-board/1':raise ValueError('U03_REQUEST_INVALID')
     op=request['operation']

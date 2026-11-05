@@ -53,7 +53,7 @@ class AttachmentDiagnosticTests(unittest.TestCase):
         self.assertTrue(q['passed'])
         r=q['pairs'][-1]
         self.assertEqual(r['protected_visible_circle_new_coverage_mm2'],0.)
-        self.assertGreater(r['checked_exposed_to_visible_circle_gap_mm'],.02010)
+        self.assertGreater(r['checked_exposed_to_visible_circle_gap_mm'],.04010)
 
     def test_circle_cap_cannot_swallow_exposed_round_surface(self):
         b,c,n=self.circle();q=self.check(b,c,n,(1.25,1.25))
@@ -87,7 +87,10 @@ class AttachmentDiagnosticTests(unittest.TestCase):
 
     def test_overlapping_feed_needs_no_fictitious_shared_endpoint(self):
         b,c,n=self.feed();q=self.check(b,c,n)
-        self.assertTrue(q['passed'])
+        # Original overlap still binds, but this 20 um-era case is too tight
+        # for the owner-authorized 40 um production policy.
+        self.assertFalse(q['passed'])
+        self.assertTrue(q['failures'])
         self.assertGreater(q['pairs'][-1]['original_feed_obstacle_overlap_mm2'],0.)
         self.assertTrue(q['pairs'][-1]['original_raw_gap_filled_by_feed'])
 

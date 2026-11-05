@@ -15,6 +15,9 @@ class U02DataService(BoardDataService):
     def predecessor_root(self,host):return export_root(host)
 
 
+from src.stage_abi.preparation import native_operation
+
+@native_operation
 def execute(session,request,registry=None,registry_sha256=None):
     if set(request)!={'abi_version','request_id','operation'} or request['abi_version']!='pcb-u02-board/1':raise ValueError('U02_REQUEST_INVALID')
     op=request['operation']

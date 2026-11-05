@@ -3,10 +3,11 @@
 No routes move. A member's radius increases by (factor-1)*original_width/2.
 This bound is preparation, not a substitute for complete finite-copper checking.
 """
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 import math
 
 
-def shared_scale_bound(widths, constraints, *, minimum_gap_mm=.02010, ceiling=1.5):
+def shared_scale_bound(widths, constraints, *, minimum_gap_mm=CONSTRUCTION_GAP_MM, ceiling=1.5):
     if not widths or not math.isfinite(minimum_gap_mm) or minimum_gap_mm<=0 or ceiling!=1.5:
         raise ValueError('INVALID_WIDTH_CONTRACT')
     if any(not math.isfinite(w) or w<=0 for w in widths.values()):

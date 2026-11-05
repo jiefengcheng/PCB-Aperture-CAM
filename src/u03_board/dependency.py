@@ -140,6 +140,10 @@ class DependencyWidthScene(IncrementalWidthScene):
         self.limits.setflags(write=False);self.base_bounds.setflags(write=False)
 
     def check(self,traces,*,materialize_scene=False,fail_fast=False):
+        from src import component_clearance
+        if component_clearance.ACTIVE is not None:
+            from src.prepared_width_scene import PreparedWidthScene
+            return PreparedWidthScene.check(self,traces,materialize_scene=materialize_scene,fail_fast=fail_fast)
         if self.contract!=self.bound_contract:raise ValueError('U03_DEPENDENCY_POLICY_CHANGED')
         if materialize_scene or not fail_fast:
             # Full closure still executes the untouched PreparedWidthScene path.

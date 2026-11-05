@@ -34,6 +34,7 @@ def test_actual_nested_radii_reproduce_old_undefined_facing_guard():
 def test_compilation_expresses_exception_without_changing_numeric_clearance():
     p=compile_policy(english(),dict(artifact_id='t01-binding:'+'a'*64,sha256='a'*64))
     assert len(p['clause_trace'])==16 and 'strictly nested' in p['clause_trace'][8]['english']
+    assert 'complete visible-copper guard' in p['clause_trace'][14]['english']
     assert p['rules']['pair_interaction']['center_epsilon_mm']==1e-12
     assert p['settings']['hard_gap']==.020 and p['settings']['construction_gap']==.02002
     assert p['settings']['safety']==.00002
@@ -105,7 +106,7 @@ def test_allocation_reconstruction_rejects_unauthorized_directional_changes(tmp_
     details=adapter.plan(store,scene,policy,selection,bounds)
     groups=details['allocation']['groups']
     if mutation=='ordinary-disable':next(g for g in groups if set(g['site_ids'])=={'a','b'})['apply_square_bound']=False
-    else:next(g for g in groups if 'concentric_source_proof' in g)['concentric_source_proof']['outer_core_sha256']='0'*64
+    else:details['allocation']['containment']['inner']['source_geometry_sha256']='0'*64
     with pytest.raises(StageABIError,match='source-computed allocation'):
         adapter._compute(store,scene,policy,dict(details=details),None)
 

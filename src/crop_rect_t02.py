@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 from dataclasses import dataclass
 from typing import Any, Sequence
 from shapely import STRtree, wkb
@@ -131,8 +132,8 @@ def bind_source_dispositions(
 @dataclass(frozen=True)
 class RectGrowthPolicy:
     max_axis_factor: float = 1.25
-    construction_gap_mm: float = 0.02002
-    hard_gap_mm: float = 0.020
+    construction_gap_mm: float = LEGACY_CONSTRUCTION_MM
+    hard_gap_mm: float = HARD_GAP_MM
     geometry_tolerance_mm: float = 0.00001
     quad_segs: int = 128
     area_epsilon_mm2: float = 1e-10

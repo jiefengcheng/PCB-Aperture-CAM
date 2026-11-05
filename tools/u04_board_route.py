@@ -1,4 +1,5 @@
 """U04: fresh T01 prefix, T03 gates, native-width T04 gates and audited native export gates."""
+from src.clearance_policy import weakened_english
 import sys,uuid,subprocess
 from pathlib import Path
 from src.stage_abi.store import ArtifactStore,digest
@@ -48,8 +49,8 @@ class U04Route(ExportOnlyRoute):
         self.crop=read(self.session.parent/'job.json').get('crop')
         self.selection=for_root(self.session)
         if self.crop is not None:
-            from src.u03_board.crop_t01 import ImageCropAdapter
-            self.identity['board_implementation']=ImageCropAdapter().describe()['implementation']
+            from src.t01_board.adapter import BoardAdapter
+            self.identity['board_implementation']=BoardAdapter().describe()['implementation']
 
     def info(self):
         result=super().info()
@@ -119,7 +120,7 @@ class U04Route(ExportOnlyRoute):
                 selected_host=self._t01_host()
                 self.cap=selected_host.prepare(self.session);self.store=ArtifactStore(Path(self.cap['store_path']))
                 text=self.store.get(self.cap['english_ref'],kind='english-spec')
-                self.negative=self.store.put('english-spec',text.replace(b'hard gap 0.020 mm',b'hard gap 0.001 mm'))
+                self.negative=self.store.put('english-spec',weakened_english(text))
             elif op=='t01_compile':self.cap=self._t01_host().register(self.session,p['path']/'abi/stdout.json')
             elif op=='t01_plan':self.cap=self._t01_host().grant(self.session,p['path']/'abi/stdout.json')
             elif op==CHECK:
@@ -146,9 +147,8 @@ class U04Route(ExportOnlyRoute):
             raise
 
     def _t01_host(self):
-        if self.selection is None:return host
-        from tools import u03_crop_host
-        return u03_crop_host
+        # Same canonical complete-source T01 as U03; crop remains a view/T04 scope.
+        return host
 
     def _selection_files(self):
         return [self.session/n for n in ('U03_SELECTION.json','U03_CROP_INPUT.json','data_board/crop_location.json','data_board/crop_location_hypotheses.json','data_board/crop_verified.json','data_board/crop_landmark_witness.json','data_board/crop_mask.npy')] if self.selection is not None else []

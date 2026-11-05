@@ -23,18 +23,22 @@ class Launcher:
         except BlockingIOError:
             self.lock.close();raise ValueError('NATIVE_LAUNCHER_ALREADY_RUNNING')
         self.id='launcher-'+uuid.uuid4().hex;self.children={};self.intakes={}
+        from tools.u05_app import Continuations
+        self.u05=Continuations(ROOT,self.registry,self.id)
         for name in ('inbox','replies','calls'):(self.registry/name).mkdir(exist_ok=True)
         self.heartbeat('READY')
     def heartbeat(self,status):
-        jobs.replace(self.registry/'current.json',dict(schema='pcb-native-launcher/1',launcher_id=self.id,status=status,updated_at=time.time(),network=False,directory_intake='native-directory/1',u02_board='native-u02/1',u03_board='native-u03/1',u03_crops='native-u03-crops/1',u04_board='native-u04/1'))
+        jobs.replace(self.registry/'current.json',dict(schema='pcb-native-launcher/1',launcher_id=self.id,status=status,updated_at=time.time(),network=False,directory_intake='native-directory/1',u02_board='native-u02/1',u03_board='native-u03/1',u03_crops='native-u03-crops/1',u04_board='native-u04/1',u05_board='native-u05/1'))
     def process(self,path):
         from tools.t01_route_client import safe_id
         rid=safe_id(path.stem);call=self.registry/'calls'/rid
         try:call.mkdir()
         except FileExistsError:return
-        job=None
+        job=None;request={}
         try:
             request=decode(path.read_bytes());publish(call/'request.json',encode(request))
+            if request.get('action')=='u05_continuation':
+                self.u05.start(rid,call,request);return
             if request.get('action') in ('directory_intake','u02_directory_intake','u03_directory_intake','u04_directory_intake'):
                 allowed={'action','launcher_id','input_directory','companion_policy'}
                 if request['action'] in ('u03_directory_intake','u04_directory_intake') and 'crop' in request:
@@ -78,9 +82,15 @@ class Launcher:
             result=dict(status='LAUNCHED',launcher_id=self.id,job=str(job))
         except Exception as e:
             result=dict(status='HALTED',error=str(e),launcher_id=self.id)
+            if request.get('action')=='u05_continuation':
+                result.update(request_id=rid,request_sha256=jobs.digest((call/'request.json').read_bytes()))
+                for name in ('stdout','stderr'):
+                    if not(call/name).exists():publish(call/name,b'')
+                    result[name+'_sha256']=jobs.digest((call/name).read_bytes())
         publish(call/'response.json',encode(result));publish(self.registry/'replies'/(rid+'.json'),encode(result))
     def tick(self):
         self.heartbeat('READY')
+        self.u05.tick()
         for path in sorted((self.registry/'inbox').glob('*.json')):
             # Completed calls are retained and never replayed.
             if not (self.registry/'calls'/path.stem).exists():self.process(path)
@@ -98,6 +108,7 @@ class Launcher:
                 del self.intakes[rid]
     def close(self):
         self.heartbeat('STOPPED')
+        self.u05.close()
         for process in self.intakes.values():
             if process.poll()is None:process.terminate();process.wait(timeout=10)
         for name in self.children:

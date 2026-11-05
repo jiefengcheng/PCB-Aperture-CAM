@@ -9,6 +9,7 @@ from shapely import STRtree
 from shapely.ops import unary_union
 from .prepared_width_scene import PreparedWidthScene
 from .trace_width_clearance import TraceWidthContract,sha
+from src.stage_abi.preparation import prepared_tree as STRtree
 
 
 class PreparedLandScene(PreparedWidthScene):

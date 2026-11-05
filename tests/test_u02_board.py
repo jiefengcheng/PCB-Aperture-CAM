@@ -18,7 +18,7 @@ def test_same_t01_clearance_and_no_later_stage_or_renderer():
     from src.pcb_data_abi.board_custody import ROI,T01,CHECK,FILES
     assert PREFIX==(*ROI,*T01,CHECK) and STEPS==(*PREFIX,*T03,*FILES)
     assert len(STEPS)==25 and len(set(STEPS))==25 and U02Operator.steps==STEPS
-    assert POLICY['hard_gap_mm']==.020 and POLICY['area_epsilon_mm2']==1e-10
+    assert POLICY['hard_gap_mm']==.040 and POLICY['area_epsilon_mm2']==1e-10
     assert not any(s.startswith(('t02_','t04_','t05_','render_')) for s in STEPS)
 
 

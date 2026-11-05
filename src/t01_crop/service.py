@@ -14,6 +14,7 @@ from src.stage_abi.store import canonical
 
 class CropService(InteractionService):
     def __init__(self,store,host):
+        fail('T01_CROP_WRITE_RETIRED','Use canonical complete-source T01; old ROI writes cannot select an alternate construction')
         if set(host)!={'schema','compiler_binding_refs','stage_registry'} or host['schema']!='t01-crop-host/1':fail('T01_HOST_INVALID','Crop host')
         self.host=host
         StageService.__init__(self,store,TrustedRegistry(store,host['stage_registry']),{PROFILE:CropAdapter()})

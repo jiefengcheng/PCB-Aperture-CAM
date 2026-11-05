@@ -44,7 +44,10 @@ def _evaluate(root,attempt):
             if op in T03:
                 from tools.u03_crop_t03_audit import evaluate as evaluator
             elif op.startswith('t01_') or op=='board_candidate_check':
-                from tools.u03_crop_t01_audit import evaluate as evaluator
+                # Mirror the active U03 canonical auditor; retain crop predicates.
+                from src.c03_input_family import selected
+                if selected(root):
+                    from tools.u03_crop_t01_audit import evaluate as evaluator
         proof=evaluator(root,attempt)
         proof.update(schema='pcb-u03-machine-audit/1',contract_sha256=digest(CONTRACT.read_bytes()));return proof
     verified=verify_attempt(folder);e=Evidence(root)

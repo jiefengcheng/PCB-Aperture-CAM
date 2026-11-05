@@ -1,0 +1,13 @@
+{
+  "schema": "growth-void-settings/1",
+  "parameters": {
+    "notch_radius_mm": 0.04,
+    "maximum_shortage": 0.2,
+    "local_reach_factor": 1.0,
+    "minimum_notch_boundary_support": 0.5,
+    "grid_mm": 1e-06,
+    "file_uncertainty_mm": 2e-06,
+    "area_epsilon_mm2": 1e-12
+  },
+  "scope": "New additive local remedy only. Clearance comes from the captured shared clearance registry; recognition/file tolerances stay distinct. Capture at job entry, immutable for active jobs."
+}

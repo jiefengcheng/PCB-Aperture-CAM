@@ -1,3 +1,4 @@
+from src.stage_abi.preparation import decode_geometry
 """Complete board selection is checked against native bytes, never an image."""
 import json
 from shapely import from_wkb
@@ -26,7 +27,7 @@ def context(store,scene,policy):
         obj=objects[row['id']];data=store.get(obj['original_ref'],kind='geometry');start,end=row['source_span']
         if (obj['original_ref']!=obj['geometry_ref'] or digest(data)!=row['geometry_sha256'] or row['source_sha256']!=b['source_sha256'] or
             not 0<=start<end<=len(raw) or row['id']!=f'{b["source_sha256"]}:bytes:{start}:{end}' or 'F.Cu'not in row['layers']):fail('T01_ORIGINAL_SOURCE_REQUIRED',row['id'])
-        shapes.append(from_wkb(data))
+        shapes.append(decode_geometry(data))
     _,rows,sites=sites_from_cache(raw,manifest,shapes,b['viewport_mm'])
     aliases=sorted(a for s in sites for a in s['aliases'])
     if aliases!=scope['eligible_occurrence_ids'] or sorted(objects)!=scope['all_source_ids'] or len(sites)!=scope['canonical_sites']:fail('T01_BOARD_SELECTION_INCOMPLETE','Every source and eligible occurrence must be covered')

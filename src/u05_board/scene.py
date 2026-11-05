@@ -1,3 +1,4 @@
+from .worker_preparation import native_view as native_loads
 """Complete actual native U04 predecessor, original contacts and source aliases."""
 import copy
 import sexpdata
@@ -14,15 +15,29 @@ from src.pcb_data_abi.board_geometry import fidelity
 from src.u03_board.selection import for_root,window
 from src.junction_spindle_stage import CONTRACT,prepare_spindle_context
 from tools.t01_operator_host import read
+from src.stage_abi.preparation import decode_geometry as from_wkb
 
+
+def bound_original_node(tree,positions,spans,source_id,record):
+    index=positions.get(source_id);span=spans.get(source_id)
+    if index is None or span is None:raise ValueError('U05_TOP_LEVEL_NATIVE_SOURCE_REQUIRED:'+source_id)
+    if record['id']!=source_id or record['source_span']!=[span.start,span.end]:raise ValueError('U05_ORIGINAL_SOURCE_SPAN_BINDING:'+source_id)
+    node=tree[index]
+    if not node or str(node[0])!=span.head or str(node[0])!=record['kind']:raise ValueError('U05_ORIGINAL_SOURCE_NODE_BINDING:'+source_id)
+    return node
 
 def prepare(store,predecessor,*,contributions_only=False):
     root=__import__('pathlib').Path(predecessor['root']);t02=read(root/'u04_t02/t02_run.json')['candidate'];native_scene=validate_scene(store,t02['output_scene_ref'])
     manifest=read(root/'data_board/source_manifest.json');meta={r['id']:r for r in manifest['objects']}
     receipt=read(root/'RECEIPT.json');binding=store.get_json(receipt['binding_ref'],kind='t01-binding');raw=store.get(binding['source_ref'],kind='native-source')
     if digest(raw)!=manifest['source_sha256']:raise ValueError('U05_ORIGINAL_SOURCE_CHANGED')
-    original_tree=sexpdata.loads(raw.decode());actual_tree=sexpdata.loads(__import__('pathlib').Path(predecessor['kicad']).read_text());spans=locate(raw)
-    positions={s.identity:i+1 for i,s in enumerate(s for s in spans if s.parent_start==spans[0].start)}
+    # Original source is single-use here; keep one owned legacy parse and
+    # reuse its exact source-bound nodes rather than encoding a cache entry.
+    original_tree=sexpdata.loads(raw.decode());actual_tree=native_loads(__import__('pathlib').Path(predecessor['kicad']).read_text());spans=locate(raw)
+    top_spans=[s for s in spans if s.parent_start==spans[0].start]
+    if len(original_tree)!=len(top_spans)+1:raise ValueError('U05_ORIGINAL_SOURCE_NODE_COUNT')
+    positions={s.identity:i+1 for i,s in enumerate(top_spans)}
+    original_spans={s.identity:s for s in top_spans}
     inclusives=sorted(r['source_id'] for r in native_scene['objects'] if r['kind']=='inclusive_rectangle')
     if len(actual_tree)!=len(original_tree)+len(inclusives):raise ValueError('U05_NATIVE_U04_NODE_COVERAGE_CHANGED')
     rows=[];changed=0
@@ -37,7 +52,7 @@ def prepare(store,predecessor,*,contributions_only=False):
             members=md['members'];support=unary_union([from_wkb(store.get(next(r for r in native_scene['objects'] if r['source_id']==s)['original_ref'],kind='geometry')) for s in sorted(members)])
             row['original_ref']=store.put('geometry',to_wkb(support));md['original_contact_support_ids']=members;md['qualified_land']=True;md['alias_source_ids']=[sid]
         else:
-            m=meta[sid];source_node=sexpdata.loads(raw[slice(*m['source_span'])].decode());fill=str(one(source_node,'fill',['none'])[0]);core=from_wkb(store.get(row['original_ref'],kind='geometry'))
+            m=meta[sid];source_node=bound_original_node(original_tree,positions,original_spans,sid,m);fill=str(one(source_node,'fill',['none'])[0]);core=from_wkb(store.get(row['original_ref'],kind='geometry'))
             md['qualified_land']=fill in ('yes','solid') and ((m['kind']=='gr_circle' and filled_circle(core)) or (m['kind']=='gr_poly' and core.equals(box(*core.bounds)) and g.equals(box(*g.bounds))))
             md['alias_source_ids']=[sid]
         rows.append(row)

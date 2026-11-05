@@ -16,6 +16,9 @@ from src.u04_board.export import U04DataService
 from src.u03_board.selection import retain_paths
 
 
+from src.stage_abi.preparation import native_operation
+
+@native_operation
 def execute(session,request,registry=None,registry_sha256=None):
     if set(request)!={'abi_version','request_id','operation'} or request['abi_version']!='pcb-u04-board/1':raise ValueError('U04_REQUEST_INVALID')
     op=request['operation']
@@ -27,7 +30,8 @@ def execute(session,request,registry=None,registry_sha256=None):
     if op in T04:return WidthGates(width_root(session)).dispatch(op)
     if op not in ('pcb_kicad_write','pcb_kicad_verify','pcb_gerber_export','pcb_gerber_verify','pcb_export_controls'):raise ValueError('U04_OPERATION_NOT_EXPOSED')
     if digest(registry.read_bytes())!=registry_sha256:raise ValueError('U04_EXPORT_REGISTRY_CHANGED')
-    return U04DataService(read(registry)).dispatch(op)
+    from src.c03_native_export import data_service
+    return data_service(session,read(registry)).dispatch(op)
 
 
 def main():

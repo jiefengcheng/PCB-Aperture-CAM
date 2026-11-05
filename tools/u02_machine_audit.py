@@ -8,7 +8,10 @@ from src.u02_board.adapter import RetainPathsAdapter,verify_candidate,require_su
 from src.u02_board.custody import CONTRACT,STEPS,T03
 from src.t01_crop.paging import read_pages
 
+from src.stage_abi.preparation import native_operation
 
+
+@native_operation
 def evaluate(root,attempt):
     root=Path(root);folder=root/'attempts'/attempt;receipt=read(folder/'receipt.json');op=receipt['tool']
     if op not in STEPS:raise ValueError('U02_MACHINE_OPERATION_UNSUPPORTED')

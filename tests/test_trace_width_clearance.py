@@ -18,7 +18,7 @@ class TraceWidthClearanceTests(unittest.TestCase):
         self.assertEqual(a['traces'][0]['pairs'][0]['original_port_wkb_sha256'],b['traces'][0]['pairs'][0]['original_port_wkb_sha256'])
 
     def test_remote_obstacle_limits_entire_full_trace(self):
-        fixed=[dict(id='remote',geometry=box(29,.09,31,.2))]
+        fixed=[dict(id='remote',geometry=box(29,.11,31,.2))]
         self.assertFalse(verify_width_scene([trace('a',(0,0),(30,0))],fixed)['passed'])
         self.assertTrue(verify_width_scene([trace('a',(0,0),(30,0),factor=1.3)],fixed)['passed'])
 

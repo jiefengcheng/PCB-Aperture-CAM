@@ -1,0 +1,11 @@
+{
+  "schema": "gerber-u05-tested-runtime/1",
+  "packages": {
+    "gerbonara": "1.6.3",
+    "shapely": "2.1.2",
+    "numpy": "2.5.4",
+    "matplotlib": "3.10.9"
+  },
+  "geos": "3.13.1",
+  "scope": "Pinned geometry/export/reparse/render versions; no dependency installation or upgrade performed"
+}

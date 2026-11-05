@@ -13,6 +13,8 @@ from src.t01_crop.service import CropService as InteractionService
 
 ROOT=Path(__file__).resolve().parents[1]
 
+from src.stage_abi.preparation import prepared_dispatch
+
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--registry',type=Path,required=True)
@@ -31,7 +33,7 @@ def main(argv=None):
         wire=args.input.read_bytes() if args.input else sys.stdin.buffer.read(2_000_001)
         if len(wire)>2_000_000:raise StageABIError('REQUEST_TOO_LARGE','2 MB local limit')
         request=json.loads(wire,object_pairs_hook=unique_object)
-        response=InteractionService(ArtifactStore(store_path),host).dispatch(request)
+        response=prepared_dispatch(lambda:InteractionService(ArtifactStore(store_path),host),request)
     except (StageABIError,ValueError,TypeError,OSError,RecursionError) as e:
         response=dict(abi_version=ABI_VERSION,request_id=None,operation=None,status='REJECTED',result=None,error=dict(code=e.code if isinstance(e,StageABIError) else 'T01_INPUT_OR_HOST_CONFIG_INVALID',message=str(e)))
     print(json.dumps(response,sort_keys=True,separators=(',',':'),allow_nan=False))

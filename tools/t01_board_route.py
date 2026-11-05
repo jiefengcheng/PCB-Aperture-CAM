@@ -1,4 +1,5 @@
 """Whole-board source-only setup; complete scope is established by the PCB data ABI."""
+from src.clearance_policy import weakened_english
 from datetime import datetime,timezone
 from pathlib import Path
 import sys,threading,subprocess,uuid,shutil
@@ -22,7 +23,9 @@ def initialize(session,*,storage_root=ROOT):
         raise ValueError('BOARD_STORAGE_PREFLIGHT_FAILED: at least 2 GB free required')
     identity=require_native();session.mkdir(parents=True)
     files=producer_files()+list((ROOT/'src/t01_crop').glob('*.py'))+list((ROOT/'src/t01_board').glob('*.py'))+list((ROOT/'contracts/t01_crop').glob('*'))+list((ROOT/'contracts/t01_board').glob('*'))+[ROOT/'tools'/n for n in ('t01_board_route.py','t01_board_host.py','t01_board_abi.py','pcb_board_candidate_check.py','pcb_t01_board_operator.py','start_t01_board_operator.py','t01_board_jobs.py','pcb_board_data_abi.py','pcb_board_render_abi.py','start_t01_crop_operator.py','t01_crop_jobs.py','t01_crop_attachments.py','t01_crop_launcher.py','Start_T01_Native_Launcher.command')]
-    fresh(session/'START.json',dict(status='BOARD_SOURCE_ONLY_SETUP_NO_SCOPE',assets=verify_assets(),protected_freezes=[frozen_fingerprint(ROOT,e) for e in read(HANDOFF/'PROTECTED_FREEZES.json')],T01_delivery_files={str(p.relative_to(ROOT)):digest(p.read_bytes()) for p in files},runtime_fingerprint=identity['shared_runtime'],T01_implementation=identity['implementation']))
+    from src.t01_canonical_custody import create
+    custody=create(HANDOFF/'CODE_BASELINE_SHA256.json')
+    fresh(session/'START.json',dict(canonical_t01_custody=custody,status='BOARD_SOURCE_ONLY_SETUP_NO_SCOPE',assets=verify_assets(),protected_freezes=[frozen_fingerprint(ROOT,e) for e in read(HANDOFF/'PROTECTED_FREEZES.json')],T01_delivery_files={str(p.relative_to(ROOT)):digest(p.read_bytes()) for p in files},runtime_fingerprint=identity['shared_runtime'],T01_implementation=identity['implementation']))
     (session/'attempts').mkdir();return session
 
 class BoardRoute(C01Route):
@@ -133,7 +136,7 @@ class BoardRoute(C01Route):
             p=r['plan'];allocation=p['details']['allocation']
             require(set(p['details']['targets'])==set(self.discovery['source_ids']) and p['implementation']==self.identity['board_implementation'] and p['runtime']==self.identity['shared_runtime'] and r['construction_status']=='NOT_RUN','Complete runtime-bound plan')
             require(allocation['ports']['schema']=='t01-board-port-pages/1' and allocation['ports']['sites']==n,'Complete source-derived port pages')
-            return dict(targets=n,port_pages=allocation['ports']['pages'],port_geometry_zones=allocation['ports']['zones'],port_record_sites=allocation['ports']['sites'],groups=len(allocation['groups']),concentric_nested_pairs=sum('concentric_source_proof' in g for g in allocation['groups']),boundary_keep_sites=len(allocation['boundary_keep_source_ids']),priority_pool_sites=len(allocation['priority_pool_source_ids']),construction_status='NOT_RUN')
+            return dict(targets=n,port_pages=allocation['ports']['pages'],port_geometry_zones=allocation['ports']['zones'],port_record_sites=allocation['ports']['sites'],groups=len(allocation['groups']),concentric_nested_pairs=sum('concentric_source_proof' in g for g in allocation['groups']),boundary_keep_sites=len(allocation['boundary_keep_source_ids']),permission_keep_objects=len(allocation['permission_keep_source_ids']),priority_pool_sites=len(allocation['priority_pool_source_ids']),construction_status='NOT_RUN')
         if op in ('t01_run','t01_verify'):
             require(r['job']['status']=='COMPLETED' and not r['reused'] and r['result']['execution_evidence']['mode']=='FRESH_EXECUTION','Fresh execution')
             if op=='t01_run':
@@ -167,7 +170,7 @@ class BoardRoute(C01Route):
             for file in folder.iterdir():self.audit_hashes[str(file)]=digest(file.read_bytes())
             if op==ROI[-1]:
                 tile_plan(read(self.session/'data_board/verified.json')['bounds_mm'],read(ROOT/'contracts/render/board.json')['tile_policy'])
-                self.cap=host.prepare(self.session);self.store=ArtifactStore(Path(self.cap['store_path']));self.negative=self.store.put('english-spec',(ROOT/'contracts/t01_board/english.txt').read_bytes().replace(b'hard gap 0.020 mm',b'hard gap 0.001 mm'))
+                self.cap=host.prepare(self.session);self.store=ArtifactStore(Path(self.cap['store_path']));self.negative=self.store.put('english-spec',weakened_english((ROOT/'contracts/t01_board/english.txt').read_bytes()))
             elif op=='t01_compile':self.cap=host.register(self.session,p['path']/'abi/stdout.json')
             elif op=='t01_plan':self.cap=host.grant(self.session,p['path']/'abi/stdout.json')
             elif op==CHECK:

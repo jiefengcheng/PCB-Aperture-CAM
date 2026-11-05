@@ -5,6 +5,7 @@ revised, pairwise F.Cu geometric contract without inferring electrical nets.
 """
 from __future__ import annotations
 
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 from dataclasses import dataclass
 from math import hypot
 
@@ -16,11 +17,11 @@ from .crop_attachment_support import qualify_original_support
 
 @dataclass(frozen=True)
 class GrowthContract:
-    hard_gap_mm: float = 0.02000
-    construction_gap_mm: float = 0.02010
+    hard_gap_mm: float = HARD_GAP_MM
+    construction_gap_mm: float = CONSTRUCTION_GAP_MM
     comparison_epsilon_mm: float = 1e-12
     area_epsilon_mm2: float = 1e-12
-    attachment_buffer_gap_mm: float = 0.02002
+    attachment_buffer_gap_mm: float = CONTACT_BUFFER_MM
     quad_segs: int = 128
     search_steps: int = 36
 

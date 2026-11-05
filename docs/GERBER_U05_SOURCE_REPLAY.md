@@ -1,0 +1,50 @@
+# Source-only Gerber U05
+
+The connected-copper profile treats a pad and its source-connected trace as one
+physical conductor. Only different frozen original copper components impose
+clearance. Ownership never changes because candidate growth touches another
+component. Original holes/notches remain protected. T04 and T05 absorb qualified
+growth-created pockets into one reusable original-owner surface.
+
+Run `tools/Run_Gerber_U05.command --input-dir "/absolute/raw/directory" --gerber "top.art.gbr"`.
+Selection must be explicit. A filename selects artwork; it does not establish X2
+stack identity. No KiCad input is invented. This separate route does not replace
+the existing KiCad/native machine-audit entry points or their acceptance modes.
+
+Each fresh job captures source hashes and clearance/remedy registries. It first
+regenerates the conservative legacy reservation reference from source using
+T01, T03, T04, T02, T05 and the versioned local-remedy recipe. It then constructs
+the connected-copper sequence. No historical generated result is a generation
+input. A process read fence rejects historical evidence reads outside that fresh
+job and its immutable source tree.
+
+Every stage retains complete construction and two fresh outcome reconstructions.
+T04 construction performs the full stable-order search. Each fresh T04 evaluator
+checks every search-ledger hash and scale witness, reconstructs complete source
+admission, nominal/envelope final geometry, and every final upper rejection.
+This preserves the previously qualified width-prefix audit criteria. T05 retains
+all source attachments and complete assembly checks.
+
+Export preserves source commands and uses the existing 1 nm file grid. Where a
+legal axial cut-in is unavailable, constrained triangulation emits equivalent
+simple positive regions under the same source identity. Exact integer area and
+signed atomic boundary equality prove no hole was filled and no positive triangle
+was omitted. Export/reparse, all source/scalar/attachment/clearance/fidelity and
+physical partition checks, deliberate corruptions and the remaining-defect audit
+must pass before delivery. Large contour metrics use all vertices and bounded
+spatial indexes, never display sampling or simplification.
+
+All generation, logs, tests and caches require the prepared LaCie APFS image;
+there is no internal fallback. Source/old outputs stay immutable. Delivery creates
+a new sibling directory containing only the selected Gerber filename and
+`final_render.png`. Green always highlights growth relative to the original.
+Detailed comparisons and rejected controls remain in the job's visual bundle.
+
+The default nominal clearance is 0.040 mm, the construction gap 0.0401 mm.
+The registered owner allowance is not consumed by this route. Per-job snapshots
+prevent an on-the-fly registry change from altering an active job.
+
+Prior `.DS_Store` custody FAIL remains explicit, unwaived, with writer unattributed.
+Machine/geometry qualification and an approved preview do not establish owner,
+independent, electrical or manufacturing release acceptance. Coverage recovery
+continues separately; no recovery files or failed jobs are reset/relabelled.

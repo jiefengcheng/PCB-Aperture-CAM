@@ -8,14 +8,14 @@ from tests.stage_abi_support import host,run_verify
 
 
 def case(tmp_path,*,bundle=True,extension=True,fixed_blocker=False):
- store=ArtifactStore(tmp_path/'runtime');reference=[[i,0] for i in range(9)];members=[dict(source_id='low',offset_mm=0.)]+([dict(source_id='upper',offset_mm=.13)] if bundle else []);rows=[]
+ store=ArtifactStore(tmp_path/'runtime');reference=[[i,0] for i in range(9)];members=[dict(source_id='low',offset_mm=0.)]+([dict(source_id='upper',offset_mm=.15)] if bundle else []);rows=[]
  for member in members:
   p=parallel_points(reference,member['offset_mm']);g=LineString(p).buffer(.05,quad_segs=128);ref=store.put('geometry',to_wkb(g));rows.append(dict(source_id=member['source_id'],kind='trace',geometry_ref=ref,original_ref=ref,metadata=dict(nominal_width_mm=.1,route_points_mm=p)))
  obstacles=[('corner',box(3.35,-.2,3.65,-.055))]
  if fixed_blocker:obstacles.append(('fixed-upper',box(0,.08,8,.5)))
  for sid,g in obstacles:
   ref=store.put('geometry',to_wkb(g));rows.append(dict(source_id=sid,kind='rectangle',geometry_ref=ref,original_ref=ref,metadata={}))
- bundle_ref=store.put_json('parallel-bundle',dict(reference_points_mm=reference,members=members));corridor=store.put('geometry',to_wkb(box(-.5,-.5,8.5,.8)));ids=[m['source_id'] for m in members];selection=dict(source_ids=ids,seed_ids=['low'],obstacle_ids=['corner'],bundle_ref=bundle_ref,corridor_ref=corridor,initial_indices=[3,3],objective='explicit-clearance');bounds=dict(max_source_objects=20,max_targets=5,max_evaluations=100,max_output_bytes=1000000,max_seconds=120,max_displacement_um=16,max_members=len(ids),max_extension_um=3000 if extension else 1,max_extension_steps=2,max_recursion_depth=2)
+ bundle_ref=store.put_json('parallel-bundle',dict(reference_points_mm=reference,members=members));corridor=store.put('geometry',to_wkb(box(-.5,-.5,8.5,.8)));ids=[m['source_id'] for m in members];selection=dict(source_ids=ids,seed_ids=['low'],obstacle_ids=['corner'],bundle_ref=bundle_ref,corridor_ref=corridor,initial_indices=[3,3],objective='explicit-clearance');bounds=dict(max_source_objects=20,max_targets=5,max_evaluations=100,max_output_bytes=1000000,max_seconds=120,max_displacement_um=40,max_members=len(ids),max_extension_um=3000 if extension else 1,max_extension_steps=2,max_recursion_depth=2)
  return host(store,'t03',RouteAdapter(),rows,route_parameters(),selection,source_sha256='c'*64,viewport=[-.5,-.5,8.5,.8],bounds=bounds)
 
 def test_adaptive_single_trace_extension_with_fixed_width_and_ports(tmp_path):

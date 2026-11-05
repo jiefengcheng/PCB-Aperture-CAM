@@ -1,7 +1,7 @@
-"""C01's full interaction family behind source-bound plan/run/verify operations.
+"""Canonical full-source interaction behind plan/run/verify operations.
 
-Reuses the frozen C01 construction functions without modifying their numerical
-contracts. No file paths, saved targets or historical candidate geometry enter
+Reuses the legacy priority/companion construction and retains its numerical
+checks, with one uniform stronger full-surface guard. No file paths, saved targets or historical candidate geometry enter
 this adapter. Verification recomputes allocation and contours, then checks the
 assembled current surfaces separately from the construction-time scene.
 """
@@ -31,7 +31,7 @@ class InteractionAdapter:
                     operations=['discover','plan','run','verify'],source_support='Complete bound original F.Cu cache; priority/companion interaction, physical classes, A-square/B-envelope and named recesses',
                     input_support=['literal-English','content-addressed-English-specification','source-selection-reference'],
                     english_dialect='T01 controlled English version 1',
-                    clearance_model='Exact frozen C01 .020 mm kernel and source-derived local ports; shared ABI clearance predicates unchanged')
+                    clearance_model='Production .040 mm hard gap plus .04010 mm full-source visible-surface guard; no case-specific substitute')
 
     def _context(self,store,scene,policy):
         validate_policy(policy)
@@ -67,6 +67,8 @@ class InteractionAdapter:
         return settings,allocation,targets,square
 
     def plan(self,store,scene,policy,selection,bounds):
+        from src.t01_canonical import require
+        require(policy)
         closed(selection,{'stage','scene_ref','source_ids'},'interaction selection')
         bounds_check(bounds,scene,selection)
         binding,raw,rows,shapes,sites=self._context(store,scene,policy)
@@ -78,13 +80,25 @@ class InteractionAdapter:
                     specification='Every plan allocation field is derived from the English contract and original source, not historical results')
 
     def _compute(self,store,scene,policy,plan,checkpoint):
+        from src.t01_canonical import require
+        require(policy)
         budget=Budget(plan['details']['bounds']);budget.evaluation()
         binding,raw,rows,shapes,sites=self._context(store,scene,policy)
         settings,allocation,targets,square=self._allocate(raw,rows,shapes,sites,policy,binding)
         if canonical(allocation)!=canonical(plan['details']['allocation']) or plan['details']['targets']!=[s['source_id'] for s in sites]:
             fail('T01_PLAN_DERIVATION_MISMATCH','source-computed allocation or complete target order')
+        from src.t01_canonical_surface import SurfaceGuard
+        surface_guard=SurfaceGuard(rows,shapes,sites)
         result=execute(raw,rows,shapes,sites,allocation['groups'],allocation['priorities_by_physical_component'],
-                       settings=settings,targets=targets,square_guided_ids=square,counterfactuals=True)
+                       settings=settings,targets=targets,square_guided_ids=square,counterfactuals=True,surface_guard=surface_guard)
+        for d in result['decisions']:
+            if allocation['containment'][d['source_id']]['contained']:
+                site=next(s for s in sites if s['source_id']==d['source_id'])
+                if to_wkb(result['scene'].accepted[d['source_id']],byte_order=1)!=to_wkb(site['core'],byte_order=1):
+                    fail('T01_CONTAINED_SOURCE_CHANGED',d['source_id'])
+                d['keep_reason']='KEEP_CONTAINED'
+            if d['priority'] and d['proposed_radius_mm']>d['source_radius_mm'] and d['decision']!='ROUND_GROW_PRIORITY':
+                fail('T01_ROUND_ALLOCATION_NOT_CONSTRUCTIBLE',d['source_id'])
         if result['failed_patches']:
             # Retain failed hypotheses explicitly even though the legacy engine
             # keeps exact source after rejection. No hidden retry or acceptance.
@@ -92,12 +106,12 @@ class InteractionAdapter:
             for f in result['failed_patches']:
                 rejected.append({**{k:v for k,v in f.items() if k!='candidate'},'geometry_ref':store.put('geometry',to_wkb(f['candidate'],byte_order=1))})
         else:rejected=[]
-        decisions=[];replacements={};byid={s['source_id']:s for s in sites};keys={s['source_id']:f'S{i+1:02d}' for i,s in enumerate(sites)}
+        decisions=[];replacements={};byid={s['source_id']:s for s in sites};keys={s['source_id']:f'S{i+1:02d}' for i,s in enumerate(sites)};source_rows={r['source_id']:r for r in scene['objects']}
         for d in result['decisions']:
             budget.evaluation();sid=d['source_id'];g=result['scene'].accepted[sid];blob=to_wkb(g,byte_order=1);budget.output(blob)
-            candidate_ref=store.put('geometry',blob)
+            candidate_ref=source_rows[sid]['geometry_ref']if allocation['containment'][sid]['contained']else store.put('geometry',blob)
             for alias in byid[sid]['aliases']:replacements[alias]=candidate_ref
-            decisions.append(dict(d,key=keys[sid],candidate_ref=candidate_ref,size_class=allocation['size_classes'][sid]))
+            decisions.append(dict(d,key=keys[sid],candidate_ref=candidate_ref,size_class=allocation['size_classes'][sid],containment=allocation['containment'][sid]))
             checkpoint(dict(completed_sources=len(decisions),source_id=sid,candidate_ref=candidate_ref))
         events=[]
         for e in result['events']:
@@ -117,6 +131,7 @@ class InteractionAdapter:
                 context.commit(byid[prior['source_id']],result['scene'].accepted[prior['source_id']],context.revision)
             obs=context.obstacles(site,context.revision)
             plain=construct(site['core'],site['center'],targets[sid],obs,square_enabled=False,settings=settings.kernel())['candidate']
+            plain=surface_guard.limit(site,plain,context,record=False)
             controls.append(dict(source_id=sid,key=keys[sid],radius_mm=targets[sid],input_revision=d['input_revision'],
                                  disabled_ref=store.put('geometry',to_wkb(plain,byte_order=1)),
                                  symmetric_difference_mm2=plain.symmetric_difference(result['scene'].accepted[sid]).area))
@@ -131,12 +146,21 @@ class InteractionAdapter:
         if len(controls)!=len(square) or any(c['symmetric_difference_mm2']<=settings.event_epsilon for c in controls):
             fail('T01_RECESS_CONTROL_NOT_ESTABLISHED','Each bound exception must have a measured effect')
         budget.evaluation()
-        return dict(decisions=decisions,replacements=replacements,allocation=allocation,events=events,
+        from src.prepared_land_scene import PreparedLandScene
+        lands=[dict(id=s['source_id'],original=s['core'],candidate=result['scene'].accepted[s['source_id']],native_source_kind='gr_circle',native_stroke_width_mm=0.)for s in sites]
+        aliases={a for s in sites for a in s['aliases']}
+        fixed=[dict(id=r['id'],geometry=g,trace_width_mm=r.get('trace_width_mm') or 0.)for r,g in zip(rows,shapes)if r['id']not in aliases]
+        surface=PreparedLandScene(lands,fixed).check(lands,materialize_scene=True,fail_fast=False)
+        if not surface['passed']:fail('T01_CANONICAL_FULL_SURFACE_FAILED',str(surface['failures'][:10]))
+        computed=dict(decisions=decisions,replacements=replacements,allocation=allocation,events=events,
+                    full_surface_check=surface,construction_surface_limits=surface_guard.records,
                     square_disabled_controls=controls,rejected_hypotheses=rejected,final_checks=final,
                     counts=dict(Counter(d['decision'] for d in decisions)),evaluations=budget.evaluations,
                     source_objects=len(rows),unique_sites=len(sites),source_occurrences=sum(len(s['aliases']) for s in sites),
                     neighbor_response_sites=len({e['target_source_id'] for e in events}),
                     evolving_companion_response_sites=len({e['target_source_id'] for e in events if e['neighbor_role']=='earlier accepted companion'}))
+        from src.t01_canonical import marker,fingerprint
+        return dict(computed,canonical_t01=marker(),canonical_result_sha256=fingerprint(binding['source_sha256'],computed))
 
     def run(self,store,scene,policy,plan,checkpoint):
         # Journalling replays only this attempt's exact bound semantic event.

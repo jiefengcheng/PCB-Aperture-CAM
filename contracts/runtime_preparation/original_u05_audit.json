@@ -1,0 +1,6 @@
+{
+  "schema": "original-u05-predicate-body/1",
+  "source": "Preintegration working tree, identical Stage C audit body; historical receipts unchanged",
+  "audit_body_ast_sha256": "f98068431a03ae8ee791f6ec65eeb54af810b051db2e78f2c3664dbb9f448a31",
+  "runner_sha256": "baaf0d288015df759990dcf5d1d71bfceedd7373ca7ddbfaa214b2f84c6b3a6a"
+}

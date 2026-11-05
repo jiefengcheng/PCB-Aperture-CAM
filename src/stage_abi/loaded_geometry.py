@@ -6,9 +6,9 @@ retained objects, not transient GEOS allocations or the process allocator.
 """
 from collections import Counter, OrderedDict
 from dataclasses import dataclass
-import weakref
+import weakref,struct
 
-from shapely import from_wkb, to_wkb
+from shapely import from_wkb, to_wkb, get_precision
 from shapely.geometry import box
 from shapely.ops import unary_union
 
@@ -19,6 +19,10 @@ SNAPSHOT_BYTES = 192 * 1024**2
 MEMO_BYTES = 32 * 1024**2
 MEMO_ENTRIES = 8192
 SIGNATURE_ENTRIES = 32768
+
+
+def geometry_checksum(shape):
+    return digest(to_wkb(shape,include_srid=True)+struct.pack('!d',get_precision(shape)))
 
 
 def budget(value, name):
@@ -69,15 +73,16 @@ class GeometrySnapshot:
         if key not in self.shapes:
             self._charge(2 * len(body) + 512)
             try:
-                shape = valid(from_wkb(body))
-                self.shapes[key] = (shape, digest(to_wkb(shape)))
+                from .preparation import decode_geometry
+                shape = valid(decode_geometry(body))
+                self.shapes[key] = (shape, geometry_checksum(shape))
             except (TypeError, ValueError) as error:
                 fail('GEOMETRY_INVALID', str(error))
             self.stats['decodes'] += 1
         else:
             self.stats['decode_reuses'] += 1
         shape, expected = self.shapes[key]
-        if digest(to_wkb(shape)) != expected:
+        if geometry_checksum(shape) != expected:
             raise ValueError('LOADED_GEOMETRY_SNAPSHOT_CORRUPTED')
         # Preserve the original geometry validation even on a decoded-shape hit.
         return valid(shape)
@@ -106,7 +111,7 @@ class GeometrySnapshot:
                 if entry is None or view[sid] is not entry[0]:
                     raise ValueError('LOADED_GEOMETRY_SNAPSHOT_BINDING_CHANGED')
                 if key not in checked:
-                    if digest(to_wkb(entry[0])) != entry[1]:
+                    if geometry_checksum(entry[0]) != entry[1]:
                         raise ValueError('LOADED_GEOMETRY_SNAPSHOT_CORRUPTED')
                     checked.add(key)
 
@@ -157,7 +162,7 @@ class GeometryMemo:
         if old is not None and old[0]() is shape:
             self.signatures.move_to_end(sid)
             return old[1]
-        h = digest(to_wkb(shape))
+        h = geometry_checksum(shape)
         if self.max_signatures:
             def expired(ref, key=sid):
                 current = self.signatures.get(key)
@@ -174,7 +179,7 @@ class GeometryMemo:
         old = self.values.get(key)
         self.stats['requests'] += 1
         if old is not None:
-            if digest(to_wkb(old.value)) != old.sha256:
+            if geometry_checksum(old.value) != old.sha256:
                 raise ValueError('LOADED_GEOMETRY_CACHE_CORRUPTED')
             self.values.move_to_end(key)
             self.stats['hits'] += 1
@@ -191,7 +196,7 @@ class GeometryMemo:
                 _, entry = self.values.popitem(last=False)
                 self.weight -= entry.weight
                 self.stats['evictions'] += 1
-            self.values[key] = GeometryEntry(value, digest(blob), weight)
+            self.values[key] = GeometryEntry(value, geometry_checksum(value), weight)
             self.weight += weight
             self.peak = max(self.peak, self.weight)
         else:

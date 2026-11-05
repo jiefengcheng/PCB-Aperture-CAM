@@ -1,0 +1,48 @@
+{
+  "schema": "c03-exposed-width-recovery/2",
+  "family": "c03-complete-exposed-native-primary-cohorts/2",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "crop_sha256": "9c33ecc73238c0a1124971faad2de7b5eeb5a6e96d008c9ad6755e19c8cc0ea4",
+  "authorization": {
+    "path": "out/lacie_work/evidence/c03_width_recovery_20261104T111305Z/OWNER_AUTHORIZATION.json",
+    "sha256": "18443f03fa41a38d97310b09d0da5f7b85407e0137768181ecdc3afb96663380"
+  },
+  "recipe_sources": {
+    "tools/build_c02_trace_eligibility.py": "3111543bbe8b7c73aa62443420399b839f5220b3ba9f19c88e88f8c228879e82",
+    "tools/build_c02_primary_parallel_cohorts.py": "2944ae0e68e53ee53c03e00aa22baac8be0d9b6a25463669b08d96ca8ee3d1f5",
+    "src/primary_parallel_cohorts.py": "77f93828c6dcc1a1777ce78e49cf22fd3091ea7c511620f076aa3e69476568d2",
+    "src/source_offset_width.py": "dad234a16f9c13100cff8a6155a9dedf0971ef99da5b5aa9d01a24200f95038c",
+    "src/trace_width_clearance.py": "408e9b0f7466d4dd05ecba1fdf4959d593550eb8435cdeb654964b1aa227c809",
+    "src/parallel_curve_relations.py": "108c1b843a422de73cee4b3c554defbc9e003a1f7f9046158c8541f61f9620c4",
+    "src/trace_growth_eligibility.py": "df718c0162194fe224df0c0c9a125839728bec9bf7d9bbccce04bc88ce8d714e"
+  },
+  "blocked": [
+    "T01:C028",
+    "T02:R304",
+    "T02:R305"
+  ],
+  "width_scale": [
+    1,
+    1.5
+  ],
+  "numeric_policy": "UNCHANGED_TRACE_WIDTH_CONTRACT",
+  "boundary_policy": "UNCHANGED_COMPLETE_MAXIMUM_ENVELOPE_AND_COMPLETE_COHORT",
+  "fixed_policy": "UNCHANGED_ORIGINAL_REVIEWED_SOURCE_NODES",
+  "generic_U03": "UNCHANGED; prior dispositions retained",
+  "original_width_positive": 94,
+  "execution_scope": "APPEND_ONLY_RETAINED_U05_WIDTH_CONTINUATION",
+  "predecessor": {
+    "receipt": "out/lacie_work/evidence/c03_width_recovery_20261104T111305Z/native_run_01/native/C03_WIDTH_RECOVERY_RECEIPT.json",
+    "receipt_sha256": "b4e5ac8f621c98cd5bb22774397cf3ca39d3143bf5d08ae0bd94569743505d20",
+    "native_sha256": "2f7c4ec034637162f5cd8c69e066c99cbe749d879dee856f9b3c71e7ac616e1a"
+  },
+  "qualified_predecessor_source": {
+    "path": "out/lacie_work/evidence/c03_width_recovery_20261104T111305Z/qualified_run_01_source",
+    "sha256": "621bc379b88a4c6278bab10974b412a6355ddc075caa740fca905cb64ce0022c"
+  },
+  "grouping_reference": {
+    "path": "out/crop_dynamic_tasks/c03_final_so_far_freeze_20261030_270/frozen/groups/PARALLEL_MEMBERSHIP.json",
+    "sha256": "a26d5087d56726545c585fbd0b6bce7259df82f2e985b3819917c474cfeb70d9",
+    "contract": "Common parent runs and source-verified longitudinal overlap share factors; branch cap contacts alone do not fuse trace factors. All actual copper/contact interactions remain in verifier."
+  }
+}

@@ -11,6 +11,7 @@ ADAPTER = 'c01-interaction-v1'
 
 class InteractionService(StageService):
     def __init__(self,store,host):
+        fail('T01_LEGACY_CASE_WRITE_RETIRED','Historical C01 operation is preserved as evidence; new writes require canonical complete source')
         closed(host,{'schema','compiler_binding_refs','stage_registry'},'T01 trusted host')
         if host['schema']!='t01-interaction-host/1' or type(host['compiler_binding_refs']) is not list:
             fail('T01_HOST_INVALID','schema or registered binding refs')

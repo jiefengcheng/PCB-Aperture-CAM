@@ -93,7 +93,7 @@
   "family": "native-whole-board-width-rectangle-inclusive/1",
   "scope": "Fresh T01 \u2192 exact retain-valid-paths T03 \u2192 unchanged source-bound T04 \u2192 source-bound T02 whole-rectangle and connected inclusive growth; no rendering, T05 or later stages.",
   "policy": {
-    "hard_gap_mm": 0.02,
+    "hard_gap_mm": 0.04,
     "area_epsilon_mm2": 1e-10,
     "quad_segs": 128,
     "original_widths": "RETAIN",
@@ -138,9 +138,9 @@
     "ceiling": 1.5,
     "scale_tolerance": 1e-06,
     "max_steps": 36,
-    "hard_gap_mm": 0.02,
-    "construction_gap_mm": 0.0201,
-    "original_port_buffer_gap_mm": 0.02002,
+    "hard_gap_mm": 0.04,
+    "construction_gap_mm": 0.0401,
+    "original_port_buffer_gap_mm": 0.04002,
     "comparison_epsilon_mm": 1e-12,
     "port_quad_segs": 128,
     "route_definition": "Existing source_junction_paths: complete same-width paths with exact original junction boundaries; no electrical inference",
@@ -203,7 +203,7 @@
     "audit": "Independently recompute the full census and matches; altered classifications halt even if their metadata hash is updated"
   },
   "land_policy": {
-    "family": "whole-rectangle-inclusive/1",
+    "family": "whole-rectangle-inclusive/2",
     "ceiling": 1.25,
     "quad_segs": 128,
     "search_steps": 36,
@@ -212,12 +212,27 @@
     "original_circle_quad_limit": null,
     "surface_contract": {
       "version": "trace-width-visible-surface/1",
-      "hard_gap_mm": 0.02,
-      "construction_gap_mm": 0.0201,
-      "original_port_buffer_gap_mm": 0.02002,
+      "hard_gap_mm": 0.04,
+      "construction_gap_mm": 0.0401,
+      "original_port_buffer_gap_mm": 0.04002,
       "comparison_epsilon_mm": 1e-12,
       "port_quad_segs": 128
+    },
+    "contained_shape_keep": {
+      "schema": "contained-shape-keep/1",
+      "action": "KEEP_EXACT_PREDECESSOR",
+      "context": "COMPLETE_STAGE_ENTRY_COPPER",
+      "coverage": "UNION_OF_OTHER_COPPER",
+      "exclude": "SELF_AND_EXACT_GEOMETRIC_ALIASES",
+      "area_epsilon_mm2": 1e-12,
+      "partial_coverage": "NOT_CONTAINED",
+      "allocation": "NO_INDEPENDENT_GROWTH_OR_INCLUSIVE_MEMBERSHIP"
     }
   },
-  "next_stage": "U05 = U04 + T05; not implemented or executed by U04"
+  "next_stage": "U05 = U04 + T05; not implemented or executed by U04",
+  "production_clearance": {
+    "path": "contracts/clearance/production.json",
+    "sha256": "cab61452f4f1f99c99d2e1959b9de50c84569944728a4685d101810b78d67ac1",
+    "hard_gap_mm": 0.04
+  }
 }

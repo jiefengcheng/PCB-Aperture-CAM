@@ -1,1 +1,55 @@
-{"audit_mode":"DETERMINISTIC_MACHINE_AUDIT","electrical_manufacturing":"NOT_ESTABLISHED","independent":"NOT_RUN: CHANNEL_UNAVAILABLE","native_timeout_seconds":1800,"operations":["u04_predecessor_verify","t05_inspect","t05_admit","t05_plan","t05_run","t05_verify","t05_compare","t05_review","t05_controls","pcb_kicad_write","pcb_kicad_verify","pcb_gerber_export","pcb_gerber_verify","pcb_export_controls"],"owner":"PENDING_USER","prefix":"Exact completed, receipt-verified U04; retained execution, not a fresh rerun","rendering":"NOT_REQUESTED","schema":"pcb-u05-retained-continuation/1","sequence":["T01","T03","T04","T02","T05"],"source_edits":"NONE: append qualified T05 contours only","spindle_policy":{"area_epsilon_mm2":1e-12,"barrier_gap_mm":0.02011,"buffer_quad_segs":64,"construction_gap_mm":0.0201,"family":"land-sized-additive-spindle/1","hard_gap_mm":0.02,"minimum_visible_addition_mm2":1e-08,"radius_scales":[1.0,0.75,0.5,0.25],"window_land_radii":2.0}}
+{
+  "audit_mode": "DETERMINISTIC_MACHINE_AUDIT",
+  "electrical_manufacturing": "NOT_ESTABLISHED",
+  "independent": "NOT_RUN: CHANNEL_UNAVAILABLE",
+  "native_timeout_seconds": 1800,
+  "operations": [
+    "u04_predecessor_verify",
+    "t05_inspect",
+    "t05_admit",
+    "t05_plan",
+    "t05_run",
+    "t05_verify",
+    "t05_compare",
+    "t05_review",
+    "t05_controls",
+    "pcb_kicad_write",
+    "pcb_kicad_verify",
+    "pcb_gerber_export",
+    "pcb_gerber_verify",
+    "pcb_export_controls"
+  ],
+  "owner": "PENDING_USER",
+  "prefix": "Exact completed, receipt-verified U04; retained execution, not a fresh rerun",
+  "rendering": "NOT_REQUESTED",
+  "schema": "pcb-u05-retained-continuation/1",
+  "sequence": [
+    "T01",
+    "T03",
+    "T04",
+    "T02",
+    "T05"
+  ],
+  "source_edits": "NONE: append qualified T05 contours only",
+  "spindle_policy": {
+    "area_epsilon_mm2": 1e-12,
+    "barrier_gap_mm": 0.04011,
+    "buffer_quad_segs": 64,
+    "construction_gap_mm": 0.0401,
+    "family": "land-sized-additive-spindle/1",
+    "hard_gap_mm": 0.04,
+    "minimum_visible_addition_mm2": 1e-08,
+    "radius_scales": [
+      1.0,
+      0.75,
+      0.5,
+      0.25
+    ],
+    "window_land_radii": 2.0
+  },
+  "production_clearance": {
+    "path": "contracts/clearance/production.json",
+    "sha256": "cab61452f4f1f99c99d2e1959b9de50c84569944728a4685d101810b78d67ac1",
+    "hard_gap_mm": 0.04
+  }
+}

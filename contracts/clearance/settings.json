@@ -1,0 +1,13 @@
+{
+  "schema": "pcb-clearance-settings/1",
+  "revision": 1,
+  "nominal_clearance_mm": 0.04,
+  "relative_clearance_tolerance": 0.01,
+  "construction_margins_mm": {
+    "trace_land": 0.0001,
+    "source_contact": 2e-05,
+    "t01": 2e-05,
+    "spindle_barrier": 0.00011
+  },
+  "scope": "Shared project defaults for new jobs; tolerance applies to finished-file clearance comparisons only. Geometry fidelity, recognition tolerances, source contacts and construction margins retain separate roles."
+}

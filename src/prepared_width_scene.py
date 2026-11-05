@@ -1,3 +1,4 @@
+from src.indexed_polygon_distance import distance as indexed_distance, signature as sha
 """Reusable fixed-source context for growth-only width checks.
 
 Policy and positive-proposal pair predicates match trace_width_clearance v1.
@@ -9,7 +10,8 @@ import math
 from shapely import STRtree
 from shapely.geometry import box
 from shapely.ops import unary_union
-from .trace_width_clearance import TraceWidthContract,sha
+from .trace_width_clearance import TraceWidthContract
+from src.stage_abi.preparation import prepared_tree as STRtree
 
 
 class PreparedWidthScene:
@@ -36,7 +38,17 @@ class PreparedWidthScene:
     def valid_geometry(g):
         if g.is_empty or not g.is_valid or g.geom_type not in ('Polygon','MultiPolygon'):raise ValueError('INVALID_FINITE_COPPER_GEOMETRY')
 
+    def required_new_copper_gap(self):
+        return self.contract.construction_gap_mm
+
+    def source_core_preserved(self,sid,core,candidate):
+        return candidate.covers(core)
+
     def check(self,traces,*,materialize_scene=False,fail_fast=False):
+        from src import component_clearance
+        if component_clearance.ACTIVE is not None:
+            if not hasattr(self,'_component_check'):self._component_check=component_clearance.OwnerCheck(self)
+            return self._component_check.check(traces,materialize_scene=materialize_scene,fail_fast=fail_fast)
         if len(traces)!=len(self.trace_ids) or {r['id'] for r in traces}!=set(self.trace_ids):raise ValueError('COMPLETE_TRACE_IDENTITIES_CHANGED')
         current=dict(self.original)
         for r in traces:
@@ -53,7 +65,7 @@ class PreparedWidthScene:
         for r in sorted(traces,key=lambda r:r['id']):
             sid=r['id'];core=self.original[sid];candidate=current[sid];reasons=[]
             exact_keep=sha(candidate)==self.trace_ids[sid]
-            if not candidate.covers(core):reasons.append('ORIGINAL_TRACE_CORE_REMOVED')
+            if not self.source_core_preserved(sid,core,candidate):reasons.append('ORIGINAL_TRACE_CORE_REMOVED')
             added=candidate.difference(core)
             # A byte-identical source object introduces no copper or changed
             # relationships, regardless of roundoff in the surrounding union.
@@ -74,14 +86,14 @@ class PreparedWidthScene:
                     if key not in self.ports:
                         overlap=core.intersection(old)
                         port=None if overlap.is_empty else overlap.buffer(max(self.widths[sid],self.widths[oid])+c.original_port_buffer_gap_mm,quad_segs=c.port_quad_segs)
-                        self.ports[key]=(port,not overlap.is_empty,core.distance(old))
+                        self.ports[key]=(port,not overlap.is_empty,indexed_distance(core,old))
                     port,contact,original_gap=self.ports[key]
                     checked=visible_added if port is None else visible_added.difference(port)
                     exposed_neighbor=visible(oid)
-                    gap=None if checked.is_empty or exposed_neighbor.is_empty else checked.distance(exposed_neighbor)
+                    gap=None if checked.is_empty or exposed_neighbor.is_empty else indexed_distance(checked,exposed_neighbor)
                     pair_failures=[]
-                    if gap is not None and gap+c.comparison_epsilon_mm<c.construction_gap_mm:pair_failures.append('NEW_EXPOSED_COPPER_BELOW_CONSTRUCTION_GUARD')
-                    pair=dict(neighbor_id=oid,raw_original_primitive_gap_mm=original_gap,raw_current_primitive_gap_mm=candidate.distance(neighbor),original_contact=contact,original_port_wkb_sha256=None if port is None else sha(port),original_port_area_mm2=None if port is None else port.area,original_port_buffer_mm=None if port is None else max(self.widths[sid],self.widths[oid])+c.original_port_buffer_gap_mm,current_neighbor_visible_area_mm2=exposed_neighbor.area,checked_new_exposed_copper_area_mm2=checked.area,new_exposed_to_visible_neighbor_gap_mm=gap,failures=pair_failures)
+                    if gap is not None and gap+c.comparison_epsilon_mm<self.required_new_copper_gap():pair_failures.append('NEW_EXPOSED_COPPER_BELOW_CONSTRUCTION_GUARD')
+                    pair=dict(neighbor_id=oid,raw_original_primitive_gap_mm=original_gap,raw_current_primitive_gap_mm=indexed_distance(candidate,neighbor),original_contact=contact,original_port_wkb_sha256=None if port is None else sha(port),original_port_area_mm2=None if port is None else port.area,original_port_buffer_mm=None if port is None else max(self.widths[sid],self.widths[oid])+c.original_port_buffer_gap_mm,current_neighbor_visible_area_mm2=exposed_neighbor.area,checked_new_exposed_copper_area_mm2=checked.area,new_exposed_to_visible_neighbor_gap_mm=gap,failures=pair_failures)
                     pairs.append(pair);failures.extend(dict(trace_id=sid,neighbor_id=oid,reason=reason) for reason in pair_failures)
                     if fail_fast and pair_failures:break
             failures.extend(dict(trace_id=sid,reason=reason) for reason in reasons)

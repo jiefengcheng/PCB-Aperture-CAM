@@ -43,7 +43,8 @@ def context(store,scene,policy):
     validate_policy(policy)
     binding,raw,rows,shapes,sites=board_context(store,scene,policy)
     selection=validate_selection(store.get_json(policy['u03_selection_ref'],kind='u03-crop-selection'),digest(raw))
-    selected,records=select_sites(sites,selection)
+    selected=sites
+    records=[dict(source_id=s['source_id'],disposition='CANONICAL_FULL_SOURCE_ANALYSIS',aliases=s['aliases'])for s in sites]
     return dict(binding,u03_selection=selection,u03_site_inventory=records),raw,rows,shapes,selected
 
 
@@ -57,25 +58,12 @@ class ImageCropAdapter(BoardAdapter):
     def _context(self,store,scene,policy):return context(store,scene,policy)
 
     def _allocate(self,raw,rows,shapes,sites,policy,binding):
-        local=dict(binding,viewport_mm=binding['u03_selection']['bounds_mm'],location_uncertainty_mm=0)
-        settings,allocation,targets,square=CropAdapter._allocate(self,raw,rows,shapes,sites,policy,local)
-        store=PORT_STORE.get()
-        if store is None:fail('T01_BOARD_PORT_STORE_REQUIRED','U03 image crop allocation')
-        ports=allocation['ports'];records=[]
-        for sid,zones in sorted(ports.items()):
-            records.append(dict(source_id=sid,ports={oid:store.put('t01-port-geometry',bytes.fromhex(blob)) for oid,blob in sorted(zones.items())}))
-        page_binding=dict(source_sha256=digest(raw),site_ids_sha256=digest(canonical(sorted(ports))),viewport_mm=binding['viewport_mm'])
-        reference=store_pages(store,records,binding=page_binding,kind='t01-board-ports')
-        checked,index=read_pages(store,reference,binding=page_binding,kind='t01-board-ports',identity=lambda r:r['source_id'])
-        if {r['source_id']:{oid:store.get(v,kind='t01-port-geometry').hex() for oid,v in r['ports'].items()} for r in checked}!=ports:
-            fail('T01_BOARD_PORT_COVERAGE_MISMATCH','Complete U03 crop ports')
-        allocation.update(ports=dict(schema='t01-board-port-pages/1',index_ref=reference,sites=len(records),zones=sum(len(r['ports']) for r in records),pages=len(index['pages'])),
-                          crop_selection=binding['u03_selection'],crop_site_inventory=binding['u03_site_inventory'])
-        return settings,allocation,targets,square
+        return BoardAdapter._allocate(self,raw,rows,shapes,sites,policy,binding)
 
 
 class ImageCropService(CropService):
     def __init__(self,store,host):
+        fail('T01_CROP_WRITE_RETIRED','Use canonical complete-source T01; crops are read-only presentation')
         if set(host)!={'schema','compiler_binding_refs','stage_registry','crop_selection_ref'} or host['schema']!='u03-image-crop-t01-host/1':
             fail('T01_HOST_INVALID','U03 image crop host')
         self.host=host

@@ -1,3 +1,4 @@
+import stat
 """Content-addressed immutable JSON/binary artifacts and atomic attempt custody.
 
 No user paths are resolved by an artifact reference. This is a local integrity
@@ -67,11 +68,18 @@ class ArtifactStore:
   return dict(artifact_id=artifact_id,sha256=h)
  def put_json(self, kind, value):return self.put(kind,canonical(value))
  def get(self, reference, *, kind=None):
-  ref(reference,'artifact_ref');aid=reference['artifact_id'];p=self.root/'artifacts'/aid
+  ref(reference,'artifact_ref');aid=reference['artifact_id']
   expected=aid.split(':',1)
   if len(expected)!=2 or expected[1]!=reference['sha256'] or (kind is not None and expected[0]!=kind):raise StageABIError('ARTIFACT_KIND_MISMATCH',aid)
-  if p.is_symlink() or not p.is_file():raise StageABIError('ARTIFACT_MISSING_OR_UNSAFE',aid)
-  data=p.read_bytes()
+  try:
+   root=self.root;prepared_root,prefix=getattr(self,'_artifact_path',(None,None))
+   if root is not prepared_root:
+    prefix=str(root/'artifacts')+os.sep;self._artifact_path=(root,prefix)
+   fd=os.open(prefix+aid,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+   with os.fdopen(fd,'rb') as stream:
+    if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):raise StageABIError('ARTIFACT_MISSING_OR_UNSAFE',aid)
+    data=stream.read()
+  except OSError as error:raise StageABIError('ARTIFACT_MISSING_OR_UNSAFE',aid) from error
   if digest(data)!=reference['sha256']:raise StageABIError('ARTIFACT_CORRUPTED',aid)
   return data
  def get_json(self, reference, *, kind=None):

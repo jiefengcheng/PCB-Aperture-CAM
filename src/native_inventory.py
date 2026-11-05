@@ -1,3 +1,4 @@
+from src.native_preparation import native_loads
 """Declared native-object inventory with exact occurrence locators.
 
 Maintained sexpdata decodes semantics. Source geometry is diagnostic context,
@@ -39,14 +40,14 @@ def arc_points(a,m,b):
 
 def inventory(source):
     started=time.perf_counter();spans=locate(source);locator_seconds=time.perf_counter()-started
-    decode_started=time.perf_counter();decoded=sexpdata.loads(source.decode('utf-8'));source_decode_seconds=time.perf_counter()-decode_started
+    decode_started=time.perf_counter();decoded=native_loads(source.decode('utf-8'));source_decode_seconds=time.perf_counter()-decode_started
     if not decoded or str(decoded[0])!='kicad_pcb':raise ValueError('NOT_KICAD_BOARD')
     layer_table=children(decoded,'layers');layernames=[str(v[1]) for v in layer_table[0][1:] if isinstance(v,list)] if layer_table else []
     nets={int(n[1]):str(n[2]) for n in children(decoded,'net') if len(n)>2}
     metadata={'version','generator','generator_version','general','paper','title_block','layers','setup','net','net_class','embedded_fonts','embedded_files','property'}
     by_start={s.start:s for s in spans};selected={s.start:s for s in spans if s.head in KINDS or s.head.startswith(('gr_','fp_')) or (s.parent_start==spans[0].start and s.head not in metadata)}
     selected_decode_started=time.perf_counter()
-    nodes={s.start:sexpdata.loads(source[s.start:s.end].decode('utf-8')) for s in selected.values()}
+    nodes={s.start:native_loads(source[s.start:s.end].decode('utf-8')) for s in selected.values()}
     selected_decode_seconds=time.perf_counter()-selected_decode_started
     geometry_seconds=0
     objects=[];payloads={};counts=Counter();instances=Counter();unsupported=Counter()

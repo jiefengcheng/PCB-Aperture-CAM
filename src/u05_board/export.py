@@ -1,3 +1,5 @@
+from src.native_preparation import native_loads as mutable_native_loads
+from .worker_preparation import native_view as native_loads
 """Append-only native U05 contours, actual before/after plots and hard-gap checks."""
 import copy,re
 from contextlib import nullcontext
@@ -20,16 +22,21 @@ from src.junction_spindle_blend import check_spindle
 from src.u03_board.selection import window
 from tools.t01_operator_host import read
 from .junctions import JunctionGates
+from src.stage_abi.preparation import decode_geometry as from_wkb
 
 NATIVE_OWNER_OVERLAP_MM=2*max(CIRCLE_TOLERANCE_MM,POLYGON_TOLERANCE_MM)
 
-def export_region(addition,owner,window):
+def export_region(addition,owner,window,*,support_from_owner=False):
     # Duplicate only existing owner copper next to the addition. The physical
     # union is unchanged; the overlap prevents native clipping of razor tips.
     target=owner.union(addition)
-    region=target.intersection(addition.buffer(NATIVE_OWNER_OVERLAP_MM,quad_segs=64)).intersection(window)
-    support=region.difference(addition)
-    if support.difference(owner).area>CONTRACT.area_epsilon_mm2 or addition.difference(region).area>CONTRACT.area_epsilon_mm2 or owner.union(region).symmetric_difference(target).area>CONTRACT.area_epsilon_mm2:raise ValueError('U05_NATIVE_SUPPORT_CHANGES_QUALIFIED_COPPER')
+    if support_from_owner:
+        support=owner.intersection(addition.buffer(NATIVE_OWNER_OVERLAP_MM,quad_segs=64)).intersection(window).difference(addition)
+        region=addition.union(support)
+    else:
+        region=target.intersection(addition.buffer(NATIVE_OWNER_OVERLAP_MM,quad_segs=64)).intersection(window)
+        support=region.difference(addition)
+    if support.difference(owner).area>CONTRACT.area_epsilon_mm2 or addition.difference(region).area>CONTRACT.area_epsilon_mm2 or owner.union(region).symmetric_difference(target).area>CONTRACT.area_epsilon_mm2 or region.difference(window).area>CONTRACT.area_epsilon_mm2:raise ValueError('U05_NATIVE_SUPPORT_CHANGES_QUALIFIED_COPPER')
     return region,support
 
 def actual_spindle_check(owner,regions,addition,window,foreign):
@@ -78,7 +85,7 @@ class U05DataService(DataService):
         return prefix[:-1]+b'\n'+b'\n'.join(('  '+native.encode(n)).encode() for n in nodes)+b'\n)\n'
 
     def native_check(self,body):
-        before=sexpdata.loads(self.raw.decode());after=sexpdata.loads(body.decode());expected=sexpdata.loads(self.native_body().decode())
+        before=native_loads(self.raw.decode());after=native_loads(body.decode());expected=native_loads(self.native_body().decode())
         if len(after)!=len(before)+len(self.targets) or after[:len(before)]!=before:raise ValueError('U05_U04_NATIVE_NODE_CHANGED')
         if after!=expected:raise ValueError('U05_NATIVE_APPEND_RECONSTRUCTION_FAILED')
         proofs=[]
@@ -112,7 +119,7 @@ class U05DataService(DataService):
     def owner_indices(self,before,geometries,tree,row):
         selected=set();sid=row['source_id'];owners=[sid,*row['land_ids']]
         if not hasattr(self,'owner_primitive_bindings'):self.owner_primitive_bindings={}
-        if not hasattr(self,'_owner_native_tree'):self._owner_native_tree=sexpdata.loads(self.raw.decode())
+        if not hasattr(self,'_owner_native_tree'):self._owner_native_tree=native_loads(self.raw.decode())
         source_plot=None
         if hasattr(self.gates,'reference'):
             from .owner_plot import binding,plot_atom
@@ -222,7 +229,7 @@ class U05DataService(DataService):
             else:raise ValueError('U05_EXPORT_CONTROL_NOT_REJECTED:'+name)
         blob=Path(read(self.out/'pcb_gerber_export.json')['exports']['candidate']['F.Cu']).read_bytes();bad=folder/'wrong_units.gbr';fresh(bad,blob.replace(b'%MOMM*%',b'%MOIN*%',1));expect('units','GERBER_PROFILE',bad,lambda:gerber.parse(bad))
         role=folder/'wrong_role.gbr';fresh(role,blob.replace(b'Copper,L1,Top',b'Copper,L2,Bot',1));expect('role','FCU_FILE_ROLE_UNSUPPORTED',role,lambda:self.plot_check(role))
-        body=sexpdata.loads(self.board.read_text());body[1].append([sexpdata.Symbol('u05_corrupt'),'1']);badbody=native.board_bytes(body);path=folder/'changed_U04.kicad_pcb';fresh(path,badbody);expect('protected_U04','U05_U04_NATIVE_NODE_CHANGED',path,lambda:self.native_check(badbody))
+        body=mutable_native_loads(self.board.read_text());body[1].append([sexpdata.Symbol('u05_corrupt'),'1']);badbody=native.board_bytes(body);path=folder/'changed_U04.kicad_pcb';fresh(path,badbody);expect('protected_U04','U05_U04_NATIVE_NODE_CHANGED',path,lambda:self.native_check(badbody))
         measured,_,parsed=self.plot_check()
         if self.targets:
             index=measured['targets'][0]['plot_index'];which=sum(isinstance(o,go.Region) for o in parsed.objects[:index]);span=list(re.finditer(rb'G36\*.*?G37\*',blob,re.S))[which];missing=folder/'missing_spindle.gbr';fresh(missing,blob[:span.start()]+blob[span.end():]);expect('missing_spindle','U05_JUNCTION_POLYGON_NOT_IN_GERBER',missing,lambda:self.plot_check(missing))

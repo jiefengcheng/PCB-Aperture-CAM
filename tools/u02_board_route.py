@@ -1,4 +1,5 @@
 """U02: fresh T01 prefix, seven T03 gates and five audited native export gates."""
+from src.clearance_policy import weakened_english
 import sys,uuid,subprocess
 from pathlib import Path
 from src.stage_abi.store import ArtifactStore,digest
@@ -68,7 +69,7 @@ class U02Route(ExportOnlyRoute):
             fresh(folder/'decision.json',decision)
             for file in folder.iterdir():self.audit_hashes[str(file)]=digest(file.read_bytes())
             if op==ROI[-1]:
-                self.cap=host.prepare(self.session);self.store=ArtifactStore(Path(self.cap['store_path']));self.negative=self.store.put('english-spec',(ROOT/'contracts/t01_board/english.txt').read_bytes().replace(b'hard gap 0.020 mm',b'hard gap 0.001 mm'))
+                self.cap=host.prepare(self.session);self.store=ArtifactStore(Path(self.cap['store_path']));self.negative=self.store.put('english-spec',weakened_english((ROOT/'contracts/t01_board/english.txt').read_bytes()))
             elif op=='t01_compile':self.cap=host.register(self.session,p['path']/'abi/stdout.json')
             elif op=='t01_plan':self.cap=host.grant(self.session,p['path']/'abi/stdout.json')
             elif op==CHECK:

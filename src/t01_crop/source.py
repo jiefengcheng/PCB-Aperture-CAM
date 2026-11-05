@@ -1,3 +1,4 @@
+from src.native_preparation import native_loads
 """Dynamic ROI coverage from native bytes and the PCB data ABI source cache."""
 from collections import defaultdict
 import hashlib
@@ -11,12 +12,13 @@ from src.stage_abi.store import digest
 from src.stage_abi.contracts import fail
 from .policy import validate_binding
 from .paging import read_pages
+from src.stage_abi.preparation import prepared_tree as STRtree
 
 def sites_from_cache(raw,manifest,shapes,bounds):
     rows=manifest['objects'];viewport=box(*bounds);occurrences=defaultdict(list)
     for i,(r,g) in enumerate(zip(rows,shapes,strict=True)):
         if r['kind']!='gr_circle' or not g.intersects(viewport):continue
-        node=sexpdata.loads(raw[slice(*r['source_span'])].decode())
+        node=native_loads(raw[slice(*r['source_span'])].decode())
         if str(one(node,'fill',['none'])[0]) not in ('yes','solid'):continue
         if float(one(one(node,'stroke'),'width')[0])!=0:fail('T01_SOURCE_CIRCLE_FORM_UNSUPPORTED',r['id'])
         occurrences[r['geometry_sha256']].append(i)
@@ -70,5 +72,6 @@ def context(store,scene,policy):
             r['source_sha256']!=b['source_sha256'] or not 0<=start<end<=len(raw) or
             r['id']!=f'{b["source_sha256"]}:bytes:{start}:{end}' or 'F.Cu' not in r['layers']):fail('T01_ORIGINAL_SOURCE_REQUIRED',r['id'])
         shapes.append(from_wkb(data))
-    _,rows,sites=sites_from_cache(raw,manifest,shapes,b['viewport_mm'])
+    from src.t01_canonical import full_bounds
+    _,rows,sites=sites_from_cache(raw,manifest,shapes,full_bounds(shapes))
     return b,raw,rows,shapes,sites

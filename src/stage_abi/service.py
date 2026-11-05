@@ -1,3 +1,4 @@
+from .preparation import prepare_adapter
 """Local suite dispatcher with trusted adapters, not request-supplied callables."""
 import hashlib
 import sys
@@ -20,7 +21,7 @@ def runtime_fingerprint():
 
 class StageService:
  def __init__(self,store,registry,adapters):
-  self.store=store;self.registry=registry;self.adapters=dict(adapters);self.runtime=runtime_fingerprint()
+  self.store=store;self.registry=registry;self.adapters={k:prepare_adapter(v) for k,v in adapters.items()};self.runtime=runtime_fingerprint()
  def dispatch(self,request):
   response=self._dispatch_response(request)
   try:return validate_response(response)

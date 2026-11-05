@@ -1,0 +1,62 @@
+{
+  "schema": "t01-canonical-source-contract/1",
+  "family": "t01-priority-companion/2",
+  "construction": "COMPLETE_NATIVE_SOURCE_PRIORITY_COMPANION",
+  "source_selection": "ALL_SUPPORTED_FILLED_ZERO_STROKE_FCU_CIRCLES_AND_EXACT_ALIASES",
+  "context": "COMPLETE_ORIGINAL_FCU",
+  "view_dependency": "NONE",
+  "diameter_classes_mm": [
+    0.038,
+    0.0761,
+    0.2749,
+    0.2999,
+    0.3374,
+    0.3749,
+    0.4499
+  ],
+  "settings": {
+    "hard_factor": 1.5,
+    "construction_gap": 0.02002,
+    "hard_gap": 0.02,
+    "safety": 2e-05,
+    "orientation": -45,
+    "qsegs": 128,
+    "area_epsilon": 1e-10,
+    "event_epsilon": 1e-08
+  },
+  "source_directives": {
+    "path": "contracts/t01_crop/source_features.json",
+    "sha256": "bcc5c0ebde13b88c3356dd5301c32800f09f381f29701078cd4dd8fa14c3f9b8"
+  },
+  "kernel_sha256": {
+    "src/crop_balanced_t01.py": "e9d87b4719b622252c335f74364962e50c00665746e1793429dcd76c682a038a",
+    "src/crop_diameter_selection.py": "2f4eeb3c6552edfd764bc91da2d1833f50c67364aa12a2ae3f3a3eea94fc6e20",
+    "src/crop_square_neighbor_experiment.py": "8b2fd22b113d61e479b8856032988ffe163f44f2d3147452869c13b8b6942bb4",
+    "src/crop_balanced_capped_growth.py": "49c92efd49a04d3aaa1281b221a0b756df83c9329228068b5dbd63b27d6ee796",
+    "src/crop_circle_sources.py": "dedf94561a4a167544b233c367b0f71a2da4792d39a6fd9e606f1bf7236c5e86",
+    "src/native_inventory.py": "b7f0dc9dfe369127a9b9a22d6d1d4c55f82a6a44ee805f3fcca7463e470330b2",
+    "src/t01_canonical_surface.py": "fc0ed3cdda5895c6319f294e67fbc4e6785e95ae91ffab1ec8084c7d362ea882"
+  },
+  "permissions": {
+    "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0": {
+      "keep_original_source_ids": [
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:153679:153804",
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1951713:1951894",
+        "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0:bytes:1951897:1952078"
+      ],
+      "authority": "Owner explicitly retains C028/R304/R305 blocked; identifiers are bound native source occurrences, not crop inputs."
+    }
+  },
+  "qualification": "Fresh complete source/native reconstruction, actual export/reparse, deterministic per-source fingerprints and all original controls required; owner/independent/electrical/manufacturing separate.",
+  "full_surface_guard": {
+    "verifier": "source-filled-land-visible-growth/1",
+    "hard_gap_mm": 0.02,
+    "construction_gap_mm": 0.0201,
+    "original_port_buffer_gap_mm": 0.02002,
+    "comparison_epsilon_mm": 1e-12,
+    "construction_reserve_mm": 2e-05,
+    "exact_core_interior_reserve_mm": 1e-10,
+    "scope": "All native source objects, symmetric original-contact ports; complete rounds held rather than clipped. All original legacy checks retained.",
+    "round_selection": "Descending original admissible palette with both legacy and full-surface predicates; round reservations use at least 0.02012 mm, and promotions recheck the same guard. A planned positive round may not silently become KEEP."
+  }
+}

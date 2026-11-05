@@ -1,3 +1,5 @@
+from src.native_preparation import native_view
+from src.native_preparation import native_loads
 """EDIT-style filled-polygon materialization and semantic reopen checks."""
 from copy import deepcopy
 from decimal import Decimal
@@ -26,7 +28,7 @@ def board_bytes(root):
 
 
 def edit_template(edit):
-    root=sexpdata.loads(edit.decode())
+    root=native_loads(edit.decode())
     for node in root[1:]:
         if isinstance(node,list) and str(node[0])=='gr_poly' and str(one(node,'layer',[''])[0])=='F.Cu' and str(one(node,'fill',[''])[0]) in ('yes','solid'):
             return deepcopy(node)
@@ -46,7 +48,7 @@ def polygon_node(shape,template,source_id,sha):
 
 
 def write_board(raw,edit,decisions,targets):
-    root=sexpdata.loads(raw.decode());spans=locate(raw);parent=spans[0].start
+    root=native_loads(raw.decode());spans=locate(raw);parent=spans[0].start
     top=[s for s in spans if s.parent_start==parent]
     if len(root)-1!=len(top):raise ValueError('NATIVE_TOP_LEVEL_MAPPING_FAILED')
     positions={s.identity:i+1 for i,s in enumerate(top)}
@@ -65,7 +67,7 @@ def write_board(raw,edit,decisions,targets):
 
 
 def verify_board(raw,candidate,records,decisions,targets):
-    before=sexpdata.loads(raw.decode());after=sexpdata.loads(candidate.decode())
+    before=native_view(raw.decode());after=native_view(candidate.decode())
     if len(before)!=len(after) or str(after[0])!='kicad_pcb':raise ValueError('NATIVE_OBJECT_COUNT_OR_ROOT_CHANGED')
     changed={r['index'] for r in records if r['growing']}
     for i,(left,right) in enumerate(zip(before,after)):

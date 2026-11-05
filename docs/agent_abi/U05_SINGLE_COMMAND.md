@@ -10,8 +10,9 @@ tools/Run_U05_Board.command --u04-job "/absolute/completed/U04/job"
 ```
 
 This Terminal route owns its processes. No pre-opened app, MCP, global settings,
-network or installation is needed. Raw-directory U05 and a Local Code embedded
-launcher route are not qualified by this retained-continuation interface.
+network or installation is needed. Raw-directory U05 remains outside this retained-continuation interface.
+The Local Code continuation facade is described below; it uses the same native
+runner and machine audit mode, with no invented agent observations.
 An ordinary-English request to Codex is: “Finish U05 by applying T05 to this
 explicit completed U04 job, keeping the predecessor unchanged; return audited
 native KiCad/Gerber exports without rendering.”
@@ -116,3 +117,26 @@ and plotting atom is re-evaluated. Nominal stroke comparison keeps U03's existin
 The restored reference profile retains five actual export controls, including
 clear-polarity copper. Every F.Cu primitive must be dark before any geometry union;
 a file-level Positive attribute cannot turn a clear region into added copper.
+
+## Local Code continuation facade
+
+The project-local native launcher advertises `u05_board: native-u05/1`. Reopen
+`tools/Start_T01_Native_Launcher.command` once after upgrading an older launcher.
+An old launcher is rejected before any U05 request or job is created.
+
+Use `python3 tools/pcb_u05_board_operator.py start --u04-job "/absolute/completed/U04/job"`,
+optionally with the explicit `--reference` profile. Poll the returned request
+with `python3 tools/pcb_u05_board_operator.py status --request-id "returned-id"`.
+The embedded client sends paths through local files and performs no native work
+or process launch. The native bridge runs the unchanged Terminal runner.
+All 14 gates and both complete fresh evaluations per gate remain mandatory.
+Completion rechecks the full final file inventory, checkpoint hashes, proofs,
+separate worker identities and retained stdout/stderr before returning the
+original report text. On HALTED return the retained failure and stop. No retry,
+resume, shortened audit or acceptance promotion is provided. This adds no
+authority to older T01–U04 observation routes and changes none of their modes.
+
+Bounded preparation is active independently of `--reference`; reference selects
+coverage policy, never performance permissions. Every new native worker starts
+with empty caches. Mutations and export controls receive owned mutable native
+trees; read-only arenas cannot be silently modified.

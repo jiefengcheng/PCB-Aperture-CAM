@@ -3,11 +3,15 @@ No Gerber image or connected component supplies the expected locations/nets.
 """
 import math
 import sexpdata
+from .native_document import NativeSequence,NativeNode
 from shapely.geometry import box,Point,Polygon,LineString
 from shapely import affinity
 
-def children(node,key):return [x for x in node if isinstance(x,list) and x and str(x[0])==key]
+def children(node,key):
+    if isinstance(node,NativeNode):return node.named_children(key)
+    return [x for x in node if isinstance(x,(list,NativeSequence)) and x and str(x[0])==key]
 def one(node,key,default=None):
+    if isinstance(node,NativeNode):return node.first_named_tail(key,default)
     found=children(node,key);return found[0][1:] if found else default
 
 def terminals(path):

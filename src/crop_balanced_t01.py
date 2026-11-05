@@ -6,6 +6,7 @@ are fixed before live decisions. Current-scene indexes are revision checked.
 from __future__ import annotations
 import math,re
 from collections import defaultdict
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 from dataclasses import dataclass
 from shapely import STRtree
 from shapely.geometry import Point
@@ -15,13 +16,14 @@ from src.crop_square_neighbor_experiment import (
     Settings,construct,largest_feasible_round,inscribed_square,facing_square_side,
     geometry_hash,verify_addition,
 )
+from src.stage_abi.preparation import prepared_tree as STRtree,prepared_buffer,prepared_intersection
 
 
 @dataclass(frozen=True)
 class CropSettings:
     hard_factor:float=1.5
-    construction_gap:float=.02002
-    hard_gap:float=.020
+    construction_gap:float=LEGACY_CONSTRUCTION_MM
+    hard_gap:float=HARD_GAP_MM
     safety:float=.00002
     orientation:float=-45
     qsegs:int=128
@@ -34,7 +36,7 @@ class CropSettings:
                         orientation_degrees=self.orientation,quad_segs=self.qsegs)
 
 
-def local_groups(sites,seed_pair,gap=.02002):
+def local_groups(sites,seed_pair,gap=LEGACY_CONSTRUCTION_MM):
     """Disjoint nearest competition pairs; preserve the owner-reviewed pair."""
     byid={s['source_id']:s for s in sites}
     if len(seed_pair)!=2 or len(set(seed_pair))!=2 or any(i not in byid for i in seed_pair):
@@ -61,21 +63,21 @@ class WorkingScene:
         self.accepted={};self.history=[];self.ports={}
         for site in sites:
             cap=Point(*site['center']).buffer(1.5*site['radius'],quad_segs=settings.qsegs)
-            ids=self.tree.query(cap.buffer(.031,quad_segs=settings.qsegs))
+            ids=self.tree.query(cap.buffer(max(.031,settings.construction_gap+.001),quad_segs=settings.qsegs))
             zones={}
             for item in ids:
                 i=int(item);row=rows[i];geometry=shapes[i]
                 if row['kind'] not in ('segment','arc') or not geometry.intersects(site['core'].buffer(1e-7,quad_segs=settings.qsegs)):continue
                 width=re.search(r'\(\s*width\s+([0-9.]+)\s*\)',source[slice(*row['source_span'])].decode())
                 if not width:raise ValueError('SOURCE_TRACE_WIDTH_MISSING')
-                zones[row['id']]=geometry.buffer(max(.005,float(width.group(1))/2+.005),quad_segs=settings.qsegs).intersection(site['core'].buffer(.5*site['radius'],quad_segs=settings.qsegs))
+                zones[row['id']]=prepared_intersection(prepared_buffer(geometry,max(.005,float(width.group(1))/2+.005),quad_segs=settings.qsegs),prepared_buffer(site['core'],.5*site['radius'],quad_segs=settings.qsegs))
             self.ports[site['source_id']]=zones
 
     def obstacles(self,site,expected_revision,overrides=None):
         if expected_revision!=self.revision or self.index_revision!=self.revision:
             raise ValueError('STALE_SCENE_OR_INDEX_REVISION')
         cap=Point(*site['center']).buffer(1.5*site['radius'],quad_segs=self.settings.qsegs)
-        influence=cap.buffer(.031,quad_segs=self.settings.qsegs)
+        influence=cap.buffer(max(.031,self.settings.construction_gap+.001),quad_segs=self.settings.qsegs)
         indexes={int(i) for i in self.tree.query(influence)}
         if overrides:
             for key in overrides:indexes.update(self.sites[key]['indexes'])
@@ -163,7 +165,7 @@ def freeze_factors(sites,groups,priorities,scene,settings=CropSettings()):
     return factors,limits,round_factors
 
 
-def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=CropSettings(),counterfactuals=True,targets=None,square_guided_ids=()):
+def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=CropSettings(),counterfactuals=True,targets=None,square_guided_ids=(),surface_guard=None):
     scene=WorkingScene(source,rows,shapes,sites,settings);byid=scene.sites
     groupfor={sid:g for g in groups for sid in g['site_ids']};priority_ids=set(priorities.values())
     order=sorted(priority_ids)+[s['source_id'] for s in sites if s['source_id'] not in priority_ids]
@@ -188,6 +190,7 @@ def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=C
         if radius==s['radius']:candidate=s['core']
         elif sid in priority_ids:candidate=envelope
         else:candidate,square_recesses=companion_candidate(s,radius,obs)
+        if surface_guard is not None:candidate=surface_guard.limit(s,candidate,context,priority=sid in priority_ids)
         verification=verify_addition(s['core'],candidate,envelope,obs,settings=settings.kernel())
         if not verification['passed']:
             failed.append({'source_id':sid,'input_revision':context.revision,'candidate_sha256':geometry_hash(candidate),'candidate':candidate,'verification':verification})
@@ -202,6 +205,7 @@ def execute(source,rows,shapes,sites,groups,priorities,*,dynamic=True,settings=C
                 if not any(r['source_id']==neighbor for r in obs):continue
                 cfobs=context.obstacles(s,context.revision,{neighbor:n['core']})
                 cf,_=companion_candidate(s,radius,cfobs)
+                if surface_guard is not None:cf=surface_guard.limit(s,cf,context,record=False,overrides={neighbor:n['core']})
                 area=candidate.symmetric_difference(cf).area
                 if area>settings.event_epsilon:
                     verified=verify_addition(s['core'],cf,envelope,cfobs,settings=settings.kernel())

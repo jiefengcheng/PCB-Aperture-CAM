@@ -1,0 +1,37 @@
+{
+  "authorization": {
+    "path": "out/lacie_work/evidence/c03_baseline_reconciliation_20261104T083840Z/AUTHORIZATION.json",
+    "sha256": "42a9e8a1c23c03c6523b856a59573fdb47c8a671a500a9edeeb2357ce136a2ef"
+  },
+  "blocked_original_obligations": [
+    "T01:C028",
+    "T02:R304",
+    "T02:R305"
+  ],
+  "historical_baseline": {
+    "path": "out/crop_dynamic_tasks/t01_revision_handoff_20261031_295/CODE_BASELINE_SHA256.json",
+    "sha256": "ab2636e7dde313a014f3cb462118157d2e63341bf8f43ba6fc8c8bd40074fb46"
+  },
+  "schema": "c03-baseline-custody-successor/1",
+  "scope": "EXPLICIT_C03_JOB_ONLY",
+  "source_provenance": {
+    "path": "out/lacie_work/evidence/c03_baseline_reconciliation_20261104T083840Z/SOURCE_PROVENANCE.json",
+    "sha256": "e677e1d577209cf88f66cbc6d166d60526cb61d55ec2b59e083b4aaf38c4139a"
+  },
+  "successors": [
+    {
+      "commit": "2865aa0d7495007e897f939f9ada7bb3bcc252b7",
+      "historical_copy": {
+        "path": "out/lacie_work/evidence/c03_baseline_reconciliation_20261104T083840Z/historical_junction_spindle_blend.py.txt",
+        "sha256": "b842091cf691eb159438ad6ece61f4831eb12919c496705a5c0fc5ece793a1be"
+      },
+      "historical_sha256": "b842091cf691eb159438ad6ece61f4831eb12919c496705a5c0fc5ece793a1be",
+      "path": "src/junction_spindle_blend.py",
+      "successor_copy": {
+        "path": "out/lacie_work/evidence/c03_baseline_reconciliation_20261104T083840Z/successor_junction_spindle_blend.py.txt",
+        "sha256": "3cc44bec814ffcb17babbcc87479567465b89664b11fdb20051d284246ccc7c2"
+      },
+      "successor_sha256": "3cc44bec814ffcb17babbcc87479567465b89664b11fdb20051d284246ccc7c2"
+    }
+  ]
+}

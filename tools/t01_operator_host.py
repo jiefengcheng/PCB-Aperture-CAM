@@ -39,14 +39,21 @@ def state(session):
     return read(rows[-1])
 def check(session):
     start=read(session/'START.json')
-    for p,h in read(HANDOFF/'CODE_BASELINE_SHA256.json').items():
-        if digest((ROOT/p).read_bytes())!=h:raise ValueError('BASELINE_CODE_CHANGED:'+p)
+    if 'canonical_t01_custody' in start:
+        from src.t01_canonical_custody import check as check_canonical
+        baseline=check_canonical(start['canonical_t01_custody'],HANDOFF/'CODE_BASELINE_SHA256.json')
+    else:
+        from src.c03_baseline_custody import check as check_baseline
+        baseline=check_baseline(ROOT,session,HANDOFF/'CODE_BASELINE_SHA256.json')
     for p,h in start['T01_delivery_files'].items():
         if digest((ROOT/p).read_bytes())!=h:raise ValueError('T01_DELIVERY_CODE_CHANGED:'+p)
     freezes=[frozen_fingerprint(ROOT,e) for e in read(HANDOFF/'PROTECTED_FREEZES.json')]
     if freezes!=start['protected_freezes'] or runtime_fingerprint()!=start['runtime_fingerprint'] or InteractionAdapter().describe()['implementation']!=start['T01_implementation']:
         raise ValueError('PROTECTED_EVIDENCE_OR_RUNTIME_CHANGED')
-    return dict(status='PASS_CUSTODY_ONLY',assets=verify_assets(),protected_freezes=freezes,baseline_files=484,T01_implementation=start['T01_implementation'])
+    result=dict(status='PASS_CUSTODY_ONLY',assets=verify_assets(),protected_freezes=freezes,baseline_files=484,T01_implementation=start['T01_implementation'])
+    if baseline['reconciliation_sha256'] is not None:result['baseline_reconciliation']=baseline
+    if 'canonical_t01_custody' in start:result['canonical_custody']=baseline
+    return result
 def publish(session,number,host,cap):
     reg=session/f'host_{number:02d}.json';fresh(reg,host)
     cap=dict(cap,registry_path=str(reg),registry_sha256=digest(reg.read_bytes()),capsule_revision=number)

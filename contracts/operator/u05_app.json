@@ -1,0 +1,34 @@
+{
+  "schema": "pcb-u05-app/1",
+  "capability": "native-u05/1",
+  "input": "Explicit absolute completed machine-audited U04 job",
+  "actions": [
+    "start",
+    "status"
+  ],
+  "runner": "tools/pcb_u05_board_run.py",
+  "audit_mode": "DETERMINISTIC_MACHINE_AUDIT",
+  "evaluations_per_gate": 2,
+  "human_or_agent_observations": 0,
+  "operations": [
+    "u04_predecessor_verify",
+    "t05_inspect",
+    "t05_admit",
+    "t05_plan",
+    "t05_run",
+    "t05_verify",
+    "t05_compare",
+    "t05_review",
+    "t05_controls",
+    "pcb_kicad_write",
+    "pcb_kicad_verify",
+    "pcb_gerber_export",
+    "pcb_gerber_verify",
+    "pcb_export_controls"
+  ],
+  "transport": "project-local files; native launcher owns processes",
+  "rendering": "NOT_REQUESTED",
+  "owner": "PENDING_USER",
+  "independent": "NOT_RUN: CHANNEL_UNAVAILABLE",
+  "electrical_manufacturing": "NOT_ESTABLISHED"
+}

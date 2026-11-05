@@ -1,3 +1,4 @@
+from src.native_preparation import native_loads
 """Whole-board verified T01 export; existing native writer/checks reused."""
 from .crop import CropDataService,TEMPLATE
 from .crop import version,ArtifactStore,Path,read,digest,from_wkb,CLI,CLI_SHA
@@ -80,7 +81,7 @@ class BoardDataService(CropDataService):
         else:
             changed=directory/'wrong_role.gbr';fresh(changed,blob.replace(b'Copper,L1,Top',b'Copper,L2,Bot',1))
             expect('gerber_layer_role','FCU_FILE_ROLE_UNSUPPORTED',lambda:self.plot_check(changed))
-        root=sexpdata.loads(self.board.read_text());records=read(self.out/'TARGET_MAP.json')
+        root=native_loads(self.board.read_text());records=read(self.out/'TARGET_MAP.json')
         changed_indices={r['index'] for r in records if r['growing']}
         index=next(i for i,node in enumerate(root[1:],1) if i not in changed_indices and isinstance(node,list) and str(node[0]) in ('gr_line','gr_poly','gr_circle','segment','arc'))
         node=root[index];child=next((n for n in node if isinstance(n,list) and str(n[0]) in ('start','center')),None)

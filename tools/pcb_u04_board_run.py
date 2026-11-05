@@ -12,13 +12,18 @@ from tools.t01_route_client import encode,decode,publish
 from tools.pcb_t01_board_run import OwnedRunner,retain_error,adapter_health
 
 
-def run(input_dir,*,state_dir=None,crop=None):
+def run(input_dir,*,state_dir=None,crop=None,c03_recovery=False):
     if crop is not None:
         if not Path(crop).is_absolute():raise ValueError('U04_ABSOLUTE_CROP_PATH_REQUIRED')
     if not Path(input_dir).is_absolute():raise ValueError('EXPLICIT_ABSOLUTE_INPUT_DIRECTORY_REQUIRED')
     from tools.t01_native_route import require_native
     from tools.u04_board_route import initialize,MachineRoute
+    if c03_recovery:
+        if crop is None:raise ValueError('C03_EXPLICIT_CROP_REQUIRED')
+        from tools.c03_recovery_route import initialize,MachineRoute
     from tools.u04_board_auto_operator import MachineOperator
+    if c03_recovery:
+        from tools.c03_recovery_operator import C03MachineOperator as MachineOperator
     from tools.t01_macos_adapter import MacOSAdapter
     from tools.pcb_workspace import configure
     configure()
@@ -109,7 +114,7 @@ def run(input_dir,*,state_dir=None,crop=None):
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--input-dir',required=True,type=Path);p.add_argument('--state-dir',type=Path,help='Optional isolated managed state under project out/; default is the shared project job slot');choice=p.add_mutually_exclusive_group();choice.add_argument('--crop',type=Path,help='Absolute crop image path; native image-to-source location gates select complete features, with full-board clearance context');choice.add_argument('--whole-board',action='store_true',help='Explicitly select whole-board processing (the default without --crop)');args=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--input-dir',required=True,type=Path);p.add_argument('--state-dir',type=Path,help='Optional isolated managed state under project out/; default is the shared project job slot');choice=p.add_mutually_exclusive_group();choice.add_argument('--crop',type=Path,help='Absolute crop image path; native image-to-source location gates select complete features, with full-board clearance context');choice.add_argument('--whole-board',action='store_true',help='Explicitly select whole-board processing (the default without --crop)');p.add_argument('--c03-recovery',action='store_true',help='Explicit owner-bound exact C03 round/contact family; original blocked obligations retained');args=p.parse_args()
     if args.crop is not None and not args.crop.is_absolute():p.error('--crop requires an absolute image file path')
-    return run(args.input_dir,state_dir=args.state_dir,crop=args.crop)
+    return run(args.input_dir,state_dir=args.state_dir,crop=args.crop,c03_recovery=args.c03_recovery)
 if __name__=='__main__':raise SystemExit(main())

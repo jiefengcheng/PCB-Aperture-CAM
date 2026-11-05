@@ -28,7 +28,9 @@ def validate_scene(store,reference):
  return scene
 
 def geometry(store,reference):
- try:g=from_wkb(store.get(reference,kind='geometry'))
+ try:
+  from .preparation import decode_geometry
+  g=decode_geometry(store.get(reference,kind='geometry'))
  except (ValueError,TypeError) as error:fail('GEOMETRY_INVALID',str(error))
  if g.is_empty or not g.is_valid or g.geom_type not in ('Polygon','MultiPolygon'):fail('GEOMETRY_INVALID','finite valid filled copper required')
  return g

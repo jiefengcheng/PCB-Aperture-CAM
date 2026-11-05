@@ -1,20 +1,22 @@
 """Board-wide selection of the existing source-derived T01 interaction policy."""
 from src.t01_crop.policy import RULES as CROP_RULES
-from src.t01_abi.contract import SETTINGS,PALETTE
+from src.t01_crop.policy import SETTINGS
+from src.t01_abi.contract import PALETTE
 from src.t01_abi import FAMILY
 from src.stage_abi.store import canonical,digest
 from src.stage_abi.contracts import fail,ref,finite_json
 
-HEADER='T01 whole-board controlled English version 1.'
+HEADER='T01 canonical whole-source controlled English version 3.'
 RULES=list(CROP_RULES)
-RULES[0]=('R01','Use the verified PCB data ABI KiCad/Gerber pair and complete original F.Cu source geometry. Select every supported filled zero-stroke native graphic circle across the entire source, including covered circles and all exact aliases; keep every other source contribution fixed.','source','data-abi-qualified-entire-original-fcu')
-RULES[-1]=('R16','Use every original F.Cu source surface as context and every eligible source circle as the priority pool. Derive a complete selection window from all source bounds plus the maximum T01 growth envelope; use no screenshot, image location, user coordinates or crop boundary keeps. Source-specific directives follow source identity.','roi_scope','complete-source-pool-no-image-selection')
+RULES[0]=('R01','Use the verified PCB data ABI KiCad/Gerber pair and complete original F.Cu source geometry. Select every supported filled zero-stroke native graphic circle across the entire source, including covered circles and all exact aliases. Keep each circle fully contained by the union of other source copper unchanged, excluding itself and exact aliases; retain partial coverage as eligible. Keep every other source contribution fixed.','source','data-abi-qualified-entire-original-fcu')
+RULES[15]=('R16','Use every original F.Cu source surface as context and every eligible source circle as the priority pool. Derive a complete selection window from all source bounds plus the maximum T01 growth envelope; use no screenshot, image location, user coordinates or crop boundary keeps. Source-specific directives follow source identity.','roi_scope','complete-source-pool-no-image-selection')
 
 def english():return HEADER+'\n'+'\n'.join(k+': '+t for k,t,_,_ in RULES)+'\n'
 def compile_policy(text,binding_ref):
     ref(binding_ref,'binding_ref')
     if type(text)is not str or text.replace('\r\n','\n').strip()!=english().strip():fail('T01_ENGLISH_UNSUPPORTED','Complete whole-board normative wording required')
-    return dict(stage='t01',family=FAMILY,dialect=HEADER,english=english(),english_sha256=digest(english().encode()),binding_ref=binding_ref,rules={f:v for _,_,f,v in RULES},settings=dict(SETTINGS),diameter_classes_mm=list(PALETTE),clause_trace=[dict(clause=k,english=t,contract_field=f,value=v) for k,t,f,v in RULES])
+    from src.t01_canonical import marker
+    return dict(canonical_t01=marker(),stage='t01',family=FAMILY,dialect=HEADER,english=english(),english_sha256=digest(english().encode()),binding_ref=binding_ref,rules={f:v for _,_,f,v in RULES},settings=dict(SETTINGS),diameter_classes_mm=list(PALETTE),clause_trace=[dict(clause=k,english=t,contract_field=f,value=v) for k,t,f,v in RULES])
 def validate_policy(p):
     if canonical(compile_policy(p['english'],p['binding_ref']))!=canonical(p):fail('T01_CONTRACT_DERIVATION_MISMATCH','Whole-board T01 policy')
 

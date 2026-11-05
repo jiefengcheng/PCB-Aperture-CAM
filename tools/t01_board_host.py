@@ -6,6 +6,7 @@ from src.stage_abi.service import runtime_fingerprint
 from src.t01_board import PROFILE
 from src.t01_board.adapter import BoardAdapter
 from src.t01_board.policy import validate_policy
+from src.t01_canonical import marker
 from src.t01_crop.paging import store_pages
 from tools.t01_operator_host import ROOT,read,fresh,publish,state,check,response
 
@@ -23,7 +24,7 @@ def prepare(session):
     scene=store.put_json('scene',dict(source_sha256=b['source_sha256'],frame='native-kicad-mm',units='mm',layer='F.Cu',viewport_mm=b['viewport_mm'],objects=objects,findings=[],lineage=[],acceptance=dict(owner='NOT_GRANTED_FOR_NEW_SCENE',independent='NOT_RUN')))
     binding=store.put_json('t01-binding',b);bounds=store.put_json('bounds',dict(max_source_objects=len(objects),max_targets=len(objects),max_evaluations=max(10000,8*len(objects)),max_output_bytes=200000000,max_seconds=3600))
     host=dict(schema='t01-board-host/1',compiler_binding_refs=[binding],stage_registry=dict(schema='stage-agent-registry/1',profiles={},authorization_refs=[],decision_refs=[]))
-    cap=dict(schema='t01-language-operator-capsule/1',abi_version=ABI_VERSION,profile_id=PROFILE,store_path=str(store.root),binding_ref=binding,scene_ref=scene,bounds_ref=bounds,qualification_ref=store.put_json('verification',dict(scene_ref=scene,geometric_status='PASS',scope='Data-ABI input correspondence and complete board scope only; not electrical or manufacturing')),verifier_ref=store.put_json('verifier',dict(family='t01-priority-companion/1')),english_ref=store.put('english-spec',(ROOT/'contracts/t01_board/english.txt').read_bytes()),policy_ref=None,plan_ref=None,authorization_ref=None,output_scope_ref=None,source_objects=len(objects),viewport_mm=b['viewport_mm'])
+    cap=dict(schema='t01-language-operator-capsule/1',abi_version=ABI_VERSION,profile_id=PROFILE,store_path=str(store.root),binding_ref=binding,scene_ref=scene,bounds_ref=bounds,qualification_ref=store.put_json('verification',dict(scene_ref=scene,geometric_status='PASS',scope='Data-ABI input correspondence and complete board scope only; not electrical or manufacturing')),verifier_ref=store.put_json('verifier',dict(family=marker()['family'])),english_ref=store.put('english-spec',(ROOT/'contracts/t01_board/english.txt').read_bytes()),policy_ref=None,plan_ref=None,authorization_ref=None,output_scope_ref=None,source_objects=len(objects),viewport_mm=b['viewport_mm'])
     return publish(session,0,host,cap)
 
 def register(session,path):

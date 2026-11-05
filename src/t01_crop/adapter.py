@@ -57,31 +57,8 @@ class CropAdapter(InteractionAdapter):
     def _context(self,store,scene,policy):
         validate_policy(policy);return context(store,scene,policy)
     def _allocate(self,raw,rows,shapes,sites,policy,binding):
-        settings=CropSettings(**policy['settings']);initial=WorkingScene(raw,rows,shapes,sites,settings)
-        ids={s['source_id'] for s in sites};uncertainty=binding['location_uncertainty_mm'];inner=box(*binding['viewport_mm']).buffer(-uncertainty)
-        boundary={s['source_id'] for s in sites if not s['core'].intersects(inner)}
-        for pair in binding['reviewed_pairs']:
-            if not set(pair)<=ids:boundary.update(set(pair)&ids)
-            elif set(pair)&boundary:boundary.update(pair)
-        groups=groups_for(sites,binding['reviewed_pairs'],boundary,settings.construction_gap)
-        priorities,exceptions=choose_priorities(sites,initial);square=set(binding['recess_source_ids'])&ids
-        for component,sid in list(priorities.items()):
-            if sid in square or sid in boundary:
-                del priorities[component];exceptions.append(dict(component_id=component,source_id=sid,reason='SOURCE_RECESS_DIRECTIVE' if sid in square else 'ROI_BOUNDARY_KEEP',previous_round_priority=sid))
-        targets,records,limits=select_targets(sites,groups,priorities,initial,settings,policy['diameter_classes_mm'])
-        promotions=promote_round_priorities(sites,groups,priorities,initial,settings,targets,records)
-        limits.extend(dict(reason='FEASIBLE_ROUND_CLASS_PROMOTION',**p) for p in promotions)
-        for s in sites:
-            sid=s['source_id']
-            if sid in boundary:
-                targets[sid]=s['radius'];records[sid].update(proposed_radius_mm=s['radius'],selected_diameter_mm=2*s['radius'],category_mm=None,original_keep=True)
-                records[sid]['limits'].append(dict(reason='ROI_BOUNDARY_KEEP'))
-        allocation=dict(groups=groups,priorities_by_physical_component=priorities,priority_exceptions=exceptions,
-            factor_limits=limits,size_classes=records,sites=[site_record(s) for s in sites],
-            ports={sid:{oid:to_wkb(g,byte_order=1).hex() for oid,g in zones.items()} for sid,zones in initial.ports.items()},
-            boundary_keep_source_ids=sorted(boundary),priority_pool_source_ids=sorted(ids),
-            roi_semantics='ROI selects complete source features; priorities use selected pool; obstacles use full original source. Changing the selected pool can change allocations and is recorded, not a crop-name policy change.')
-        return settings,allocation,targets,square-boundary
+        from src.t01_canonical import allocate
+        return allocate(raw,rows,shapes,sites,policy,binding)
     def verify(self,store,scene,policy,plan,candidate,proof_scope,checkpoint):
         if proof_scope!={'scope':'complete-crop-t01-source-reconstruction'}:fail('PROOF_SCOPE_UNSUPPORTED','Crop T01 reconstruction required')
         expected=journalled('t01-interaction-verification-reconstruction',dict(plan_sha256=digest(canonical(plan))),lambda:self._compute(store,scene,policy,plan,checkpoint))

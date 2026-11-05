@@ -1,0 +1,11 @@
+{
+  "schema": "source-land-recovery-authority/1",
+  "owner_request": "plz proceed with the scoped recovery for R304/R305 and canonical companion evaluation for C028. Keep C028\u2019s full-circle obligation blocked, preserve frozen evidence and all checks, and leave T04 for the new chat.",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "superseded_contract_sha256": "1f77ca18a66481097b3a3d83347862fe4bc062a343656f447ac19f35ee18c488",
+  "T04": "NOT_RUN_IN_THIS_SCOPE",
+  "full_circle_obligation": "C028_BLOCKED",
+  "neighbor_regressions": "REJECT_PROMOTION",
+  "ordinary_rules_and_all_native_checks": "UNCHANGED",
+  "acceptance": "Owner/independent/electrical/manufacturing remain separate"
+}

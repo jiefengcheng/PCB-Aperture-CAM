@@ -4,6 +4,7 @@ Width is checked at declared cross-sections and by a connected eroded witness.
 Foreign copper is never exempted by component/net labels. The caller binds
 source identities, original contacts, current geometry and the writable window.
 """
+from src.clearance_policy import HARD_GAP_MM, CONSTRUCTION_GAP_MM, CONTACT_BUFFER_MM, LEGACY_CONSTRUCTION_MM, BARRIER_GAP_MM
 from dataclasses import dataclass, asdict
 import math
 from shapely.geometry import LineString, Point, Polygon
@@ -12,8 +13,8 @@ from shapely.ops import unary_union
 
 @dataclass(frozen=True)
 class JunctionContract:
-    construction_gap_mm: float = .02010
-    hard_gap_mm: float = .02000
+    construction_gap_mm: float = CONSTRUCTION_GAP_MM
+    hard_gap_mm: float = HARD_GAP_MM
     max_flare_ratio: float = 1.5
     taper_length_widths: float = 2.0
     inside_land_widths: float = .5

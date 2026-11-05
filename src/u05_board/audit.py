@@ -7,6 +7,13 @@ from .custody import T05,FILES,STEPS,verify_u04,session,CONTRACT
 from .junctions import make_gates,parameters
 
 def evaluate(root,attempt):
+    from .worker_preparation import evaluation_preparation
+    from src.stage_abi.preparation import worker_resources
+    with evaluation_preparation(str(root)+':'+attempt):
+        with worker_resources(str(root)+':'+attempt):
+            return _evaluate(root,attempt)
+
+def _evaluate(root,attempt):
     root=Path(root);folder=root/'attempts'/attempt;receipt=read(folder/'receipt.json');verify_attempt(folder);op=receipt['tool'];start=session(root);response=read(folder/'abi/stdout.json');evidence={};checks=[]
     def eq(name,a,b):
         from src.stage_abi.store import canonical

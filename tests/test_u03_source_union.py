@@ -10,7 +10,7 @@ from src.u03_board.dependency import DependencyWidthScene
 
 
 def scene():
-    cores=[LineString([(0,y),(1,y)]).buffer(.05) for y in (0,.14,.4)]
+    cores=[LineString([(0,y),(1,y)]).buffer(.05) for y in (0,.16,.4)]
     rows=[dict(id=str(i),original=g,candidate=g,verified_original_width_mm=.1) for i,g in enumerate(cores)]
     fixed=[dict(id='ring'+str(i),geometry=Point(.5,.2).buffer(2+i*.01,quad_segs=512).difference(Point(.5,.2).buffer(1.5-i*.01,quad_segs=512))) for i in range(5)]
     return rows,fixed

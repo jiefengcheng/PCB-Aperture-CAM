@@ -3,6 +3,7 @@ import sys
 sys.dont_write_bytecode = True
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+raise SystemExit('T02_LEGACY_LATENT_GROWTH_ROUTE_RETIRED: contained circles/rectangles must KEEP; use the current T02 adapter. Frozen results remain read-only.')
 REGISTRATION=ROOT/'out/crop_dynamic_tasks/t02_crop_registration_20261024'
 POLICY_PATH=ROOT/'contracts/crop_rect_t02_policy_v15.json'
 INVENTORY_PATH=ROOT/'out/crop_dynamic_tasks/t02_org_inventory_20261025_v16'

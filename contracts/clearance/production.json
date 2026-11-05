@@ -1,0 +1,12 @@
+{
+  "schema": "pcb-production-clearance/1",
+  "revision": 1,
+  "hard_gap_mm": 0.04,
+  "construction_gap_mm": 0.0401,
+  "original_contact_buffer_mm": 0.04002,
+  "t01_construction_gap_mm": 0.04002,
+  "spindle_barrier_gap_mm": 0.04011,
+  "authority": "Owner requested production 0.020 mm policy adjusted to 0.040 mm by default, 2026-11-05",
+  "scope": "Normal app and Terminal T01/T03/T04/T02/T05; historical results unchanged",
+  "original_contacts": "Existing source-bound authority only; no rerouting or clearance waiver"
+}

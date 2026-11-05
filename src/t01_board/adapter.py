@@ -30,7 +30,7 @@ class BoardAdapter(CropAdapter):
         ports=allocation['ports'];records=[]
         for sid,zones in sorted(ports.items()):
             records.append(dict(source_id=sid,ports={oid:store.put('t01-port-geometry',bytes.fromhex(blob))for oid,blob in sorted(zones.items())}))
-        page_binding=dict(source_sha256=digest(raw),site_ids_sha256=digest(canonical(sorted(ports))),viewport_mm=binding['viewport_mm'])
+        page_binding=dict(source_sha256=digest(raw),site_ids_sha256=digest(canonical(sorted(ports))),viewport_mm=allocation['analysis_bounds_mm'])
         reference=store_pages(store,records,binding=page_binding,kind='t01-board-ports')
         checked,index=read_pages(store,reference,binding=page_binding,kind='t01-board-ports',identity=lambda r:r['source_id'])
         if len(checked)!=len(sites) or {r['source_id']:{oid:store.get(ref,kind='t01-port-geometry').hex()for oid,ref in r['ports'].items()}for r in checked}!=ports:fail('T01_BOARD_PORT_COVERAGE_MISMATCH','All exact port geometries and pages')

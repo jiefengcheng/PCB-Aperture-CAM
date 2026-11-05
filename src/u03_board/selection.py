@@ -38,6 +38,10 @@ def for_root(root):
 
 
 def retain_paths(root):
+    from src.c03_input_family import selected
+    if selected(root):
+        from src.c03_retain_paths import C03RetainPathsAdapter
+        return C03RetainPathsAdapter(root)
     if for_root(root) is not None:
         from .crop_t03 import CropRetainPathsAdapter
         return CropRetainPathsAdapter(root)

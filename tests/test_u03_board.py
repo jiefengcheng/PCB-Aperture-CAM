@@ -269,7 +269,7 @@ def test_compressed_original_union_corruption_halts_without_recomputation():
 def test_union_window_rechecks_original_query_at_existing_clearance_boundary():
     from shapely.affinity import translate
     core=LineString([(0,0),(1,0)]).buffer(.05)
-    neighbor=LineString([(0,.1251-1.2e-12),(1,.1251-1.2e-12)]).buffer(.05)
+    neighbor=LineString([(0,.1451-1.2e-12),(1,.1451-1.2e-12)]).buffer(.05)
     baseline=[dict(id=str(i),original=g,candidate=g,verified_original_width_mm=.1) for i,g in enumerate((core,neighbor))]
     checker=IncrementalWidthScene(baseline,[])
     assert checker.check(baseline,fail_fast=True)['passed']

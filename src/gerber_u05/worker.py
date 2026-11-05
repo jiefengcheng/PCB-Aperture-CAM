@@ -1,0 +1,47 @@
+"""Single fresh construction/reconstruction worker; every failed job stays sealed."""
+import json,os,sys,time
+from pathlib import Path
+from . import pipeline as p
+from .guard import verify_sources,install_read_fence
+ORDER=('t01','t03','t04','t02','t05')
+def compute(run,name):
+ if name=='t04'and os.environ.get('U05_WORKER_MODE')!='construct':
+  from .width_prefix import reconstruct
+  value=reconstruct(run,os.environ['U05_WORKER_MODE'])
+ else:value=p.stage(run,name)
+ if name=='t04'and os.environ.get('U05_WORKER_MODE')=='construct':p.save(run/'RAW_WIDTH_CHECKPOINT.json',value)
+ if name in('t04','t05')and not(run/'LEGACY_REFERENCE_JOB.json').exists():
+  from .component_finish import finish
+  store=p.Store(run/'runtime');binding=p.load(run/'source.json');scene=store.get_json(value['output_scene_ref'],kind='scene')
+  completed=finish(store,scene,binding,name,junction_result=value if name=='t05'else None,mode=os.environ.get('U05_WORKER_MODE','unit'))
+  value=dict(value,raw_output_scene_ref=value['output_scene_ref'],output_scene_ref=completed['output_scene_ref'],intra=completed)
+  value['summary']=dict(value['summary'],inclusive_fills=completed['summary']['fills'],inclusive_added_area_mm2=completed['summary']['added_area_mm2']);store.verify_reads()
+ return value
+
+def main():
+ p.configure();run=Path(sys.argv[1]);name,mode=sys.argv[2:4];os.environ['U05_WORKER_MODE']=mode;install_read_fence(run);verify_sources(run);start=time.monotonic()
+ if name in ORDER:
+  for old in ORDER[:ORDER.index(name)]:
+   for prior in('construct','1','2'):
+    proof=p.load(run/'audits'/old/(prior+'.json'))
+    if proof['status']!='PASS'or proof['candidate_sha256']!=p.digest((run/(old+'.json')).read_bytes()):raise ValueError('PREDECESSOR_STAGE_PROOF_CHANGED')
+  value=compute(run,name);path=run/(name+'.json')
+  if mode=='construct':p.save(path,value)
+  elif p.canonical(value)!=p.canonical(p.load(path)):raise ValueError('FRESH_STAGE_RECONSTRUCTION_CHANGED:'+name)
+  proof=dict(status='PASS',stage=name,candidate_sha256=p.digest(p.canonical(value)),producer_binding_sha256=p.digest((run/'PRODUCER_BINDING.json').read_bytes()),source_sha256=p.load(run/'source.json')['source_ref']['sha256'],summary=value['summary'])
+  p.save(run/'audits'/name/(mode+'.json'),proof)
+  if mode=='2':p.save(run/'audits'/name/'proof.json',proof)
+ elif name=='t01_supplement':
+  from .t01_complete_audit import audit
+  value=audit(run);p.save(run/'audits/t01'/('supplement_'+mode+'.json'),value)
+ elif name=='legacy_export':
+  from . import legacy_export as e
+  body,ledger=e.construct(run);folder=run/'export'
+  if mode=='construct':
+   folder.mkdir();(folder/'top.art.gbr').write_bytes(body);p.save(folder/'ledger.json',ledger)
+  else:
+   if body!=(folder/'top.art.gbr').read_bytes()or p.canonical(ledger)!=p.canonical(p.load(folder/'ledger.json')):raise ValueError('FRESH_LEGACY_EXPORT_RECONSTRUCTION_CHANGED')
+   proof=e.check(run,body,ledger);p.save(folder/('proof_'+mode+'.json'),proof)
+ else:raise ValueError('UNKNOWN_OPERATION')
+ verify_sources(run);print(json.dumps(dict(status='PASS',stage=name,mode=mode,pid=os.getpid(),seconds=time.monotonic()-start)),flush=True)
+if __name__=='__main__':main()

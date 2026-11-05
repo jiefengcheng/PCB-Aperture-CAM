@@ -1,0 +1,24 @@
+{
+  "schema": "c03-native-input-contact-family/1",
+  "family": "c03-exact-round-visible-contact/1",
+  "source_sha256": "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0",
+  "crop_sha256": "9c33ecc73238c0a1124971faad2de7b5eeb5a6e96d008c9ad6755e19c8cc0ea4",
+  "intent_profile": {
+    "path": "contracts/operator/c03_coverage_recovery.json",
+    "sha256": "523295a02df9c11df0404b3785fe0092996f371153d028fe2142a1603f5a7b99"
+  },
+  "authorization": {
+    "path": "out/lacie_work/evidence/coverage_restoration_execution_20261104T062839Z/OWNER_C03_FAMILY_AUTHORIZATION.json",
+    "sha256": "cfdeb8e2fd02e1dd250ea980949b0ce7fb6827b100d39e0ef00f482540d65f9b"
+  },
+  "numeric_policy": {
+    "construction_gap_mm": 0.0201,
+    "actual_hard_floor_mm": 0.02,
+    "original_contact_buffer_addition_mm": 0.02002,
+    "comparison_epsilon_mm": 1e-12,
+    "quad_segs": 128,
+    "source_generic_area_epsilon_mm2": 1e-10
+  },
+  "generic_U02": "UNCHANGED; raw source-port verdicts retained without promotion",
+  "source_routes": "EXACT_NATIVE_RETENTION_ONLY; no movement or partial-width authority"
+}
