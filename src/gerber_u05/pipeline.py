@@ -26,7 +26,7 @@ from src.u02_board.adapter import pair_check
 from src.u04_board.search import FastRectangleAdapter
 from .component_rectangles import ComponentRectangleAdapter as FastRectangleAdapter
 from src.stage_abi.lands import land_parameters
-from src.u05_board.coverage import CoverageAdapter
+from .prior_copper import CoverageAdapter
 from src.u05_board.junctions import parameters as spindle_parameters
 from shapely import from_wkb,to_wkb,STRtree
 from shapely.affinity import scale as affine_scale
@@ -225,6 +225,8 @@ def run_t02(store,scene):
     return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,summary=dict(rectangles=len(ids),grown=sum(r['status']=='GROWN'for r in candidate['decisions']),contained_keep=sum(r['status']=='COVERED_SKIP'for r in candidate['decisions']),inclusive=sum(r['status']=='MERGED'for r in candidate['inclusive_candidates'])))
 
 def run_t05(store,scene,t04):
+    from .prior_copper import prepare as prepare_prior
+    scene,prior_floor=prepare_prior(store,scene)
     rows,current,original=operands(store,scene);objects=copy.deepcopy(scene['objects']);byid={r['source_id']:r for r in objects};lands=[s for s,r in rows.items()if r['metadata'].get('qualified_land')or r['kind']=='inclusive_rectangle']
     for sid in lands:
         r=byid[sid]
@@ -239,7 +241,7 @@ def run_t05(store,scene,t04):
         objects.append(dict(source_id=sid,kind='trace',original_ref=geomref(store,old),geometry_ref=geomref(store,now),metadata=metadata));targets.append(sid);contacts.append(dict(route=sid,lands=ids,T04_disposition=record['disposition']))
     prepared=dict(scene,objects=objects);scene_ref=store.put_json('scene',prepared);policy=dict(stage='t05',parameters=spindle_parameters());adapter=CoverageAdapter(box(*scene['viewport_mm']));details=adapter.plan(store,prepared,policy,dict(stage='t05',scene_ref=scene_ref,source_ids=targets),bounds(prepared));plan=dict(stage='t05',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details);candidate=adapter.run(store,prepared,policy,plan,lambda _:None);check=adapter.verify(store,prepared,policy,plan,candidate,dict(scope='complete-source-and-all-patches'),lambda _:None);adapter.close()
     if not check['passed']:raise ValueError('T05_COMPLETE_ATTACHMENT_RECONSTRUCTION_FAILED')
-    return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,summary=dict(routes=len(targets),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
+    return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,**({}if prior_floor is None else{'prior_positive_floor':prior_floor}),summary=dict(routes=len(targets),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
 
 def stage(run,name):
     store=Store(run/'runtime');binding=load(run/'source.json');order=['t01','t03','t04','t02','t05'];index=order.index(name);scene_ref=binding['scene_ref']if index==0 else load(run/(order[index-1]+'.json'))['output_scene_ref'];scene=validate_scene(store,scene_ref)

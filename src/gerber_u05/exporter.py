@@ -130,6 +130,12 @@ def construct(run):
         current=after
     value=p.load(run/'t05.json');prepared=store.get_json(value['plan']['scene_ref'],kind='scene');policy=store.get_json(value['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']))
     objects={row['source_id']:row for row in prepared['objects']}
+    for row in sorted(prepared['objects'],key=lambda row:row['source_id']):
+        sid=row['source_id']
+        if row['kind']!='component_remedy':continue
+        g=p.geometry(store,row['geometry_ref'])
+        if sid not in current or p.to_wkb(g)!=p.to_wkb(current[sid]):
+            first=len(records);append_regions(g,'t05_floor',sid,records,blocks,store);parts=[p.geometry(store,row['geometry_ref'])for row in records[first:]];encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parts]);current[sid]=g
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
         owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_export_region(store,value,adapter,owner,domain,d,foreign);first=len(records);append_regions(region,'t05',d['source_id'],records,blocks,store)
@@ -170,6 +176,11 @@ def native_model_reference(run,store,before,*,include_parents=False):
             if sid not in current or p.to_wkb(shape)!=p.to_wkb(current[sid]):prepare(shape,sid,stage+'_finish'if rows[sid]['kind']=='component_remedy'else stage)
         current=after
     prepared=store.get_json(value['plan']['scene_ref'],kind='scene');policy=store.get_json(value['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']))
+    for row in sorted(prepared['objects'],key=lambda row:row['source_id']):
+        sid=row['source_id']
+        if row['kind']!='component_remedy':continue
+        shape=p.geometry(store,row['geometry_ref'])
+        if sid not in current or p.to_wkb(shape)!=p.to_wkb(current[sid]):prepare(shape,sid,'t05_floor')
     try:
         for d in value['candidate']['decisions']:
             if d['status']!='GROWN':continue
@@ -304,6 +315,14 @@ def check(run,body,ledger):
         for sid,row in rows.items():
             if sid not in original_shapes:original_shapes[sid]=p.geometry(store,row['original_ref'])
     value=p.load(run/'t05.json');prepared=copy.deepcopy(store.get_json(value['plan']['scene_ref'],kind='scene'));policy=store.get_json(value['plan']['policy_ref'],kind='policy')
+    floor_parts=by_stage['t05_floor'];floor= value.get('prior_positive_floor');declared_floor={row['source_id']:row for row in floor['records']}if floor else{}
+    if set(floor_parts)!=set(declared_floor):raise ValueError('ACTUAL_PRIOR_FLOOR_INVENTORY_CHANGED')
+    groups_before_floor=cc.ACTIVE.project(current)
+    for sid,pieces in floor_parts.items():current[sid]=certified_union(current[sid],pieces)if sid in current else p.unary_union(pieces)
+    groups_with_floor=cc.ACTIVE.project(current);checks['t05_prior_floor_clearance']=native_clearance(groups_before_floor,groups_with_floor)
+    floor_missing=sum(prior.difference(groups_with_floor[own].buffer(POLYGON_TOLERANCE_MM)).area for own,prior in cc.ACTIVE.reserved.items())
+    checks['t05_prior_positive_retention']=dict(passed=floor_missing<=1e-12,missing_area_mm2=floor_missing,prior_sha256=cc.ACTIVE.reservation_sha256,contour_uncertainty_mm=POLYGON_TOLERANCE_MM)
+    if floor_missing>1e-12:raise ValueError('ACTUAL_T05_ENTRY_PRIOR_COPPER_MISSING:'+str(floor_missing))
     for row in prepared['objects']:
         sid=row['source_id'];g=p.unary_union([current[s]for s in row['metadata']['reference_source_ids']])if row['kind']=='trace'else current[sid];row['geometry_ref']=p.geomref(store,g)
     declared=store.get_json(value['plan']['scene_ref'],kind='scene')

@@ -66,3 +66,27 @@ Prior `.DS_Store` custody FAIL remains explicit, unwaived, with writer unattribu
 Machine/geometry qualification and an approved preview do not establish owner,
 independent, electrical or manufacturing release acceptance. Coverage recovery
 continues separately; no recovery files or failed jobs are reset/relabelled.
+
+## Incremental qualification
+
+After a T05/export correction, use
+`python -B -m src.gerber_u05.incremental --prefix-run "/absolute/accepted/connected/prefix"`.
+This creates a separate job; a stopped or failed original job is never resumed.
+The original source, source-derived reference and completed T01/T03/T04/T02
+construction plus both evaluations are retained with their exact input, policy,
+producer, output, search-witness, process and audit hashes. Changed upstream
+algorithms or policies invalidate reuse. Named exact metric/storage equivalences
+are explicit; every other upstream producer must match. New T05 construction and
+both evaluations, actual export/reparse, all corruptions, remaining-defect audit
+and final rendering remain mandatory. Reports label prefix reuse rather than
+claim another full fresh source run. Distinct batch inputs use the full route.
+
+The prior reference is minimum copper at T05 entry, not merely a reservation for
+foreign components. Its missing material is absorbed into the existing original
+owner surfaces before planning new junction growth. Both current and qualified
+prior foreign surfaces constrain every new spindle. A one-grid construction
+containment guard protects the unchanged two-grid native fidelity limit during
+rounding. The existing native foreign-clearance, source-hole and final prior
+retention checks remain gates; adding old and new shapes blindly is prohibited.
+This avoids replacing an earlier tall rectangle with only a wider, shorter one
+and then allowing a new foreign junction to occupy its former clearance space.
