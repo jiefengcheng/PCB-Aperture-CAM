@@ -21,7 +21,10 @@ def fixture(tmp_path,monkeypatch,second=False,y=0):
  after=copy.deepcopy(before);grown=scale(pad,1.25,1.25,origin=pad.centroid);after['objects'][1]['geometry_ref']=ref(grown)
  decisions=[dict(source_id='pad',status='GROWN',shape={'factors':[1.25,1.25]},candidate_ref=ref(grown))]
  if second:decisions.append(dict(source_id='pad2',status='KEEP',shape={},candidate_ref=rows[2]['geometry_ref']))
- value=dict(plan=dict(scene_ref=entry,policy_ref=store.put_json('policy',dict(stage='t02',parameters=p.land_parameters('t02'))),details={'targets':sorted(r['source_id']for r in rows if r['kind']=='rectangle')}),
+ originals={r['source_id']:p.geometry(store,r['original_ref'])for r in rows}
+ order=lambda s:(originals[s].centroid.y,originals[s].centroid.x,s)
+ decisions.sort(key=lambda d:order(d['source_id']))
+ value=dict(plan=dict(scene_ref=entry,policy_ref=store.put_json('policy',dict(stage='t02',parameters=p.land_parameters('t02'))),details={'targets':sorted((r['source_id']for r in rows if r['kind']=='rectangle'),key=order)}),
             verification={'passed':True},candidate=dict(decisions=decisions,protected_source_refs={'trace':rows[0]['geometry_ref']},inclusive_candidates=[]),output_scene_ref=store.put_json('scene',after))
  return store,entry,value,after
 
@@ -82,3 +85,11 @@ def test_missing_width_rule_is_an_explicit_failure(tmp_path,monkeypatch):
  store,entry,value,after=fixture(tmp_path,monkeypatch)
  monkeypatch.setattr(fence,'ACTIVE',None)
  with pytest.raises(ValueError,match='RULE_REQUIRED'):require_t02(store,entry,value)
+
+
+def test_pad_inventory_uses_existing_spatial_order_instead_of_byte_id_order(tmp_path,monkeypatch):
+ store,entry,value,_=fixture(tmp_path,monkeypatch,second=True,y=1)
+ assert value['plan']['details']['targets']==['pad2','pad']
+ assert require_t02(store,entry,value)['passed']
+ value['candidate']['decisions'].reverse()
+ with pytest.raises(ValueError,match='PAD_AUTHORITY_CHANGED'):require_t02(store,entry,value)

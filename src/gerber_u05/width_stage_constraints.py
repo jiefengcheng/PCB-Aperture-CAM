@@ -23,7 +23,10 @@ def require_t02(store,predecessor_ref,value):
  after=store.get_json(value['output_scene_ref'],kind='scene')
  rows,current,original=p.operands(store,before);out,material,_=p.operands(store,after)
  if len(out)!=len(after['objects'])or not set(rows)<=set(out):raise ValueError('T02_SOURCE_INVENTORY_CHANGED')
- pads=sorted(s for s,r in rows.items()if r['kind']=='rectangle')
+ # Match the existing FastRectangleAdapter's source-centroid order. Source
+ # occurrence IDs are byte-span identities, not the spatial visit order.
+ pads=sorted((s for s,r in rows.items()if r['kind']=='rectangle'),
+             key=lambda s:(original[s].centroid.y,original[s].centroid.x,s))
  decisions=value['candidate']['decisions']
  if value['plan']['details']['targets']!=pads or [r['source_id']for r in decisions]!=pads:
   raise ValueError('T02_ORDINARY_PAD_AUTHORITY_CHANGED')
