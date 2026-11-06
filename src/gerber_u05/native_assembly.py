@@ -39,7 +39,7 @@ def weld(records,decoded,parents,*,grid_mm):
   if len(statuses)!=1:raise ValueError('NATIVE_MATERIAL_ENCODING_MIXED')
   status=next(iter(statuses));indices=[r['component_reference_proof']['serialization_part']for r,_ in rows]
   if indices!=list(range(len(rows))):raise ValueError('NATIVE_MATERIAL_PART_INVENTORY_CHANGED')
-  if status=='EXACT_INTEGER_GRID_PARTITION':
+  if status in('EXACT_INTEGER_GRID_PARTITION','EXACT_COALESCED_INTEGER_PARTITION'):
    if any(r['component_reference_proof']['serialization_partition']['parts']!=len(rows)for r,_ in rows):raise ValueError('NATIVE_MATERIAL_PART_COUNT_CHANGED')
    proof=verify_partition(target,parts,grid_mm=grid_mm)
   elif status in('ORIGINAL_CUT_IN_ENCODING','EXACT_AXIAL_CUT_IN_ENCODING')and len(rows)==1:

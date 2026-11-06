@@ -4,6 +4,25 @@ from src import component_clearance as cc
 from src.u05_board.export import export_region
 from .component_finish import prepare_region
 
+def compact_supported_region(addition,owner,domain):
+ """One local joint surface; duplicate only already-present owner copper.
+
+All original export_region predicates are retained. If the exact existing
+Boolean proof does not hold, use the original qualified support construction.
+ """
+ from src.junction_spindle_stage import CONTRACT
+ from src.u05_board.export import NATIVE_OWNER_OVERLAP_MM
+ # Inset redundant support only; retain the complete qualified addition.
+ support=owner.intersection(domain.buffer(-NATIVE_OWNER_OVERLAP_MM,quad_segs=64))
+ region=support.union(addition);target=owner.union(addition)
+ if (region.is_valid and not region.is_empty
+     and support.difference(owner).area<=CONTRACT.area_epsilon_mm2
+     and addition.difference(region).area<=CONTRACT.area_epsilon_mm2
+     and owner.union(region).symmetric_difference(target).area<=CONTRACT.area_epsilon_mm2
+     and region.difference(domain).area<=CONTRACT.area_epsilon_mm2):
+  return region,support,'CHECKED_COMPLETE_LOCAL_JOINT_SURFACE'
+ return supported_region(addition,owner,domain)
+
 def supported_region(addition,owner,domain):
  try:
   region,support=export_region(addition,owner,domain)
@@ -33,7 +52,7 @@ def supported_region(addition,owner,domain):
 def prepare_export_region(store,value,adapter,owner,domain,decision,foreign):
  addition=p.geometry(store,decision['patch_ref'])
  if cc.ACTIVE is None:return export_region(addition,owner,domain)
- region,support,support_mode=supported_region(addition,owner,domain)
+ region,support,support_mode=compact_supported_region(addition,owner,domain)
  from src.u05_board.coverage import integral_context
  context=integral_context();own=adapter.owner_for_route(decision['source_id']);all_foreign=list(foreign)
  for row in value['candidate']['decisions']:

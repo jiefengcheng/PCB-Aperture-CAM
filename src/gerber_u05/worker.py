@@ -15,6 +15,9 @@ def compute(run,name):
   from .component_finish import finish
   store=p.Store(run/'runtime');binding=p.load(run/'source.json');scene=store.get_json(value['output_scene_ref'],kind='scene')
   completed=finish(store,scene,binding,name,junction_result=value if name=='t05'else None,mode=os.environ.get('U05_WORKER_MODE','unit'))
+  if name=='t05':
+   from .joint_smoothing import apply
+   completed=apply(store,scene,binding,completed,name,value)
   value=dict(value,raw_output_scene_ref=value['output_scene_ref'],output_scene_ref=completed['output_scene_ref'],intra=completed)
   value['summary']=dict(value['summary'],inclusive_fills=completed['summary']['fills'],inclusive_added_area_mm2=completed['summary']['added_area_mm2']);store.verify_reads()
  from src import pin_separation as pin

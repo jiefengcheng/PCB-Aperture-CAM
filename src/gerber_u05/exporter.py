@@ -1,4 +1,5 @@
 from .contours import contours as serializable_contours
+from .compact_contours import contours as compact_t05_contours
 from .export_absorption import prepare_export_region as base_prepare_export_region
 from .native_spindle_operand import operand as native_spindle_operand
 """Gerber-only serialization: retain original atoms, append qualified positive copper."""
@@ -115,7 +116,8 @@ def append_regions(shape,stage,sid,records,blocks,store):
     for piece in sorted(pieces,key=p.to_wkb):
         if piece.is_empty or piece.area<=0:raise ValueError('INVALID_EXPORT_COMPONENT')
         reference,proof=export_reference(piece)
-        serialized,partition_proof=serializable_contours(reference,bridge_contour,grid_mm=GRID_MM)
+        serializer=compact_t05_contours if stage.startswith('t05') else serializable_contours
+        serialized,partition_proof=serializer(reference,bridge_contour,grid_mm=GRID_MM)
         # Contact/owner decisions use the material whose exact integer-boundary
         # partition was just proved, rather than re-unioning unwelded triangles.
         # Every serialized positive face is still written and reparsed below.
@@ -168,10 +170,17 @@ def construct(run):
         g=p.geometry(store,row['geometry_ref'])
         if sid not in current or p.to_wkb(g)!=p.to_wkb(current[sid]):
             parents=append_regions(g,'t05_floor',sid,records,blocks,store);encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parents]);current[sid]=g
+    joint_policy=p.load(run/'REMEDY_POLICY_SNAPSHOT.json').get('t05_joint_profiles',{})
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_export_region(store,value,adapter,owner,domain,d,foreign);parents=append_regions(region,'t05',d['source_id'],records,blocks,store)
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_export_region(store,value,adapter,owner,domain,d,foreign);first=len(records);parents=append_regions(region,'t05',d['source_id'],records,blocks,store)
         own=adapter.owner_for_route(d['source_id']);encoded_owner=adapter._integral_context.project(encoded_current)[own];preserve_point_contacts(encoded_owner,parents,d['source_id'],records,blocks,store)
+        if 'maximum_export_regions_per_attachment'in joint_policy:
+            from .compact_contours import require_budget
+            emitted=[p.geometry(store,r['geometry_ref'])for r in records[first:]]
+            for land_id in d['land_ids']:
+                contact_window=p.geometry(store,objects[land_id]['geometry_ref']).buffer(2*radius,quad_segs=64)
+                require_budget(sum(g.intersects(contact_window)for g in emitted),1,joint_policy['maximum_export_regions_per_attachment'])
     adapter.close()
     final=store.get_json(value['output_scene_ref'],kind='scene');finalrows={r['source_id']:r for r in final['objects']}
     for fill in value['intra']['fills']:

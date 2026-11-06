@@ -1,0 +1,51 @@
+{
+  "schema": "source-bound-t05-joint-profiles/1",
+  "radius_fraction": 0.25,
+  "sources": {
+    "30da6fb74f91aeb734acf5d11daf421e012c179631177c599a85ab9d0962d80a": [
+      {
+        "id": "left-bend",
+        "center_mm": [
+          3.4022,
+          -20.4253
+        ],
+        "source_geometry_sha256": "58da1e0e3acd52c4a1d44cba1cba1f38604ec34127edec02bacc34b8189dbd1a",
+        "window_mm": [
+          3.54,
+          -20.64,
+          3.66,
+          -20.4
+        ]
+      },
+      {
+        "id": "upper-shoulder",
+        "center_mm": [
+          5.8304,
+          -20.0761
+        ],
+        "source_geometry_sha256": "8e46e0b5eaf3d29e6ed896c1cb0781fdfb4c971f5796170b9b04e4a524418f7a",
+        "window_mm": [
+          5.92,
+          -20.44,
+          6.04,
+          -20.18
+        ]
+      },
+      {
+        "id": "lower-diagonal",
+        "center_mm": [
+          4.7233,
+          -18.3302
+        ],
+        "source_geometry_sha256": "b4c2cdc5d51cc658f323f41f512561372db47cac1e95672fabc11526268cd333",
+        "window_mm": [
+          4.45,
+          -18.39,
+          4.6,
+          -18.25
+        ]
+      }
+    ]
+  },
+  "maximum_export_regions_per_attachment": 8
+}
