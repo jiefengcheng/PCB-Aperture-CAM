@@ -10,6 +10,7 @@ def compute(run,name):
   value=reconstruct(run,os.environ['U05_WORKER_MODE'])
  else:value=p.stage(run,name)
  if name=='t04'and os.environ.get('U05_WORKER_MODE')=='construct':p.save(run/'RAW_WIDTH_CHECKPOINT.json',value)
+ if name=='t05':p.save(run/'raw_checkpoints'/('t05_'+os.environ.get('U05_WORKER_MODE','unit')+'.json'),value)
  if name in('t04','t05')and not(run/'LEGACY_REFERENCE_JOB.json').exists():
   from .component_finish import finish
   store=p.Store(run/'runtime');binding=p.load(run/'source.json');scene=store.get_json(value['output_scene_ref'],kind='scene')

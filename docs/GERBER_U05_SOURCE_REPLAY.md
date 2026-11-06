@@ -57,6 +57,15 @@ addition, physical-union and scope predicates retain the same area epsilon;
 the actual parsed-file tip fidelity and complete physical checks remain mandatory.
 The KiCad export route and its overlap construction are unchanged.
 
+The alternate global-overlay diagnostic can contain valid zero-area lines in
+addition to its positive polygons. Diagnostic component counting uses the existing
+areal-context extraction and records that representation explicitly. Every
+positive face is retained, including minimum-grid faces; invalid geometry still
+halts. Actual candidate copper continues to require valid polygons, unchanged
+owner topology, source containment and the complete foreign-clearance checks.
+This changes no candidate material. Raw T05 results are captured before the
+remedy, and incremental visual receipts distinguish reused evidence from new work.
+
 Large contour metrics use all vertices and bounded
 spatial indexes, never display sampling or simplification.
 

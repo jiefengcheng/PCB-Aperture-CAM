@@ -60,3 +60,13 @@ def test_only_t05_support_function_may_change_in_absorption_module(tmp_path):
  assert verify_code(original,new,old)[0]['scope'].startswith('Only supported_region')
  (new/relative).write_text(after.replace('return 4','return 5'))
  with pytest.raises(ValueError,match='UPSTREAM_EXPORT_SUPPORT_CHANGED'):verify_code(original,new,old)
+
+
+def test_worker_exception_allows_only_exact_t05_evidence_capture():
+ from src.gerber_u05.prefix import worker_prefix_same
+ old="def compute(run,name):\n value=stage(run,name)\n return value\n"
+ capture=" if name=='t05':p.save(run/'raw_checkpoints'/('t05_'+os.environ.get('U05_WORKER_MODE','unit')+'.json'),value)\n"
+ new=old.replace(' return value',capture+' return value')
+ assert worker_prefix_same(old,new)['status']=='UNCHANGED_UPSTREAM_AST'
+ with pytest.raises(ValueError,match='UPSTREAM_WORKER_CHANGED'):worker_prefix_same(old,new.replace("name=='t05'","name=='t04'"))
+ with pytest.raises(ValueError,match='UPSTREAM_WORKER_CHANGED'):worker_prefix_same(old,new.replace('value=stage','value=changed_stage'))

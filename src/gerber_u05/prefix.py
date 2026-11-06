@@ -4,6 +4,7 @@ from pathlib import Path
 STAGES=('t01','t03','t04','t02')
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/contours.py','src/gerber_u05/exporter.py','src/gerber_u05/render.py','src/gerber_u05/remaining_defects.py'}
 EQUIVALENT={
+ 'src/component_voids.py':('46f6afbfd029e97a6409ecdc4b20a3c1511f394e02187ea72c9fd2ed762d49b7','db0dbae5d433b02dbe10715f772e0c46bc4144ea96050f62a8ed836d1d28246a','Only alternate global-overlay diagnostic counting uses existing areal-context extraction. Every physical geometry/source/clearance/topology check is unchanged. Valid polygon reports are identical; retained upstream reports prove that path. All positive faces retained; actual candidate remains strict polygonal copper.'),
  'src/native_boundary_metric.py':('b9a1eae932ed66667de7adf52d307b3577c0175c7d2173b29112803dc6e61b83','d84e8392b7b4f3d28c7aa5df3838532902ff99e87dc53038c0a794ac17a84cc7','Valid identical-WKB Hausdorff is exactly zero; all other indexed/native metric paths unchanged. Dedicated valid/invalid and native parity tests retained.'),
  'tools/pcb_workspace.py':('82005433b3d08a17ae9c89c4d8c022602cab4ac754e8688afdc583112a98b291','068fc453f38f86984860adb4f553a9b0f05fd10172e6f5b9ae6660afd6329ecd','Verified external source-snapshot storage namespace only; 88 native app regressions and explicit no-fallback tests retained.')}
 
@@ -21,6 +22,15 @@ def pipeline_prefix_same(before,after):
  if filtered(before)!=filtered(after):raise ValueError('REUSED_UPSTREAM_PIPELINE_ALGORITHM_CHANGED')
  return dict(status='UNCHANGED_UPSTREAM_AST',changed_scope='run_t05 and its isolated CoverageAdapter import only')
 
+def worker_prefix_same(before,after):
+ allowed=ast.dump(ast.parse("if name=='t05':p.save(run/'raw_checkpoints'/('t05_'+os.environ.get('U05_WORKER_MODE','unit')+'.json'),value)").body[0],include_attributes=False)
+ tree=ast.parse(after)
+ for node in tree.body:
+  if isinstance(node,ast.FunctionDef)and node.name=='compute':
+   node.body=[statement for statement in node.body if ast.dump(statement,include_attributes=False)!=allowed]
+ if ast.dump(ast.parse(before),include_attributes=False)!=ast.dump(tree,include_attributes=False):raise ValueError('REUSED_UPSTREAM_WORKER_CHANGED')
+ return dict(status='UNCHANGED_UPSTREAM_AST',changed_scope='T05-only raw-result evidence capture after its complete native geometry verification')
+
 def verify_code(original,root,old_root):
  results=[];root=Path(root);old_root=Path(old_root)
  for name,expected in original['files'].items():
@@ -33,6 +43,8 @@ def verify_code(original,root,old_root):
   if actual==expected:continue
   if relative=='src/gerber_u05/pipeline.py':
    results.append(dict(path=relative,proof=pipeline_prefix_same(path.read_text(),current.read_text())));continue
+  if relative=='src/gerber_u05/worker.py':
+   results.append(dict(path=relative,proof=worker_prefix_same(path.read_text(),current.read_text())));continue
   if relative=='src/gerber_u05/export_absorption.py':
    # Upstream completion calls native_before with junction_result=None and
    # never invokes supported_region. Bind every other statement unchanged.

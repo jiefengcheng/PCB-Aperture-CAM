@@ -50,6 +50,17 @@ def surface_parts(g):
     if g.geom_type in ('Point','MultiPoint','LineString','LinearRing','MultiLineString') and g.area==0:return []
     raise ValueError('UNSUPPORTED_CANDIDATE_CONTEXT')
 
+def _overlay_diagnostic(legacy,result):
+    # This alternate union is never candidate material. Count every positive
+    # surface using the existing areal-context rule; zero-area points/lines
+    # produced by overlay are not additional copper components. Invalid
+    # geometries and unsupported semantics still raise in surface_parts.
+    surfaces=surface_parts(legacy)
+    report=dict(legacy_global_overlay_components=len(surfaces),global_overlay_symmetric_difference_mm2=legacy.symmetric_difference(result).area)
+    if legacy.geom_type=='GeometryCollection':
+        report['legacy_global_overlay_representation']=dict(status='DIAGNOSTIC_AREAL_CONTEXT',raw_type=legacy.geom_type,raw_sha256=sha(legacy),areal_components=len(surfaces),basis='All positive surfaces retained; only supported zero-area points/lines excluded from diagnostic copper-component count. Checked owner material unchanged.')
+    return report
+
 def empty():return Polygon()
 def joined(shapes):return union_all(shapes) if shapes else empty()
 def holes(g):return [Polygon(r) for p in parts(g) for r in p.interiors]
@@ -181,8 +192,8 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
                 raise ValueError('SIMULTANEOUS_FILL_CLEARANCE_FAILED')
     fills=joined([r['geometry'] for r in accepted]);legacy=current.union(fills);result=joined(frozen)
     newparts=parts(result)
-    if len(newparts)!=len(grown):raise ValueError('FILL_COMPONENT_TOPOLOGY_CHANGED:'+str(dict(before=len(grown),checked_owner_assembly=len(newparts),legacy_global_overlay=len(parts(legacy)))))
+    if len(newparts)!=len(grown):raise ValueError('FILL_COMPONENT_TOPOLOGY_CHANGED:'+str(dict(before=len(grown),checked_owner_assembly=len(newparts),legacy_global_overlay=len(surface_parts(legacy)))))
     components(source,result,contract)
     if current.difference(result).area>contract.area_epsilon_mm2:raise ValueError('FILL_REMOVED_PREDECESSOR')
     memo.close()
-    return dict(contract=asdict(contract),source_sha256=sha(source),predecessor_sha256=sha(current),records=records,fill_sha256=sha(fills),result_sha256=sha(result),assembly=dict(policy='Union the already individually checked original-owner bodies',components_before=len(grown),checked_owner_components=len(newparts),legacy_global_overlay_components=len(parts(legacy)),global_overlay_symmetric_difference_mm2=legacy.symmetric_difference(result).area)),accepted,result
+    return dict(contract=asdict(contract),source_sha256=sha(source),predecessor_sha256=sha(current),records=records,fill_sha256=sha(fills),result_sha256=sha(result),assembly=dict(policy='Union the already individually checked original-owner bodies',components_before=len(grown),checked_owner_components=len(newparts),**_overlay_diagnostic(legacy,result))),accepted,result
