@@ -61,7 +61,13 @@ class Slot:
    else:
     for side in (0,1):
      delta=branches[side].difference(oldpieces[oldhits[side][0]])
-     if delta.area>0 and distance(delta,branches[1-side])+1e-12<gap:failures.append('PIN_NEW_GROWTH_SPACING')
+     if delta.area>0:
+      # Independent Boolean assembly can produce source-boundary slivers a
+      # few ulps wide. Use the existing 1e-12mm comparison epsilon to classify
+      # that reconstruction noise, without changing material or spacing gates.
+      # Branch connectivity was checked above and never receives this exclusion.
+      checked=delta.difference(oldpieces[oldhits[side][0]].buffer(1e-12,quad_segs=16))
+      if not checked.is_empty and distance(checked,branches[1-side])+1e-12<gap:failures.append('PIN_NEW_GROWTH_SPACING')
   original=self.source.intersection(self.domain)
   if original.difference(local).area>1e-12:failures.append('PIN_SOURCE_COPPER_REMOVED')
   for g in pieces:
