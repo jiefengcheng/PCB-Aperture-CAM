@@ -148,7 +148,7 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
                 if patch.difference(inherited_notches).area<=contract.area_epsilon_mm2:continue
                 candidates.append(('notch',patch))
         for kind,patch in sorted(candidates,key=lambda x:(x[0],sha(x[1]))):
-            from src.pin_separation import remedy as pin_remedy
+            from src.growth_remedy_constraints import remedy as pin_remedy
             pin_check=pin_remedy(patch,owner)
             if pin_check is not None and not pin_check['passed']:
                 records.append(dict(kind=kind,owner=index,source_component=j,patch_sha256=sha(patch),area_mm2=patch.area,bounds_mm=list(patch.bounds),status='KEEP_PROTECTED_PIN_SEPARATION',check=pin_check))

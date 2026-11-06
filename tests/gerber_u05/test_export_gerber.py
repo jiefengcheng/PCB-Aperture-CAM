@@ -33,6 +33,8 @@ def test_full_source_chain_exports_and_checks_actual_copper(tmp_path,monkeypatch
     monkeypatch.setattr(e,'verify_sources',lambda _:None)
     run=tmp_path/'run';run.mkdir();store=p.Store(run/'runtime')
     raw=fixture('D11*\nX00000000Y00000000D03*\nD10*\nX00200000Y00000000D03*\nD12*\nX00200000Y00000000D02*\nX00150000Y00000000D01*\n')
+    from src.t04_settings import capture_job
+    capture_job(run)
     binding=p.build_source(store,raw);p.save(run/'source.json',binding);scene=store.get_json(binding['scene_ref'],kind='scene');results={}
     for stage in e.ORDER:
         if stage=='t01':result=p.run_t01(store,scene,binding)

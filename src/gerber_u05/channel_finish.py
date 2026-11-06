@@ -62,14 +62,14 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
    channel=channels[item['owner']];patch=item['geometry']
    if patch.intersection(scope.channels.frame).area>contract.area_epsilon_mm2:raise ValueError('CHANNEL_COMPLETION_DEPENDS_ON_TEMPORARY_FRAME')
    region,mode_name=overlap_region(patch,owned[channel],contract);region=filled_surface(region)
-   from src.pin_separation import encoded_remedy
+   from src.growth_remedy_constraints import encoded_remedy
    encoded=joined([canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(region))]);pin_check=encoded_remedy(patch,encoded,owned[channel])
    if pin_check is not None and not pin_check['passed']:
     report.setdefault('native_pin_encoding_rejections',[]).append(dict(status='KEEP_PROTECTED_PIN_ENCODING',check=pin_check));continue
    proposals[channel].append(region);counts[item['kind']]+=1;area[channel]+=patch.area
   for channel,regions in sorted(proposals.items()):
    combined=joined([*([aggregates[channel]]if channel in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in owned.items()if o!=channel]+[('reserved:'+o,g)for o,g in scope.reserved.items()if o!=channel];combined,receipt=absorb(combined,owned[channel],scope.cores[channel],foreign,contract);
-   from src.pin_separation import require_remedy
+   from src.growth_remedy_constraints import require_remedy
    require_remedy(combined,owned[channel],scope='absorbed_remedy')
    aggregates[channel]=combined;absorptions.append(dict(original_channel_id=channel,radius_mm=contract.notch_radius_mm,**receipt));native=[canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(combined))];owned[channel]=owned[channel].union(joined(native))
   from src.pin_separation import require as require_pin

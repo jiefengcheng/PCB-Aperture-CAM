@@ -114,7 +114,7 @@ class LandAdapter:
   crop=box(*scene['viewport_mm']);ids=[s for s in plan['details']['targets']if not plan['details']['containment'][s]['contained']];groups=merge_groups(ids,current);before=unary_union([current[s] for s in sorted(current)]).intersection(crop);claimed=set();accepted=[];decisions=[];additions=[]
   for ordinal,(axis,members) in enumerate(groups):
    budget.evaluation();rect=box(*unary_union([current[s] for s in members]).bounds);span=before.intersection(rect);shortage=rect.difference(span).area/rect.area;near=[s for s,g in current.items() if g.intersects(rect.buffer(HARD_GAP_MM+.001))];supports=set(members)|{s for s in near if rows[s]['kind']=='trace' and current[s].intersection(span).area>0};support_union=unary_union([current[s] for s in supports]);covered={s for s in near if s not in supports and current[s].difference(support_union).is_empty};neighbors=[dict(source_id=s,original=current[s],geometry=current[s],trace_width_mm=rows[s]['metadata'].get('nominal_width_mm',0.)) for s in near if s not in supports|covered];q=journalled('inclusive-land-check',dict(axis=axis,members=list(members),span_sha256=hashlib.sha256(to_wkb(span)).hexdigest(),rectangle_sha256=hashlib.sha256(to_wkb(rect)).hexdigest()),lambda:check_proposal(span,rect,neighbors,crop=crop,cap=rect,contract=GrowthContract()));delta=rect.difference(before);reasons=[]
-   from src.pin_separation import remedy as pin_remedy
+   from src.growth_remedy_constraints import remedy as pin_remedy
    pin_check=pin_remedy(rect,before)
    if pin_check is not None and not pin_check['passed']:reasons.append('PROTECTED_PIN_SEPARATION_ENTIRE_FILL')
    if shortage>.20:reasons.append('SHORTAGE_ABOVE_20_PERCENT')

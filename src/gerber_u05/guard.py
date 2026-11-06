@@ -8,8 +8,11 @@ def producer_files():
  if(ROOT/'SOURCE_REVISION.json').exists():files.append(ROOT/'SOURCE_REVISION.json')
  return sorted(files)
 def seal(run,profile):
+ from src.t04_settings import capture_job,read_snapshot,SNAPSHOT_NAME
+ if not(run/SNAPSHOT_NAME).exists():capture_job(run)
+ read_snapshot(run/SNAPSHOT_NAME)
  from .pipeline import save
- inputs=[run/name for name in('input_inventory.json','LEGACY_REFERENCE_JOB.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','REUSED_PREFIX_BINDING.json','REUSED_T05_BINDING.json','REUSED_NATIVE_EXPORT_BINDING.json','REUSED_LEGACY_BINDING.json','REUSED_WIDTH_BINDING.json','SOURCE_ASSEMBLY_BINDING.json','PIN_SEPARATION_POLICY.json')if(run/name).is_file()]
+ inputs=[run/name for name in('input_inventory.json','LEGACY_REFERENCE_JOB.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','REUSED_PREFIX_BINDING.json','REUSED_T05_BINDING.json','REUSED_NATIVE_EXPORT_BINDING.json','REUSED_LEGACY_BINDING.json','REUSED_WIDTH_BINDING.json','SOURCE_ASSEMBLY_BINDING.json','PIN_SEPARATION_POLICY.json','T04_SETTINGS_SNAPSHOT.json')if(run/name).is_file()]
  save(run/'PRODUCER_BINDING.json',dict(job_inputs={str(p):sha(p)for p in inputs},schema='source-only-gerber-u05-producer/1',profile=profile,files={str(p):sha(p)for p in producer_files()},source_binding_sha256=sha(run/'source.json')))
 def verify_sources(run):
  from importlib.metadata import version

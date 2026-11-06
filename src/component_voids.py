@@ -203,7 +203,7 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
             nearby=[(int(k),frozen[int(k)])for k in tree.query(patch.buffer(contract.construction_gap_mm+contract.file_uncertainty_mm+.001))if int(k)!=index]
             nearby.extend(('reserved:'+str(reserve_ids[int(k)]),reserved[reserve_ids[int(k)]])for k in reserve_tree.query(patch.buffer(contract.construction_gap_mm+contract.file_uncertainty_mm+.001))if reserve_ids[int(k)]!=j)
             raw_patch=patch
-            from src.pin_separation import remedy as pin_remedy
+            from src.growth_remedy_constraints import remedy as pin_remedy
             pin_check=pin_remedy(raw_patch,owner)
             if pin_check is not None and not pin_check['passed']:
                 records.append(dict(kind=kind,owner=index,source_component=j,patch_sha256=sha(raw_patch),area_mm2=raw_patch.area,bounds_mm=list(raw_patch.bounds),status='KEEP_PROTECTED_PIN_SEPARATION',check=pin_check))

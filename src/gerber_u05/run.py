@@ -28,6 +28,9 @@ class Coordinator:
    self.execute(run,stage,['construct']);self.execute(run,stage,['1','2'])
    proofs=[p.load(run/'audits'/stage/(m+'.json'))for m in('construct','1','2')]
    if len({p.digest(p.canonical(v))for v in proofs})!=1:raise ValueError('PAIRED_STAGE_PROOFS_DIFFER:'+stage)
+   if not legacy and stage=='t04':
+    from .width_prior import verify
+    verify(self.job/'legacy',run)
    if legacy and stage=='t01':self.execute(run,'t01_supplement',['1','2'])
  def prepare(self,run,raw,inventory,legacy=False):
   run.mkdir();(run/'source_snapshot').mkdir();(run/'source_snapshot/top.art.gbr').write_bytes(raw);p.save(run/'input_inventory.json',inventory)

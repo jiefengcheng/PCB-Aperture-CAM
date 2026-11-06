@@ -21,7 +21,6 @@ from src.source_junction_paths import junction_source_paths
 from src.parallel_trace_relations import parallel_relation,relation_groups
 from src.source_offset_width import FAMILY as OFFSET_FAMILY
 from src.native_inventory import steps,ERROR_MM
-from src.bounded_width_solver import solve_width_scales
 from src.u02_board.adapter import pair_check
 from src.u04_board.search import FastRectangleAdapter
 from .component_rectangles import ComponentRectangleAdapter as FastRectangleAdapter
@@ -71,6 +70,8 @@ def artifact_scene(store,scene,current,stage,metadata=None,additions=()):
     value=dict(scene,objects=objects+list(additions),lineage=scene['lineage']+[dict(stage=stage,source='GERBER_ORIGINAL_OCCURRENCES')])
     from src import pin_separation as pin
     if pin.ACTIVE is not None:value['lineage'][-1]['pin_separation_state']=pin.ACTIVE.state(store)
+    from src import t04_width_fence as width_fence
+    if width_fence.ACTIVE is not None:value['lineage'][-1]['t04_width_fence']=width_fence.ACTIVE.state(store)
     return store.put_json('scene',value)
 
 def build_source(store,raw):
@@ -204,35 +205,9 @@ def width_admission(store,scene):
     return dict(paths=decisions,admitted=admitted,groups=groups,relations=relations,blocked_relations=blocked,trace_occurrences=len(native))
 
 def run_t04(store,scene):
-    rows,current,_=operands(store,scene);admission=width_admission(store,scene);paths={p['path_id']:p for p in admission['admitted']};assignment={s:g['group_id']for g in admission['groups']for s in g['members']};used={s for p in paths.values()for s in p['source_ids']}
-    if not paths:raise ValueError('NO_EXPOSED_GERBER_ROUTES')
-    cores={s:unary_union([current[m]for m in p['source_ids']])for s,p in paths.items()};widths={s:max(rows[m]['metadata']['source_port_width_mm']for m in p['source_ids'])for s,p in paths.items()}
-    from src.bounded_route_geometry import VersionedGeometry
-    geometry_binding=digest(canonical([scene['source_sha256'],[[s,rows[s]['geometry_ref']]for s in sorted(used)],OFFSET_FAMILY]))
-    part_geometry=VersionedGeometry(used,geometry_binding,limit=32*1024**2)
-    route_geometry=VersionedGeometry(paths,geometry_binding,limit=128*1024**2)
-    def build_part(sid,factor,envelope):
-        return part_geometry.get(sid,factor,envelope,lambda:offset_part(current[sid],rows[sid]['metadata']['minimum_caliper_mm'],factor,envelope))
-    def build_route(s,factor,envelope):
-        return cores[s]if factor==1 else route_geometry.get(s,factor,envelope,lambda:unary_union([build_part(m,factor,envelope)for m in paths[s]['source_ids']]))
-    def trial(scales,envelope=True):
-        return [dict(id=s,original=cores[s],candidate=build_route(s,scales[assignment[s]],envelope),verified_original_width_mm=widths[s])for s in sorted(paths)]
-    fixed=[dict(id=s,geometry=g,trace_width_mm=rows[s]['metadata'].get('original_width_mm',0.))for s,g in current.items()if s not in used];baseline=trial({g['group_id']:1. for g in admission['groups']});checker=DependencyWidthScene(baseline,fixed,original_union_cache_bytes=128*1024**2);evaluations=[]
-    def evaluate(scales):
-        q=checker.check(trial(scales),fail_fast=True);evaluations.append(dict(scales=scales,report_ref=store.put_json('width-check',q)));return q
-    solution=solve_width_scales([g['group_id']for g in admission['groups']],evaluate,geometry_family=OFFSET_FAMILY)
-    if not solution['passed']or not solution['maximum_established']:raise ValueError('T04_COMPLETE_WIDTH_MAXIMUM_OR_FINAL_CHECK_FAILED')
-    selected=solution['selected_scales'];nominal=trial(selected,False);envelope=trial(selected,True);full_checker=PreparedWidthScene(baseline,fixed);checks=dict(nominal=full_checker.check(nominal,materialize_scene=True),envelope=full_checker.check(envelope,materialize_scene=True))
-    if not all(q['passed']for q in checks.values()):raise ValueError('T04_FULL_RECONSTRUCTION_FAILED')
-    for d in solution['decisions']:
-        if d['upper_rejected_factor']is not None:
-            upper=dict(selected);upper[d['group_id']]=d['upper_rejected_factor'];q=full_checker.check(trial(upper),fail_fast=True)
-            if q['passed']:raise ValueError('T04_FRESH_UPPER_PROOF_FAILED')
-    after=dict(current);part_factors={}
-    for s,p in paths.items():
-        for m in p['source_ids']:after[m]=build_part(m,selected[assignment[s]],False);part_factors[m]=selected[assignment[s]]
-    part_geometry.close();route_geometry.close()
-    ref=artifact_scene(store,scene,after,'t04');return dict(output_scene_ref=ref,admission=admission,solution=solution,checks=checks,evaluations=evaluations,part_factors=part_factors,source_offset_definition='Circular and rectangular source strokes: uniform outward offset from exact original finite copper; scale uses minimum aperture caliper. Every directional width ratio is bounded by 1..1.5. Max original caliper binds source-contact ports.',summary=dict(trace_occurrences=admission['trace_occurrences'],routes=len(paths),groups=len(admission['groups']),grown_parts=sum(f>1 for f in part_factors.values()),evaluations=len(evaluations)))
+    from .ladder_width import run
+    return run(store,scene)
+
 
 def empty_t02(store,scene):
     """A complete empty native-rectangle inventory is a verified identity step."""

@@ -288,7 +288,8 @@ def test_launcher_accepts_u04_intake_only_into_its_separate_namespace(tmp_path,m
     class Process:
         pid=987
         def poll(self):return 0
-    calls=[];monkeypatch.setattr(module.subprocess,'Popen',lambda argv,**kw:calls.append(argv)or Process())
+    from types import SimpleNamespace
+    calls=[];monkeypatch.setattr(module,'subprocess',SimpleNamespace(Popen=lambda argv,**kw:calls.append(argv)or Process(),DEVNULL=module.subprocess.DEVNULL))
     launcher=module.Launcher(tmp_path/'out/launcher')
     try:
         req=dict(action='u04_directory_intake',launcher_id=launcher.id,input_directory='/not-read-by-client',companion_policy='PRESERVE_EXCLUDED');publish(launcher.registry/'inbox/u04.json',encode(req));launcher.tick()

@@ -6,7 +6,17 @@ from src.stage_abi.scene import validate_scene
 
 def reconstruct(run,mode):
  from .guard import verify_sources
- verify_sources(run);store=p.Store(run/'runtime');binding=p.load(run/'source.json');before=validate_scene(store,p.load(run/'t03.json')['output_scene_ref']);p.initialize(store,binding,before);raw=store.get(binding['source_ref'],kind='gerber-source')
+ verify_sources(run)
+ value=p.load(run/'RAW_WIDTH_CHECKPOINT.json')
+ if value['solution'].get('schema')=='source-route-ten-step-width-ladder/1':
+  # Reconstruct the complete public stage envelope, including functional
+  # source-channel metadata, with the same entry checks as construction.
+  actual=p.stage(run,'t04')
+  if p.canonical(actual)!=p.canonical(value):raise ValueError('WIDTH_PREFIX_FRESH_LADDER_PROCESS_CHANGED')
+  verify_sources(run)
+  p.save(run/'width_prefix_audits'/(mode+'.json'),dict(status='PASS',raw_width_checkpoint_sha256=p.digest((run/'RAW_WIDTH_CHECKPOINT.json').read_bytes()),fresh_ladder_attempts=actual['solution']['evaluation_count'],fresh_selected_full_checks=2,scope='Complete source/admission and every prescribed route attempt freshly replayed; no continuous maximum claim.'))
+  return actual
+ store=p.Store(run/'runtime');binding=p.load(run/'source.json');before=validate_scene(store,p.load(run/'t03.json')['output_scene_ref']);p.initialize(store,binding,before);raw=store.get(binding['source_ref'],kind='gerber-source')
  if (run/'source_snapshot/top.art.gbr').read_bytes()!=raw or p.canonical(p.build_source(store,raw))!=p.canonical(binding):raise ValueError('WIDTH_PREFIX_FRESH_SOURCE_BINDING_CHANGED')
  value=p.load(run/'RAW_WIDTH_CHECKPOINT.json');rows,current,_=p.operands(store,before);admission=p.width_admission(store,before)
  if p.canonical(admission)!=p.canonical(value['admission']):raise ValueError('WIDTH_PREFIX_ADMISSION_CHANGED')

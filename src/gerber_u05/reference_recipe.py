@@ -95,7 +95,7 @@ def compute(run):
    # contour overlap robustly after 1 nm serialization. This is not added scope.
    from .component_finish import overlap_region
    supported,_support_mode=overlap_region(patch,owner,contract);region=filled_surface(supported);first=len(rows)
-   from src.pin_separation import encoded_remedy
+   from src.growth_remedy_constraints import encoded_remedy
    from .native_assembly import canonical_parent
    encoded=joined([canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(region))]);pin_check=encoded_remedy(patch,encoded,current)
    if pin_check is not None and not pin_check['passed']:
@@ -157,7 +157,7 @@ def compute(run):
    if not obj.polarity_dark or not isinstance(obj,p.go.Region):raise ValueError('REMEDY_NATIVE_ROLE_CHANGED')
    shape=p.affine_scale(p.source_profile.object_geometry(obj)[0],1,-1,origin=(0,0));reference=p.geometry(store,row['geometry_ref']);contours.append(fidelity(reference,shape));shapes.append(shape)
   after,native_grid,material,owner_rows,material_proof=reconstruct_reference_material(current,shapes,ledger['records'],native_parents,native_parent_owners,grid_mm=contract.grid_mm)
-  from src.pin_separation import require_remedy
+  from src.growth_remedy_constraints import require_remedy
   for actual_parent in material:require_remedy(actual_parent,current,scope='actual_native_reference_remedy')
   addition_check=semantic(source,current,material,dict(records=owner_rows));expected_grid=expected
   gap,metric=hausdorff(native_grid,expected_grid,tolerance=contract.file_uncertainty_mm);area=native_grid.symmetric_difference(expected_grid).area;bound=2*expected_grid.length*contract.file_uncertainty_mm

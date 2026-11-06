@@ -58,7 +58,7 @@ def completion(store,stage_result,observed,before,after):
    lineage_ctx=ctx.functional;lineage_owner=row.get('original_channel_id')
    if lineage_owner not in lineage_ctx.cores or not hasattr(before,'channels'):raise ValueError('NATIVE_COMPLETION_FUNCTIONAL_BINDING_REQUIRED')
    lineage_before=before.channels
-  from src.pin_separation import require_remedy
+  from src.growth_remedy_constraints import require_remedy
   pin_check=require_remedy(actual,joined(list(lineage_before.values())),scope='actual_native_completion')
   added=actual.difference(lineage_before[lineage_owner])
   if logical.difference(actual.buffer(.000002)).area>1e-12:raise ValueError('NATIVE_REQUIRED_POCKET_OR_NOTCH_MISSING')

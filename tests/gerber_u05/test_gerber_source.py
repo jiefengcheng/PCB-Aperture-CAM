@@ -76,5 +76,7 @@ def test_T01_reuses_actual_priority_companion_and_source_port_checks(tmp_path):
 def test_whole_source_rectangle_and_spindle_paths_keep_checks(tmp_path):
     raw=fixture('D11*\nX00000000Y00000000D03*\nD10*\nX00200000Y00000000D03*\nD12*\nX00200000Y00000000D02*\nX00150000Y00000000D01*\n');store=pipeline.Store(tmp_path/'runtime');b=pipeline.build_source(store,raw);scene=store.get_json(b['scene_ref'],kind='scene');r=pipeline.run_t02(store,scene)
     assert r['verification']['passed']and r['summary']['rectangles']==1
+    from src.t04_settings import capture_job
+    capture_job(store.root.parent)
     t04=pipeline.run_t04(store,scene);after=store.get_json(t04['output_scene_ref'],kind='scene');t02=pipeline.run_t02(store,after);final=pipeline.run_t05(store,store.get_json(t02['output_scene_ref'],kind='scene'),t04)
     assert final['verification']['passed']and final['summary']['source_attachments']>=1

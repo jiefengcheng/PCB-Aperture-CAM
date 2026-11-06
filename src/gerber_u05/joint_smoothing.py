@@ -27,10 +27,12 @@ def propose(owner,original,window,foreign,contract,*,radius_fraction=.25,pin_rul
  rounded=support.buffer(radius,quad_segs=256).intersection(envelope)
  patch=rounded.difference(owner)
  if patch.is_empty or patch.area<=1e-8:return None,dict(status='KEEP',reasons=['NO_VISIBLE_PROFILE_ADDITION'])
- rule=pin.ACTIVE if pin_rule is None else pin_rule
- pin_check=None if rule is None else rule.remedy(patch,owner)
- if pin_check is not None and not pin_check['passed']:
-  return None,dict(status='KEEP',reasons=['PROTECTED_PIN_SEPARATION'],pin_separation=pin_check)
+ from src.growth_remedy_constraints import remedy
+ constraints=remedy(patch,owner,pin_rule=pin_rule)
+ pin_check=None if constraints is None else constraints.get('pin_separation',constraints)
+ if constraints is not None and not constraints['passed']:
+  reason='PROTECTED_PIN_SEPARATION'if pin_check is not None and not pin_check['passed']else'T04_FROZEN_WIDENING_DECISION'
+  return None,dict(status='KEEP',reasons=[reason],pin_separation=pin_check,growth_constraints=constraints)
  check=proposal_check(patch,owner,original,foreign,contract,kind='notch')
  reasons=list(check['reasons'])
  if patch.difference(window).area>contract.area_epsilon_mm2:reasons.append('OUTSIDE_DECLARED_LOCAL_WINDOW')
@@ -38,7 +40,7 @@ def propose(owner,original,window,foreign,contract,*,radius_fraction=.25,pin_rul
  region=support.union(patch)
  if not region.is_valid or len(surface_parts(region))!=1:
   return None,dict(status='KEEP',reasons=['LOCAL_PROFILE_NOT_ONE_SURFACE'])
- return dict(addition=patch,region=region),dict(status='GROWN',reasons=[],radius_mm=radius,added_area_mm2=patch.area,check=check,pin_separation=pin_check,representation='ONE_LOCAL_JOINT_SURFACE; existing support is redundant copper only')
+ return dict(addition=patch,region=region),dict(status='GROWN',reasons=[],radius_mm=radius,added_area_mm2=patch.area,check=check,pin_separation=pin_check,growth_constraints=constraints,representation='ONE_LOCAL_JOINT_SURFACE; existing support is redundant copper only')
 
 
 def apply(store,scene,binding,result,stage,junction_result):
@@ -94,7 +96,7 @@ def apply(store,scene,binding,result,stage,junction_result):
   partials=getattr(scope,'approved_partial_pockets',{}).values()
   if any(encoded.difference(owner).intersection(v['remaining']).area>contracts[0].area_epsilon_mm2 for v in partials):
    proof.update(status='KEEP_PROTECTED_PARTIAL_POCKET');continue
-  from src.pin_separation import encoded_remedy
+  from src.growth_remedy_constraints import encoded_remedy
   pin_check=encoded_remedy(proposal['addition'],encoded,old_owner)
   if pin_check is not None and not pin_check['passed']:proof.update(status='KEEP_NATIVE_PIN_ENCODING',pin_separation=pin_check);continue
   owned[own]=owner.union(encoded);current=physical.index.source.union(p.unary_union(list(owned.values())))if scope is not physical else p.unary_union(list(owned.values()));pin.require(current,scope='t05_joint_profile')

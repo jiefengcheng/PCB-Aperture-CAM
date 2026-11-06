@@ -13,7 +13,7 @@ def absorb(region,physical_owner,original,foreign,contract):
    if not thin or not collapses:retained.append(ring);continue
    if hole.intersection(protected).area>0:
     retained.append(ring);records.append(dict(status='KEEP_ORIGINAL_SOURCE_VOID',area_mm2=hole.area));continue
-   from src.pin_separation import remedy as pin_remedy
+   from src.growth_remedy_constraints import remedy as pin_remedy
    pin_check=pin_remedy(hole,physical_owner)
    if pin_check is not None and not pin_check['passed']:
     retained.append(ring);records.append(dict(status='KEEP_PROTECTED_PIN_SEPARATION',area_mm2=hole.area,check=pin_check));continue

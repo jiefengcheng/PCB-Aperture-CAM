@@ -37,6 +37,33 @@ def test_pin_rejection_is_whole_not_trimmed():
  assert value is None and proof['reasons']==['PROTECTED_PIN_SEPARATION']
 
 
+def test_t04_frozen_width_rejects_complete_joint_profile(monkeypatch):
+ from src import t04_width_fence as fence
+ owner=body();window=box(.07,.05,.13,.25)
+ value,proof=propose(owner,owner,window,[],RemedyContract(),allowed=window)
+ assert proof['status']=='GROWN'
+ # Only part of the otherwise valid profile enters a denied route corridor.
+ denied=value['addition'].intersection(box(.10,.10,.13,.15))
+ assert 0<denied.area<value['addition'].area
+ monkeypatch.setattr(fence,'ACTIVE',fence.Rule(denied,owner,{'fixture':'frozen-width'}))
+ rejected,proof=propose(owner,owner,window,[],RemedyContract(),allowed=window)
+ assert rejected is None
+ assert proof['reasons']==['T04_FROZEN_WIDENING_DECISION']
+ assert not proof['growth_constraints']['t04_width_decision']['passed']
+
+
+def test_t04_frozen_width_rechecks_native_encoding(monkeypatch):
+ from src import t04_width_fence as fence
+ from src.growth_remedy_constraints import encoded_remedy
+ owner=box(0,0,1,1);denied=box(1,.4,1.1,.6)
+ monkeypatch.setattr(fence,'ACTIVE',fence.Rule(denied,owner,{'fixture':'native-width'}))
+ logical=box(0,0,.5,1.1)
+ result=encoded_remedy(logical,logical.union(denied),owner)
+ assert result['logical_width']['passed']
+ assert not result['encoded_width']['passed']
+ assert not result['passed']
+
+
 @pytest.mark.parametrize('functional',[False,True])
 def test_stage_application_stores_one_checked_local_profile(tmp_path,monkeypatch,functional):
  from shapely.geometry import Point

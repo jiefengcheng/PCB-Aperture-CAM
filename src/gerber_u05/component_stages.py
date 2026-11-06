@@ -6,6 +6,8 @@ from src.growth_void_remedy_v09 import surface_parts
 from shapely import STRtree
 
 def initialize(store,binding,scene=None):
+ from src.t04_width_fence import restore as restore_width_fence
+ restore_width_fence(store,scene)
  original=store.get_json(binding['scene_ref'],kind='scene');rows,current,_=p.operands(store,original)
  raw=store.get(binding['source_ref'],kind='gerber-source');parsed,_,_=p.source_profile.parse_source(raw)
  source=p.affine_scale(p.source_profile.ordered((p.source_profile.object_geometry(o)[0],o.polarity_dark)for o in parsed.objects),1,-1,origin=(0,0))

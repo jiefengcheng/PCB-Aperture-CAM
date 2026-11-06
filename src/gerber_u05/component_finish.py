@@ -108,7 +108,7 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
    except ValueError:
     p.save(store.root.parent/'encoding_failure'/(stage+'_'+mode+'.json'),dict(raw_region_ref=p.geomref(store,raw_region),logical_patch_ref=p.geomref(store,patch),owner_ref=p.geomref(store,owner),original_owner_id=own,radius_mm=radius))
     raise
-   from src.pin_separation import encoded_remedy
+   from src.growth_remedy_constraints import encoded_remedy
    encoded=joined([canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(region))]);pin_check=encoded_remedy(patch,encoded,owner)
    if pin_check is not None and not pin_check['passed']:
     report.setdefault('native_pin_encoding_rejections',[]).append(dict(status='KEEP_PROTECTED_PIN_ENCODING',check=pin_check));continue
@@ -117,7 +117,7 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
   for own,regions in sorted(proposals.items()):
    combined=joined([*([aggregates[own]]if own in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in physical.items()if o!=own]+[('reserved:'+o,g)for o,g in context.reserved.items()if o!=own]
    combined,receipt=absorb(combined,physical[own],context.cores[own],foreign,contract);
-   from src.pin_separation import require_remedy
+   from src.growth_remedy_constraints import require_remedy
    require_remedy(combined,physical[own],scope='absorbed_remedy')
    aggregates[own]=combined;updated.add(own)
    absorptions.append(dict(original_owner_id=own,radius_mm=radius,**receipt))

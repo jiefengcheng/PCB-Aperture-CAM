@@ -20,6 +20,11 @@ def compute(run,name):
    completed=apply(store,scene,binding,completed,name,value)
   value=dict(value,raw_output_scene_ref=value['output_scene_ref'],output_scene_ref=completed['output_scene_ref'],intra=completed)
   value['summary']=dict(value['summary'],inclusive_fills=completed['summary']['fills'],inclusive_added_area_mm2=completed['summary']['added_area_mm2']);store.verify_reads()
+ from src.t04_width_fence import require as require_width_fence
+ if name in('t04','t02'):
+  store=p.Store(run/'runtime');checked_scene=store.get_json(value['output_scene_ref'],kind='scene');_,material,_=p.operands(store,checked_scene)
+  width_proof=require_width_fence(p.unary_union(list(material.values())),scope=name+'_complete')
+  if width_proof is not None:value=dict(value,t04_width_fence=width_proof)
  from src import pin_separation as pin
  if pin.ACTIVE is not None:
   store=p.Store(run/'runtime');scene=store.get_json(value['output_scene_ref'],kind='scene');_,material,_=p.operands(store,scene)

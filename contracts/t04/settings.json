@@ -1,0 +1,9 @@
+{
+  "schema": "pcb-t04-ladder-settings/1",
+  "revision": 1,
+  "status": "PROVISIONAL",
+  "maximum_factor": 1.5,
+  "step_count": 10,
+  "maximum_total_width_increase_mm": 0.03,
+  "scope": "New deterministic T04 ladder jobs. Both limits apply to total route width measured from the original source; the absolute cap is not a per-side offset. Capture settings once per job."
+}

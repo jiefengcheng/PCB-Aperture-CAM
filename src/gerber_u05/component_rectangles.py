@@ -24,7 +24,7 @@ class ComponentRectangleAdapter(FastRectangleAdapter):
   for ordinal,(axis,members)in enumerate(groups):
    channel=None;channel_ids=set();functional_pairs=[];functional_shortage=None
    budget.evaluation();rect=box(*unary_union([current[s]for s in members]).bounds);span=before.intersection(rect);shortage=rect.difference(span).area/rect.area;owners={ctx.owner(s)for s in members};delta=rect.difference(before);reasons=[];pairs=[]
-   from src.pin_separation import remedy as pin_remedy
+   from src.growth_remedy_constraints import remedy as pin_remedy
    pin_check=pin_remedy(rect,before)
    if pin_check is not None and not pin_check['passed']:reasons.append('PROTECTED_PIN_SEPARATION_ENTIRE_FILL')
    if shortage>.20:reasons.append('SHORTAGE_ABOVE_20_PERCENT')
