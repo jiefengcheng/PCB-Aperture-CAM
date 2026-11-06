@@ -58,6 +58,14 @@ def test_t04_eviction_delta_authorizes_only_exact_bookkeeping_correction():
  with pytest.raises(ValueError,match='EVICTION_DELTA_NOT_ISOLATED'):
   q.t04_eviction_delta_only(before,after+'def changed_geometry():\n return 42\n')
 
+
+def test_pin_eviction_delta_cannot_authorize_a_spacing_change():
+ before='def evict(self):\n self.weight-=self.cache.popitem(last=False)[1]\n'
+ after=before.replace('[1]','[1][1]')
+ q.pin_eviction_delta_only(before,after)
+ with pytest.raises(ValueError,match='PIN_EVICTION_DELTA_NOT_ISOLATED'):
+  q.pin_eviction_delta_only(before,after+'def clearance():\n return 0\n')
+
 @pytest.mark.parametrize('mutation',['artifact','process','producer','supplement'])
 def test_changed_or_incomplete_prefix_is_rejected(tmp_path,monkeypatch,mutation):
  old,current,artifacts=binding_fixture(tmp_path,monkeypatch)

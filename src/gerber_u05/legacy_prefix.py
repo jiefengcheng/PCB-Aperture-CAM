@@ -35,6 +35,11 @@ def t04_eviction_delta_only(before,after):
  new='self.bytes -= self.cache.popitem(last=False)[1][1]'
  if before.count(old)!=1 or ast.dump(ast.parse(before.replace(old,new)),include_attributes=False)!=ast.dump(ast.parse(after),include_attributes=False):raise ValueError('LEGACY_T04_EVICTION_DELTA_NOT_ISOLATED')
 
+def pin_eviction_delta_only(before,after):
+ old='self.weight-=self.cache.popitem(last=False)[1]'
+ new='self.weight-=self.cache.popitem(last=False)[1][1]'
+ if before.count(old)!=1 or ast.dump(ast.parse(before.replace(old,new)),include_attributes=False)!=ast.dump(ast.parse(after),include_attributes=False):raise ValueError('LEGACY_PIN_EVICTION_DELTA_NOT_ISOLATED')
+
 def prove_no_retained_partials(old,stages):
  # Inspect every retained stage-entry/output scene, not only raw source rows.
  # The changed registration branch is unreachable in all retained operations.
@@ -134,6 +139,11 @@ def inspect(old,through):
    # This module is first called by T04. Retain only T01/T03 after the exact
    # cache-accounting correction; no geometry/policy change receives reuse.
    t04_eviction_delta_only(file.read_text(),current.read_text())
+  elif relative=='src/pin_separation.py'and through=='t03':
+   # The original bookkeeping branch unconditionally raised if eviction ran.
+   # Completed PASS operations therefore did not execute that branch. Only
+   # its exact size-index correction is allowed; all slot geometry is identical.
+   pin_eviction_delta_only(file.read_text(),current.read_text())
   elif relative in CONNECTED_COMPLETION:
    # Legacy stages through T04 initialize ACTIVE=None and never execute the
    # connected owner completion, partial-pocket policy or export obligations.
