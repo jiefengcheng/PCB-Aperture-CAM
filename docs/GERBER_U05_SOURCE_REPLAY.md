@@ -2,9 +2,16 @@
 
 The connected-copper profile treats a pad and its source-connected trace as one
 physical conductor. Only different frozen original copper components impose
-clearance. Ownership never changes because candidate growth touches another
-component. Original holes/notches remain protected. T04 and T05 absorb qualified
-growth-created pockets into one reusable original-owner surface.
+ordinary inter-component clearance. Source-bound functional channels and
+protected pin slots impose additional separation even within one physical
+component or net. Existing pad-to-trace joints remain integral; common-component
+membership never authorizes a new local pin bridge. Ownership never changes
+because candidate growth touches another component. Original holes/notches and
+intentional pin gaps remain protected. T04 and T05 absorb qualified
+growth-created pockets into one reusable original-owner surface. Every complete
+logical repair is checked before splitting or clipping; a rejected protected-slot
+fill cannot return as fragments, another radius or a later-stage repair. The
+20% allowance does not override protected separation.
 
 Run `tools/Run_Gerber_U05.command --input-dir "/absolute/raw/directory" --gerber "top.art.gbr"`.
 Selection must be explicit. A filename selects artwork; it does not establish X2
@@ -19,11 +26,31 @@ input. A process read fence rejects historical evidence reads outside that fresh
 job and its immutable source tree.
 
 Every stage retains complete construction and two fresh outcome reconstructions.
-T04 construction performs the full stable-order search. Each fresh T04 evaluator
-checks every search-ledger hash and scale witness, reconstructs complete source
-admission, nominal/envelope final geometry, and every final upper rejection.
-This preserves the previously qualified width-prefix audit criteria. T05 retains
-all source attachments and complete assembly checks.
+Gerber T04 uses a deterministic ten-rung widening ladder. The global provisional
+registry is `contracts/t04/settings.json`: the previously practiced maximum
+factor is 1.5x, with ten 0.05-factor increments, and total source-width increase
+is at most 0.030 mm (30 um, not 30 um per side). Both limits apply. An excessive
+rung is rejected without clamping to an off-ladder width. Each job captures
+`T04_SETTINGS_SNAPSHOT.json` and binds it to its producer.
+
+Each eligible route proposes its next rung independently in a fixed order, once
+per pass, against the current scene. Every candidate uses original source
+geometry and width; offsets never compound. There are at most ten complete
+passes and ten attempts per route, with early termination when no route advances.
+There is no grouped shared-factor search, combination search, backtracking or
+binary refinement in this Gerber T04 path. Groups and graphs remain for spatial
+dependencies, bounded caches and invalidation of affected results. Unchanged
+verified dependencies are reused; complete final validation remains mandatory.
+
+Each fresh T04 evaluator checks the attempt-ledger hashes, rung and width limits,
+source admission, complete nominal/envelope final geometry, and all recorded
+accept/reject predicates. Per-route evidence reports final rung, original and
+resulting width, percentage growth and blocking reason. Acceptance proves safe
+completion of the prescribed ladder, not a continuous or global maximum. Existing
+smoothing and complete logical-fill checks remain, and later remedy/prior copper
+must not bypass a rejected width decision. T05 retains all source attachments
+and complete assembly checks. The historical KiCad/native WidthAdapter and its
+operator acceptance mode are separate from this Gerber T04 migration.
 
 Export preserves source commands and uses the existing 1 nm file grid. A cut-in
 is retained only when its parsed integer boundaries reproduce the complete native
@@ -49,8 +76,14 @@ Both fresh native workers bind the resulting actual-material image used by the
 final rendering and remaining-defect audit. No source or generated file is edited
 by this verification step.
 
-For T05, the exporter first tries the existing redundant owner-overlap forms.
-If both fail their physical-equivalence predicates, the Gerber-only route can
+For connected T05, the exporter first constructs the complete local physical
+target from the existing owner plus qualified addition, clips only its redundant
+owner support to the local window, and retains the complete addition. All four
+original support/coverage/equivalence/scope predicates and their original area
+epsilon must pass; otherwise the existing redundant owner-overlap forms apply.
+The compact local surface must still meet the unchanged per-attachment region
+budget. This changes only redundant representation of already qualified copper.
+If both original overlap forms fail their physical-equivalence predicates, the Gerber-only route can
 serialize the qualified addition directly. This avoids intersection vertices
 introduced solely by duplicated existing copper. All four original support,
 addition, physical-union and scope predicates retain the same area epsilon;
