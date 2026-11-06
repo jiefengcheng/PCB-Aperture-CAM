@@ -37,7 +37,8 @@ def test_actual_failed_additions_have_distinct_source_bound_ids(monkeypatch, tmp
     assert all(addition_source_id(r) == 't05-addition:' + r['patch_ref']['sha256'] for r in rows)
 
 
-def test_two_original_owner_routes_share_geometry_but_keep_both_obligations(tmp_path):
+@pytest.mark.parametrize('functional_legacy',[False,True])
+def test_two_original_owner_routes_share_geometry_but_keep_both_obligations(tmp_path,monkeypatch,functional_legacy):
     store = p.Store(tmp_path / 'store')
     rows = []
     original = {}
@@ -56,6 +57,10 @@ def test_two_original_owner_routes_share_geometry_but_keep_both_obligations(tmp_
             land_ids=['left', 'right'], attachments=attachments, reference_id=sid, reference_status='GROWN')
     context = cc.bind(unary_union(list(original.values())), 'a' * 64, original)
     context.reserved = dict(context.cores)
+    if functional_legacy:
+        from src import source_channel_scope
+        monkeypatch.setattr(cc,'ACTIVE',None)
+        monkeypatch.setattr(source_channel_scope,'ACTIVE',context)
     scene = dict(source_sha256='a' * 64, frame='fixture', units='mm', layer='F.Cu', viewport_mm=[-3, -3, 3, 3],
                  objects=rows, lineage=[], findings=[], acceptance={'owner': 'PENDING_USER'})
     adapter = CoverageAdapter(box(-2, -2, 2, 2))
@@ -79,3 +84,13 @@ def test_two_original_owner_routes_share_geometry_but_keep_both_obligations(tmp_
     with pytest.raises(ValueError, match='MISSING_TREATMENT'):
         adapter.verify(store, scene, policy, plan, bad, {'scope': 'complete-source-and-all-patches'}, lambda _: None)
     adapter.close()
+
+
+def test_functional_legacy_route_keeps_distinct_ids_with_shared_geometry(monkeypatch):
+    from src import source_channel_scope
+    rows=json.loads(Path(__file__).with_name('fixtures').joinpath('t05_duplicate_additions.json').read_bytes())
+    monkeypatch.setattr(cc,'ACTIVE',None);monkeypatch.setattr(source_channel_scope,'ACTIVE',object())
+    ids=[addition_source_id(r)for r in rows]
+    assert len(ids)==len(set(ids))==14
+    assert len({r['patch_ref']['sha256']for r in rows})==4
+    assert ids==[addition_source_id(r)for r in rows]

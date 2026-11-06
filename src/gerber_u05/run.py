@@ -34,6 +34,8 @@ class Coordinator:
   if legacy:p.save(run/'LEGACY_REFERENCE_JOB.json',dict(schema='fresh-legacy-reservation-reference/1',scope='Source-only recipe, no golden input'))
   else:capture_job(run)
   p.save(run/'source.json',p.build_source(p.Store(run/'runtime'),raw))
+  from .source_assembly import attach
+  if(self.job/'assembly').exists():attach(run,self.job/'assembly')
   if legacy:seal(run,'fresh-legacy-reservation-reference/1')
  def generate(self,input_dir,selected):
   from src.pcb_data_abi.input_directory import collect_raw
@@ -42,25 +44,36 @@ class Coordinator:
   if selected not in blobs:raise ValueError('SELECTED_GERBER_MISSING')
   raw=blobs[selected];inventory=dict(input_directory=str(root),files={n:p.digest(b)for n,b in blobs.items()},ignored=ignored,selected=selected,layer_identity='LIKELY_TOP_ARTWORK; X2 stack identity NOT_ESTABLISHED',companions='UNCHANGED_NOT_COPIED')
   inventory['source_revision']=p.load(p.ROOT/'SOURCE_REVISION.json')if(p.ROOT/'SOURCE_REVISION.json').exists()else dict(status='SOURCE_DIGEST_BOUND; Git revision NOT_ESTABLISHED')
-  p.save(self.job/'INPUT_INVENTORY.json',inventory);install_read_fence(self.job)
+  p.save(self.job/'INPUT_INVENTORY.json',inventory);install_read_fence(self.job,legacy_authority=getattr(self,'legacy_authority',None))
   from tools.preflight import verify_manifest
   asset_count=verify_manifest()
   manifest=p.load(p.ROOT/'assets/starter/evidence/fixture_sha256.json')
   for name,expected in manifest.items():
    if p.digest((p.ROOT/'assets/starter'/name).read_bytes())!=expected:raise ValueError('IMMUTABLE_ASSET_HASH_CHANGED:'+name)
   p.save(self.job/'ASSET_MANIFEST_PROOF.json',dict(status='PASS',files=asset_count,starter_files=len(manifest)))
+  from . import source_assembly
+  assembly=self.job/'assembly';assembly.mkdir();(assembly/'original.gbr').write_bytes(raw);p.save(assembly/'INPUT_INVENTORY.json',inventory);p.save(assembly/'ASSEMBLY_PRODUCER.json',source_assembly._producer(assembly))
+  self.execute(assembly,'source_assembly',['construct'],module='source_assembly');self.execute(assembly,'source_assembly',['1','2'],module='source_assembly');source_assembly.verify_job(assembly)
+  raw=(assembly/'assembled.gbr').read_bytes()
   legacy=self.job/'legacy';self.prepare(legacy,raw,inventory,True);self.stages(legacy,True)
   self.execute(legacy,'legacy_export',['construct']);self.execute(legacy,'legacy_export',['1','2'])
   reference=self.job/'reference';reference.mkdir();p.save(reference/'source.json',p.load(legacy/'source.json'))
+  source_assembly.attach(reference,assembly)
   clearance=capture(p.ROOT/'contracts/clearance/settings.json');clearance.write_snapshot(reference/'CLEARANCE_SNAPSHOT.json');settings=p.load(p.ROOT/'contracts/growth_void/settings.json')
   parameters=dict(settings['parameters'],hard_gap_mm=clearance.nominal_mm,construction_gap_mm=clearance.construction_gap_mm)
-  p.save(reference/'POLICY_SNAPSHOT.json',dict(schema='source-only-reference-policy/1',resolved_parameters=parameters,clearance_resolved=clearance.resolved(),owner_allowance_consumed=False));seal(reference,'fresh-legacy-local-remedy-reference/1')
+  p.save(reference/'POLICY_SNAPSHOT.json',dict(schema='source-only-reference-policy/1',resolved_parameters=parameters,clearance_resolved=clearance.resolved(),owner_allowance_consumed=False,large_pocket_strategy=settings.get('large_pocket_strategy')));seal(reference,'fresh-legacy-local-remedy-reference/1')
   self.execute(reference,'remedy',['construct'],module='reference_recipe');self.execute(reference,'remedy',['1','2'],module='reference_recipe')
   proofs=[p.load(reference/'export'/('proof_'+m+'.json'))for m in('construct','1','2')]
   if len({p.digest(p.canonical(v))for v in proofs})!=1:raise ValueError('FRESH_REFERENCE_PROOFS_DIFFER')
   connected=self.job/'connected';self.prepare(connected,raw,inventory)
   (connected/'reference').mkdir();body=(reference/'export/top.art.gbr').read_bytes();(connected/'reference/top.art.gbr').write_bytes(body)
-  p.save(connected/'REFERENCE_BINDING.json',dict(schema='job-local-generated-reservation/1',source_sha256=p.digest(raw),generated_sha256=p.digest(body),reference_proof_sha256=p.digest(p.canonical(proofs[0])),source_only=True))
+  binding=dict(schema='job-local-generated-reservation/1',source_sha256=p.digest(raw),generated_sha256=p.digest(body),reference_proof_sha256=p.digest(p.canonical(proofs[0])),source_only=True)
+  if 'functional_channels'in proofs[0]:
+   import copy
+   sidecar=copy.deepcopy(proofs[0]['functional_channels']);source_store=p.Store(reference/'runtime');target_store=p.Store(connected/'runtime')
+   sidecar['owned_geometry_refs']={o:target_store.put('geometry',source_store.get(ref,kind='geometry'))for o,ref in sidecar['owned_geometry_refs'].items()}
+   source_store.verify_reads();target_store.verify_reads();p.save(connected/'REFERENCE_CHANNELS.json',sidecar);binding['functional_channel_sidecar_sha256']=p.digest(p.canonical(sidecar))
+  p.save(connected/'REFERENCE_BINDING.json',binding)
   seal(connected,CONNECTED);self.stages(connected)
   self.execute(connected,'export',['construct'],module='exporter');self.execute(connected,'export',['1','2'],module='exporter')
   self.execute(connected,'controls',['all'],module='controls');self.execute(connected,'remaining_defects',['all'],module='remaining_defects');self.execute(connected,'render',['all'],module='render')

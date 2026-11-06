@@ -39,7 +39,7 @@ class CoverageAdapter(BaseCoverageAdapter):
  def _operands(self,store,scene,policy,details,row):
   owner,radius,domain,foreign=super()._operands(store,scene,policy,details,row)
   if cc.ACTIVE is None:return owner,radius,domain,foreign
-  context=cc.ACTIVE
+  context=getattr(self,'_integral_context',cc.ACTIVE)
   if set(self._copper_owners)!=set(context.reserved):raise ValueError('PRIOR_ORIGINAL_OWNER_INVENTORY_CHANGED')
   own=self.owner_for_route(row['source_id']);query=domain.buffer(CONTRACT.barrier_gap_mm)
   # Separate operands give the same distance/barrier union while reusing the
@@ -50,6 +50,9 @@ class CoverageAdapter(BaseCoverageAdapter):
 
 def prepare(store,scene):
  if cc.ACTIVE is None:return scene,None
+ if getattr(cc.ACTIVE,'functional',None)is not None:
+  from .channel_prior import prepare
+  return prepare(store,scene)
  from . import pipeline as p
  from .native_component_checks_final import clearance
  context=cc.ACTIVE
@@ -58,12 +61,14 @@ def prepare(store,scene):
  # The prior and combined predecessor must obey the same finished-copper floor.
  # New T05 growth still uses the unchanged, larger construction guard.
  prior_check=clearance(context.cores,context.reserved);combined_check=clearance(context.cores,protected)
+ if context.partial_pocket_failures(protected):raise ValueError('PRIOR_POSITIVE_COPPER_CONFLICTS_WITH_FROZEN_PARTIAL_OPENING')
  existing={row['metadata']['original_owner_id']:row for row in scene['objects']if row['kind']=='component_remedy'};changes={};metadata={};additions=[];records=[]
  for own in sorted(owned):
   material,proof=local_floor(owned[own],context.reserved[own])
   if material is None:continue
   sid='component-completion:'+own;old=existing.get(own);aggregate=material if old is None else unary_union([p.geometry(store,old['geometry_ref']),material]);reference=p.geomref(store,aggregate)
   md=dict(origin='qualified-source-derived-prior-floor',original_owner_id=own,original_source_sha256=context.source_hash,stage='t05-prior-floor',kind='owner_surface_absorption',nominal_width_mm=0.,original_width_mm=0.,qualified_land=False,representation='EXISTING_COMPONENT_SURFACE_EXTENDED; no per-feature material objects',logical_patch_ref=reference,prior_generated_sha256=context.reservation_sha256)
+  if old is not None and old['metadata'].get('approved_partial_pockets'):md['approved_partial_pockets']=old['metadata']['approved_partial_pockets']
   if old is None:additions.append(dict(source_id=sid,kind='component_remedy',geometry_ref=reference,original_ref=p.geomref(store,context.cores[own]),metadata=md))
   else:
    if old['source_id']!=sid:raise ValueError('PRIOR_OWNER_SURFACE_IDENTITY_CHANGED')

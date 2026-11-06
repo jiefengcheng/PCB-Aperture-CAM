@@ -5,11 +5,11 @@ from . import pipeline as p
 from .guard import verify_sources,install_read_fence
 ORDER=('t01','t03','t04','t02','t05')
 def compute(run,name):
- if name=='t04'and os.environ.get('U05_WORKER_MODE')!='construct':
+ if name=='t04'and(os.environ.get('U05_WORKER_MODE')!='construct'or(run/'REUSED_WIDTH_BINDING.json').exists()):
   from .width_prefix import reconstruct
   value=reconstruct(run,os.environ['U05_WORKER_MODE'])
  else:value=p.stage(run,name)
- if name=='t04'and os.environ.get('U05_WORKER_MODE')=='construct':p.save(run/'RAW_WIDTH_CHECKPOINT.json',value)
+ if name=='t04'and os.environ.get('U05_WORKER_MODE')=='construct'and not(run/'REUSED_WIDTH_BINDING.json').exists():p.save(run/'RAW_WIDTH_CHECKPOINT.json',value)
  if name=='t05':p.save(run/'raw_checkpoints'/('t05_'+os.environ.get('U05_WORKER_MODE','unit')+'.json'),value)
  if name in('t04','t05')and not(run/'LEGACY_REFERENCE_JOB.json').exists():
   from .component_finish import finish

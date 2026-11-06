@@ -34,8 +34,9 @@ def prepare_export_region(store,value,adapter,owner,domain,decision,foreign):
  addition=p.geometry(store,decision['patch_ref'])
  if cc.ACTIVE is None:return export_region(addition,owner,domain)
  region,support,support_mode=supported_region(addition,owner,domain)
- own=adapter.owner_for_route(decision['source_id']);all_foreign=list(foreign)
+ from src.u05_board.coverage import integral_context
+ context=integral_context();own=adapter.owner_for_route(decision['source_id']);all_foreign=list(foreign)
  for row in value['candidate']['decisions']:
-  if row['status']=='GROWN'and cc.ACTIVE.owner(row['source_id'])!=own:all_foreign.append(('selected-foreign:'+row['source_id'],p.geometry(store,row['patch_ref'])))
+  if row['status']=='GROWN'and context.owner(row['source_id'])!=own:all_foreign.append(('selected-foreign:'+row['source_id'],p.geometry(store,row['patch_ref'])))
  region,receipt=prepare_region(store,region,owner,own,foreign=all_foreign)
  return region,dict(base_export_support=support,support_assembly=support_mode,owner_surface_absorption=receipt)

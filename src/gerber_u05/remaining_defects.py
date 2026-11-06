@@ -2,7 +2,7 @@
 
 A further admissible growth proposal is an optional edit, not evidence that the
 selected construction lost copper. Every selected owner surface must be present;
-resolvable new empty pockets, source-void loss and foreign-clearance failures
+unplanned resolvable new empty pockets, source-void loss and foreign-clearance failures
 remain hard failures. Original optional-search inventories remain unchanged.
 """
 import sys,json,collections
@@ -45,7 +45,7 @@ if retained_file.exists():
 result=dict(status='PASS',generated_sha256=p.digest(body),eligible=[],required_remedy_coverage=coverage,
  whole_board_owner_clearance=physical,whole_board_void_inventory=inventory,
  optional_further_growth=optional,source_voids='Preserved under the unchanged native source-void checks',
- policy_scope='All selected frozen one-pass owner remedies are present; no new resolvable empty pockets; no requirement for unlimited further geometric closing',
+ policy_scope='All selected frozen one-pass owner remedies are present; no unplanned new resolvable empty pockets. Declared smooth-rim openings retain their cumulative 20% budget. No requirement for unlimited further geometric closing',
  native_file_uncertainty_mm=contracts[0].file_uncertainty_mm,nominal_clearance_mm=contracts[0].hard_gap_mm,
  code_binding_sha256=p.digest((run/'PRODUCER_BINDING.json').read_bytes()),integration='NOT_INTEGRATED',
  historical_failed_findings='Preserved; no historical failure is relabelled or waived')

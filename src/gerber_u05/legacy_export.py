@@ -12,6 +12,7 @@ from src.pcb_data_abi.board_geometry import export_reference,bridge_contour,fide
 from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM,GRID_MM
 from src.indexed_hausdorff import distance as image_hausdorff
 from src.u05_board.export import export_region,actual_spindle_check
+from .export_absorption import supported_region
 from src.junction_spindle_stage import prepare_spindle_context
 from src.junction_spindle_blend import spindle_blend
 from src.u05_board.attachment_export import obligation_check
@@ -42,16 +43,38 @@ def parse(raw):
     if not parser.eof_found or parser.current_region is not None or parser.block_frame is not None or parser.file_settings.unit!=MM or parser.file_settings.number_format!=(4,6)or parser.file_settings.notation!='absolute'or parser.inventory['MO']!=1 or parser.inventory['FS']!=1:raise ValueError('GENERATED_GERBER_FORMAT_OR_COMPLETENESS_FAILED')
     return g
 
+def connected_native_normalization(shape):
+    """Keep a connected contribution connected within the existing file budget.
+
+    Nearest-grid reduction can sever a sub-grid neck and strand a long, thin
+    fragment. Retain every positive surface by rounding a one-grid outward
+    envelope only for that case. This is accepted only when it still covers
+    the complete original contribution and passes the unchanged 2 nm contour
+    and area bounds. Actual stage and foreign-owner checks remain mandatory.
+    """
+    normalized=set_precision(shape,GRID_MM,mode='valid_output')
+    proof=dict(encoding_guard_mm=0.,connectivity_support=None)
+    if shape.geom_type=='Polygon' and normalized.geom_type=='MultiPolygon':
+        from src.native_boundary_metric import distance as boundary_distance
+        supported=set_precision(shape.buffer(GRID_MM,quad_segs=16),GRID_MM,mode='valid_output')
+        gap=boundary_distance(shape,supported)
+        area=shape.symmetric_difference(supported).area
+        bound=2*shape.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
+        if supported.geom_type!='Polygon' or not supported.is_valid or not supported.covers(shape) or not math.isfinite(gap) or gap>POLYGON_TOLERANCE_MM or not math.isfinite(area) or area>bound:
+            raise ValueError('EXPORT_CONNECTED_CONTRIBUTION_NOT_FILE_GRID_REPRESENTABLE')
+        proof=dict(encoding_guard_mm=GRID_MM,connectivity_support=dict(reason='Preserve a connected qualified contribution during native-grid conversion',nearest_grid_components=len(normalized.geoms),all_qualified_copper_covered=True,hausdorff_mm=gap,tolerance_mm=POLYGON_TOLERANCE_MM,area_mm2=area,area_bound_mm2=bound))
+        normalized=supported
+    return normalized,proof
+
 def append_regions(shape,stage,sid,records,blocks,store):
     qualified=shape
     # Nominal nearest-grid contours: inward padding changes overlap topology.
     # Construction margins remain in the source-stage proofs; actual native
     # clearance is checked separately against the production hard floor.
-    encoding_guard=0.
-    if encoding_guard:shape=shape.buffer(encoding_guard,quad_segs=8)
-    normalized=set_precision(shape,.000001,mode='valid_output');area=shape.symmetric_difference(normalized).area;bound=2*shape.length*.000001+3.141592653589793e-12
+    normalized,connectivity=connected_native_normalization(shape);encoding_guard=connectivity['encoding_guard_mm'];area=shape.symmetric_difference(normalized).area;bound=2*shape.length*.000001+3.141592653589793e-12
     if normalized.is_empty or not normalized.is_valid or normalized.geom_type not in('Polygon','MultiPolygon')or area>bound:raise ValueError('EXPORT_FILE_GRID_NORMALIZATION_FAILED')
     raw_ref=p.geomref(store,qualified);normalization=dict(encoding_guard_mm=encoding_guard,qualified_reference_unchanged=True,grid_mm=.000001,mode='valid_output',area_change_mm2=area,area_bound_mm2=bound,raw_type=shape.geom_type,normalized_type=normalized.geom_type,raw_components=1 if shape.geom_type=='Polygon'else len(shape.geoms),normalized_components=1 if normalized.geom_type=='Polygon'else len(normalized.geoms))
+    if connectivity['connectivity_support'] is not None:normalization['connectivity_support']=connectivity['connectivity_support']
     encoding_distance=qualified.hausdorff_distance(normalized);encoding_area=qualified.symmetric_difference(normalized).area;encoding_bound=2*qualified.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
     # Isolated contribution normalization may collapse sub-grid tips already
     # covered by other original copper. Preserve these metrics; the unchanged
@@ -89,12 +112,20 @@ def preserve_point_contacts(owner,pieces,sid,records,blocks,store):
     return caps
 
 
+def encoded_route_owner(encoded_current,members,land_ids,route_id):
+    from src import source_channel_scope
+    scope=source_channel_scope.ACTIVE
+    if scope is not None:return scope.project(encoded_current)[scope.owner(route_id)]
+    return p.unary_union([encoded_current[s]for s in [*members,*land_ids]])
+
 def construct(run):
     verify_sources(run)
     if p.canonical(p.load(run/'audits/t01/supplement_1.json'))!=p.canonical(p.load(run/'audits/t01/supplement_2.json')):raise ValueError('T01_SUPPLEMENT_PROOFS_DIFFER')
     for stage in ORDER:
         if p.load(run/'audits'/stage/'proof.json')['status']!='PASS':raise ValueError('UNVERIFIED_GEOMETRY_STAGE')
-    store=p.Store(run/'runtime');binding=p.load(run/'source.json');raw=store.get(binding['source_ref'],kind='gerber-source');base,oracle=canonical_base(raw);scene=store.get_json(binding['scene_ref'],kind='scene');_,current,_=p.operands(store,scene);encoded_current=dict(current);records=[];blocks=[]
+    store=p.Store(run/'runtime');binding=p.load(run/'source.json')
+    if(run/'LEGACY_REFERENCE_JOB.json').exists():p.initialize(store,binding)
+    raw=store.get(binding['source_ref'],kind='gerber-source');base,oracle=canonical_base(raw);scene=store.get_json(binding['scene_ref'],kind='scene');_,current,_=p.operands(store,scene);encoded_current=dict(current);records=[];blocks=[]
     for stage in ORDER[:-1]:
         value=p.load(run/(stage+'.json'));scene=store.get_json(value['output_scene_ref'],kind='scene');rows,after,_=p.operands(store,scene)
         for sid,g in sorted(after.items()):
@@ -105,8 +136,8 @@ def construct(run):
     objects={row['source_id']:row for row in prepared['objects']}
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=export_region(addition,owner,domain);first=len(records);append_regions(region,'t05',d['source_id'],records,blocks,store)
-        members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=p.unary_union([encoded_current[s]for s in [*members,*d['land_ids']]]);pieces=[p.geometry(store,row['geometry_ref'])for row in records[first:]];preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store)
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support,_support_mode=supported_region(addition,owner,domain);first=len(records);append_regions(region,'t05',d['source_id'],records,blocks,store)
+        members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=encoded_route_owner(encoded_current,members,d['land_ids'],d['source_id']);pieces=[p.geometry(store,row['geometry_ref'])for row in records[first:]];preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store)
     adapter.close();body=(base+'\n'+''.join(blocks)+'M02*\n').encode('ascii');store.verify_reads();verify_sources(run)
     return body,dict(source_sha256=binding['source_ref']['sha256'],coordinate_oracle=oracle,records=records,generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()),profile='GERBER_SOURCE_ONLY; KiCad source/write/plot N/A; positive appended contours, original ordered clear operations retained')
 
@@ -122,7 +153,7 @@ def original_contact_port(overlap,width,contact):
 def native_model_reference(run,store,before):
     binding=p.load(run/'source.json');source=store.get_json(binding['scene_ref'],kind='scene');source_rows={r['source_id']:r for r in source['objects']};value=p.load(run/'t05.json');final=store.get_json(value['output_scene_ref'],kind='scene');references=[];inventory=[]
     def prepare(shape,sid):
-        normalized=set_precision(shape,GRID_MM,mode='valid_output');area=shape.symmetric_difference(normalized).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
+        normalized,_connectivity=connected_native_normalization(shape);area=shape.symmetric_difference(normalized).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
         if normalized.is_empty or not normalized.is_valid or normalized.geom_type not in('Polygon','MultiPolygon')or area>bound:raise ValueError('NATIVE_MODEL_REFERENCE_NORMALIZATION_FAILED:'+sid)
         parts=[normalized]if normalized.geom_type=='Polygon'else list(normalized.geoms)
         for part in parts:
@@ -140,7 +171,7 @@ def native_model_reference(run,store,before):
     try:
         for d in value['candidate']['decisions']:
             if d['status']!='GROWN':continue
-            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_=export_region(p.geometry(store,d['patch_ref']),owner,domain);prepare(region,d['source_id'])
+            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_,_support_mode=supported_region(p.geometry(store,d['patch_ref']),owner,domain);prepare(region,d['source_id'])
     finally:adapter.close()
     expected=union_all([before,*references],grid_size=GRID_MM)
     if expected.is_empty or not expected.is_valid or expected.area<=0:raise ValueError('NATIVE_AGGREGATE_REFERENCE_INVALID')
@@ -177,6 +208,11 @@ def check(run,body,ledger):
         certificates[key]=dict(proof='EXACT_ORIGINAL_PREFIX_AND_PARSED_POSITIVE_APPEND_OPERANDS',generated_sha256=p.digest(body),core_sha256=key[0],candidate_sha256=key[1],positive_operand_sha256=[p.digest(p.to_wkb(g))for g in parts])
         return result
     class ActualCoreProof:
+        def check(self,rows,**kwargs):
+            from src import component_clearance as ownership
+            previous_context=ownership.ACTIVE;ownership.ACTIVE=original_owner_context
+            try:return super().check(rows,**kwargs)
+            finally:ownership.ACTIVE=previous_context
         def required_new_copper_gap(self):
             # Finished-file acceptance is the unchanged production hard floor.
             # Construction guard remains in all inherited geometry proofs.
@@ -190,9 +226,18 @@ def check(run,body,ledger):
     class ActualLandScene(ActualCoreProof,p.PreparedLandScene):pass
     class ActualWidthScene(ActualCoreProof,p.PreparedWidthScene):pass
     source=store.get_json(binding['scene_ref'],kind='scene');rows,current,original_shapes=p.operands(store,source);checks={}
+    from src.component_clearance import Context as OriginalOwnerContext
+    original_material=p.affine_scale(p.source_profile.ordered(reference_source_shapes),1,-1,origin=(0,0))
+    original_owner_context=OriginalOwnerContext(original_material,binding['source_ref']['sha256'],original_shapes)
     for stage in ORDER[:-1]:
         previous=dict(current);result=p.load(run/(stage+'.json'));scene=store.get_json(result['output_scene_ref'],kind='scene');newrows,wanted,_=p.operands(store,scene)
-        for sid,parts in by_stage[stage].items():current[sid]=certified_union(current[sid],parts)
+        original_owner_context.register_scene(store,scene)
+        for sid,parts in by_stage[stage].items():
+            if sid not in current:
+                row=newrows[sid];members=row['metadata'].get('members',[])
+                if row['kind']!='inclusive_rectangle'or not members or any(m not in previous or m not in original_shapes for m in members):raise ValueError('UNBOUND_NEW_LEGACY_MATERIAL')
+                base=p.unary_union([previous[m]for m in members]);previous[sid]=base;current[sid]=base;original_shapes[sid]=p.unary_union([original_shapes[m]for m in members])
+            current[sid]=certified_union(current[sid],parts)
         if set(current)!=set(wanted):raise ValueError('ACTUAL_STAGE_SOURCE_ID_COVERAGE_CHANGED:'+stage)
         if stage in('t01','t02'):
             changed=set(by_stage[stage]);lands=[dict(id=s,original=previous[s]if s in previous else p.geometry(store,newrows[s]['original_ref']),candidate=current[s],native_source_kind='gr_circle'if newrows[s]['kind']=='circle'else'gr_poly',native_stroke_width_mm=0.)for s in sorted(changed)]
@@ -223,6 +268,11 @@ def check(run,body,ledger):
     for row in prepared['objects']:
         sid=row['source_id'];g=p.unary_union([current[s]for s in row['metadata']['reference_source_ids']])if row['kind']=='trace'else current[sid];row['geometry_ref']=p.geomref(store,g)
     declared=store.get_json(value['plan']['scene_ref'],kind='scene')
+    original_owner_context.register_scene(store,declared)
+    def original_foreign(route,pairs):
+        from src import source_channel_scope
+        selected=source_channel_scope.ACTIVE or original_owner_context;owner=selected.owner(route)
+        return [(sid,g)for sid,g in pairs if tuple(selected.ids.get(sid,()))!=(owner,)]
     nominal_adapter=p.CoverageAdapter(p.box(*declared['viewport_mm']));declared_domains={}
     try:
         for decision in value['candidate']['decisions']:
@@ -234,7 +284,7 @@ def check(run,body,ledger):
         owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);declared_domain=declared_domains[d['source_id']];parts=by_stage['t05'][d['source_id']];addition=p.unary_union(parts).difference(preimage);patches.append(dict(id=d['source_id'],owner=owner,regions=parts,addition=addition,window=declared_domain.buffer(POLYGON_TOLERANCE_MM),foreign=foreign))
     adapter.close();checks['t05']=[]
     for patch in patches:
-        q=actual_spindle_check(patch['owner'],patch['regions'],patch['addition'],patch['window'],patch['foreign']+[(other['id'],other['addition'])for other in patches if other['id']!=patch['id']])
+        q=actual_spindle_check(patch['owner'],patch['regions'],patch['addition'],patch['window'],original_foreign(patch['id'],patch['foreign']+[(other['id'],other['addition'])for other in patches if other['id']!=patch['id']]))
         p.save(run/'export'/('junction_'+sys.argv[2]+'_'+str(len(checks['t05']))+'.json'),dict(source_id=patch['id'],check=q)) if __name__=='__main__' else None
         if not q['passed']:raise ValueError('ACTUAL_GERBER_JUNCTION_CHECK_FAILED:'+patch['id']+':'+str(q['failures']))
         checks['t05'].append(dict(source_id=patch['id'],check=q))
@@ -242,7 +292,7 @@ def check(run,body,ledger):
     model=store.get_json(value['plan']['scene_ref'],kind='scene');adapter=p.CoverageAdapter(p.box(*model['viewport_mm']));_,model_current,_=p.operands(store,model);model_before=p.geometry(store,value['candidate']['before_ref']);attachments=[]
     for d in value['candidate']['decisions']:
         if not d['land_ids']:continue
-        owner,radius,domain,foreign=adapter._operands(store,model,policy,value['plan']['details'],d);desired=spindle_blend(owner,radius,domain)[1];needs=adapter.needs(model_current,d,radius,desired.difference(model_before));selected=p.geometry(store,d['patch_ref']).difference(model_before)if d['status']=='GROWN'else p.Polygon();parts=by_stage['t05'].get(d['source_id'],[])
+        owner,radius,domain,foreign=adapter._operands(store,model,policy,value['plan']['details'],d);desired=adapter._blend(owner,radius,domain)[1];needs=adapter.needs(model_current,d,radius,desired.difference(model_before));selected=p.geometry(store,d['patch_ref']).difference(model_before)if d['status']=='GROWN'else p.Polygon();parts=by_stage['t05'].get(d['source_id'],[])
         if len(needs)!=len(d['attachment_outcomes']):raise ValueError('ACTUAL_ATTACHMENT_INVENTORY_CHANGED')
         for need,outcome in zip(needs,d['attachment_outcomes']):
             if any(outcome[k]!=need[k]for k in('id','land_id','reference_land_id','required_reference')):raise ValueError('ACTUAL_ATTACHMENT_MEMBERSHIP_CHANGED')
@@ -257,7 +307,16 @@ def check(run,body,ledger):
     if not raw_decision_image.is_valid or raw_area>raw_area_bound:raise ValueError('RAW_MODEL_IMAGE_AREA_FIDELITY_FAILED')
     if not all(math.isfinite(v) for v in (distance,area,bound)) or distance>POLYGON_TOLERANCE_MM or area>bound or before.difference(after).area>1e-12:raise ValueError('ACTUAL_FINAL_COPPER_FIDELITY_OR_PRESERVATION_FAILED')
     store.verify_reads();verify_sources(run)
-    return dict(status='PASS',source_objects_preserved=n,source_clear_operations_preserved=sum(not o.polarity_dark for o in original.objects),appended_positive_regions=len(observed),actual_hard_gap_mm=p.HARD_GAP_MM,contour_proofs=proofs,actual_scene_checks=checks,exact_append_only_core_proofs=core_evidence,native_model_reference=reference_proof,aggregate_metric=metric,raw_model_image_comparison=dict(reference_type=raw_decision_image.geom_type,symmetric_difference_mm2=raw_area,area_bound_mm2=raw_area_bound,role="Decision image; native boundary fidelity uses the declared file-grid reference"),final_copper=dict(hausdorff_mm=distance,symmetric_difference_mm2=area,area_bound_mm2=bound,original_area_mm2=before.area,final_area_mm2=after.area,added_area_mm2=after.difference(before).area),generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()))
+    result=dict(status='PASS',source_objects_preserved=n,source_clear_operations_preserved=sum(not o.polarity_dark for o in original.objects),appended_positive_regions=len(observed),actual_hard_gap_mm=p.HARD_GAP_MM,contour_proofs=proofs,actual_scene_checks=checks,exact_append_only_core_proofs=core_evidence,native_model_reference=reference_proof,aggregate_metric=metric,raw_model_image_comparison=dict(reference_type=raw_decision_image.geom_type,symmetric_difference_mm2=raw_area,area_bound_mm2=raw_area_bound,role="Decision image; native boundary fidelity uses the declared file-grid reference"),final_copper=dict(hausdorff_mm=distance,symmetric_difference_mm2=area,area_bound_mm2=bound,original_area_mm2=before.area,final_area_mm2=after.area,added_area_mm2=after.difference(before).area),generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()))
+
+    from src import source_channel_scope
+    functional=source_channel_scope.ACTIVE
+    if functional is not None:
+        from .channel_material import current_legacy_channels
+        owned,proof=current_legacy_channels(functional,store,binding,[p.load(run/(stage+'.json'))for stage in ORDER],body,ledger,result)
+        if proof['status']!='PASS':raise ValueError('NATIVE_LEGACY_FUNCTIONAL_CHANNEL_CHECK_FAILED:'+str(proof['physical_clearance']['failures'][:3]))
+        result['functional_channels']=dict(proof,owned_geometry_refs={o:p.geomref(store,g)for o,g in owned.items()},channel_certificate_sha256=p.digest(p.canonical(functional.certificate)))
+    return result
 
 if __name__=='__main__':
     p.configure();run=Path(sys.argv[1]);mode=sys.argv[2]

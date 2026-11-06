@@ -29,6 +29,7 @@ def junction_source_paths(rows,selected_ids,*,maximum_turn_degrees=5.):
     aliases={min(sids):sorted(sids) for sids in alias_groups.values()}
     representatives={rep:objects[rep] for rep in aliases}
     endpoints={rep:[key(p) for p in r['endpoints_decimal_mm']] for rep,r in representatives.items()}
+    closed_edges={rep:endpoints[rep][0]==endpoints[rep][1] and any(tuple(point)!=tuple(r['route_points_mm'][0]) for point in r['route_points_mm'][1:]) for rep,r in representatives.items()}
     nodes=defaultdict(set);all_nodes=defaultdict(set)
     for rep,r in representatives.items():
         for p in endpoints[rep]:nodes[(r['width_mm'],p)].add(rep);all_nodes[p].add(rep)
@@ -45,7 +46,7 @@ def junction_source_paths(rows,selected_ids,*,maximum_turn_degrees=5.):
         if len(edges)==2 and all(endpoints[e][0]!=endpoints[e][1] for e in edges):
             a,b=edges;links[(a,p)]=b;links[(b,p)]=a
         elif len(edges)>2:
-            vectors={e:tangent(e,p) for e in edges};best={}
+            vectors={e:None if closed_edges[e] else tangent(e,p) for e in edges};best={}
             for a in edges:
                 candidates=[]
                 for b in edges:
@@ -81,8 +82,8 @@ def junction_source_paths(rows,selected_ids,*,maximum_turn_degrees=5.):
                     continuation=junctions.get((width,p)),
                     basis='Exact original native junction/width transition; no crop cut or primitive trimming'))
             for e in own:
-                if (e,p) not in links:terminals.append([str(v) for v in p])
-        degenerate=all(endpoints[e][0]==endpoints[e][1] for e in members)
+                if (e,p) not in links and not closed_edges[e]:terminals.append([str(v) for v in p])
+        degenerate=all(endpoints[e][0]==endpoints[e][1] and not closed_edges[e] for e in members)
         # Traverse native edges, rather than letting native fragmentation define
         # parallel membership. This polyline is selection evidence only: source
         # WKB, actual copper checks and original route construction are unchanged.

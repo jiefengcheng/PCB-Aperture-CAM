@@ -9,5 +9,7 @@
     "file_uncertainty_mm": 2e-06,
     "area_epsilon_mm2": 1e-12
   },
-  "scope": "New additive local remedy only. Clearance comes from the captured shared clearance registry; recognition/file tolerances stay distinct. Capture at job entry, immutable for active jobs."
+  "scope": "New additive local remedy only. Clearance comes from the captured shared clearance registry; recognition/file tolerances stay distinct. Capture at job entry, immutable for active jobs.",
+  "large_pocket_strategy": "SMOOTH_INNER_RIM_ONCE_WITHIN_EXISTING_SHORTAGE_CAP",
+  "large_pocket_budget": "ONE_CUMULATIVE_ALLOWANCE_PER_FROZEN_POCKET_ACROSS_ALL_LATER_RADII_AND_STAGES"
 }

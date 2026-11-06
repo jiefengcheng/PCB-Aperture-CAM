@@ -9,7 +9,7 @@ def producer_files():
  return sorted(files)
 def seal(run,profile):
  from .pipeline import save
- inputs=[run/name for name in('input_inventory.json','LEGACY_REFERENCE_JOB.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REUSED_PREFIX_BINDING.json','REUSED_T05_BINDING.json','REUSED_NATIVE_EXPORT_BINDING.json')if(run/name).is_file()]
+ inputs=[run/name for name in('input_inventory.json','LEGACY_REFERENCE_JOB.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','REUSED_PREFIX_BINDING.json','REUSED_T05_BINDING.json','REUSED_NATIVE_EXPORT_BINDING.json','REUSED_LEGACY_BINDING.json','REUSED_WIDTH_BINDING.json','SOURCE_ASSEMBLY_BINDING.json')if(run/name).is_file()]
  save(run/'PRODUCER_BINDING.json',dict(job_inputs={str(p):sha(p)for p in inputs},schema='source-only-gerber-u05-producer/1',profile=profile,files={str(p):sha(p)for p in producer_files()},source_binding_sha256=sha(run/'source.json')))
 def verify_sources(run):
  from importlib.metadata import version
@@ -23,6 +23,8 @@ def verify_sources(run):
  for name,expected in seal.get('job_inputs',{}).items():
   if sha(name)!=expected:raise ValueError('GERBER_JOB_INPUT_CHANGED:'+name)
  if sha(run/'source.json')!=seal['source_binding_sha256']:raise ValueError('GERBER_RUN_SOURCE_BINDING_CHANGED')
+ from .source_assembly import verify_run
+ verify_run(run)
  if (run/'HALTED.json').exists():raise ValueError('HALTED_RUN_CANNOT_RESUME')
  from .prefix import verify as verify_prefix
  verify_prefix(run)
@@ -32,13 +34,44 @@ def verify_sources(run):
  if(run/'REUSED_NATIVE_EXPORT_BINDING.json').exists():
   from .qualification_tail import verify as verify_export
   verify_export(run)
+ if(run/'REUSED_LEGACY_BINDING.json').exists():
+  from .legacy_prefix import verify as verify_legacy
+  verify_legacy(run)
+ if(run/'REUSED_WIDTH_BINDING.json').exists():
+  from .width_adoption import verify as verify_width
+  verify_width(run)
  return seal
 
-def install_read_fence(run):
+def install_read_fence(run,legacy_authority=None):
  """Generation cannot open any retained result outside its own fresh job."""
  import os,sys
  from .workspace import configure
- evidence=configure()/'evidence';allowed=[ROOT.resolve(),Path(run).resolve()]
+ evidence=(configure()/'evidence').resolve();allowed=[Path(run).resolve()]
+ # A normal app checkout contains out/evidence. Its source-root authority must
+ # not accidentally grant access to every historical result nested underneath.
+ if ROOT.resolve()!=evidence and ROOT.resolve().is_relative_to(evidence):allowed.append(ROOT.resolve())
+ assembly_binding=Path(run)/'SOURCE_ASSEMBLY_BINDING.json'
+ if assembly_binding.exists():
+  assembly_seal=json.loads((Path(run)/'PRODUCER_BINDING.json').read_bytes())
+  if assembly_seal.get('job_inputs',{}).get(str(assembly_binding))!=sha(assembly_binding):raise ValueError('SOURCE_ASSEMBLY_READ_AUTHORITY_CHANGED')
+  from .source_assembly import verify_run
+  authority=verify_run(Path(run));allowed.append(Path(authority['assembly_run']).resolve())
+ for width in(Path(run)/'REUSED_WIDTH_BINDING.json',Path(run)/'connected/REUSED_WIDTH_BINDING.json'):
+  if not width.exists():continue
+  width_seal=json.loads((width.parent/'PRODUCER_BINDING.json').read_bytes())
+  if width_seal.get('job_inputs',{}).get(str(width))!=sha(width):raise ValueError('REUSED_WIDTH_READ_AUTHORITY_CHANGED')
+  from .width_adoption import verify as verify_width
+  authority=verify_width(width.parent);allowed.extend(Path(root).resolve()for root in authority['original']['original_source_roots'])
+ if legacy_authority is not None:
+  from .legacy_prefix import inspect
+  authority=inspect(legacy_authority['original_run'],legacy_authority['through']);allowed.extend(Path(root).resolve()for root in authority.get('original_source_roots',[authority['original_source_root']]))
+ for candidate in (Path(run)/'REUSED_LEGACY_BINDING.json',Path(run)/'legacy/REUSED_LEGACY_BINDING.json',Path(run).parent/'legacy/REUSED_LEGACY_BINDING.json'):
+  if not candidate.exists():continue
+  seal_value=json.loads((candidate.parent/'PRODUCER_BINDING.json').read_bytes())
+  if seal_value.get('job_inputs',{}).get(str(candidate))!=sha(candidate):raise ValueError('LEGACY_PREFIX_READ_AUTHORITY_CHANGED')
+  from .legacy_prefix import verify as verify_legacy
+  authority=verify_legacy(candidate.parent);allowed.extend(Path(root).resolve()for root in authority['original'].get('original_source_roots',[authority['original']['original_source_root']]))
+  break
  prefix=Path(run)/'REUSED_PREFIX_BINDING.json'
  if not prefix.exists():prefix=Path(run)/'connected/REUSED_PREFIX_BINDING.json'
  if prefix.exists():

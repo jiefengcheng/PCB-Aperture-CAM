@@ -18,5 +18,7 @@
   "ordering": "FROZEN_CONSECUTIVE_COMPONENTS_NO_REVISIT",
   "representation": "ABSORB_INTO_ORIGINAL_OWNER_SURFACE",
   "microscopic_holes": "ABSORB_NEW_GRID_COLLAPSING_HOLES_BEFORE_STORAGE",
-  "dedicated_feature_material_objects": false
+  "dedicated_feature_material_objects": false,
+  "large_pocket_strategy": "SMOOTH_INNER_RIM_ONCE_WITHIN_EXISTING_SHORTAGE_CAP",
+  "large_pocket_budget": "ONE_CUMULATIVE_ALLOWANCE_PER_FROZEN_POCKET_ACROSS_ALL_LATER_RADII_AND_STAGES"
 }

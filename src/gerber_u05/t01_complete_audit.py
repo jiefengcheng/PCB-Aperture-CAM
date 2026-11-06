@@ -7,6 +7,7 @@ from src.crop_square_neighbor_experiment import verify_addition
 
 def audit(run):
     verify_sources(run);store=p.Store(run/'runtime');binding=p.load(run/'source.json');scene=store.get_json(binding['scene_ref'],kind='scene');saved=p.load(run/'t01.json')
+    p.initialize(store,binding,scene)
     sites=p.t01_sites(store,scene);_,current,_=p.operands(store,scene);rows=binding['width_metadata_rows'];shapes=[current[r['id']]for r in rows];raw=store.get(binding['width_metadata_encoding_ref'],kind='kernel-width-data');spec=p.specification();policy=dict(canonical_t01=p.marker(),family=p.marker()['family'],settings=spec['settings'],diameter_classes_mm=spec['diameter_classes_mm'])
     settings,allocation,targets,square=p.allocate(raw,rows,shapes,sites,policy,dict(reviewed_pairs=[],recess_source_ids=[]))
     guard=p.SurfaceGuard(rows,shapes,sites)

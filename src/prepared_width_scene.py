@@ -45,6 +45,16 @@ class PreparedWidthScene:
         return candidate.covers(core)
 
     def check(self,traces,*,materialize_scene=False,fail_fast=False):
+        result=self._physical_check(traces,materialize_scene=materialize_scene,fail_fast=fail_fast)
+        from src import source_channel_scope as functional
+        if functional.ACTIVE is not None:
+            from src.component_clearance import OwnerCheck
+            if not hasattr(self,'_functional_check'):self._functional_check=OwnerCheck(self,context=functional.ACTIVE,active_test=lambda c:functional.ACTIVE is c)
+            proof=self._functional_check.check(traces,materialize_scene=materialize_scene,fail_fast=fail_fast)
+            result=dict(result,functional_channels=proof,passed=result['passed']and proof['passed'],failures=[*result['failures'],*[dict(r,clearance_scope='FUNCTIONAL_SOURCE_CHANNEL')for r in proof['failures']]])
+        return result
+
+    def _physical_check(self,traces,*,materialize_scene=False,fail_fast=False):
         from src import component_clearance
         if component_clearance.ACTIVE is not None:
             if not hasattr(self,'_component_check'):self._component_check=component_clearance.OwnerCheck(self)

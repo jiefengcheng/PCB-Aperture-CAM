@@ -37,7 +37,8 @@ def parts(g):
     if g.is_empty:return []
     if not g.is_valid or g.geom_type not in ('Polygon','MultiPolygon'):
         raise ValueError('VALID_POLYGONAL_COPPER_REQUIRED')
-    return sorted([g] if g.geom_type=='Polygon' else list(g.geoms),key=sha)
+    if g.geom_type=='Polygon':return [g]
+    return sorted(list(g.geoms),key=sha)
 def surface_parts(g):
     """Areal candidate context; clipped zero-area boundaries are not copper."""
     if g.is_empty:return []
@@ -109,9 +110,11 @@ def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void
     return dict(passed=not reasons,reasons=reasons,shortage=shortage,local_cap_bounds_mm=list(cap.bounds),connected_support_sha256=sha(carrier),foreign_gaps=gaps)
 
 
-def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None):
+def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,partial_strategy=None):
     contract.validate();originals,grown,mapping=components(source,current,contract)
-    records=[];accepted=[];tree=STRtree(grown)
+    records=[];accepted=[];tree=STRtree(grown);partial_specs=[]
+    from src.partial_pocket_remedy import STRATEGY,propose,protected
+    if partial_strategy not in(None,STRATEGY):raise ValueError('PARTIAL_POCKET_POLICY_UNSUPPORTED')
     for index,(owner,j) in enumerate(zip(grown,mapping)):
         checkpoint(dict(component=index,total_components=len(grown),proposals_so_far=len(records),fills_so_far=len(accepted)))
         original=originals[j];oldvoid=joined(holes(original));ownerholes=holes(owner)
@@ -145,8 +148,14 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
                 if patch.difference(inherited_notches).area<=contract.area_epsilon_mm2:continue
                 candidates.append(('notch',patch))
         for kind,patch in sorted(candidates,key=lambda x:(x[0],sha(x[1]))):
+            owned_specs=[s for s in partial_specs if s['owner']==index]
+            if kind=='notch'and owned_specs:
+                patch=joined(surface_parts(patch.difference(protected(owned_specs))))
+                if patch.is_empty:continue
             nearby=[(int(k),grown[int(k)]) for k in tree.query(patch.buffer(contract.construction_gap_mm+.001)) if int(k)!=index]
             check=proposal_check(patch,owner,original,nearby,contract,kind,oldvoid,owner_void_context)
+            if partial_strategy==STRATEGY and kind=='hole'and check['reasons']==['SHORTAGE_ABOVE_20_PERCENT']:
+                patch,check,spec=propose(patch,owner,contract,check);spec.update(owner=index,source_component=j);partial_specs.append(spec);kind='partial_rim'
             support_check=None if source_support is None else source_support.check(patch)
             if support_check is not None and kind=='notch' and not support_check['passed']:
                 check['reasons'].append('OUTSIDE_ORIGINAL_CONTACT_SUPPORT');check['passed']=False
@@ -164,4 +173,6 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
     if len(newparts)!=len(grown):raise ValueError('FILL_COMPONENT_TOPOLOGY_CHANGED')
     components(source,result,contract)
     if current.difference(result).area>contract.area_epsilon_mm2:raise ValueError('FILL_REMOVED_PREDECESSOR')
-    return dict(contract=asdict(contract),source_sha256=sha(source),predecessor_sha256=sha(current),records=records,fill_sha256=sha(fills),result_sha256=sha(result)),accepted,result
+    report=dict(contract=asdict(contract),source_sha256=sha(source),predecessor_sha256=sha(current),records=records,fill_sha256=sha(fills),result_sha256=sha(result))
+    if partial_strategy is not None:report.update(large_pocket_strategy=partial_strategy,approved_partial_pockets=partial_specs)
+    return report,accepted,result

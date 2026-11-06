@@ -12,7 +12,7 @@ from src.stage_abi.scene import geometry,composed,validate_scene
 from src.clearance_policy import HARD_GAP_MM,CONSTRUCTION_GAP_MM,CONTACT_BUFFER_MM
 from src.crop_balanced_t01 import CropSettings,WorkingScene,execute
 from src.t01_canonical import allocate,specification,marker
-from src.t01_canonical_surface import SurfaceGuard
+from .channel_surface_guard import ChannelSurfaceGuard as SurfaceGuard
 from src.prepared_land_scene import PreparedLandScene
 from src.prepared_width_scene import PreparedWidthScene
 from src.u03_board.dependency import DependencyWidthScene
@@ -135,7 +135,10 @@ def t01_sites(store,scene):
     for i,r in enumerate(scene['objects']):
         if r['kind']!='circle'or r['source_id']in seen:continue
         md=r['metadata'];aliases=md['alias_source_ids'];seen.update(aliases);indexes=[ids.index(s)for s in aliases];core=current[r['source_id']];center=[core.centroid.x,core.centroid.y];radius=(core.bounds[2]-core.bounds[0]+core.bounds[3]-core.bounds[1])/4
-        sites.append(dict(source_id=min(aliases),aliases=aliases,indexes=indexes,core=core,center=center,radius=radius,enlarged_radius=1.5*radius,geometry_sha256=digest(to_wkb(core)),physical_contact_group='GERBER-PHYSICAL-'+str(groups[i])))
+        from src import source_channel_scope
+        contact_group='GERBER-PHYSICAL-'+str(groups[i])
+        if source_channel_scope.ACTIVE is not None:contact_group='FUNCTIONAL-SOURCE-'+source_channel_scope.ACTIVE.owner(min(aliases),core)
+        sites.append(dict(source_id=min(aliases),aliases=aliases,indexes=indexes,core=core,center=center,radius=radius,enlarged_radius=1.5*radius,geometry_sha256=digest(to_wkb(core)),physical_contact_group=contact_group))
     return sorted(sites,key=lambda s:(s['center'][1],s['center'][0],s['source_id']))
 
 def run_t01(store,scene,binding):
@@ -167,6 +170,8 @@ def run_t03(store,scene,binding,t01):
 
 def width_admission(store,scene):
     rows,current,original=operands(store,scene);native=[];families=collections.defaultdict(list)
+    from src import source_channel_scope
+    frame_ids=source_channel_scope.ACTIVE.frame_ids if source_channel_scope.ACTIVE is not None else frozenset()
     for sid,r in rows.items():
         if r['kind']!='stroke':continue
         md=r['metadata'];n=dict(source_id=sid,kind=md['route_kind'],width_mm=md['minimum_caliper_mm'],endpoints_decimal_mm=md['endpoints_decimal_mm'],route_points_mm=md['route_points_mm'],source_wkb_sha256=r['original_ref']['sha256']);native.append(n);families[tuple(md['aperture_family'])].append(n)
@@ -174,7 +179,11 @@ def width_admission(store,scene):
     for family,records in sorted(families.items()):paths.extend(route_evidence(junction_source_paths(records,[r['source_id']for r in records])))
     ids=sorted(current);tree=STRtree([current[s]for s in ids]);admitted=[];decisions=[]
     for p in sorted(paths,key=lambda p:p['path_id']):
-        members=set(p['source_ids']);core=unary_union([current[s]for s in sorted(members)]);near=[ids[int(i)]for i in tree.query(core,predicate='intersects')if ids[int(i)]not in members];cover=unary_union([current[s]for s in near]);covered=cover.covers(core)
+        members=set(p['source_ids'])
+        if members&frame_ids:
+            if not members<=frame_ids:raise ValueError('SOURCE_PATH_MIXES_TEMPORARY_FRAME_AND_FUNCTIONAL_CHANNEL')
+            decisions.append(dict(path=p,disposition='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME',coverage_source_ids=sorted(members),exposed_area_mm2=0.));continue
+        core=unary_union([current[s]for s in sorted(members)]);near=[ids[int(i)]for i in tree.query(core,predicate='intersects')if ids[int(i)]not in members];cover=unary_union([current[s]for s in near]);covered=cover.covers(core)
         if not covered and p['route_type']=='DEGENERATE_SOURCE_STROKE_CONTEXT':raise ValueError('EXPOSED_DEGENERATE_ROUTE_NOT_QUALIFIED')
         decisions.append(dict(path=p,disposition='KEEP_FULLY_COVERED'if covered else'ADMIT_COMPLETE_GERBER_ROUTE',coverage_source_ids=near,exposed_area_mm2=core.difference(cover).area))
         if not covered:admitted.append(p)
@@ -195,12 +204,14 @@ def run_t04(store,scene):
     rows,current,_=operands(store,scene);admission=width_admission(store,scene);paths={p['path_id']:p for p in admission['admitted']};assignment={s:g['group_id']for g in admission['groups']for s in g['members']};used={s for p in paths.values()for s in p['source_ids']}
     if not paths:raise ValueError('NO_EXPOSED_GERBER_ROUTES')
     cores={s:unary_union([current[m]for m in p['source_ids']])for s,p in paths.items()};widths={s:max(rows[m]['metadata']['source_port_width_mm']for m in p['source_ids'])for s,p in paths.items()}
-    @functools.lru_cache(maxsize=800)
+    from src.bounded_route_geometry import VersionedGeometry
+    geometry_binding=digest(canonical([scene['source_sha256'],[[s,rows[s]['geometry_ref']]for s in sorted(used)],OFFSET_FAMILY]))
+    part_geometry=VersionedGeometry(used,geometry_binding,limit=32*1024**2)
+    route_geometry=VersionedGeometry(paths,geometry_binding,limit=128*1024**2)
     def build_part(sid,factor,envelope):
-        return offset_part(current[sid],rows[sid]['metadata']['minimum_caliper_mm'],factor,envelope)
-    @functools.lru_cache(maxsize=800)
+        return part_geometry.get(sid,factor,envelope,lambda:offset_part(current[sid],rows[sid]['metadata']['minimum_caliper_mm'],factor,envelope))
     def build_route(s,factor,envelope):
-        return cores[s]if factor==1 else unary_union([build_part(m,factor,envelope)for m in paths[s]['source_ids']])
+        return cores[s]if factor==1 else route_geometry.get(s,factor,envelope,lambda:unary_union([build_part(m,factor,envelope)for m in paths[s]['source_ids']]))
     def trial(scales,envelope=True):
         return [dict(id=s,original=cores[s],candidate=build_route(s,scales[assignment[s]],envelope),verified_original_width_mm=widths[s])for s in sorted(paths)]
     fixed=[dict(id=s,geometry=g,trace_width_mm=rows[s]['metadata'].get('original_width_mm',0.))for s,g in current.items()if s not in used];baseline=trial({g['group_id']:1. for g in admission['groups']});checker=DependencyWidthScene(baseline,fixed,original_union_cache_bytes=128*1024**2);evaluations=[]
@@ -217,14 +228,40 @@ def run_t04(store,scene):
     after=dict(current);part_factors={}
     for s,p in paths.items():
         for m in p['source_ids']:after[m]=build_part(m,selected[assignment[s]],False);part_factors[m]=selected[assignment[s]]
+    part_geometry.close();route_geometry.close()
     ref=artifact_scene(store,scene,after,'t04');return dict(output_scene_ref=ref,admission=admission,solution=solution,checks=checks,evaluations=evaluations,part_factors=part_factors,source_offset_definition='Circular and rectangular source strokes: uniform outward offset from exact original finite copper; scale uses minimum aperture caliper. Every directional width ratio is bounded by 1..1.5. Max original caliper binds source-contact ports.',summary=dict(trace_occurrences=admission['trace_occurrences'],routes=len(paths),groups=len(admission['groups']),grown_parts=sum(f>1 for f in part_factors.values()),evaluations=len(evaluations)))
 
+def empty_t02(store,scene):
+    """A complete empty native-rectangle inventory is a verified identity step."""
+    if any(row['kind']=='rectangle'for row in scene['objects']):raise ValueError('T02_EMPTY_INVENTORY_HAS_ELIGIBLE_TARGET')
+    scene_ref=store.put_json('scene',scene);validate_scene(store,scene_ref)
+    rows,current,original=operands(store,scene)
+    inventory=dict(source_objects=len(rows),validated_current_geometries=len(current),validated_original_geometries=len(original),eligible_rectangles=0,objects_sha256=digest(canonical(scene['objects'])),source_sha256=scene['source_sha256'])
+    policy=dict(stage='t02',parameters=land_parameters('t02'));proof=dict(passed=True,failures=[],status='NOT_APPLICABLE_EMPTY_NATIVE_RECTANGLE_INVENTORY',inventory=inventory,scene_identity_ref=scene_ref,source_geometry_unchanged=True)
+    candidate=dict(status='NO_CHANGE_REQUIRED',output_scene_ref=scene_ref,decisions=[],inclusive_candidates=[],protected_source_refs={row['source_id']:row['geometry_ref']for row in scene['objects']})
+    plan=dict(stage='t02',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation='complete-empty-native-rectangle-inventory/1',details=dict(targets=[],parameters={},family=policy['parameters']['family'],bounds=bounds(scene),containment={},inventory=inventory))
+    return dict(output_scene_ref=scene_ref,candidate=candidate,plan=plan,verification=proof,summary=dict(rectangles=0,grown=0,contained_keep=0,inclusive=0))
+
 def run_t02(store,scene):
-    ids=[r['source_id']for r in scene['objects']if r['kind']=='rectangle'];adapter=FastRectangleAdapter('t02');scene_ref=store.put_json('scene',scene);policy=dict(stage='t02',parameters=land_parameters('t02'));details=adapter.plan(store,scene,policy,dict(stage='t02',scene_ref=scene_ref,source_ids=ids),bounds(scene));plan=dict(stage='t02',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details);candidate=adapter.run(store,scene,policy,plan,lambda _:None);check=adapter.verify(store,scene,policy,plan,candidate,dict(scope='complete-source-land-and-inclusive'),lambda _:None)
-    if not check['passed']:raise ValueError('T02_RECONSTRUCTION_FAILED')
-    return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,summary=dict(rectangles=len(ids),grown=sum(r['status']=='GROWN'for r in candidate['decisions']),contained_keep=sum(r['status']=='COVERED_SKIP'for r in candidate['decisions']),inclusive=sum(r['status']=='MERGED'for r in candidate['inclusive_candidates'])))
+    ids=[r['source_id']for r in scene['objects']if r['kind']=='rectangle']
+    if not ids:return empty_t02(store,scene)
+    from src import component_clearance as ownership
+    previous_context=ownership.ACTIVE
+    if previous_context is None:
+        source_ref=dict(artifact_id='gerber-source:'+scene['source_sha256'],sha256=scene['source_sha256']);raw=store.get(source_ref,kind='gerber-source');binding_file=store.root.parent/'source.json';binding=load(binding_file)if binding_file.exists()else build_source(store,raw)
+        if binding['source_ref']!=source_ref:raise ValueError('T02_ORIGINAL_OWNER_SOURCE_CHANGED')
+        source_scene=store.get_json(binding['scene_ref'],kind='scene');source_rows,source_current,_=operands(store,source_scene);parsed,_,_=source_profile.parse_source(raw)
+        physical=affine_scale(source_profile.ordered((source_profile.object_geometry(obj)[0],obj.polarity_dark)for obj in parsed.objects),1,-1,origin=(0,0))
+        ownership.ACTIVE=ownership.Context(physical,binding['source_ref']['sha256'],source_current)
+    try:
+        adapter=FastRectangleAdapter('t02');scene_ref=store.put_json('scene',scene);policy=dict(stage='t02',parameters=land_parameters('t02'));details=adapter.plan(store,scene,policy,dict(stage='t02',scene_ref=scene_ref,source_ids=ids),bounds(scene));plan=dict(stage='t02',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details);candidate=adapter.run(store,scene,policy,plan,lambda _:None);check=adapter.verify(store,scene,policy,plan,candidate,dict(scope='complete-source-land-and-inclusive'),lambda _:None)
+        if not check['passed']:raise ValueError('T02_RECONSTRUCTION_FAILED')
+        return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,summary=dict(rectangles=len(ids),grown=sum(r['status']=='GROWN'for r in candidate['decisions']),contained_keep=sum(r['status']=='COVERED_SKIP'for r in candidate['decisions']),inclusive=sum(r['status']=='MERGED'for r in candidate['inclusive_candidates'])))
+    finally:ownership.ACTIVE=previous_context
 
 def run_t05(store,scene,t04):
+    from src import source_channel_scope
+    functional=source_channel_scope.ACTIVE
     from .prior_copper import prepare as prepare_prior
     scene,prior_floor=prepare_prior(store,scene)
     rows,current,original=operands(store,scene);objects=copy.deepcopy(scene['objects']);byid={r['source_id']:r for r in objects};lands=[s for s,r in rows.items()if r['metadata'].get('qualified_land')or r['kind']=='inclusive_rectangle']
@@ -237,11 +274,16 @@ def run_t05(store,scene,t04):
     # including T04's covered/held paths. Width eligibility does not select T05.
     for record in t04['admission']['paths']:
         p=record['path'];members=p['source_ids'];sid='route:'+p['path_id'];old=unary_union([original[m]for m in members]);now=unary_union([current[m]for m in members]);ids=[lands[int(i)]for i in tree.query(old,predicate='intersects')if old.intersection(original[lands[int(i)]]).area>EPS and now.intersection(current[lands[int(i)]]).area>EPS];ids=sorted(ids);attachments=[dict(id=sid+':'+lid,land_id=lid,reference_land_id=lid,required_reference=False)for lid in ids]
+        from src import source_channel_scope
+        functional=source_channel_scope.ACTIVE
+        if functional is not None and set(members)&functional.frame_ids:
+            if not set(members)<=functional.frame_ids:raise ValueError('T05_SOURCE_PATH_MIXES_FRAME_AND_FUNCTIONAL_CHANNEL')
+            contacts.append(dict(route=sid,lands=ids,T04_disposition=record['disposition'],t05_disposition='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME',source_contacts_retained_unchanged=True));continue
         metadata=dict(native_route_ref=store.put_json('gerber-route',p),reference_source_ids=members,land_ids=ids,attachments=attachments,reference_id=p['path_id'],reference_status='GERBER_SOURCE_CONTACTS_NO_HISTORICAL_REFERENCE')
         objects.append(dict(source_id=sid,kind='trace',original_ref=geomref(store,old),geometry_ref=geomref(store,now),metadata=metadata));targets.append(sid);contacts.append(dict(route=sid,lands=ids,T04_disposition=record['disposition']))
     prepared=dict(scene,objects=objects);scene_ref=store.put_json('scene',prepared);policy=dict(stage='t05',parameters=spindle_parameters());adapter=CoverageAdapter(box(*scene['viewport_mm']));details=adapter.plan(store,prepared,policy,dict(stage='t05',scene_ref=scene_ref,source_ids=targets),bounds(prepared));plan=dict(stage='t05',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details);candidate=adapter.run(store,prepared,policy,plan,lambda _:None);check=adapter.verify(store,prepared,policy,plan,candidate,dict(scope='complete-source-and-all-patches'),lambda _:None);adapter.close()
     if not check['passed']:raise ValueError('T05_COMPLETE_ATTACHMENT_RECONSTRUCTION_FAILED')
-    return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,**({}if prior_floor is None else{'prior_positive_floor':prior_floor}),summary=dict(routes=len(targets),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
+    return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,**({}if prior_floor is None else{'prior_positive_floor':prior_floor}),summary=dict(routes=len(targets),**(dict(protected_frame_routes=sum(c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'for c in contacts),protected_frame_source_contacts=sum(len(c['lands'])for c in contacts if c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'))if functional is not None else{}),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
 
 def stage(run,name):
     store=Store(run/'runtime');binding=load(run/'source.json');order=['t01','t03','t04','t02','t05'];index=order.index(name);scene_ref=binding['scene_ref']if index==0 else load(run/(order[index-1]+'.json'))['output_scene_ref'];scene=validate_scene(store,scene_ref)
@@ -253,6 +295,8 @@ def stage(run,name):
     elif name=='t04':result=run_t04(store,scene)
     elif name=='t02':result=run_t02(store,scene)
     else:result=run_t05(store,scene,load(run/'t04.json'))
+    from src import source_channel_scope
+    if source_channel_scope.ACTIVE is not None:result=dict(result,functional_source_channels=dict(certificate_sha256=digest(canonical(source_channel_scope.ACTIVE.certificate)),policy=source_channel_scope.ACTIVE.certificate['policy'],source_channels=len(source_channel_scope.ACTIVE.cores),protected_frame_occurrences=len(source_channel_scope.ACTIVE.frame_ids)))
     store.verify_reads();return result
 
 legacy_run_t01=run_t01

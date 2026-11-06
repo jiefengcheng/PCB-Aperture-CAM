@@ -19,6 +19,16 @@ elif qualification_mode=='INCREMENTAL_REUSED_NATIVE_EXPORT_REPORT':
  binding=p.load(run/'REUSED_NATIVE_EXPORT_BINDING.json');reused_operations=binding['retained_operation_count']
  if reused_operations!=42:raise ValueError('VISUAL_RETAINED_NATIVE_EXPORT_SCOPE_CHANGED')
  stage_evidence='Incremental qualification: 42 completed source/growth/export/control operations and both full actual-file evaluations are retained with original native proofs and hashes. Geometry and native checks are unchanged. The corrected frozen-policy completion audit and actual-file rendering are new. The original overstrict optional-growth audit remains failed and preserved.'
+elif qualification_mode=='INCREMENTAL_REUSED_LEGACY_PREFIX':
+ from .legacy_prefix import verify as verify_legacy
+ binding=verify_legacy(run.parent/'legacy');reused_operations=binding['original']['retained_operation_count']
+ if reused_operations not in(11,14,17):raise ValueError('VISUAL_RETAINED_LEGACY_SCOPE_CHANGED')
+ stage_evidence=f'Incremental qualification: {reused_operations} completed native legacy-predecessor operations are retained with original hashes, complete source/geometry/search witnesses and separate proof pairs. All remaining legacy operations, the reference, every connected-copper stage, both final export/reparse evaluations, controls, audit and rendering are new. Original failed jobs remain unchanged.'
+elif qualification_mode=='INCREMENTAL_REUSED_CONNECTED_WIDTH_SEARCH':
+ from .width_adoption import verify as verify_width
+ binding=verify_width(run);reused_operations=binding['original']['retained_operation_count']
+ if reused_operations!=29:raise ValueError('VISUAL_RETAINED_WIDTH_SCOPE_CHANGED')
+ stage_evidence='Incremental qualification: 29 completed native source/reference/T01/T03 operations are retained with original proof pairs and hashes. The completed raw T04 search is retained; all three new T04 workers freshly reconstruct source admission, both complete selected width checks and every upper rejection before the corrected remedy. T02, T05, both actual export/reparse evaluations, controls, audit and rendering are new. The earlier failed T04 remedy remains failed.'
 elif qualification_mode!='FULL_FRESH_SOURCE_ROUTE':raise ValueError('VISUAL_QUALIFICATION_MODE_UNKNOWN')
 proofs=[p.load(run/'export'/('proof_'+str(i)+'.json'))for i in(1,2)]
 if p.canonical(proofs[0])!=p.canonical(proofs[1])or proofs[0]['status']!='PASS':raise ValueError('TWO_NATIVE_PROOFS_REQUIRED')

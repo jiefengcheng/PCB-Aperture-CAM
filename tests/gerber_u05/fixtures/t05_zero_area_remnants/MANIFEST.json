@@ -1,0 +1,32 @@
+{
+  "schema": "retained-t05-zero-area-boundary-remnant/1",
+  "failed_job": "/Users/geoffcheng/Projects/client/PCB/aperture_align_demo/PCB_Aperture_CAM_V1_Codex_Handoff/out/lacie_work/operator_routes/gerber_u05/20261106T045634Z-c25c06c680d945429d09d1545b171c77",
+  "source_scene_sha256": "72b217893b12582f6354818bbec38cee7b77dafcb57ec617224c4fbbc2d6d6b9",
+  "geometry": "Exact failed patches and bounded actual predecessor context; source evidence unchanged",
+  "files": [
+    {
+      "name": "0_patch.wkb",
+      "sha256": "b8e6ec5a4c18e1da49380f320dd85e3ff8659c9bf4bbd13f6f5ab74677ef0691",
+      "bytes": 6831,
+      "source_id": "t05-addition:b8e6ec5a4c18e1da49380f320dd85e3ff8659c9bf4bbd13f6f5ab74677ef0691"
+    },
+    {
+      "name": "0_context.wkb",
+      "sha256": "b27d8a3adfbbc27a88a88ca9dc51446fa3751a4eefeedb7a95a86e3d1b3ae18a",
+      "bytes": 8381,
+      "source_id": "t05-addition:b8e6ec5a4c18e1da49380f320dd85e3ff8659c9bf4bbd13f6f5ab74677ef0691"
+    },
+    {
+      "name": "1_patch.wkb",
+      "sha256": "6bf69d984c5ac3367166f11379118d1e7dd7db970c66af003c20d06e7d13dceb",
+      "bytes": 5726,
+      "source_id": "t05-addition:6bf69d984c5ac3367166f11379118d1e7dd7db970c66af003c20d06e7d13dceb"
+    },
+    {
+      "name": "1_context.wkb",
+      "sha256": "3166ee5ea76d529de212c21b838d5618cfc297f8a8742cf65763f8d61feacce0",
+      "bytes": 3949,
+      "source_id": "t05-addition:6bf69d984c5ac3367166f11379118d1e7dd7db970c66af003c20d06e7d13dceb"
+    }
+  ]
+}

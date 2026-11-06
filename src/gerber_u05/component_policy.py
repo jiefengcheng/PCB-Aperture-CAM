@@ -14,6 +14,9 @@ def read_job(run):
  value=p.load(run/'REMEDY_POLICY_SNAPSHOT.json');clearance=read_snapshot(run/'CLEARANCE_SNAPSHOT.json')
  if value['clearance']!=clearance.resolved()or p.digest(value['registry_json'].encode())!=value['registry_sha256']:raise ValueError('COMPONENT_JOB_POLICY_CHANGED')
  settings=value['settings']
+ from src.partial_pocket_remedy import STRATEGY
+ if settings.get('large_pocket_strategy')not in(None,STRATEGY):raise ValueError('PARTIAL_POCKET_POLICY_UNSUPPORTED')
+ if settings.get('large_pocket_budget')not in(None,'ONE_CUMULATIVE_ALLOWANCE_PER_FROZEN_POCKET_ACROSS_ALL_LATER_RADII_AND_STAGES'):raise ValueError('PARTIAL_POCKET_CUMULATIVE_BUDGET_POLICY_REQUIRED')
  if p.canonical(settings)!=p.canonical(__import__('json').loads(value['registry_json'])):raise ValueError('COMPONENT_REGISTRY_BINDING_CHANGED')
  if settings['schema']!='original-copper-component-remedy-settings/1'or settings['ownership']!='FROZEN_ORIGINAL_CONNECTED_COPPER'or settings['source_voids']!='PRESERVE_INHERITED_SOURCE_VOIDS'or settings['ordering']!='FROZEN_CONSECUTIVE_COMPONENTS_NO_REVISIT':raise ValueError('COMPONENT_REMEDY_POLICY_UNSUPPORTED')
  radii=settings['radii_mm']

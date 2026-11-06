@@ -1,0 +1,8 @@
+{
+  "schema": "retained-failed-reference-region/1",
+  "sha256": "17d974e2690bdb02cde51a383a0beab454579ffa6e226787dd733e19a37a9a4a",
+  "failed_job": "20261106T043922Z-2c2e47c67f794c2f85e6de75f63d9af7",
+  "stage": "reference_remedy_construct",
+  "original_error": "FILE_GRID_TOPOLOGY_NOT_SUPPORTED",
+  "source_sha256": "a5fe665dd5a545c0a4c754379165424cbaacabccf1a9c70ac2d7ead267110dc6"
+}

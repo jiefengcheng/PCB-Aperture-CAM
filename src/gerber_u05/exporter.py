@@ -10,7 +10,7 @@ from shapely.ops import nearest_points
 from .guard import verify_sources as verify_core_sources
 from src import component_clearance as cc
 from src.native_boundary_metric import distance as boundary_distance
-from .native_component_checks_final import decoded_groups,clearance as native_clearance,completion as native_completion,final_inventory
+from .native_component_checks_final import project_groups,decoded_groups,clearance as native_clearance,completion as native_completion,final_inventory
 
 def verify_sources(run):
     seal=verify_core_sources(run)
@@ -167,7 +167,7 @@ def construct(run):
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
         owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_export_region(store,value,adapter,owner,domain,d,foreign);parents=append_regions(region,'t05',d['source_id'],records,blocks,store)
-        own=adapter.owner_for_route(d['source_id']);encoded_owner=cc.ACTIVE.project(encoded_current)[own];preserve_point_contacts(encoded_owner,parents,d['source_id'],records,blocks,store)
+        own=adapter.owner_for_route(d['source_id']);encoded_owner=adapter._integral_context.project(encoded_current)[own];preserve_point_contacts(encoded_owner,parents,d['source_id'],records,blocks,store)
     adapter.close()
     final=store.get_json(value['output_scene_ref'],kind='scene');finalrows={r['source_id']:r for r in final['objects']}
     for fill in value['intra']['fills']:
@@ -335,9 +335,9 @@ def check(run,body,ledger):
             if not q['passed']:raise ValueError('ACTUAL_GERBER_WIDTH_CLEARANCE_FAILED:'+str(q['failures'][:3]))
             checks[stage]=q
         if stage=='t04':
-            finish_parts=by_stage['t04_finish'];groups_before=cc.ACTIVE.project(current)
+            finish_parts=by_stage['t04_finish'];groups_before=project_groups(current)
             for sid,pieces in finish_parts.items():current[sid]=p.unary_union(pieces)
-            groups_after=cc.ACTIVE.project(current);checks['t04_finish']=native_completion(store,result,finish_parts,groups_before,groups_after)
+            groups_after=project_groups(current);checks['t04_finish']=native_completion(store,result,finish_parts,groups_before,groups_after)
         if set(current)!=set(wanted):raise ValueError('ACTUAL_STAGE_SOURCE_ID_COVERAGE_CHANGED:'+stage)
         rows=newrows
         for sid,row in rows.items():
@@ -345,9 +345,9 @@ def check(run,body,ledger):
     value=p.load(run/'t05.json');prepared=copy.deepcopy(store.get_json(value['plan']['scene_ref'],kind='scene'));policy=store.get_json(value['plan']['policy_ref'],kind='policy')
     floor_parts=by_stage['t05_floor'];floor= value.get('prior_positive_floor');declared_floor={row['source_id']:row for row in floor['records']}if floor else{}
     if set(floor_parts)!=set(declared_floor):raise ValueError('ACTUAL_PRIOR_FLOOR_INVENTORY_CHANGED')
-    groups_before_floor=cc.ACTIVE.project(current)
+    groups_before_floor=project_groups(current)
     for sid,pieces in floor_parts.items():current[sid]=certified_union(current[sid],pieces)if sid in current else p.unary_union(pieces)
-    groups_with_floor=cc.ACTIVE.project(current);checks['t05_prior_floor_clearance']=native_clearance(groups_before_floor,groups_with_floor)
+    groups_with_floor=project_groups(current);checks['t05_prior_floor_clearance']=native_clearance(groups_before_floor,groups_with_floor)
     floor_missing=sum(prior.difference(groups_with_floor[own].buffer(POLYGON_TOLERANCE_MM)).area for own,prior in cc.ACTIVE.reserved.items())
     checks['t05_prior_positive_retention']=dict(passed=floor_missing<=1e-12,missing_area_mm2=floor_missing,prior_sha256=cc.ACTIVE.reservation_sha256,contour_uncertainty_mm=POLYGON_TOLERANCE_MM)
     if floor_missing>1e-12:raise ValueError('ACTUAL_T05_ENTRY_PRIOR_COPPER_MISSING:'+str(floor_missing))
@@ -384,13 +384,13 @@ def check(run,body,ledger):
             else:raise ValueError('ACTUAL_ATTACHMENT_OUTCOME_NOT_QUALIFIED')
             attachments.append(dict(id=outcome['id'],status=outcome['status'],check=q))
     adapter.close();checks['attachment_obligations']=attachments
-    groups_before=cc.ACTIVE.project(current);t05_observed={}
+    groups_before=project_groups(current);t05_observed={}
     for stage_name in ('t05',):
         for sid,pieces in by_stage[stage_name].items():t05_observed.setdefault(sid,[]).extend(pieces)
     for sid,pieces in t05_observed.items():current[sid]=p.unary_union(pieces)
-    groups_t05=cc.ACTIVE.project(current);checks['t05_component_clearance']=native_clearance(groups_before,groups_t05)
+    groups_t05=project_groups(current);checks['t05_component_clearance']=native_clearance(groups_before,groups_t05)
     for sid,pieces in by_stage['t05_finish'].items():current[sid]=p.unary_union(pieces)
-    groups_after=cc.ACTIVE.project(current);checks['t05_finish']=native_completion(store,value,by_stage['t05_finish'],groups_t05,groups_after)
+    groups_after=project_groups(current);checks['t05_finish']=native_completion(store,value,by_stage['t05_finish'],groups_t05,groups_after)
     source_groups=decoded_groups(before,{});all_observed={}
     for stage_map in by_stage.values():
         for sid,pieces in stage_map.items():all_observed.setdefault(sid,[]).extend(pieces)

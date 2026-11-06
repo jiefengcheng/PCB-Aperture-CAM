@@ -3,7 +3,7 @@ import sys,time,copy,json,re
 from pathlib import Path
 from . import exporter as e
 p=e.p;run=Path(sys.argv[1])
-from .native_component_checks_final import decoded_groups,clearance,completion
+from .native_component_checks_final import NativeGroups,decoded_groups,clearance,completion
 from src.component_voids import holes,joined
 from src import component_clearance as cc
 from src.indexed_polygon_distance import distance
@@ -43,13 +43,20 @@ block=body[start:end];moved=re.sub(rb'(?m)^X(-?\d+)',lambda m:b'X'+str(int(m[1])
 expect('CONTOUR_TRANSLATED_1UM',lambda:e.check(run,mutant,changed),'CONTOUR_FIDELITY_FAILED',mutant)
 def parsed_extra(shape,name):
  records=[];blocks=[];e.append_regions(shape,'negative_control',name,records,blocks,store);payload=body[:-5]+''.join(blocks).encode()+b'M02*\n';native=e.parse(payload);pieces=[p.affine_scale(p.source_profile.object_geometry(obj)[0],1,-1,origin=(0,0))for obj in native.objects[len(actual.objects):]];return joined(pieces),payload
-for own,g in cc.ACTIVE.cores.items():
- for hole in holes(g):
+from src.component_hole_lineage import classify as hole_lineage,identity as hole_identity
+void_context=getattr(cc.ACTIVE,'functional',None)or cc.ACTIVE;void_groups=groups.channels if hasattr(groups,'channels')else groups
+for own,g in void_context.cores.items():
+ keepers=set(hole_lineage(g,void_groups[own])['keeper_ids'])
+ for hole in [h for h in holes(void_groups[own])if hole_identity(h)in keepers]:
   empty=hole.difference(whole).buffer(-.00001)
   if empty.is_empty:continue
   pt=empty.representative_point();shape=box(pt.x-.000001,pt.y-.000001,pt.x+.000001,pt.y+.000001)
   if not empty.covers(shape):continue
-  bad,payload=parsed_extra(shape,'SOURCE_VOID_FILLED');after=dict(groups);after[own]=groups[own].union(bad);ref=p.geomref(store,bad);fake={'intra':{'fills':[dict(source_id='SOURCE_VOID_FILLED',original_owner_id=own,logical_patch_ref=ref,kind='hole')]}}
+  bad,payload=parsed_extra(shape,'SOURCE_VOID_FILLED');after=dict(groups);physical_owner=own;fill=dict(source_id='SOURCE_VOID_FILLED',original_owner_id=own,logical_patch_ref=p.geomref(store,bad),kind='hole')
+  if hasattr(groups,'channels'):
+   from src.source_channel_scope import physical_owner as resolve_physical_owner
+   physical_owner=resolve_physical_owner(void_context,own,cc.ACTIVE);channels=dict(groups.channels);channels[own]=channels[own].union(bad);after=NativeGroups(after,channels);fill.update(original_owner_id=physical_owner,original_channel_id=own)
+  after[physical_owner]=groups[physical_owner].union(bad);fake={'intra':{'fills':[fill]}}
   expect('SOURCE_VOID_FILLED',lambda:completion(store,fake,{'SOURCE_VOID_FILLED':[bad]},groups,after),'NATIVE_INHERITED_SOURCE_VOID_FILLED',payload);break
  else:continue
  break
@@ -66,4 +73,16 @@ for own,g in groups.items():
 if not pairs:raise ValueError('BRIDGE_CONTROL_NOT_FOUND')
 _,own,other=min(pairs);a,b=nearest_points(groups[own],groups[other]);bad,payload=parsed_extra(LineString([a,b]).buffer(.001,cap_style=2),'FOREIGN_BRIDGE');after=dict(groups);after[own]=groups[own].union(bad)
 expect('FOREIGN_BRIDGE',lambda:clearance(groups,after),'NATIVE_FOREIGN_ORIGINAL_COMPONENT_CLEARANCE_FAILED',payload)
+if hasattr(groups,'channels'):
+ from src.source_channel_scope import physical_owner as resolve_physical_owner
+ channels=groups.channels;ids=list(channels);tree=STRtree([channels[o]for o in ids]);pairs=[]
+ for own,g in channels.items():
+  for i in tree.query(g.buffer(.15).envelope):
+   other=ids[int(i)]
+   if own>=other or(cc.ACTIVE.functional.frame_ids and resolve_physical_owner(cc.ACTIVE.functional,own,cc.ACTIVE)!=resolve_physical_owner(cc.ACTIVE.functional,other,cc.ACTIVE)):continue
+   d=distance(g,channels[other])
+   if .039<d<.15:pairs.append((d,own,other))
+ if not pairs:raise ValueError('REMOTE_FRAME_CHANNEL_BRIDGE_CONTROL_NOT_FOUND')
+ _,own,other=min(pairs);a,b=nearest_points(channels[own],channels[other]);bad,payload=parsed_extra(LineString([a,b]).buffer(.001,cap_style=2),'REMOTE_FRAME_CHANNEL_BRIDGE');physical=resolve_physical_owner(cc.ACTIVE.functional,own,cc.ACTIVE);physical_after=dict(groups);physical_after[physical]=physical_after[physical].union(bad);channels_after=dict(channels);channels_after[own]=channels_after[own].union(bad);after=NativeGroups(physical_after,channels_after)
+ expect('REMOTE_FRAME_CHANNEL_BRIDGE',lambda:clearance(groups,after),'NATIVE_FOREIGN_ORIGINAL_COMPONENT_CLEARANCE_FAILED',payload)
 e.verify_sources(run);p.save(folder/'RESULT.json',dict(status='PASS',controls=results,generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()),scope='Corrupted actual Gerber; format/source/role/contour checks plus native parsed-patch void/foreign guards. Candidate unchanged.'))

@@ -1,0 +1,21 @@
+{
+  "failed_job": "20261106T062036Z-147a55d81e674d3f913c0e67b3069e35",
+  "original_failure": "U05_NATIVE_SUPPORT_CHANGES_QUALIFIED_COPPER",
+  "files": [
+    {
+      "name": "addition.wkb",
+      "sha256": "1725faceaa402e7e492450dbb73bd95409ecac990c8a0401abf3e0ea395cc9ca",
+      "bytes": 2624
+    },
+    {
+      "name": "owner.wkb",
+      "sha256": "a38b3455674c28c05efb581c18e5a99cdf67765bd9403edefe141e3eb2803f8c",
+      "bytes": 79581
+    },
+    {
+      "name": "domain.wkb",
+      "sha256": "83c1bee81428d5e5991c4a51b03e9f4ce3461da0baf1a50d5e29d36f2f8cdde6",
+      "bytes": 27677
+    }
+  ]
+}

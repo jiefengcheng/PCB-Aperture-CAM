@@ -39,7 +39,8 @@ def parts(g):
     if g.is_empty:return []
     if not g.is_valid or g.geom_type not in ('Polygon','MultiPolygon'):
         raise ValueError('VALID_POLYGONAL_COPPER_REQUIRED')
-    return sorted([g] if g.geom_type=='Polygon' else list(g.geoms),key=sha)
+    if g.geom_type=='Polygon':return [g]
+    return sorted(list(g.geoms),key=sha)
 def surface_parts(g):
     """Areal candidate context; clipped zero-area boundaries are not copper."""
     if g.is_empty:return []
@@ -89,7 +90,7 @@ def _close(shape,radius,contract):
     return native.buffer(radius,quad_segs=steps).buffer(-radius,quad_segs=steps)
 
 
-def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void=None,owner_void_context=None):
+def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void=None,owner_void_context=None,assembly_out=None):
     reasons=[];reach=max(patch.bounds[2]-patch.bounds[0],patch.bounds[3]-patch.bounds[1])*contract.local_reach_factor
     cap=box(*patch.bounds).buffer(reach,join_style=2)
     span=owner.intersection(cap)
@@ -114,7 +115,9 @@ def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void
     else:
         prior_holes,prior_index=(holes(owner),None) if owner_void_context is None else owner_void_context
         prior_index=STRtree(prior_holes) if prior_index is None else prior_index
-        for h in holes(assembled):
+        assembled_holes=holes(assembled)
+        if assembly_out is not None:assembly_out.append((assembled,assembled_holes))
+        for h in assembled_holes:
             if any(h.intersection(prior_holes[int(k)]).area>contract.area_epsilon_mm2 for k in prior_index.query(h)):continue
             if not h.buffer(-contract.file_uncertainty_mm).is_empty:
                 reasons.append('NEW_TRAPPED_VOID');break
@@ -122,9 +125,33 @@ def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void
     return dict(passed=not reasons,reasons=reasons,shortage=shortage,local_cap_bounds_mm=list(cap.bounds),connected_support_sha256=sha(carrier),foreign_gaps=gaps)
 
 
-def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,reserved=None):
+def foreign_bounded_pocket(parent,owner,original,foreign,contract,parent_check,protected,owner_void_context):
+    """Complete a new pocket outside proven foreign-copper clearance envelopes."""
+    if set(parent_check['reasons'])!={'FOREIGN_CLEARANCE_FAILED'}:return None
+    reach=contract.construction_gap_mm+contract.file_uncertainty_mm
+    window=parent.buffer(reach).envelope
+    barriers=joined([g.buffer(reach,quad_segs=128)for _,g in foreign if g.intersects(window)])
+    candidate=joined(surface_parts(parent.difference(barriers).difference(owner)))
+    if candidate.is_empty:return None
+    assembled=[]
+    check=proposal_check(candidate,owner,original,foreign,contract,'notch',protected,owner_void_context,assembly_out=assembled)
+    if check['passed']:
+        for remaining in assembled[0][1]:
+            if remaining.intersection(parent).area<=contract.area_epsilon_mm2:continue
+            if any(remaining.intersection(g).area>0 for _,g in foreign):continue
+            if not remaining.buffer(-contract.file_uncertainty_mm).is_empty:
+                check['passed']=False;check['reasons'].append('NEW_UNPROTECTED_REMAINDER_AFTER_FOREIGN_CLIP');break
+    check['complete_parent_pocket_check']=parent_check
+    check['foreign_boundary_policy']='Complete parent support retained; only its frozen foreign clearance envelopes remain empty'
+    return candidate,check,assembled
+
+
+def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,reserved=None,partial_strategy=None,approved_partials=None):
     contract.validate();originals,grown,mapping=components(source,current,contract)
-    records=[];accepted=[];frozen=list(grown);tree=STRtree(grown)
+    records=[];accepted=[];frozen=list(grown);tree=STRtree(grown);partial_specs=list(approved_partials or [])
+    from src.partial_pocket_remedy import STRATEGY,propose,protected,corresponds
+    if partial_strategy not in(None,STRATEGY):raise ValueError('PARTIAL_POCKET_POLICY_UNSUPPORTED')
+    if partial_specs and partial_strategy!=STRATEGY:raise ValueError('PARTIAL_POCKET_POLICY_REQUIRED_FOR_FROZEN_OPENINGS')
     reserved={}if reserved is None else reserved
     reserve_ids=sorted(reserved);reserve_tree=STRtree([reserved[j]for j in reserve_ids])
     from src.stage_abi.loaded_geometry import GeometryMemo
@@ -133,9 +160,18 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
         checkpoint(dict(component=index,total_components=len(grown),proposals_so_far=len(records),fills_so_far=len(accepted)))
         original=originals[j];oldvoid=joined(holes(original));ownerholes=holes(owner)
         owner_void_context=(ownerholes,STRtree(ownerholes))
+        context_owner=owner
+        from src.component_hole_lineage import classify as hole_lineage
+        lineage=hole_lineage(original,owner);keeper_ids=set(lineage['keeper_ids']);protected_source_voids=joined([h for h in ownerholes if sha(h)in keeper_ids])
         candidates=[]
         for hole in ownerholes:
-            if hole.intersection(oldvoid).area>0:
+            matching=[s for s in partial_specs if s['source_component']==j and corresponds(hole,s,contract)]
+            if matching:
+                if len(matching)!=1:raise ValueError('FROZEN_PARTIAL_OPENING_AMBIGUOUS')
+                records.append(dict(kind='hole',owner=index,source_component=j,patch_sha256=sha(hole),area_mm2=hole.area,status='KEEP_APPROVED_PARTIAL_OPENING',pocket_id=matching[0]['pocket_id'],bounds_mm=list(hole.bounds)));continue
+            owned_specs=[s for s in partial_specs if s['source_component']==j]
+            if owned_specs and hole.intersection(protected(owned_specs)).area>contract.area_epsilon_mm2:raise ValueError('FROZEN_PARTIAL_OPENING_CHANGED')
+            if sha(hole)in keeper_ids:
                 records.append(dict(kind='hole',owner=index,source_component=j,patch_sha256=sha(hole),area_mm2=hole.area,status='KEEP_SOURCE_VOID',bounds_mm=list(hole.bounds)))
             else:candidates.append(('hole',hole))
         if not owner.equals(original):
@@ -171,11 +207,23 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
                 buffered=[memo.buffer(g,contract.construction_gap_mm+contract.file_uncertainty_mm,quad_segs=128)for _,g in nearby]
                 barriers=memo.construct('ordered-foreign-barrier-union',buffered,(),lambda:joined(buffered))
                 patch=joined(surface_parts(patch.difference(barriers).difference(owner)))
+                if partial_specs:patch=joined(surface_parts(patch.difference(protected(partial_specs))))
                 if patch.is_empty:
                     records.append(dict(kind=kind,owner=index,source_component=j,patch_sha256=sha(raw_patch),area_mm2=raw_patch.area,bounds_mm=list(raw_patch.bounds),status='KEEP_FOREIGN_CLEARANCE',check=dict(passed=False,reasons=['FROZEN_FOREIGN_COMPONENT_CLEARANCE'])))
                     continue
-            ownerholes=holes(owner);owner_void_context=(ownerholes,STRtree(ownerholes))
-            check=proposal_check(patch,owner,original,nearby,contract,kind,oldvoid,owner_void_context)
+            if owner is not context_owner:
+                ownerholes=holes(owner);owner_void_context=(ownerholes,STRtree(ownerholes));context_owner=owner
+            assembled_result=[]
+            check=proposal_check(patch,owner,original,nearby,contract,kind,protected_source_voids if kind=='hole'else oldvoid,owner_void_context,assembly_out=assembled_result)
+            if kind=='hole':
+                pocket_lineage=dict(candidate_sha256=sha(patch),source_ancestors=lineage['ancestry'].get(sha(patch),[]),principal_surviving_source_holes=lineage['keeper_ids'])
+                bounded=foreign_bounded_pocket(patch,owner,original,nearby,contract,check,protected_source_voids,owner_void_context)
+                if bounded is not None:
+                    records.append(dict(kind='hole',owner=index,source_component=j,patch_sha256=sha(patch),area_mm2=patch.area,bounds_mm=list(patch.bounds),status='KEEP_BLOCKED_FULL_POCKET',check=dict(check,source_hole_lineage=pocket_lineage)))
+                    patch,check,assembled_result=bounded;kind='foreign_bounded_pocket'
+                check['source_hole_lineage']=pocket_lineage
+            if partial_strategy==STRATEGY and kind=='hole'and check['reasons']==['SHORTAGE_ABOVE_20_PERCENT']:
+                patch,check,spec=propose(patch,owner,contract,check,mandatory=reserved.get(j));spec.update(owner=index,source_component=j);partial_specs.append(spec);kind='partial_rim'
             support_check=None
             if support_check is not None and kind=='notch' and not support_check['passed']:
                 check['reasons'].append('OUTSIDE_ORIGINAL_CONTACT_SUPPORT');check['passed']=False
@@ -184,7 +232,10 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
             records.append(row)
             if check['passed']:
                 accepted.append(dict(owner=index,source_component=j,kind=kind,geometry=patch,record_sha256=sha(patch)))
-                frozen[index]=owner.union(patch)
+                if kind=='partial_rim':
+                    frozen[index]=owner.union(patch);ownerholes=holes(frozen[index])
+                else:frozen[index],ownerholes=assembled_result[0]
+                context_owner=frozen[index];owner_void_context=(ownerholes,STRtree(ownerholes))
     # Frozen proposals, one pass. Complete simultaneous cross-component proof.
     for i,a in enumerate(accepted):
         for b in accepted[:i]:
@@ -196,4 +247,6 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
     components(source,result,contract)
     if current.difference(result).area>contract.area_epsilon_mm2:raise ValueError('FILL_REMOVED_PREDECESSOR')
     memo.close()
-    return dict(contract=asdict(contract),source_sha256=sha(source),predecessor_sha256=sha(current),records=records,fill_sha256=sha(fills),result_sha256=sha(result),assembly=dict(policy='Union the already individually checked original-owner bodies',components_before=len(grown),checked_owner_components=len(newparts),**_overlay_diagnostic(legacy,result))),accepted,result
+    report=dict(contract=asdict(contract),source_sha256=sha(source),predecessor_sha256=sha(current),records=records,fill_sha256=sha(fills),result_sha256=sha(result),assembly=dict(policy='Union the already individually checked original-owner bodies',components_before=len(grown),checked_owner_components=len(newparts),**_overlay_diagnostic(legacy,result)))
+    if partial_strategy is not None:report.update(large_pocket_strategy=partial_strategy,approved_partial_pockets=partial_specs)
+    return report,accepted,result

@@ -1,0 +1,237 @@
+{
+  "connected_support_sha256": "f099727996f91ea80d153f62462ba93c2c4313c3ddff6f2ac8a3053e239a1d34",
+  "foreign_gaps": [
+    {
+      "component": 62,
+      "gap_mm": 0.1501575966042588
+    },
+    {
+      "component": 91,
+      "gap_mm": 2.593006766030583
+    },
+    {
+      "component": 138,
+      "gap_mm": 2.7930067660305835
+    },
+    {
+      "component": 38,
+      "gap_mm": 2.8930067660305823
+    },
+    {
+      "component": 81,
+      "gap_mm": 2.6930067660305825
+    },
+    {
+      "component": 11,
+      "gap_mm": 3.1264067660305823
+    },
+    {
+      "component": 120,
+      "gap_mm": 3.0099067660305834
+    },
+    {
+      "component": 136,
+      "gap_mm": 1.7645067660305829
+    },
+    {
+      "component": 18,
+      "gap_mm": 1.9045067660305823
+    },
+    {
+      "component": 76,
+      "gap_mm": 3.3746067660305834
+    },
+    {
+      "component": 98,
+      "gap_mm": 3.477506766030583
+    },
+    {
+      "component": 117,
+      "gap_mm": 0.09136328355430676
+    },
+    {
+      "component": 74,
+      "gap_mm": 3.5820067660305828
+    },
+    {
+      "component": 92,
+      "gap_mm": 3.8328067660305827
+    },
+    {
+      "component": 89,
+      "gap_mm": 3.9362067660305824
+    },
+    {
+      "component": 14,
+      "gap_mm": 4.041906766030583
+    },
+    {
+      "component": 114,
+      "gap_mm": 1.1390067660305834
+    },
+    {
+      "component": 15,
+      "gap_mm": 1.2790067660305828
+    },
+    {
+      "component": 33,
+      "gap_mm": 2.6478698171788055
+    },
+    {
+      "component": 58,
+      "gap_mm": 0.09011791685724559
+    },
+    {
+      "component": 44,
+      "gap_mm": 3.2484067660305835
+    },
+    {
+      "component": 37,
+      "gap_mm": 4.395333448724667
+    },
+    {
+      "component": 53,
+      "gap_mm": 4.142625340651131
+    }
+  ],
+  "local_cap_bounds_mm": [
+    14.786528999999998,
+    -10.234968842741011,
+    17.351082000000005,
+    -7.783455766030581
+  ],
+  "passed": false,
+  "reasons": [
+    "SHORTAGE_ABOVE_20_PERCENT"
+  ],
+  "shortage": 0.35222183164231036,
+  "source_contact_support": {
+    "applicable": false,
+    "basis": "Original pair contact windows for open notches; fully enclosed holes use complete existing component-boundary support",
+    "diagnostic": {
+      "contact_buffer_mm": 0.04002,
+      "missing_source_contact_support_mm2": 0.05852138775664251,
+      "passed": false,
+      "source_binding_sha256": "64c10916d087119c98cc9ea1736668165b5b96a666e73582001cc2e363b62a38",
+      "source_pairs": [
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:49848:50046",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:91027:91047"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:43128:43285",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:107228:107240"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:96126:96141",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:107228:107240"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:96163:96205",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:107228:107240"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:96206:96221",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:107228:107240"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:49848:50046",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119670:119712"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:91027:91047",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119670:119712"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:49848:50046",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119713:119736"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119670:119712",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119713:119736"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119713:119736",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119737:119757"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119737:119757",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119758:119799"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120054:120077",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120078:120120"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120078:120120",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120121:120144"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120121:120144",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120145:120186"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120145:120186",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120187:120210"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:39867:40027",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120211:120251"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120187:120210",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120211:120251"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:39867:40027",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120252:120267"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120211:120251",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120252:120267"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:38606:38757",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138044:138055"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:38758:38914",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138044:138055"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:95128:95142",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138044:138055"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:95372:95384",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138044:138055"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:39867:40027",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138076:138087"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119737:119757",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138076:138087"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:119758:119799",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138076:138087"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120252:120267",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138076:138087"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120268:120300",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138076:138087"
+        ],
+        [
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:120301:120316",
+          "45c32c851562b2ef33301c5bc3dc0487d364532e242bea1ce3b5cd22788b0901:bytes:138076:138087"
+        ]
+      ],
+      "window_sha256": "b7eeac4087d0cbba68533f329de5571164108758a6d23f15ce07816570e0e80a"
+    }
+  }
+}
