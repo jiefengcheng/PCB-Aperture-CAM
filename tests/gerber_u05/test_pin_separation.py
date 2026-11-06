@@ -82,6 +82,19 @@ def test_prepared_context_cannot_be_reused_with_changed_source_rule(monkeypatch)
  prepared=pin.Prepared(Parent(),rule);monkeypatch.setattr(pin,'ACTIVE',None)
  with pytest.raises(ValueError,match='CONTEXT_CHANGED'):prepared.check([])
 
+def test_prepared_eviction_retains_exact_pin_verdicts(monkeypatch):
+ rule,slot,source,left,right,joint=fixture(monkeypatch)
+ class Parent:original=dict(left=left,right=right,fixed=source.difference(left.union(right)))
+ prepared=pin.Prepared(Parent(),rule)
+ prepared.check([dict(id='left',candidate=left.buffer(.001)),dict(id='right',candidate=right)])
+ prepared.limit=prepared.weight*2+32
+ for i in range(2,24):
+  rows=[dict(id='left',candidate=left.buffer(i*.001)),dict(id='right',candidate=right)]
+  cached=prepared.check(rows);fresh=pin.Prepared(Parent(),rule).check(rows,materialize_scene=True)
+  assert cached['passed']==fresh['passed'] and cached['checks']==fresh['checks']
+  assert 0<=prepared.weight<=prepared.limit
+ assert len(prepared.cache)<23
+
 def test_source_domain_must_distinguish_original_branches(monkeypatch):
  rule,slot,source,left,right,joint=fixture(monkeypatch)
  with pytest.raises(ValueError,match='NOT_LOCALLY_DISTINCT'):

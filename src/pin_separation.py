@@ -173,7 +173,7 @@ class Prepared:
    else:
     material=joined([*[proposed.get(s,self.parent.original[s]).intersection(slot.domain)for s in ids],self.rule.prior_local.get(i,Polygon())]);proof=slot.check(material,self.rule.construction_gap,predecessor=self.baseline_material[i]);size=len(canonical(proof))+len(canonical([key[0],[[s,h]for s,h in key[1]]]))+256
     if size<=self.limit:
-     while self.cache and(self.weight+size>self.limit or len(self.cache)>=4096):self.weight-=self.cache.popitem(last=False)[1]
+     while self.cache and(self.weight+size>self.limit or len(self.cache)>=4096):self.weight-=self.cache.popitem(last=False)[1][1]
      self.cache[key]=(proof,size);self.weight+=size
    proofs[i]=proof
   return dict(schema=SCHEMA,passed=all(v['passed']for v in proofs.values()),checks=[proofs[i]for i in sorted(proofs)],complete_protected_slot_coverage=True,checked_slots=len(proofs),reevaluated_slots=len(affected),source_binding=self.rule.binding,prior_binding=self.rule.prior_binding)
