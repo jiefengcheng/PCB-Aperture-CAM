@@ -212,6 +212,12 @@ class IncrementalWidthScene(PreparedWidthScene):
             self.save_route_proof(sid,current,tree,result,failures[failure_start:])
             updated.append(result); results[sid] = result
             if failures: break
+        pin_proof=None
+        from src import pin_separation as pin
+        if pin.ACTIVE is not None:
+            if not hasattr(self,'_pin_check'):self._pin_check=pin.Prepared(self,pin.ACTIVE)
+            pin_proof=self._pin_check.check(traces,materialize_scene=False)
+            failures.extend(dict(reason='PIN_SEPARATION',pin_check=r)for r in pin_proof['checks']if not r['passed'])
         previous = self.accepted_hash
         if not failures:
             if set(results) != set(rows): raise ValueError('U03_CARRIED_CHECK_COVERAGE_MISSING')
@@ -222,7 +228,7 @@ class IncrementalWidthScene(PreparedWidthScene):
         # Keep at most the current and accepted candidate geometries alive.
         if len(self.geometry_hashes)>3*len(self.original)+1000:
             self.geometry_hashes = {id(g):(g,self.cached_sha(g)) for g in [*self.original.values(),*current.values(),*([] if self.accepted_current is None else self.accepted_current.values())]}
-        return dict(schema='u03-incremental-width-check/1',passed=not failures,failures=failures,
+        return dict(schema='u03-incremental-width-check/1',passed=not failures,failures=failures,**({}if pin_proof is None else{'pin_separation':pin_proof}),
                     trace_count=len(rows),scene_object_count=len(self.ids),affected_trace_count=len(affected),
                     checked_trace_count=len(updated),carried_trace_count=len(rows)-len(affected),
                     previous_passing_state_sha256=previous,passing_state_sha256=self.accepted_hash if not failures else None,

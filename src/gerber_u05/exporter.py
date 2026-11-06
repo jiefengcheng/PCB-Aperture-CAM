@@ -28,6 +28,10 @@ def context(run):
     reserve_prior(cc.ACTIVE,store)
     for name in ORDER:
         value=p.load(run/(name+".json"));scene=store.get_json(value["output_scene_ref"],kind="scene");cc.ACTIVE.register_scene(store,scene)
+    from src import pin_separation as pin
+    if pin.ACTIVE is not None:
+        for entry in reversed(scene['lineage']):
+            if 'pin_separation_state'in entry:pin.ACTIVE.restore(store,entry['pin_separation_state']);break
     return store,binding
 from gerbonara.rs274x import GerberFile
 from gerbonara.utils import MM

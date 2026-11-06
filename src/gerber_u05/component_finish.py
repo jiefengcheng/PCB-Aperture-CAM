@@ -5,6 +5,8 @@ from src import component_clearance as cc
 from src.component_voids import plan,parts,holes,joined
 from src.component_absorption import absorb
 from src.growth_void_encoding import filled_surface
+from src.pin_separation import native_parent as canonical_parent
+from src.pcb_data_abi.geometry import GRID_MM
 from src.native_grid_reference import reference as export_reference,normalize as native_grid
 
 def overlap_region(patch,owner,contract=None):
@@ -50,7 +52,7 @@ def native_before(store,scene,binding,junction_result=None):
   if sid in source_rows and row['geometry_ref']==source_rows[sid]['geometry_ref']:continue
   g=p.geometry(store,row['geometry_ref'])
   for part in parts(native_grid(g)):
-   ref,_=export_reference(part);references.append(ref)
+   ref,_=export_reference(part);references.append(canonical_parent(ref,grid_mm=GRID_MM))
  if junction_result is not None:
   prepared=store.get_json(junction_result['plan']['scene_ref'],kind='scene');policy=store.get_json(junction_result['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*scene['viewport_mm']))
   try:
@@ -58,7 +60,7 @@ def native_before(store,scene,binding,junction_result=None):
     if decision['status']!='GROWN':continue
     owner,_,domain,foreign=adapter._operands(store,prepared,policy,junction_result['plan']['details'],decision);region,_=prepare_export_region(store,junction_result,adapter,owner,domain,decision,foreign)
     for part in parts(native_grid(region)):
-     ref,_=export_reference(part);references.append(ref)
+     ref,_=export_reference(part);references.append(canonical_parent(ref,grid_mm=GRID_MM))
   finally:adapter.close()
  return context.index.source.union(joined(references))
 
@@ -106,18 +108,27 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
    except ValueError:
     p.save(store.root.parent/'encoding_failure'/(stage+'_'+mode+'.json'),dict(raw_region_ref=p.geomref(store,raw_region),logical_patch_ref=p.geomref(store,patch),owner_ref=p.geomref(store,owner),original_owner_id=own,radius_mm=radius))
     raise
+   from src.pin_separation import encoded_remedy
+   encoded=joined([canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(region))]);pin_check=encoded_remedy(patch,encoded,owner)
+   if pin_check is not None and not pin_check['passed']:
+    report.setdefault('native_pin_encoding_rejections',[]).append(dict(status='KEEP_PROTECTED_PIN_ENCODING',check=pin_check));continue
    proposals[own].append(region);feature_counts[item['kind']]+=1;new_area[own]+=patch.area
   encoded_by_owner={}
   for own,regions in sorted(proposals.items()):
    combined=joined([*([aggregates[own]]if own in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in physical.items()if o!=own]+[('reserved:'+o,g)for o,g in context.reserved.items()if o!=own]
-   combined,receipt=absorb(combined,physical[own],context.cores[own],foreign,contract);aggregates[own]=combined;updated.add(own)
+   combined,receipt=absorb(combined,physical[own],context.cores[own],foreign,contract);
+   from src.pin_separation import require_remedy
+   require_remedy(combined,physical[own],scope='absorbed_remedy')
+   aggregates[own]=combined;updated.add(own)
    absorptions.append(dict(original_owner_id=own,radius_mm=radius,**receipt))
    encoded_by_owner[own]=[]
    for piece in parts(native_grid(combined)):
-    ref,_=export_reference(piece);encoded_by_owner[own].append(ref)
+    ref,_=export_reference(piece);encoded_by_owner[own].append(canonical_parent(ref,grid_mm=GRID_MM))
   owned_current={context.index.membership(g)[0]:g for g in parts(current)}
   for own,values in encoded_by_owner.items():owned_current[own]=owned_current[own].union(joined(values))
   current=joined(list(owned_current.values()))
+  from src.pin_separation import require as require_pin
+  require_pin(current,finished=True,scope='absorbed_encoded_round')
   if partials:
    from src.partial_pocket_remedy import validate as validate_partial
    for spec in partials:

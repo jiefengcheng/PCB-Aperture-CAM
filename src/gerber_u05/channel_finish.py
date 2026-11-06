@@ -9,6 +9,8 @@ from src.growth_void_encoding import filled_surface
 from src.native_grid_reference import reference as export_reference,normalize as native_grid
 from src.source_channel_scope import physical_owner
 from .channel_material import check_owned
+from src.pin_separation import native_parent as canonical_parent
+from src.pcb_data_abi.geometry import GRID_MM
 
 def native_before_owned(store,scene,binding,junction_result=None):
  from .exporter import prepare_export_region
@@ -19,14 +21,14 @@ def native_before_owned(store,scene,binding,junction_result=None):
   if sid in source_rows and row['geometry_ref']==source_rows[sid]['geometry_ref']:continue
   if sid in scope.frame_ids:raise ValueError('TEMPORARY_FRAME_NATIVE_CHANGE_NOT_ALLOWED')
   own=scope.owner(sid);g=p.geometry(store,row['geometry_ref'])
-  for part in parts(native_grid(g)):buckets[own].append(export_reference(part)[0])
+  for part in parts(native_grid(g)):buckets[own].append(canonical_parent(export_reference(part)[0],grid_mm=GRID_MM))
  if junction_result is not None:
   prepared=store.get_json(junction_result['plan']['scene_ref'],kind='scene');policy=store.get_json(junction_result['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*scene['viewport_mm']))
   try:
    for decision in junction_result['candidate']['decisions']:
     if decision['status']!='GROWN':continue
     owner,_,domain,foreign=adapter._operands(store,prepared,policy,junction_result['plan']['details'],decision);region,_=prepare_export_region(store,junction_result,adapter,owner,domain,decision,foreign);own=scope.owner(decision['source_id'])
-    for part in parts(native_grid(region)):buckets[own].append(export_reference(part)[0])
+    for part in parts(native_grid(region)):buckets[own].append(canonical_parent(export_reference(part)[0],grid_mm=GRID_MM))
   finally:adapter.close()
  result={o:joined(v)for o,v in buckets.items()};check=check_owned(scope,result)
  if not check['passed']:raise ValueError('NATIVE_MODEL_FUNCTIONAL_PREDECESSOR_CLEARANCE_FAILED:'+str(check['failures'][:3]))
@@ -59,9 +61,19 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
   for item in fills:
    channel=channels[item['owner']];patch=item['geometry']
    if patch.intersection(scope.channels.frame).area>contract.area_epsilon_mm2:raise ValueError('CHANNEL_COMPLETION_DEPENDS_ON_TEMPORARY_FRAME')
-   region,mode_name=overlap_region(patch,owned[channel],contract);proposals[channel].append(filled_surface(region));counts[item['kind']]+=1;area[channel]+=patch.area
+   region,mode_name=overlap_region(patch,owned[channel],contract);region=filled_surface(region)
+   from src.pin_separation import encoded_remedy
+   encoded=joined([canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(region))]);pin_check=encoded_remedy(patch,encoded,owned[channel])
+   if pin_check is not None and not pin_check['passed']:
+    report.setdefault('native_pin_encoding_rejections',[]).append(dict(status='KEEP_PROTECTED_PIN_ENCODING',check=pin_check));continue
+   proposals[channel].append(region);counts[item['kind']]+=1;area[channel]+=patch.area
   for channel,regions in sorted(proposals.items()):
-   combined=joined([*([aggregates[channel]]if channel in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in owned.items()if o!=channel]+[('reserved:'+o,g)for o,g in scope.reserved.items()if o!=channel];combined,receipt=absorb(combined,owned[channel],scope.cores[channel],foreign,contract);aggregates[channel]=combined;absorptions.append(dict(original_channel_id=channel,radius_mm=contract.notch_radius_mm,**receipt));native=[export_reference(g)[0]for g in parts(native_grid(combined))];owned[channel]=owned[channel].union(joined(native))
+   combined=joined([*([aggregates[channel]]if channel in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in owned.items()if o!=channel]+[('reserved:'+o,g)for o,g in scope.reserved.items()if o!=channel];combined,receipt=absorb(combined,owned[channel],scope.cores[channel],foreign,contract);
+   from src.pin_separation import require_remedy
+   require_remedy(combined,owned[channel],scope='absorbed_remedy')
+   aggregates[channel]=combined;absorptions.append(dict(original_channel_id=channel,radius_mm=contract.notch_radius_mm,**receipt));native=[canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(combined))];owned[channel]=owned[channel].union(joined(native))
+  from src.pin_separation import require as require_pin
+  require_pin(joined(list(owned.values())),finished=True,scope='absorbed_encoded_round')
   checked=check_owned(scope,owned)
   if not checked['passed']:raise ValueError('NATIVE_CHANNEL_COMPLETION_SIMULTANEOUS_CLEARANCE_FAILED:'+str(checked['failures'][:3]))
   for spec in partials:

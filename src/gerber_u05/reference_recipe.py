@@ -57,10 +57,13 @@ def compute(run):
   proofs=[p.load(legacy/'export'/('proof_'+str(i)+'.json'))for i in(1,2)]
   if p.canonical(proofs[0])!=p.canonical(proofs[1]) or proofs[0]['status']!='PASS' or proofs[0]['generated_sha256']!=p.digest(body):raise ValueError('BASELINE_PROOFS_CHANGED')
   if proofs[0]['actual_hard_gap_mm']!=contract.hard_gap_mm:raise ValueError('PREDECESSOR_CLEARANCE_POLICY_MISMATCH')
+  legacy_store=p.Store(legacy/'runtime');binding=p.load(legacy/'source.json');source_scene=legacy_store.get_json(binding['scene_ref'],kind='scene')
+  from .pin_policy import initialize as initialize_pin
+  initialize_pin(legacy_store,binding,source,source_scene,legacy_store.get_json(p.load(legacy/'t05.json')['output_scene_ref'],kind='scene'))
   if 'functional_channels'in proofs[0]:
    from src import source_channel_scope
    from .channel_material import check_owned
-   legacy_store=p.Store(legacy/'runtime');binding=p.load(legacy/'source.json');source_scene=legacy_store.get_json(binding['scene_ref'],kind='scene');scope=source_channel_scope.bind(source,binding['source_ref']['sha256'],source_scene,legacy_store,integral=(legacy/'SOURCE_ASSEMBLY_BINDING.json').exists());native=proofs[0]['functional_channels']
+   scope=source_channel_scope.bind(source,binding['source_ref']['sha256'],source_scene,legacy_store,integral=(legacy/'SOURCE_ASSEMBLY_BINDING.json').exists());native=proofs[0]['functional_channels']
    if scope is None or native['status']!='PASS'or native['channel_certificate_sha256']!=p.digest(p.canonical(scope.certificate)):raise ValueError('REFERENCE_NATIVE_CHANNEL_BASELINE_CHANGED')
    owned={o:p.geometry(legacy_store,ref)for o,ref in native['owned_geometry_refs'].items()};q=check_owned(scope,owned)
    if not q['passed']:raise ValueError('REFERENCE_BASELINE_FUNCTIONAL_CLEARANCE_FAILED')
@@ -85,12 +88,19 @@ def compute(run):
     channel=source_channels[spec['source_component']];spec.update(original_channel_id=channel,original_owner_id=physical_owner(scope,channel,physical),original_source_sha256=scope.source_hash)
    raw_expected=current.union(joined([r['geometry']for r in fills]))
   original_store.verify_reads();rows=[];blocks=[];owners=parts(planning_current);native_references=[];reference_inventory=[];native_parents=[];native_parent_owners={}
+  approved_logical=[]
   for i,row in enumerate(fills):
    patch=row['geometry'];owner=owners[row['owner']]
    # Duplicate a four-nanometre band of EXISTING owner copper to make the native
    # contour overlap robustly after 1 nm serialization. This is not added scope.
    from .component_finish import overlap_region
    supported,_support_mode=overlap_region(patch,owner,contract);region=filled_surface(supported);first=len(rows)
+   from src.pin_separation import encoded_remedy
+   from .native_assembly import canonical_parent
+   encoded=joined([canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(region))]);pin_check=encoded_remedy(patch,encoded,current)
+   if pin_check is not None and not pin_check['passed']:
+    report.setdefault('native_pin_encoding_rejections',[]).append(dict(status='KEEP_PROTECTED_PIN_ENCODING',check=pin_check));continue
+   approved_logical.append(patch)
    normalized=native_grid(region);normal_area=region.symmetric_difference(normalized).area;normal_bound=2*region.length*contract.grid_mm+math.pi*contract.grid_mm**2
    if normal_area>normal_bound:raise ValueError('NATIVE_MODEL_NORMALIZATION_AREA_FAILED')
    references=append_reference_region(region,'inclusive_remedy','R-'+str(i),rows,blocks,store)
@@ -104,6 +114,7 @@ def compute(run):
   body=base[:-len(b'M02*\n')]+''.join(blocks).encode('ascii')+b'M02*\n'
   expected=assemble_native_material(current,native_references,grid_mm=contract.grid_mm)
   if len(native_references)!=len(reference_inventory):raise ValueError('NATIVE_MODEL_COMPONENT_COVERAGE_CHANGED')
+  raw_expected=current.union(joined(approved_logical))
   raw_reference=p.geomref(store,raw_expected)
   ledger=dict(raw_decision_image_ref=raw_reference,native_model_reference=dict(basis='Original qualified native predecessor plus independently compiled plan/support contours on the existing file grid; no output ledger or generated file used',reference_parts=len(native_references),inventory=reference_inventory,grid_mm=contract.grid_mm),producer_binding_sha256=p.digest((run/'PRODUCER_BINDING.json').read_bytes()),policy_snapshot_sha256=p.digest((run/'POLICY_SNAPSHOT.json').read_bytes()),schema='growth-void-addendum/1',baseline_generated_sha256=p.digest(base),original_source_sha256=baseline_proof['native_model_reference']['inventory'][0]['source_id'].split(':')[0],baseline_object_count=n,plan=report,records=rows,generated_sha256=p.digest(body),scope='Only additive source-component-bound local inclusive fills; original U05 prefix unchanged; no old gate relabeled')
   return body,ledger,source,current,expected,native_parents,native_parent_owners
@@ -146,6 +157,8 @@ def compute(run):
    if not obj.polarity_dark or not isinstance(obj,p.go.Region):raise ValueError('REMEDY_NATIVE_ROLE_CHANGED')
    shape=p.affine_scale(p.source_profile.object_geometry(obj)[0],1,-1,origin=(0,0));reference=p.geometry(store,row['geometry_ref']);contours.append(fidelity(reference,shape));shapes.append(shape)
   after,native_grid,material,owner_rows,material_proof=reconstruct_reference_material(current,shapes,ledger['records'],native_parents,native_parent_owners,grid_mm=contract.grid_mm)
+  from src.pin_separation import require_remedy
+  for actual_parent in material:require_remedy(actual_parent,current,scope='actual_native_reference_remedy')
   addition_check=semantic(source,current,material,dict(records=owner_rows));expected_grid=expected
   gap,metric=hausdorff(native_grid,expected_grid,tolerance=contract.file_uncertainty_mm);area=native_grid.symmetric_difference(expected_grid).area;bound=2*expected_grid.length*contract.file_uncertainty_mm
   if not math.isfinite(gap)or gap>contract.file_uncertainty_mm or area>bound:raise ValueError('REMEDY_WHOLE_IMAGE_FIDELITY_FAILED')
@@ -178,6 +191,10 @@ def compute(run):
    channel_check=check_owned(scope,owned)
    if not channel_check['passed']:raise ValueError('REFERENCE_NATIVE_FUNCTIONAL_CLEARANCE_FAILED:'+str(channel_check['failures'][:3]))
    functional_sidecar=dict(schema='actual-native-channel-reservation/1',status='PASS',source_sha256=scope.source_hash,generated_sha256=p.digest(body),channel_certificate_sha256=p.digest(p.canonical(scope.certificate)),owned_geometry_refs={o:p.geomref(store,g)for o,g in owned.items()},approved_partial_pockets=partials,native_channel_check=channel_check,native_material_proof_sha256=p.digest(p.canonical(material_proof)))
+  from src import pin_separation as pin
+  if pin.ACTIVE is not None:
+   pin.ACTIVE.require(after,finished=True,scope='reference_native')
+   if functional_sidecar is not None:functional_sidecar['pin_separation_state']=pin.ACTIVE.state(store)
   src,final_parts,mapping=components(source,after,contract);new_holes=[];subresolution=0;retained_partial=[]
   inventory_parts=final_parts;inventory_sources=src;inventory_mapping=mapping
   if functional_state:

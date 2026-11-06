@@ -36,6 +36,8 @@ class Coordinator:
   p.save(run/'source.json',p.build_source(p.Store(run/'runtime'),raw))
   from .source_assembly import attach
   if(self.job/'assembly').exists():attach(run,self.job/'assembly')
+  from .pin_policy import capture as capture_pin
+  capture_pin(run,inventory)
   if legacy:seal(run,'fresh-legacy-reservation-reference/1')
  def generate(self,input_dir,selected):
   from src.pcb_data_abi.input_directory import collect_raw
@@ -59,6 +61,8 @@ class Coordinator:
   self.execute(legacy,'legacy_export',['construct']);self.execute(legacy,'legacy_export',['1','2'])
   reference=self.job/'reference';reference.mkdir();p.save(reference/'source.json',p.load(legacy/'source.json'))
   source_assembly.attach(reference,assembly)
+  from .pin_policy import capture as capture_pin
+  capture_pin(reference,inventory)
   clearance=capture(p.ROOT/'contracts/clearance/settings.json');clearance.write_snapshot(reference/'CLEARANCE_SNAPSHOT.json');settings=p.load(p.ROOT/'contracts/growth_void/settings.json')
   parameters=dict(settings['parameters'],hard_gap_mm=clearance.nominal_mm,construction_gap_mm=clearance.construction_gap_mm)
   p.save(reference/'POLICY_SNAPSHOT.json',dict(schema='source-only-reference-policy/1',resolved_parameters=parameters,clearance_resolved=clearance.resolved(),owner_allowance_consumed=False,large_pocket_strategy=settings.get('large_pocket_strategy')));seal(reference,'fresh-legacy-local-remedy-reference/1')
@@ -72,6 +76,8 @@ class Coordinator:
    import copy
    sidecar=copy.deepcopy(proofs[0]['functional_channels']);source_store=p.Store(reference/'runtime');target_store=p.Store(connected/'runtime')
    sidecar['owned_geometry_refs']={o:target_store.put('geometry',source_store.get(ref,kind='geometry'))for o,ref in sidecar['owned_geometry_refs'].items()}
+   if 'pin_separation_state'in sidecar:
+    ref=sidecar['pin_separation_state']['rejected_ref'];sidecar['pin_separation_state']['rejected_ref']=target_store.put('geometry',source_store.get(ref,kind='geometry'))
    source_store.verify_reads();target_store.verify_reads();p.save(connected/'REFERENCE_CHANNELS.json',sidecar);binding['functional_channel_sidecar_sha256']=p.digest(p.canonical(sidecar))
   p.save(connected/'REFERENCE_BINDING.json',binding)
   seal(connected,CONNECTED);self.stages(connected)

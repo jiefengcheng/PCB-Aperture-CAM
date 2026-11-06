@@ -17,6 +17,12 @@ def compute(run,name):
   completed=finish(store,scene,binding,name,junction_result=value if name=='t05'else None,mode=os.environ.get('U05_WORKER_MODE','unit'))
   value=dict(value,raw_output_scene_ref=value['output_scene_ref'],output_scene_ref=completed['output_scene_ref'],intra=completed)
   value['summary']=dict(value['summary'],inclusive_fills=completed['summary']['fills'],inclusive_added_area_mm2=completed['summary']['added_area_mm2']);store.verify_reads()
+ from src import pin_separation as pin
+ if pin.ACTIVE is not None:
+  store=p.Store(run/'runtime');scene=store.get_json(value['output_scene_ref'],kind='scene');_,material,_=p.operands(store,scene)
+  import copy
+  scene=copy.deepcopy(scene);scene['lineage'][-1]['pin_separation_state']=pin.ACTIVE.state(store)
+  value=dict(value,output_scene_ref=store.put_json('scene',scene),pin_separation=pin.ACTIVE.require(p.unary_union(list(material.values())),scope=name+'_complete'))
  return value
 
 def main():

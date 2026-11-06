@@ -8,6 +8,9 @@ def digest(shape):return hashlib.sha256(to_wkb(normalize(shape))).hexdigest()
 def shape(spec,name):return from_wkb(bytes.fromhex(spec[name]))
 
 def construct(pocket,carrier,contract,mandatory=None):
+    from src.pin_separation import remedy as pin_remedy
+    pin_check=pin_remedy(pocket,carrier)
+    if pin_check is not None and not pin_check['passed']:raise ValueError('PROTECTED_PIN_SEPARATION_COMPLETE_POCKET_REJECTED')
     contract.validate()
     if pocket.geom_type!='Polygon' or not pocket.is_valid or pocket.is_empty or pocket.interiors or carrier.is_empty or not carrier.is_valid:
         raise ValueError('VALID_SINGLE_POCKET_AND_CONNECTED_CARRIER_REQUIRED')

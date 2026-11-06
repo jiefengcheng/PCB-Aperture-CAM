@@ -24,6 +24,9 @@ class ComponentRectangleAdapter(FastRectangleAdapter):
   for ordinal,(axis,members)in enumerate(groups):
    channel=None;channel_ids=set();functional_pairs=[];functional_shortage=None
    budget.evaluation();rect=box(*unary_union([current[s]for s in members]).bounds);span=before.intersection(rect);shortage=rect.difference(span).area/rect.area;owners={ctx.owner(s)for s in members};delta=rect.difference(before);reasons=[];pairs=[]
+   from src.pin_separation import remedy as pin_remedy
+   pin_check=pin_remedy(rect,before)
+   if pin_check is not None and not pin_check['passed']:reasons.append('PROTECTED_PIN_SEPARATION_ENTIRE_FILL')
    if shortage>.20:reasons.append('SHORTAGE_ABOVE_20_PERCENT')
    if span.geom_type!='Polygon':reasons.append('SPAN_NOT_ONE_CONNECTED_SURFACE')
    if claimed.intersection(members):reasons.append('SOURCE_ALREADY_MERGED')
@@ -59,6 +62,7 @@ class ComponentRectangleAdapter(FastRectangleAdapter):
    if not q['passed']:reasons.append('FOREIGN_CLEARANCE_FAILED')
    if delta.area<=1e-12:reasons.append('NO_VISIBLE_ADDITION')
    record=dict(ordinal=ordinal,members=list(members),axis=axis,shortage=shortage,status='REJECTED'if reasons else'MERGED',reasons=reasons,check=q,original_component_owners=sorted(owners),foreign_component_pairs=pairs,ownership_policy=cc.POLICY)
+   if pin_check is not None:record['pin_separation']=pin_check
    if functional is not None:record.update(functional_source_channel_ids=sorted(channel_ids),functional_shortage=functional_shortage,functional_channel_pairs=functional_pairs,source_void_basis='Frozen functional source channel; temporary frame excluded analytically')
    if not reasons:
     blob=to_wkb(rect);budget.output(blob);reference=store.put('geometry',blob);sid='t02-inclusive:'+reference['sha256'];md=dict(origin='t02-inclusive-fill',members=list(members),original_component_owner_id=own,original_source_sha256=ctx.source_hash,original_member_wkb_sha256={s:digest(to_wkb(ctx.originals[s]))for s in members})

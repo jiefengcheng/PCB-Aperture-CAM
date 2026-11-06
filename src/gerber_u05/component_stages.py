@@ -9,6 +9,8 @@ def initialize(store,binding,scene=None):
  original=store.get_json(binding['scene_ref'],kind='scene');rows,current,_=p.operands(store,original)
  raw=store.get(binding['source_ref'],kind='gerber-source');parsed,_,_=p.source_profile.parse_source(raw)
  source=p.affine_scale(p.source_profile.ordered((p.source_profile.object_geometry(o)[0],o.polarity_dark)for o in parsed.objects),1,-1,origin=(0,0))
+ from .pin_policy import initialize as initialize_pin
+ initialize_pin(store,binding,source,original,scene)
  from src import source_channel_scope
  functional=source_channel_scope.bind(source,binding['source_ref']['sha256'],original,store,integral=(store.root.parent/'SOURCE_ASSEMBLY_BINDING.json').exists())
  if (store.root.parent/'LEGACY_REFERENCE_JOB.json').exists():
@@ -89,6 +91,10 @@ def run_t01(store,scene,binding):
    if functional is not None:
     functional_delta=candidate.difference(functional_owned[channel]);bad.extend(o for o,g in foreign_bodies.items()if o.startswith('functional:')and not functional_delta.is_empty and functional_delta.distance(g)+1e-12<p.CONSTRUCTION_GAP_MM)
    if bad:candidate=floor;reason='FOREIGN_ORIGINAL_COMPONENT_GUARD'
+  from src import pin_separation as pin
+  if pin.ACTIVE is not None:
+   pin_proof=pin.ACTIVE.growth_parts(after.values(),[g for s,g in after.items()if s not in site['aliases']]+[candidate])
+   if not pin_proof['passed']:candidate=floor;reason='PROTECTED_PIN_SEPARATION_GROWTH'
   if functional is not None:
    channel=functional.owner(sid,core);functional_owned[channel]=functional_owned[channel].union(candidate)
   owners[owner]=owners[owner].union(candidate)
@@ -125,7 +131,12 @@ def reserve_prior(ctx,store):
  if p.digest(body)!=reference['generated_sha256']or reference['source_sha256']!=p.load(run/'source.json')['source_ref']['sha256']:raise ValueError('FRESH_REFERENCE_BINDING_CHANGED')
  parsed=e.parse(body);source_objects=p.load(run/'source.json')['source_objects']
  pieces=[p.affine_scale(p.source_profile.object_geometry(o)[0],1,-1,origin=(0,0))for o in parsed.objects[source_objects:]]
- whole=ctx.index.source.union(p.unary_union(pieces));groups=cc.OriginalOwners(whole);reserved={}
+ whole=ctx.index.source.union(p.unary_union(pieces))
+ from src.pin_separation import require as require_pin
+ require_pin(whole,finished=True,scope='retained_prior')
+ from src import pin_separation as pin
+ if pin.ACTIVE is not None:pin.ACTIVE.reserve([whole],p.digest(body))
+ groups=cc.OriginalOwners(whole);reserved={}
  for g in groups.owners:
   ids=ctx.index.membership(g)
   if len(ids)!=1 or ids[0]in reserved:raise ValueError('PRIOR_COPPER_OWNER_PARTITION_CHANGED')
@@ -135,6 +146,11 @@ def reserve_prior(ctx,store):
  if getattr(ctx,'functional',None)is not None:
   from src.source_channel_scope import install_reserved
   sidecar=p.load(run/'REFERENCE_CHANNELS.json')
+  from src import pin_separation as pin
+  if pin.ACTIVE is not None and 'pin_separation_state'in sidecar:
+   state=sidecar['pin_separation_state']
+   if state['binding']!=pin.ACTIVE.binding:raise ValueError('PIN_REFERENCE_SOURCE_BINDING_CHANGED')
+   prior=p.from_wkb(store.get(state['rejected_ref'],kind='geometry'));pin.ACTIVE.rejected=pin.ACTIVE.rejected.union(prior);pin.ACTIVE.rejected_count=max(pin.ACTIVE.rejected_count,state['rejected_count'])
   if reference.get('functional_channel_sidecar_sha256')!=p.digest(p.canonical(sidecar)):raise ValueError('NATIVE_CHANNEL_RESERVATION_SIDECAR_CHANGED')
   install_reserved(ctx.functional,store,sidecar,ctx.reservation_sha256)
   rows=[]

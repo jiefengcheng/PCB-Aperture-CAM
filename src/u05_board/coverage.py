@@ -150,7 +150,19 @@ class CoverageAdapter(NativeSpindleAdapter):
             other=sid[6:]if sid.startswith('owner:')else (context.ids.get(sid)or[None])[0]
             if other!=own:out.append((sid,g))
         return out
-    def _check(self,owner,candidate,addition,window,foreign):return check_spindle(owner,candidate,addition,window,self._foreign_for(owner,foreign),gap=CONTRACT.construction_gap_mm,geometry=self._geometry)
+    def _check(self,owner,candidate,addition,window,foreign):
+        result=check_spindle(owner,candidate,addition,window,self._foreign_for(owner,foreign),gap=CONTRACT.construction_gap_mm,geometry=self._geometry)
+        from src import pin_separation as pin
+        if pin.ACTIVE is not None:
+            context=getattr(self,'_integral_context',None)
+            def material():
+                if context is not None:yield from context.reserved.values()
+                if hasattr(self,'_copper_owners'):yield from self._copper_owners.values()
+                for _,g in foreign:yield g
+            import itertools
+            proof=pin.ACTIVE.growth_parts(material(),itertools.chain(material(),[candidate]))
+            if not proof['passed']:result=dict(result,passed=False,failures=[*result.get('failures',[]),'PROTECTED_PIN_SEPARATION'],pin_separation=proof)
+        return result
     def plan(self,store,scene,policy,selection,bounds):
         from .junctions import parameters
         if policy!={'stage':'t05','parameters':parameters()} or set(selection)!={'stage','scene_ref','source_ids'} or selection['stage']!='t05' or set(bounds)!={'max_source_objects','max_targets','max_evaluations','max_output_bytes','max_seconds'} or any(type(v) is not int or v<=0 for v in bounds.values()) or len(scene['objects'])>bounds['max_source_objects']:raise ValueError('U05_ATTACHMENT_POLICY_OR_BOUNDS_INVALID')

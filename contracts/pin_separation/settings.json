@@ -1,0 +1,274 @@
+{
+  "schema": "source-pin-intent-registry/1",
+  "precedence": "LOCAL_SOURCE_PIN_SEPARATION_OVERRIDES_SAME_NET_COMPONENT_AND_REMEDY_ALLOWANCES",
+  "spacing": "REGISTERED_PRODUCTION_CLEARANCE_WITH_EXISTING_CONSTRUCTION_MARGIN",
+  "sources": {
+    "30da6fb74f91aeb734acf5d11daf421e012c179631177c599a85ab9d0962d80a": {
+      "raw_source_sha256": "30da6fb74f91aeb734acf5d11daf421e012c179631177c599a85ab9d0962d80a",
+      "source": "Client-confirmed3020212826 defect; original native pin strokes and complete rooted transition",
+      "coverage": "All13 independently confirmed closed slots in the marked top bank; other source pin banks require explicit source intent before a whole-board pin-separation qualification claim",
+      "slots": [
+        {
+          "slot_id": "confirmed_slot_72935_72968",
+          "branches": [
+            {
+              "source_span": [
+                72935,
+                72947
+              ],
+              "geometry_sha256": "d5bf8e837fc0fb0f8d610094b545b20d638e5b6bf21b05d76c02224bd3a56cf5"
+            },
+            {
+              "source_span": [
+                72968,
+                72980
+              ],
+              "geometry_sha256": "7cb40de0abc9d2523d963c59010adae378198b10aedf236913921fb9e37abc78"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_73133_73166",
+          "branches": [
+            {
+              "source_span": [
+                73133,
+                73145
+              ],
+              "geometry_sha256": "cf7dee1072c75aefc4c12853dc22624f712b4adb4ed4a8f7da7d921e032d7d8d"
+            },
+            {
+              "source_span": [
+                73166,
+                73178
+              ],
+              "geometry_sha256": "a6784e4ec3b8d50009e6ab9723b4c5869ceaee3920f03da8d446e89a485e221c"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_73232_73265",
+          "branches": [
+            {
+              "source_span": [
+                73232,
+                73244
+              ],
+              "geometry_sha256": "b8199f5a0d15595164ca8ca163a2e4bc86bed2b046616f5f15ec90f4c9968ffd"
+            },
+            {
+              "source_span": [
+                73265,
+                73277
+              ],
+              "geometry_sha256": "1bc1e2d3302428815d1377613f4b7e3aec53a9318b5538ea9a54e0bab332dcde"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_73958_73991",
+          "branches": [
+            {
+              "source_span": [
+                73958,
+                73970
+              ],
+              "geometry_sha256": "a852a3620633d372c3a57d13cb4f6aa3713188982c297943668f4ef1b1a7e899"
+            },
+            {
+              "source_span": [
+                73991,
+                74003
+              ],
+              "geometry_sha256": "1b619e3b613b443511bbead0e1c4d032c30966e888fef00be73043dc2428d83f"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_74123_74156",
+          "branches": [
+            {
+              "source_span": [
+                74123,
+                74135
+              ],
+              "geometry_sha256": "a934758d32e30f7eedd4e852344dfdfbd5b402c1faa01d8d667604311791b709"
+            },
+            {
+              "source_span": [
+                74156,
+                74168
+              ],
+              "geometry_sha256": "a5dc9b3a0423f3d85b0e7d00e166d52da6a93412361ce4bc4fb62dabefabe01d"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_74156_74189",
+          "branches": [
+            {
+              "source_span": [
+                74156,
+                74168
+              ],
+              "geometry_sha256": "a5dc9b3a0423f3d85b0e7d00e166d52da6a93412361ce4bc4fb62dabefabe01d"
+            },
+            {
+              "source_span": [
+                74189,
+                74201
+              ],
+              "geometry_sha256": "fc44ee1925f5d5a5f2bec6f48596e3150e0196f3c27ebbd76de2da669b487a8a"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_74189_74222",
+          "branches": [
+            {
+              "source_span": [
+                74189,
+                74201
+              ],
+              "geometry_sha256": "fc44ee1925f5d5a5f2bec6f48596e3150e0196f3c27ebbd76de2da669b487a8a"
+            },
+            {
+              "source_span": [
+                74222,
+                74234
+              ],
+              "geometry_sha256": "9f5f75f714880cdaf90c67a82b56cda19781746f4ca7b7b09737e6ebf1adad3c"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_74321_74354",
+          "branches": [
+            {
+              "source_span": [
+                74321,
+                74333
+              ],
+              "geometry_sha256": "3eb9a00e8da2b92b8b888727d5c46c85676dc9ff80bd296ccdced034ba9c8230"
+            },
+            {
+              "source_span": [
+                74354,
+                74366
+              ],
+              "geometry_sha256": "df7878f55bfca23eb94cd3e3819e496c6bc77ae3e7f00452fb174c30989d12e2"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_74354_74387",
+          "branches": [
+            {
+              "source_span": [
+                74354,
+                74366
+              ],
+              "geometry_sha256": "df7878f55bfca23eb94cd3e3819e496c6bc77ae3e7f00452fb174c30989d12e2"
+            },
+            {
+              "source_span": [
+                74387,
+                74399
+              ],
+              "geometry_sha256": "c94528a9bedb53a910d805b6b0f8bbbc8e689561725e018669e7682068f3bbee"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_74387_74420",
+          "branches": [
+            {
+              "source_span": [
+                74387,
+                74399
+              ],
+              "geometry_sha256": "c94528a9bedb53a910d805b6b0f8bbbc8e689561725e018669e7682068f3bbee"
+            },
+            {
+              "source_span": [
+                74420,
+                74432
+              ],
+              "geometry_sha256": "041ab4620a54aaaca54ed0f1f509c8f5d2955c8a99d0202a7c2c0205bb5b3740"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_75410_75443",
+          "branches": [
+            {
+              "source_span": [
+                75410,
+                75422
+              ],
+              "geometry_sha256": "9ac1828a096b62bbd9ab0dfb17aeab53cdaaa0d575304e1071c170f7296d8fd5"
+            },
+            {
+              "source_span": [
+                75443,
+                75455
+              ],
+              "geometry_sha256": "fd8514faed57c9071c5c18cb8fdbfb6336d9743bd320070fb9d58ea3fa86527c"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_75509_75542",
+          "branches": [
+            {
+              "source_span": [
+                75509,
+                75521
+              ],
+              "geometry_sha256": "42d15e0ba57bb80ca60b3f092e9229a12fc3137d28d59036cc3f18c01b509ae0"
+            },
+            {
+              "source_span": [
+                75542,
+                75554
+              ],
+              "geometry_sha256": "80bd4c614a26d6a0143349f6eb69dea6fc0306c2d6723190f7f39e72922ca0ef"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        },
+        {
+          "slot_id": "confirmed_slot_75707_75740",
+          "branches": [
+            {
+              "source_span": [
+                75707,
+                75719
+              ],
+              "geometry_sha256": "154e81906f4de4886f3282f5a25876f456df8d31554238736e7be6454f91bbb0"
+            },
+            {
+              "source_span": [
+                75740,
+                75752
+              ],
+              "geometry_sha256": "f4dd0688c3a72267ea748cde80301daeb583156623432822db96813bc3d30097"
+            }
+          ],
+          "domain_policy": "FULL_SOURCE_EMPTY_SLOT_AND_ROOTED_TRANSITION"
+        }
+      ]
+    }
+  }
+}

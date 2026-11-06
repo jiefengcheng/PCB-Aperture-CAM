@@ -24,7 +24,9 @@ def check_owned(scope,owned,*,gap=None):
    if other==own:continue
    measured=distance(added,owned[other]);passed=measured+1e-12>=gap;pairs.append(dict(source_channel_id=own,foreign_source_channel_id=other,gap_mm=measured,passed=passed))
    if not passed:failures.append(dict(reason='NATIVE_FUNCTIONAL_CHANNEL_CLEARANCE_FAILED',source_channel_id=own,foreign_source_channel_id=other,gap_mm=measured))
- return dict(schema='actual-native-functional-channel-clearance/1',passed=not failures,failures=failures,pairs=pairs,nominal_gap_mm=gap,source_sha256=scope.source_hash,channel_certificate_sha256=p.digest(p.canonical(scope.certificate)),channels=len(ids),ownership='FROZEN_ORIGINAL_NON_FRAME_OCCURRENCES; no new contact exemption')
+ from src.pin_separation import require as require_pin
+ pin_proof=require_pin(cc.joined(list(owned.values())),finished=(gap==p.HARD_GAP_MM),scope='native_channel_material')
+ return dict(schema='actual-native-functional-channel-clearance/1',passed=not failures,failures=failures,pairs=pairs,nominal_gap_mm=gap,source_sha256=scope.source_hash,channel_certificate_sha256=p.digest(p.canonical(scope.certificate)),channels=len(ids),ownership='FROZEN_ORIGINAL_NON_FRAME_OCCURRENCES; no new contact exemption',**({}if pin_proof is None else{'pin_separation':pin_proof}))
 
 def legacy_channels(scope,store,binding,stage_results,body,ledger,proofs):
  if len(proofs)!=2 or p.canonical(proofs[0])!=p.canonical(proofs[1])or proofs[0]['status']!='PASS':raise ValueError('PAIRED_NATIVE_CHANNEL_BASELINE_PROOFS_REQUIRED')

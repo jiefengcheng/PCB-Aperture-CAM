@@ -58,13 +58,15 @@ def completion(store,stage_result,observed,before,after):
    lineage_ctx=ctx.functional;lineage_owner=row.get('original_channel_id')
    if lineage_owner not in lineage_ctx.cores or not hasattr(before,'channels'):raise ValueError('NATIVE_COMPLETION_FUNCTIONAL_BINDING_REQUIRED')
    lineage_before=before.channels
+  from src.pin_separation import require_remedy
+  pin_check=require_remedy(actual,joined(list(lineage_before.values())),scope='actual_native_completion')
   added=actual.difference(lineage_before[lineage_owner])
   if logical.difference(actual.buffer(.000002)).area>1e-12:raise ValueError('NATIVE_REQUIRED_POCKET_OR_NOTCH_MISSING')
   from src.component_hole_lineage import classify as hole_lineage,identity as hole_identity
   source_lineage=hole_lineage(lineage_ctx.cores[lineage_owner],lineage_before[lineage_owner]);keepers=set(source_lineage['keeper_ids'])
   protected=joined([h for h in holes(lineage_before[lineage_owner])if hole_identity(h)in keepers]).buffer(-.000002)
   if added.intersection(protected).area>1e-12:raise ValueError('NATIVE_INHERITED_SOURCE_VOID_FILLED')
-  records.append(dict(source_id=sid,original_owner_id=own,kind=row['kind'],native_added_area_mm2=added.area))
+  records.append(dict(source_id=sid,original_owner_id=own,kind=row['kind'],native_added_area_mm2=added.area,**({}if pin_check is None else{'pin_separation':pin_check})))
  return dict(passed=True,records=records,physical_clearance=clearance(before,after))
 
 def _inventory(source,actual,ctx,owner_key):
@@ -111,8 +113,13 @@ def _inventory(source,actual,ctx,owner_key):
 
 
 def final_inventory(source,actual):
+ from src.pin_separation import require as require_pin
+ pin_proof=require_pin(joined(list(actual.values())),finished=True,scope='reparsed_gerber')
  ctx=cc.ACTIVE;scope=getattr(ctx,'functional',None)
- if scope is None:return _inventory(source,actual,ctx,'original_owner_id')
+ if scope is None:
+  result=_inventory(source,actual,ctx,'original_owner_id')
+  if pin_proof is not None:result['pin_separation']=pin_proof
+  return result
  if not hasattr(actual,'channels'):raise ValueError('NATIVE_FUNCTIONAL_MATERIAL_INVENTORY_REQUIRED')
  # The retained bar still participates in the physical partition predicate.
  # Void lineage belongs to the separately frozen functional source, so the
@@ -127,4 +134,5 @@ def final_inventory(source,actual):
  result['functional_channels_preserved']=result['original_components_preserved'];result['original_components_preserved']=len(mapping)
  result['void_inventory_basis']='Original non-frame source occurrences; preserved frame/end bar supply no local growth or source-void exemption'
  result['physical_source_missing_overlay_diagnostic_mm2']=source.difference(whole).area
+ if pin_proof is not None:result['pin_separation']=pin_proof
  return result

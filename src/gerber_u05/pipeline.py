@@ -68,7 +68,10 @@ def artifact_scene(store,scene,current,stage,metadata=None,additions=()):
         if sid in current:q['geometry_ref']=r['geometry_ref']if to_wkb(current[sid])==store.get(r['geometry_ref'],kind='geometry')else geomref(store,current[sid])
         if metadata and sid in metadata:q['metadata']=metadata[sid]
         objects.append(q)
-    value=dict(scene,objects=objects+list(additions),lineage=scene['lineage']+[dict(stage=stage,source='GERBER_ORIGINAL_OCCURRENCES')]);return store.put_json('scene',value)
+    value=dict(scene,objects=objects+list(additions),lineage=scene['lineage']+[dict(stage=stage,source='GERBER_ORIGINAL_OCCURRENCES')])
+    from src import pin_separation as pin
+    if pin.ACTIVE is not None:value['lineage'][-1]['pin_separation_state']=pin.ACTIVE.state(store)
+    return store.put_json('scene',value)
 
 def build_source(store,raw):
     parsed,parser,oracle=source_profile.parse_source(raw);all_shapes=[];residual=0.

@@ -52,6 +52,11 @@ class PreparedWidthScene:
             if not hasattr(self,'_functional_check'):self._functional_check=OwnerCheck(self,context=functional.ACTIVE,active_test=lambda c:functional.ACTIVE is c)
             proof=self._functional_check.check(traces,materialize_scene=materialize_scene,fail_fast=fail_fast)
             result=dict(result,functional_channels=proof,passed=result['passed']and proof['passed'],failures=[*result['failures'],*[dict(r,clearance_scope='FUNCTIONAL_SOURCE_CHANNEL')for r in proof['failures']]])
+        from src import pin_separation as pin
+        if pin.ACTIVE is not None:
+            if not hasattr(self,'_pin_check'):self._pin_check=pin.Prepared(self,pin.ACTIVE)
+            proof=self._pin_check.check(traces,materialize_scene=materialize_scene)
+            result=dict(result,pin_separation=proof,passed=result['passed']and proof['passed'],failures=[*result['failures'],*[dict(reason='PIN_SEPARATION',pin_check=r)for r in proof['checks']if not r['passed']]])
         return result
 
     def _physical_check(self,traces,*,materialize_scene=False,fail_fast=False):
