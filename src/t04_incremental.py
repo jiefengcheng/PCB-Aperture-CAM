@@ -37,7 +37,7 @@ class OwnerDependencies:
         result = calculate(); size = len(canonical(result)) + len(canonical(list(key))) + 128
         if size <= self.limit:
             while self.cache and (self.bytes+size>self.limit or len(self.cache)>=8192):
-                self.bytes -= self.cache.popitem(last=False)[1]
+                self.bytes -= self.cache.popitem(last=False)[1][1]
             self.cache[key]=(result,size); self.bytes+=size
         return result
 

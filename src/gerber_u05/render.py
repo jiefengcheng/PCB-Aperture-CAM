@@ -22,7 +22,7 @@ elif qualification_mode=='INCREMENTAL_REUSED_NATIVE_EXPORT_REPORT':
 elif qualification_mode=='INCREMENTAL_REUSED_LEGACY_PREFIX':
  from .legacy_prefix import verify as verify_legacy
  binding=verify_legacy(run.parent/'legacy');reused_operations=binding['original']['retained_operation_count']
- if reused_operations not in(11,14,17):raise ValueError('VISUAL_RETAINED_LEGACY_SCOPE_CHANGED')
+ if reused_operations not in(8,11,14,17):raise ValueError('VISUAL_RETAINED_LEGACY_SCOPE_CHANGED')
  stage_evidence=f'Incremental qualification: {reused_operations} completed native legacy-predecessor operations are retained with original hashes, complete source/geometry/search witnesses and separate proof pairs. All remaining legacy operations, the reference, every connected-copper stage, both final export/reparse evaluations, controls, audit and rendering are new. Original failed jobs remain unchanged.'
 elif qualification_mode=='INCREMENTAL_REUSED_CONNECTED_WIDTH_SEARCH':
  from .width_adoption import verify as verify_width

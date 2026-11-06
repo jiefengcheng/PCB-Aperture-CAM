@@ -30,6 +30,11 @@ def reservation_witness_delta_only(before,after):
  new="metadata=dict(original_owner_id=own,original_channel_id=channel,original_channel_witness_sha256=p.digest(p.to_wkb(ctx.functional.cores[channel])),original_source_sha256=ctx.source_hash,approved_partial_pockets=[spec])"
  if before.count(old)!=1 or ast.dump(ast.parse(before.replace(old,new)),include_attributes=False)!=ast.dump(ast.parse(after),include_attributes=False):raise ValueError('LEGACY_RESERVATION_WITNESS_DELTA_NOT_ISOLATED')
 
+def t04_eviction_delta_only(before,after):
+ old='self.bytes -= self.cache.popitem(last=False)[1]'
+ new='self.bytes -= self.cache.popitem(last=False)[1][1]'
+ if before.count(old)!=1 or ast.dump(ast.parse(before.replace(old,new)),include_attributes=False)!=ast.dump(ast.parse(after),include_attributes=False):raise ValueError('LEGACY_T04_EVICTION_DELTA_NOT_ISOLATED')
+
 def prove_no_retained_partials(old,stages):
  # Inspect every retained stage-entry/output scene, not only raw source rows.
  # The changed registration branch is unreachable in all retained operations.
@@ -53,8 +58,8 @@ def original_routes(code,rows):
 
 def inspect(old,through):
  old=Path(old);work=configure()
- if not old.is_absolute()or'..'in old.parts or old.name!='legacy'or not any(old.is_relative_to(work/'operator_routes'/namespace)for namespace in('gerber_u05','gerber_u05_incremental_legacy')):raise ValueError('EXPLICIT_NATIVE_LEGACY_PREFIX_REQUIRED')
- if through not in('t04','t02','t05'):raise ValueError('LEGACY_PREFIX_BOUNDARY_UNSUPPORTED')
+ if not old.is_absolute()or'..'in old.parts or old.name!='legacy'or not any(old.is_relative_to(work/'operator_routes'/namespace)for namespace in('gerber_u05','gerber_u05_incremental_legacy','gerber_u05_ladder_combined')):raise ValueError('EXPLICIT_NATIVE_LEGACY_PREFIX_REQUIRED')
+ if through not in('t03','t04','t02','t05'):raise ValueError('LEGACY_PREFIX_BOUNDARY_UNSUPPORTED')
  stages=ORDER[:ORDER.index(through)+1];binding=load(old/'PRODUCER_BINDING.json');state=load(old.parent/'STATUS.current.json');producer_sha=sha(old/'PRODUCER_BINDING.json');original_root=Path(os.path.commonpath(list(binding['files'])))
  inherited=None;inherited_stages=[];records=dict(state['checks']);source_roots=[str(original_root)]
  if(old/'REUSED_LEGACY_BINDING.json').exists():
@@ -125,6 +130,10 @@ def inspect(old,through):
   elif relative=='src/gerber_u05/component_stages.py'and through in('t02','t05'):
    reservation_witness_delta_only(file.read_text(),current.read_text());prove_no_retained_partials(old,stages)
   elif relative=='src/u05_board/coverage.py'and through=='t05':raise ValueError('LEGACY_T05_ADAPTER_CHANGE_REQUIRES_FRESH_T05')
+  elif relative=='src/t04_incremental.py'and through=='t03':
+   # This module is first called by T04. Retain only T01/T03 after the exact
+   # cache-accounting correction; no geometry/policy change receives reuse.
+   t04_eviction_delta_only(file.read_text(),current.read_text())
   elif relative in CONNECTED_COMPLETION:
    # Legacy stages through T04 initialize ACTIVE=None and never execute the
    # connected owner completion, partial-pocket policy or export obligations.
@@ -164,6 +173,13 @@ class IncrementalCoordinator(Coordinator):
    if name.startswith('runtime/'):continue
    target=run/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((self.old/name).read_bytes())
   p.save(run/'LEGACY_REFERENCE_JOB.json',dict(schema='fresh-legacy-reservation-reference/1',scope='Fresh source intake with explicitly retained verified native predecessor stages'))
+  # Fresh assembly and pin intent remain explicit job inputs after prefix
+  # adoption. Omitting these would silently change the following T04 profile.
+  if(self.job/'assembly').exists():
+   from .source_assembly import attach
+   attach(run,self.job/'assembly')
+  from .pin_policy import capture as capture_pin
+  capture_pin(run,inventory)
   p.save(run/'REUSED_LEGACY_BINDING.json',dict(original=self.prefix));seal(run,'fresh-legacy-reservation-reference/1');verify(run)
  def stages(self,run,legacy=False):
   if not legacy:return super().stages(run,False)
@@ -174,10 +190,10 @@ class IncrementalCoordinator(Coordinator):
    if len({p.digest(p.canonical(v))for v in proofs})!=1:raise ValueError('PAIRED_STAGE_PROOFS_DIFFER:'+stage)
 
 def main():
- parser=argparse.ArgumentParser();parser.add_argument('--input-dir',required=True,type=Path);parser.add_argument('--gerber',required=True);parser.add_argument('--retained-legacy-run',required=True,type=Path);parser.add_argument('--through',required=True,choices=['t04','t02','t05']);args=parser.parse_args()
+ parser=argparse.ArgumentParser();parser.add_argument('--input-dir',required=True,type=Path);parser.add_argument('--gerber',required=True);parser.add_argument('--retained-legacy-run',required=True,type=Path);parser.add_argument('--through',required=True,choices=['t03','t04','t02','t05']);args=parser.parse_args()
  if not args.input_dir.is_absolute():parser.error('explicit absolute input directory required')
  prefix=inspect(args.retained_legacy_run,args.through)
- if load(args.retained_legacy_run.parent/'STATUS.current.json')['status']=='HALTED'and not any(row['path']in{'src/gerber_u05/pipeline.py','src/source_junction_paths.py','src/u05_board/coverage.py','src/gerber_u05/reference_recipe.py','src/gerber_u05/legacy_export.py','src/component_clearance.py'}for row in prefix['code_dependency_changes']):raise ValueError('SAME_IMPLEMENTATION_FAILED_JOB_CANNOT_RETRY')
+ if load(args.retained_legacy_run.parent/'STATUS.current.json')['status']=='HALTED'and not any(row['path']in{'src/gerber_u05/pipeline.py','src/source_junction_paths.py','src/u05_board/coverage.py','src/gerber_u05/reference_recipe.py','src/gerber_u05/legacy_export.py','src/component_clearance.py','src/t04_incremental.py'}for row in prefix['code_dependency_changes']):raise ValueError('SAME_IMPLEMENTATION_FAILED_JOB_CANNOT_RETRY')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental_legacy';parent.mkdir(exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=IncrementalCoordinator(job,args.retained_legacy_run,args.through)
  try:coordinator.generate(args.input_dir,args.gerber)
  except BaseException as error:

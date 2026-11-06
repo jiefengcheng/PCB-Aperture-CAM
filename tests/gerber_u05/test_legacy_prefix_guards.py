@@ -39,6 +39,25 @@ def test_complete_prefix_retains_both_native_record_sets(tmp_path,monkeypatch):
  assert result['retained_operation_count']==14 and len(result['original_checks'])==14
  assert result['original_route_completion'].startswith('NOT_CLAIMED')
 
+
+def test_t03_boundary_never_retains_a_failed_t04(tmp_path,monkeypatch):
+ old,_,_=binding_fixture(tmp_path,monkeypatch)
+ path=old.parent/'STATUS.current.json';state=json.loads(path.read_bytes())
+ state['checks']['legacy_t04_construct']['status']='FAIL';put(path,state)
+ result=q.inspect(old,'t03')
+ assert result['stages']==['t01','t03']
+ assert result['retained_operation_count']==8
+ assert 't04.json'not in result['files']
+ assert not any('t04'in k for k in result['original_checks'])
+
+
+def test_t04_eviction_delta_authorizes_only_exact_bookkeeping_correction():
+ before='def evict(self):\n self.bytes -= self.cache.popitem(last=False)[1]\n'
+ after=before.replace('[1]','[1][1]')
+ q.t04_eviction_delta_only(before,after)
+ with pytest.raises(ValueError,match='EVICTION_DELTA_NOT_ISOLATED'):
+  q.t04_eviction_delta_only(before,after+'def changed_geometry():\n return 42\n')
+
 @pytest.mark.parametrize('mutation',['artifact','process','producer','supplement'])
 def test_changed_or_incomplete_prefix_is_rejected(tmp_path,monkeypatch,mutation):
  old,current,artifacts=binding_fixture(tmp_path,monkeypatch)
