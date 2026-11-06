@@ -31,6 +31,7 @@ def binding_fixture(tmp_path,monkeypatch):
  for mode in('1','2'):
   put(old/'audits/t01'/('supplement_'+mode+'.json'),supplement);records['legacy_t01_supplement_'+mode]=dict(status='PASS',returncode=0,pid=pid);pid+=1
  put(old.parent/'STATUS.current.json',dict(status='HALTED',checks=records))
+ put(old/'RAW_WIDTH_CHECKPOINT.json',json.loads((old/'t04.json').read_bytes()))
  monkeypatch.setattr(q,'configure',lambda:tmp_path);monkeypatch.setattr(q,'ROOT',current);monkeypatch.setattr(guard,'producer_files',lambda:[current/name for name in names])
  return old,current,artifacts
 
@@ -65,6 +66,29 @@ def test_pin_eviction_delta_cannot_authorize_a_spacing_change():
  q.pin_eviction_delta_only(before,after)
  with pytest.raises(ValueError,match='PIN_EVICTION_DELTA_NOT_ISOLATED'):
   q.pin_eviction_delta_only(before,after+'def clearance():\n return 0\n')
+
+
+def test_completed_width_checkpoint_is_hash_bound_to_the_retained_t04(tmp_path,monkeypatch):
+ old,_,_=binding_fixture(tmp_path,monkeypatch)
+ proof=q.inspect(old,'t04')
+ assert proof['retained_operation_count']==11
+ assert 'RAW_WIDTH_CHECKPOINT.json'in proof['files']
+ put(old/'RAW_WIDTH_CHECKPOINT.json',dict(forged=True))
+ with pytest.raises(ValueError,match='RAW_WIDTH_CHECKPOINT_CHANGED'):q.inspect(old,'t04')
+
+
+def test_t02_worker_attribution_delta_cannot_change_t04_execution():
+ after=(Path(q.__file__).with_name('worker.py')).read_text()
+ extra=""" elif name=='t02':
+  from .width_stage_constraints import require_t02
+  store=p.Store(run/'runtime');width_proof=require_t02(store,p.load(run/'t04.json')['output_scene_ref'],value)
+  if width_proof is not None:value=dict(value,t04_width_fence=width_proof)
+"""
+ assert after.count(extra)==1
+ before=after.replace(extra,'').replace("if name=='t04':\n  store=p.Store(run/'runtime');checked_scene", "if name in('t04','t02'):\n  store=p.Store(run/'runtime');checked_scene")
+ q.t02_attribution_worker_delta_only(before,after)
+ with pytest.raises(ValueError,match='ATTRIBUTION_DELTA_NOT_ISOLATED'):
+  q.t02_attribution_worker_delta_only(before,after.replace("scope=name+'_complete'","scope='unrelated'",1))
 
 @pytest.mark.parametrize('mutation',['artifact','process','producer','supplement'])
 def test_changed_or_incomplete_prefix_is_rejected(tmp_path,monkeypatch,mutation):

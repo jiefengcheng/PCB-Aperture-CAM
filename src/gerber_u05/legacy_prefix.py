@@ -40,6 +40,19 @@ def pin_eviction_delta_only(before,after):
  new='self.weight-=self.cache.popitem(last=False)[1][1]'
  if before.count(old)!=1 or ast.dump(ast.parse(before.replace(old,new)),include_attributes=False)!=ast.dump(ast.parse(after),include_attributes=False):raise ValueError('LEGACY_PIN_EVICTION_DELTA_NOT_ISOLATED')
 
+def t02_attribution_worker_delta_only(before,after):
+ old=""" if name in('t04','t02'):
+  store=p.Store(run/'runtime');checked_scene=store.get_json(value['output_scene_ref'],kind='scene');_,material,_=p.operands(store,checked_scene)
+  width_proof=require_width_fence(p.unary_union(list(material.values())),scope=name+'_complete')
+  if width_proof is not None:value=dict(value,t04_width_fence=width_proof)
+"""
+ new=old.replace("if name in('t04','t02'):","if name=='t04':")+""" elif name=='t02':
+  from .width_stage_constraints import require_t02
+  store=p.Store(run/'runtime');width_proof=require_t02(store,p.load(run/'t04.json')['output_scene_ref'],value)
+  if width_proof is not None:value=dict(value,t04_width_fence=width_proof)
+"""
+ if before.count(old)!=1 or after.count(new)!=1 or ast.dump(ast.parse(before),include_attributes=False)!=ast.dump(ast.parse(after.replace(new,old)),include_attributes=False):raise ValueError('LEGACY_T02_ATTRIBUTION_DELTA_NOT_ISOLATED')
+
 def prove_no_retained_partials(old,stages):
  # Inspect every retained stage-entry/output scene, not only raw source rows.
  # The changed registration branch is unreachable in all retained operations.
@@ -79,6 +92,10 @@ def inspect(old,through):
   if sha(name)!=expected:raise ValueError('LEGACY_ORIGINAL_PRODUCER_OR_INPUT_CHANGED:'+name)
  if sha(old/'source.json')!=binding['source_binding_sha256']:raise ValueError('LEGACY_ORIGINAL_SOURCE_BINDING_CHANGED')
  keys=[];files={'source.json',*(stage+'.json'for stage in stages)}
+ if 't04'in stages:
+  raw=load(old/'RAW_WIDTH_CHECKPOINT.json');final=load(old/'t04.json')
+  if raw!={k:v for k,v in final.items()if k not in('t04_width_fence','pin_separation')}:raise ValueError('LEGACY_RAW_WIDTH_CHECKPOINT_CHANGED')
+  files.add('RAW_WIDTH_CHECKPOINT.json')
  for stage in stages:
   proofs=[load(old/'audits'/stage/(m+'.json'))for m in('construct','1','2')]
   if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]or proofs[0]['status']!='PASS'or proofs[0]['producer_binding_sha256']!=(inherited['original_producer_binding_sha256']if stage in inherited_stages else producer_sha) or proofs[0]['candidate_sha256']!=sha(old/(stage+'.json')):raise ValueError('LEGACY_PREFIX_STAGE_PROOF_CHANGED:'+stage)
@@ -128,8 +145,10 @@ def inspect(old,through):
   elif relative=='src/source_junction_paths.py':
    if original_routes(file,scene['objects'])!=original_routes(current,scene['objects']):raise ValueError('LEGACY_PREFIX_SOURCE_ROUTES_CHANGED')
   elif relative=='src/gerber_u05/worker.py':
-   from .width_adoption import worker_same
-   worker_same(file.read_text(),current.read_text())
+   if through in('t03','t04'):t02_attribution_worker_delta_only(file.read_text(),current.read_text())
+   else:
+    from .width_adoption import worker_same
+    worker_same(file.read_text(),current.read_text())
   elif relative=='src/component_clearance.py'and through in('t02','t05'):
    partial_reload_delta_only(file.read_text(),current.read_text());prove_no_retained_partials(old,stages)
   elif relative=='src/gerber_u05/component_stages.py'and through in('t02','t05'):
@@ -153,7 +172,9 @@ def inspect(old,through):
   changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual))
  from .guard import producer_files
  extras={file.relative_to(ROOT).as_posix()for file in producer_files()}-known
- if extras-{'src/gerber_u05/legacy_prefix.py','src/gerber_u05/width_adoption.py','src/partial_pocket_remedy.py','SOURCE_REVISION.json'}:raise ValueError('LEGACY_PREFIX_UNDECLARED_PRODUCER')
+ allowed_extras={'src/gerber_u05/legacy_prefix.py','src/gerber_u05/width_adoption.py','src/partial_pocket_remedy.py','SOURCE_REVISION.json'}
+ if through in('t03','t04'):allowed_extras.add('src/gerber_u05/width_stage_constraints.py')
+ if extras-allowed_extras:raise ValueError('LEGACY_PREFIX_UNDECLARED_PRODUCER')
  return dict(schema='verified-legacy-native-prefix/1',through=through,stages=list(stages),retained_operation_count=len(keys),original_run=str(old),original_source_root=str(original_root),original_source_roots=sorted(set(source_roots)),original_producer_binding_sha256=producer_sha,source_binding_sha256=binding['source_binding_sha256'],source_sha256=source['source_ref']['sha256'],original_checks={key:records[key]for key in keys},files={name:sha(old/name)for name in sorted(files)},code_dependency_changes=changes,original_route_completion='NOT_CLAIMED; only completed prefix operations retained')
 
 def verify(run):
@@ -203,7 +224,7 @@ def main():
  parser=argparse.ArgumentParser();parser.add_argument('--input-dir',required=True,type=Path);parser.add_argument('--gerber',required=True);parser.add_argument('--retained-legacy-run',required=True,type=Path);parser.add_argument('--through',required=True,choices=['t03','t04','t02','t05']);args=parser.parse_args()
  if not args.input_dir.is_absolute():parser.error('explicit absolute input directory required')
  prefix=inspect(args.retained_legacy_run,args.through)
- if load(args.retained_legacy_run.parent/'STATUS.current.json')['status']=='HALTED'and not any(row['path']in{'src/gerber_u05/pipeline.py','src/source_junction_paths.py','src/u05_board/coverage.py','src/gerber_u05/reference_recipe.py','src/gerber_u05/legacy_export.py','src/component_clearance.py','src/t04_incremental.py'}for row in prefix['code_dependency_changes']):raise ValueError('SAME_IMPLEMENTATION_FAILED_JOB_CANNOT_RETRY')
+ if load(args.retained_legacy_run.parent/'STATUS.current.json')['status']=='HALTED'and not any(row['path']in{'src/gerber_u05/pipeline.py','src/source_junction_paths.py','src/u05_board/coverage.py','src/gerber_u05/reference_recipe.py','src/gerber_u05/legacy_export.py','src/component_clearance.py','src/t04_incremental.py','src/gerber_u05/worker.py'}for row in prefix['code_dependency_changes']):raise ValueError('SAME_IMPLEMENTATION_FAILED_JOB_CANNOT_RETRY')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental_legacy';parent.mkdir(exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=IncrementalCoordinator(job,args.retained_legacy_run,args.through)
  try:coordinator.generate(args.input_dir,args.gerber)
  except BaseException as error:
