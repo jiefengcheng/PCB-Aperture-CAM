@@ -1,0 +1,31 @@
+"""Actual point-contact export regression; no qualified growth is recomputed."""
+import hashlib,json
+from pathlib import Path
+import pytest
+from shapely import from_wkb
+from shapely.geometry import box
+from src.gerber_u05 import exporter as e,pipeline as p
+
+def fixture():
+ folder=Path(__file__).with_name('fixtures')/'encoding_owner_overlap'
+ manifest=json.loads((folder/'MANIFEST.json').read_bytes());values={}
+ for name,sha in manifest['files'].items():
+  body=(folder/(name+'.wkb')).read_bytes()
+  assert hashlib.sha256(body).hexdigest()==sha
+  values[name]=from_wkb(body)
+ return values
+
+def test_actual_grid_point_contacts_join_using_existing_owner_only(tmp_path):
+ g=fixture()
+ assert g['encoded_owner'].union(e.native_grid(g['region'])).geom_type=='MultiPolygon'
+ region,proof=e.owner_encoding_overlap(g['region'],g['owner'],g['domain'])
+ assert all(v==0 for v in proof['metrics'].values())
+ store=p.Store(tmp_path/'store');rows=[];blocks=[]
+ parents=e.append_regions(region,'t05','route:JR-d768923fe90277e2',rows,blocks,store)
+ material=g['encoded_owner'].union(p.unary_union(parents))
+ assert material.is_valid and material.geom_type=='Polygon'
+ assert e.preserve_point_contacts(g['encoded_owner'],parents,'retained',rows,blocks,store)==[]
+
+def test_encoding_overlap_rejects_copper_outside_domain():
+ with pytest.raises(ValueError,match='EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER'):
+  e.owner_encoding_overlap(box(0,0,1,1),box(-1,-1,2,2),box(0,0,.5,.5))

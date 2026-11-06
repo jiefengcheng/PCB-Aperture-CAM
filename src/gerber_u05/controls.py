@@ -15,7 +15,13 @@ install_read_fence(run.parent);e.verify_sources(run);folder=run/'negative_contro
 proofs=[p.load(run/'export'/('proof_'+m+'.json'))for m in('1','2')]
 if p.canonical(proofs[0])!=p.canonical(proofs[1])or proofs[0]['status']!='PASS':raise ValueError('PAIRED_NATIVE_PROOFS_REQUIRED')
 body=(run/'export/top.art.gbr').read_bytes();ledger=p.load(run/'export/ledger.json');raw=store.get(binding['source_ref'],kind='gerber-source');original,_,_=p.source_profile.parse_source(raw);n=len(original.objects);source=p.affine_scale(p.source_profile.ordered((p.source_profile.object_geometry(o)[0],o.polarity_dark)for o in original.objects),1,-1,origin=(0,0));actual=e.parse(body);observed={}
-for obj,row in zip(actual.objects[n:],ledger['records']):observed.setdefault(row['source_id'],[]).append(p.affine_scale(p.source_profile.object_geometry(obj)[0],1,-1,origin=(0,0)))
+if p.digest(body)!=proofs[0]['generated_sha256']or len(actual.objects)!=n+proofs[0]['appended_positive_regions']:raise ValueError('CONTROL_BASELINE_BYTES_CHANGED')
+material=proofs[0]['native_material_assembly']
+if material['status']!='EXACT_PARSED_NATIVE_MATERIAL'or len(material['material_parents'])!=material['parents']:raise ValueError('CONTROL_BASELINE_MATERIAL_PROOF_CHANGED')
+# The same exact parsed-parent proof used by the positive verifier and the
+# remaining-defect audit defines the baseline copper. Re-unioning unwelded
+# triangles here would reintroduce artificial seams before testing a corruption.
+for row in material['material_parents']:observed.setdefault(row['source_id'],[]).append(p.geometry(store,row['geometry_ref']))
 groups=decoded_groups(source,observed);whole=joined(list(groups.values()));results=[]
 def expect(name,fn,reason,payload):
  (folder/(name+'.gbr')).write_bytes(payload);started=time.monotonic()

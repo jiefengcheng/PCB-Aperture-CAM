@@ -1,5 +1,5 @@
 from .contours import contours as serializable_contours
-from .export_absorption import prepare_export_region
+from .export_absorption import prepare_export_region as base_prepare_export_region
 from .native_spindle_operand import operand as native_spindle_operand
 """Gerber-only serialization: retain original atoms, append qualified positive copper."""
 import collections,copy,json,os,re,sys,math
@@ -36,12 +36,35 @@ from src.pcb_data_abi.board_geometry import bridge_contour
 from src.native_grid_reference import reference as export_reference,normalize as native_grid,fidelity
 from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM,GRID_MM
 from src.indexed_hausdorff import distance as image_hausdorff
-from src.u05_board.export import export_region,actual_spindle_check
+from src.u05_board.export import export_region,actual_spindle_check,NATIVE_OWNER_OVERLAP_MM
 from src.junction_spindle_stage import prepare_spindle_context
 from src.junction_spindle_blend import spindle_blend
 from src.u05_board.attachment_export import obligation_check
 
 ORDER=['t01','t03','t04','t02','t05']
+
+def owner_encoding_overlap(region,owner,domain):
+    """Duplicate existing copper only; preserve the qualified physical union."""
+    from src.junction_spindle_stage import CONTRACT
+    radius=NATIVE_OWNER_OVERLAP_MM/2
+    support=owner.intersection(region.buffer(radius,quad_segs=64)).intersection(domain).difference(region)
+    candidate=region.union(support)
+    metrics=dict(support_outside_owner_mm2=support.difference(owner).area,
+                 region_missing_mm2=region.difference(candidate).area,
+                 physical_delta_mm2=owner.union(candidate).symmetric_difference(owner.union(region)).area,
+                 outside_domain_mm2=candidate.difference(domain).area)
+    if (candidate.is_empty or not candidate.is_valid or candidate.geom_type not in('Polygon','MultiPolygon')
+        or any(not math.isfinite(v)or v>CONTRACT.area_epsilon_mm2 for v in metrics.values())):
+        raise ValueError('EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER')
+    return candidate,dict(mode='ENCODING_ONLY_EXISTING_OWNER_OVERLAP',radius_mm=radius,
+                          epsilon_mm2=CONTRACT.area_epsilon_mm2,metrics=metrics)
+
+def prepare_export_region(store,value,adapter,owner,domain,decision,foreign):
+    region,receipt=base_prepare_export_region(store,value,adapter,owner,domain,decision,foreign)
+    if isinstance(receipt,dict)and receipt.get('support_assembly')=='EXACT_ADDITION_WITHOUT_REDUNDANT_SUPPORT':
+        region,proof=owner_encoding_overlap(region,owner,domain)
+        receipt=dict(receipt,encoding_owner_overlap=proof)
+    return region,receipt
 
 def canonical_base(raw):
     text,_,oracle=p.source_profile.normalize(raw);out=[];fields=0
@@ -68,7 +91,7 @@ def parse(raw):
     return g
 
 def append_regions(shape,stage,sid,records,blocks,store):
-    qualified=shape
+    qualified=shape;material_parents=[]
     # Nominal nearest-grid contours: inward padding changes overlap topology.
     # Construction margins remain in the source-stage proofs; actual native
     # clearance is checked separately against the production hard floor.
@@ -89,6 +112,10 @@ def append_regions(shape,stage,sid,records,blocks,store):
         if piece.is_empty or piece.area<=0:raise ValueError('INVALID_EXPORT_COMPONENT')
         reference,proof=export_reference(piece)
         serialized,partition_proof=serializable_contours(reference,bridge_contour,grid_mm=GRID_MM)
+        # Contact/owner decisions use the material whose exact integer-boundary
+        # partition was just proved, rather than re-unioning unwelded triangles.
+        # Every serialized positive face is still written and reparsed below.
+        material_parents.append(canonical_parent(reference,grid_mm=GRID_MM))
         for part_index,(q,points)in enumerate(serialized):
             points=points+[points[0]]
             xy=[(round(x*1e6),round(-y*1e6))for x,y in points]
@@ -98,6 +125,7 @@ def append_regions(shape,stage,sid,records,blocks,store):
             serialized_reference,serialized_proof=export_reference(q)
             component_proof=dict(serialized_proof,partition_parent_reference_proof=proof,serialization_partition=partition_proof,serialization_part=part_index)
             blocks.append('\n'.join(block)+'\n');records.append(dict(stage=stage,source_id=sid,geometry_ref=p.geomref(store,q),reference_ref=p.geomref(store,serialized_reference),raw_qualified_ref=raw_ref,normalization=normalization,component_reference_proof=component_proof))
+    return material_parents
 
 
 def preserve_point_contacts(owner,pieces,sid,records,blocks,store):
@@ -126,7 +154,7 @@ def construct(run):
         value=p.load(run/(stage+'.json'));scene=store.get_json(value['output_scene_ref'],kind='scene');rows,after,_=p.operands(store,scene)
         for sid,g in sorted(after.items()):
             if sid not in current or p.to_wkb(g)!=p.to_wkb(current[sid]):
-                first=len(records);append_regions(g,stage+'_finish'if rows[sid]['kind']=='component_remedy'else stage,sid,records,blocks,store);parts=[p.geometry(store,row['geometry_ref'])for row in records[first:]];encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parts])
+                parents=append_regions(g,stage+'_finish'if rows[sid]['kind']=='component_remedy'else stage,sid,records,blocks,store);encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parents])
         current=after
     value=p.load(run/'t05.json');prepared=store.get_json(value['plan']['scene_ref'],kind='scene');policy=store.get_json(value['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']))
     objects={row['source_id']:row for row in prepared['objects']}
@@ -135,11 +163,11 @@ def construct(run):
         if row['kind']!='component_remedy':continue
         g=p.geometry(store,row['geometry_ref'])
         if sid not in current or p.to_wkb(g)!=p.to_wkb(current[sid]):
-            first=len(records);append_regions(g,'t05_floor',sid,records,blocks,store);parts=[p.geometry(store,row['geometry_ref'])for row in records[first:]];encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parts]);current[sid]=g
+            parents=append_regions(g,'t05_floor',sid,records,blocks,store);encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parents]);current[sid]=g
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_export_region(store,value,adapter,owner,domain,d,foreign);first=len(records);append_regions(region,'t05',d['source_id'],records,blocks,store)
-        own=adapter.owner_for_route(d['source_id']);encoded_owner=cc.ACTIVE.project(encoded_current)[own];pieces=[p.geometry(store,row['geometry_ref'])for row in records[first:]];preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store)
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_export_region(store,value,adapter,owner,domain,d,foreign);parents=append_regions(region,'t05',d['source_id'],records,blocks,store)
+        own=adapter.owner_for_route(d['source_id']);encoded_owner=cc.ACTIVE.project(encoded_current)[own];preserve_point_contacts(encoded_owner,parents,d['source_id'],records,blocks,store)
     adapter.close()
     final=store.get_json(value['output_scene_ref'],kind='scene');finalrows={r['source_id']:r for r in final['objects']}
     for fill in value['intra']['fills']:
@@ -196,7 +224,7 @@ def native_model_reference(run,store,before,*,include_parents=False):
     return expected,proof
 
 
-from .native_assembly import assemble as assemble_native_material,weld as weld_native_material
+from .native_assembly import assemble as assemble_native_material,weld as weld_native_material,canonical_parent
 
 def canonical_source_image(raw):
     base,_=canonical_base(raw);parsed=parse((base+'M02*\n').encode('ascii'))
