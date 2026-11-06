@@ -532,3 +532,35 @@ The owner requested a full remaining clearance-literal sweep into shared
 constants after this rung; preserve geometry dimensions, recognition tolerances
 and historical evidence. Once whole-board qualification passes, no additional
 crop test is required for this rung.
+
+## Integrated Gerber-only U05 baseline — 2026-11-06
+
+The owner authorized immediate integration of the consolidated U05 revisions and
+collection of the completed recovery work. The active integration branch is
+`codex/u05-reproducible-batch`; code checkpoint `d0355a4` is installed in this app
+checkout. See `docs/U05_INTEGRATION_CHECKPOINT_20261106.md` and the external
+`out/lacie_work/evidence/u05_reproducible_batch_20261106/APP_INTEGRATION_313/HANDOFF.md`
+for source, tests, pending customer jobs and resumable work.
+
+For an explicitly selected Gerber-only input, use
+`tools/Run_Gerber_U05.command --input-dir "<absolute raw directory>" --gerber "<selected Gerber filename>"`.
+This fresh source-only route keeps all original 44 operations and adds three
+native source-assembly operations. It does not substitute for the distinct
+KiCad/native operator routes or their audit modes. No KiCad file is required or
+invented. Only the selected generated Gerber and final_render.png are delivered
+to a fresh sibling directory; intact companion files are not copied.
+
+The client confirmed that an illustrative outer trace enclosing artwork must be
+removed from generated Gerber. This supersedes the earlier preserve-frame
+export decision for new jobs. Original client files remain immutable; removal
+requires a source certificate and proof that every retained native plotting atom
+is unchanged. Do not silently retain a known outer enclosure when recognition
+is unresolved, or remove arbitrary functional copper. Source pad/trace joints
+remain integral; distinct channels cannot gain a clearance exemption by a new
+bridge. Keep every native check, source-hole protection, cumulative remedy limit,
+failed receipt and the explicit unwaived .DS_Store custody findings.
+
+The completed recovery implementation is already included. Do not reopen that
+study merely to continue client feedback. Retain its recorded scope boundaries.
+The eleven-board batch remains unfinished; neither this integration nor a
+presentation approval establishes final board or manufacturing acceptance.

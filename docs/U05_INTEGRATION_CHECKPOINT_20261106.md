@@ -33,8 +33,9 @@ only the selected generated Gerber and final_render.png to a new sibling folder.
 - Installed app source: 435 focused regression tests passed, including the
   deployment correction that rejects historical-evidence reads when the source
   root encloses out/lacie_work/evidence.
-- Frozen candidate305: the complete synthetic route passed 47 operations,
+- Installed app and frozen candidate305: each complete synthetic route passed 47 operations,
   including all eight actual-Gerber corruption controls and the final render.
+  The two actual Gerbers are byte-identical (SHA-256 e6cb7978cc948cd7c3c17b0ae7f53ef11cab493e617daa71922335025ddfbf07).
 - The deployment read-fence correction changes access authority only; the
   customer geometry workers continue using their immutable candidate305 source.
 - Three fresh customer runs (3020212922, 3020212956, 3020212849) are in progress.

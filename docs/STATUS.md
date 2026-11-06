@@ -1,3 +1,17 @@
+# Current app integration — 2026-11-06
+
+The consolidated working branch is `codex/u05-reproducible-batch`, with U05 code
+checkpoint `d0355a4` installed and pushed. The app passed 435 focused regressions
+and the complete 47-operation synthetic route, including all eight actual-Gerber
+corruptions; its Gerber is byte-identical to frozen candidate305's result.
+Completed recovery code has been checked and is already included. Customer-board
+qualification and the remaining eleven-board batch are still in progress.
+
+See [integration checkpoint](U05_INTEGRATION_CHECKPOINT_20261106.md) and the
+external `out/lacie_work/evidence/u05_reproducible_batch_20261106/APP_INTEGRATION_313/HANDOFF.md`
+for current evidence, unfinished findings and client-feedback handoff. Historical
+status sections below remain unchanged.
+
 # V1 decision — 2026-10-14
 
 Current additive delivery (2026-10-18): the bounded R140 common catalogue and preliminary **Discovery / Grouping / Storage & indexes / Selective export** visualization are implemented. The local-server diagnostic download resolves selected records read-only, retaining parents and qualification/relationship evidence. See [STORAGE_THEMES_COMPLETION.md](catalogue/STORAGE_THEMES_COMPLETION.md). This does not alter any frozen V1/V1.5/V2 decision below.
