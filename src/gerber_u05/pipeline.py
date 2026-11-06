@@ -21,6 +21,7 @@ from src.source_junction_paths import junction_source_paths
 from src.parallel_trace_relations import parallel_relation,relation_groups
 from src.source_offset_width import FAMILY as OFFSET_FAMILY
 from src.native_inventory import steps,ERROR_MM
+from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM
 from src.u02_board.adapter import pair_check
 from src.u04_board.search import FastRectangleAdapter
 from .component_rectangles import ComponentRectangleAdapter as FastRectangleAdapter
@@ -52,10 +53,11 @@ def save(path,value):
     path.write_bytes(canonical(value))
 def load(path):return json.loads(Path(path).read_bytes())
 def bounds(scene):return dict(max_source_objects=max(10000,len(scene['objects'])*3),max_targets=max(10000,len(scene['objects'])*3),max_evaluations=200000,max_output_bytes=1024**3,max_seconds=3600)
-def offset_part(core,minimum_width,factor,envelope=False):
+def offset_part(core,minimum_width,factor,envelope=False,*,extra_envelope_mm=0.):
     if type(factor)not in(float,int)or not math.isfinite(factor)or not 1<=factor<=1.5 or not math.isfinite(minimum_width)or minimum_width<=0:raise ValueError('SOURCE_OFFSET_SCALAR_OR_WIDTH_INVALID')
+    if extra_envelope_mm not in(0.,2*POLYGON_TOLERANCE_MM)or(extra_envelope_mm and not envelope):raise ValueError('CHECKING_ONLY_NATIVE_HEADROOM_REQUIRED')
     delta=minimum_width*(factor-1)/2;q=2*steps(minimum_width*.5/2)
-    g=core if factor==1 else core.buffer(delta+(ERROR_MM if envelope else 0.),quad_segs=q)
+    g=core if factor==1 else core.buffer(delta+(ERROR_MM+extra_envelope_mm if envelope else 0.),quad_segs=q)
     if not g.is_valid or not g.covers(core):raise ValueError('SOURCE_OFFSET_CORE_OR_GEOMETRY_CHANGED')
     return g
 def operands(store,scene):
@@ -231,6 +233,8 @@ def run_t02(store,scene):
         source_scene=store.get_json(binding['scene_ref'],kind='scene');source_rows,source_current,_=operands(store,source_scene);parsed,_,_=source_profile.parse_source(raw)
         physical=affine_scale(source_profile.ordered((source_profile.object_geometry(obj)[0],obj.polarity_dark)for obj in parsed.objects),1,-1,origin=(0,0))
         ownership.ACTIVE=ownership.Context(physical,binding['source_ref']['sha256'],source_current)
+        from .checking_envelopes import initialize as initialize_checking
+        initialize_checking(store,binding,scene,physical=ownership.ACTIVE)
     try:
         adapter=FastRectangleAdapter('t02');scene_ref=store.put_json('scene',scene);policy=dict(stage='t02',parameters=land_parameters('t02'));details=adapter.plan(store,scene,policy,dict(stage='t02',scene_ref=scene_ref,source_ids=ids),bounds(scene));plan=dict(stage='t02',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details);candidate=adapter.run(store,scene,policy,plan,lambda _:None);check=adapter.verify(store,scene,policy,plan,candidate,dict(scope='complete-source-land-and-inclusive'),lambda _:None)
         if not check['passed']:raise ValueError('T02_RECONSTRUCTION_FAILED')

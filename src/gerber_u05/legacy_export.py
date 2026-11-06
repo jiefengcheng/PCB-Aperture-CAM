@@ -316,6 +316,17 @@ def check(run,body,ledger):
         owned,proof=current_legacy_channels(functional,store,binding,[p.load(run/(stage+'.json'))for stage in ORDER],body,ledger,result)
         if proof['status']!='PASS':raise ValueError('NATIVE_LEGACY_FUNCTIONAL_CHANNEL_CHECK_FAILED:'+str(proof['physical_clearance']['failures'][:3]))
         result['functional_channels']=dict(proof,owned_geometry_refs={o:p.geomref(store,g)for o,g in owned.items()},channel_certificate_sha256=p.digest(p.canonical(functional.certificate)))
+    if (run/'LEGACY_REFERENCE_JOB.json').exists():
+        from .checking_envelopes import install,check_native
+        if functional is not None:checking_context=functional
+        else:
+            from src.component_clearance import Context
+            source_scene=store.get_json(binding['scene_ref'],kind='scene');_,source_material,_=p.operands(store,source_scene)
+            checking_context=Context(before,binding['source_ref']['sha256'],source_material)
+            from src.component_voids import parts
+            owned={checking_context.index.membership(g)[0]:g for g in parts(after)}
+        install(checking_context,store,binding,run)
+        result['checking_envelope_clearance']=check_native(checking_context,owned,p.CONSTRUCTION_GAP_MM)
     return result
 
 if __name__=='__main__':

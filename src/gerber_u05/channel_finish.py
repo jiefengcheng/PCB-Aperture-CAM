@@ -50,7 +50,8 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
   current=joined(list(owned.values()));reserved={i:scope.reserved[o]for i,o in enumerate(source_channels)if o in scope.reserved}
   def progress(r):
    if r['component']%32==0:print(p.canonical(dict(stage=stage+'_channel_inclusive',radius_mm=contract.notch_radius_mm,**r)).decode(),flush=True)
-  report,fills,expected=plan(source,current,contract,checkpoint=progress,reserved=reserved,partial_strategy=policy['settings'].get('large_pocket_strategy'),approved_partials=partials);partials=report.get('approved_partial_pockets',partials);current_parts=parts(current);mapping=[scope.index.membership(g)for g in current_parts]
+  from .checking_envelopes import indexed
+  report,fills,expected=plan(source,current,contract,checkpoint=progress,reserved=reserved,partial_strategy=policy['settings'].get('large_pocket_strategy'),approved_partials=partials,clearance_only=indexed(scope,source_parts));partials=report.get('approved_partial_pockets',partials);current_parts=parts(current);mapping=[scope.index.membership(g)for g in current_parts]
   if any(len(ids)!=1 for ids in mapping):raise ValueError('CURRENT_FUNCTIONAL_CHANNEL_PARTITION_CHANGED')
   channels=[ids[0]for ids in mapping]
   for spec in partials:
@@ -68,7 +69,7 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
     report.setdefault('native_pin_encoding_rejections',[]).append(dict(status='KEEP_PROTECTED_PIN_ENCODING',check=pin_check));continue
    proposals[channel].append(region);counts[item['kind']]+=1;area[channel]+=patch.area
   for channel,regions in sorted(proposals.items()):
-   combined=joined([*([aggregates[channel]]if channel in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in owned.items()if o!=channel]+[('reserved:'+o,g)for o,g in scope.reserved.items()if o!=channel];combined,receipt=absorb(combined,owned[channel],scope.cores[channel],foreign,contract);
+   combined=joined([*([aggregates[channel]]if channel in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in owned.items()if o!=channel]+[('reserved:'+o,g)for o,g in scope.reserved.items()if o!=channel]+[('checking-envelope:'+o,g)for o,g in getattr(scope,'checking_envelopes',{}).items()if o!=channel];combined,receipt=absorb(combined,owned[channel],scope.cores[channel],foreign,contract);
    from src.growth_remedy_constraints import require_remedy
    require_remedy(combined,owned[channel],scope='absorbed_remedy')
    aggregates[channel]=combined;absorptions.append(dict(original_channel_id=channel,radius_mm=contract.notch_radius_mm,**receipt));native=[canonical_parent(export_reference(g)[0],grid_mm=GRID_MM)for g in parts(native_grid(combined))];owned[channel]=owned[channel].union(joined(native))

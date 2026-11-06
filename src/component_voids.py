@@ -146,7 +146,7 @@ def foreign_bounded_pocket(parent,owner,original,foreign,contract,parent_check,p
     return candidate,check,assembled
 
 
-def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,reserved=None,partial_strategy=None,approved_partials=None):
+def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,reserved=None,partial_strategy=None,approved_partials=None,clearance_only=None):
     contract.validate();originals,grown,mapping=components(source,current,contract)
     records=[];accepted=[];frozen=list(grown);tree=STRtree(grown);partial_specs=list(approved_partials or [])
     from src.partial_pocket_remedy import STRATEGY,propose,protected,corresponds
@@ -154,6 +154,8 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
     if partial_specs and partial_strategy!=STRATEGY:raise ValueError('PARTIAL_POCKET_POLICY_REQUIRED_FOR_FROZEN_OPENINGS')
     reserved={}if reserved is None else reserved
     reserve_ids=sorted(reserved);reserve_tree=STRtree([reserved[j]for j in reserve_ids])
+    clearance_only={}if clearance_only is None else clearance_only
+    checking_ids=sorted(clearance_only);checking_tree=STRtree([clearance_only[j]for j in checking_ids])
     from src.stage_abi.loaded_geometry import GeometryMemo
     memo=GeometryMemo(sha(source)+sha(current)+repr(contract))
     for index,(owner,j) in enumerate(zip(grown,mapping)):
@@ -203,6 +205,11 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
             nearby=[(int(k),frozen[int(k)])for k in tree.query(patch.buffer(contract.construction_gap_mm+contract.file_uncertainty_mm+.001))if int(k)!=index]
             nearby.extend(('reserved:'+str(reserve_ids[int(k)]),reserved[reserve_ids[int(k)]])for k in reserve_tree.query(patch.buffer(contract.construction_gap_mm+contract.file_uncertainty_mm+.001))if reserve_ids[int(k)]!=j)
             raw_patch=patch
+            checking=[('checking-envelope:'+str(checking_ids[int(k)]),clearance_only[checking_ids[int(k)]])for k in checking_tree.query(raw_patch.buffer(contract.construction_gap_mm+contract.file_uncertainty_mm+.001))if checking_ids[int(k)]!=j]
+            if any(exact_distance(raw_patch,g)+1e-12<contract.construction_gap_mm for _,g in checking):
+                records.append(dict(kind=kind,owner=index,source_component=j,patch_sha256=sha(raw_patch),area_mm2=raw_patch.area,bounds_mm=list(raw_patch.bounds),status='KEEP_ENTIRE_FILL_CHECKING_ENVELOPE',check=dict(passed=False,reasons=['T04_CHECKING_ENVELOPE_CLEARANCE'],role='CLEARANCE_ONLY_NOT_COPPER_NOT_MINIMUM_FLOOR')))
+                continue
+            nearby.extend(checking)
             from src.growth_remedy_constraints import remedy as pin_remedy
             pin_check=pin_remedy(raw_patch,owner)
             if pin_check is not None and not pin_check['passed']:

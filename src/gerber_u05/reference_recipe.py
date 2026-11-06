@@ -68,6 +68,14 @@ def compute(run):
    owned={o:p.geometry(legacy_store,ref)for o,ref in native['owned_geometry_refs'].items()};q=check_owned(scope,owned)
    if not q['passed']:raise ValueError('REFERENCE_BASELINE_FUNCTIONAL_CLEARANCE_FAILED')
    functional_state.update(scope=scope,owned=owned)
+  from .checking_envelopes import install
+  if 'scope'in functional_state:checking_context=functional_state['scope']
+  else:
+   from src.component_clearance import Context
+   _,original_material,_=p.operands(legacy_store,source_scene)
+   checking_context=Context(source,binding['source_ref']['sha256'],original_material)
+  install(checking_context,legacy_store,binding,legacy)
+  functional_state['checking_context']=checking_context
   return source,current,body,len(baseline.objects),proofs[0]
 
  def construct(store):
@@ -76,10 +84,11 @@ def compute(run):
    if r['component']%16==0:print(json.dumps(dict(operation='local_plan',progress=r)),flush=True)
   original_store=p.Store(legacy/'runtime');binding=p.load(legacy/'source.json');scene=original_store.get_json(binding['scene_ref'],kind='scene');source_support=ContactSupport([dict(id=r['source_id'],original=p.geometry(original_store,r['original_ref']),width_mm=r['metadata'].get('original_width_mm',0.))for r in scene['objects']],policy_snapshot['clearance_resolved']['contact_buffer_mm'])
   planning_source=source;planning_current=current
-  if functional_state:
+  if 'scope'in functional_state:
    scope=functional_state['scope'];planning_source=scope.channels.analytic_source;planning_current=joined(list(functional_state['owned'].values()))
-  report,fills,raw_expected=plan(planning_source,planning_current,contract,checkpoint=progress,source_support=source_support,partial_strategy=policy_snapshot.get('large_pocket_strategy'))
-  if functional_state:
+  from .checking_envelopes import indexed
+  report,fills,raw_expected=plan(planning_source,planning_current,contract,checkpoint=progress,source_support=source_support,partial_strategy=policy_snapshot.get('large_pocket_strategy'),clearance_only=indexed(functional_state['checking_context'],parts(planning_source)))
+  if 'scope'in functional_state:
    scope=functional_state['scope'];source_channels=[scope.index.membership(g)[0]for g in parts(planning_source)];current_channels=[scope.index.membership(g)[0]for g in parts(planning_current)];functional_state.update(source_channels=source_channels,current_channels=current_channels)
    from src import component_clearance
    from src.source_channel_scope import physical_owner
@@ -120,7 +129,7 @@ def compute(run):
   return body,ledger,source,current,expected,native_parents,native_parent_owners
 
  def semantic(source,current,actual_shapes,ledger):
-  if functional_state:source=functional_state['scope'].channels.analytic_source;current=joined(list(functional_state['owned'].values()))
+  if 'scope'in functional_state:source=functional_state['scope'].channels.analytic_source;current=joined(list(functional_state['owned'].values()))
   originals,owners,mapping=components(source,current,contract);grouped=collections.defaultdict(list)
   for shape,row in zip(actual_shapes,ledger['records']):grouped[row['owner']].append(shape)
   checks=[];tree=STRtree(owners);effective={};inherited_kept=0
@@ -183,7 +192,7 @@ def compute(run):
    if share>contract.maximum_shortage:raise ValueError('NATIVE_PARTIAL_POCKET_CUMULATIVE_CAP_EXCEEDED')
    partial_checks.append(dict(pocket_id=spec['pocket_id'],native_added_area_mm2=physical_added,native_share=share,maximum_share=contract.maximum_shortage))
   functional_sidecar=None
-  if functional_state:
+  if 'scope'in functional_state:
    from .channel_material import check_owned
    scope=functional_state['scope'];owned=dict(functional_state['owned'])
    for g,row in zip(material,owner_rows):
@@ -191,13 +200,18 @@ def compute(run):
    channel_check=check_owned(scope,owned)
    if not channel_check['passed']:raise ValueError('REFERENCE_NATIVE_FUNCTIONAL_CLEARANCE_FAILED:'+str(channel_check['failures'][:3]))
    functional_sidecar=dict(schema='actual-native-channel-reservation/1',status='PASS',source_sha256=scope.source_hash,generated_sha256=p.digest(body),channel_certificate_sha256=p.digest(p.canonical(scope.certificate)),owned_geometry_refs={o:p.geomref(store,g)for o,g in owned.items()},approved_partial_pockets=partials,native_channel_check=channel_check,native_material_proof_sha256=p.digest(p.canonical(material_proof)))
+  else:
+   checking_context=functional_state['checking_context']
+   owned={checking_context.index.membership(g)[0]:g for g in parts(after)}
+  from .checking_envelopes import check_native
+  checking_proof=check_native(functional_state['checking_context'],owned,contract.construction_gap_mm)
   from src import pin_separation as pin
   if pin.ACTIVE is not None:
    pin.ACTIVE.require(after,finished=True,scope='reference_native')
    if functional_sidecar is not None:functional_sidecar['pin_separation_state']=pin.ACTIVE.state(store)
   src,final_parts,mapping=components(source,after,contract);new_holes=[];subresolution=0;retained_partial=[]
   inventory_parts=final_parts;inventory_sources=src;inventory_mapping=mapping
-  if functional_state:
+  if 'scope'in functional_state:
    inventory_sources=parts(functional_state['scope'].channels.analytic_source);inventory_parts=parts(joined(list(owned.values())));_,_,inventory_mapping=components(joined(inventory_sources),joined(inventory_parts),contract)
   for part,j in zip(inventory_parts,inventory_mapping):
    old_void=joined(holes(inventory_sources[j]))
@@ -213,6 +227,7 @@ def compute(run):
   if sorted(retained_partial)!=sorted(s['pocket_id']for s in partials):raise ValueError('NATIVE_PARTIAL_POCKET_REMAINDER_MISSING')
   store.verify_reads();guard();result=dict(status='PASS',generated_sha256=p.digest(body),baseline_sha256=p.digest(base),plan_sha256=p.digest(p.canonical(ledger['plan'])),source_objects_preserved=p.load(legacy/'source.json')['source_objects'],baseline_objects_preserved=n,baseline_clear_operations_preserved=p.load(legacy/'source.json')['clear_operations'],appended_regions=len(shapes),decisions=dict(collections.Counter(r['kind']+':'+r['status']for r in ledger['plan']['records'])),actual_addition_check=addition_check,all_native_contours_pass=all(r['passed']for r in contours),contours=contours,hard_gap_mm=contract.hard_gap_mm,owner_allowance_consumed=False,components_preserved=len(after_parts),actual_predecessor_missing_area_mm2=current.difference(after).area,actual_original_source_missing_area_mm2=source.difference(after).area,auxiliary_file_grid_topology=auxiliary_topology,inherited_source_holes_retained=addition_check['inherited_source_holes_retained'],new_resolvable_holes=len(new_holes),subresolution_holes=subresolution,approved_partial_pocket_remainders=partial_checks,native_model_reference=ledger['native_model_reference'],native_material_assembly=material_proof,raw_boolean_model_comparison=dict(symmetric_difference_mm2=raw_area,area_bound_mm2=raw_bound,role='Raw decision image; native boundary fidelity uses independent file-grid model reference'),whole_native_reference=dict(hausdorff_mm=gap,symmetric_difference_mm2=area,area_bound_mm2=bound,metric=metric),added_remedy_area_mm2=after.difference(current).area,original_area_mm2=source.area,final_area_mm2=after.area,limitations='Predecessor five geometry stages/two fresh export proofs retained unchanged. This is a new additive-stage export/reparse proof, not external independent or manufacturing review.')
 
+  result['checking_envelope_clearance']=checking_proof
   if functional_sidecar is not None:result['functional_channels']=functional_sidecar
   return result
 

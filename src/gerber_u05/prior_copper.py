@@ -38,6 +38,11 @@ class CoverageAdapter(BaseCoverageAdapter):
   super().close()
  def _operands(self,store,scene,policy,details,row):
   owner,radius,domain,foreign=super()._operands(store,scene,policy,details,row)
+  from src.u05_board.coverage import integral_context
+  context=integral_context()
+  if context is not None:
+   own=self.owner_for_route(row['source_id']);query=domain.buffer(CONTRACT.barrier_gap_mm)
+   foreign=[*foreign,*[('checking-envelope:'+o,g)for o,g in getattr(context,'checking_envelopes',{}).items()if o!=own and g.intersects(query)]]
   if cc.ACTIVE is None:return owner,radius,domain,foreign
   context=getattr(self,'_integral_context',cc.ACTIVE)
   if set(self._copper_owners)!=set(context.reserved):raise ValueError('PRIOR_ORIGINAL_OWNER_INVENTORY_CHANGED')

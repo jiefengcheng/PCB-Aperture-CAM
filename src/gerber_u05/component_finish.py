@@ -39,7 +39,7 @@ def prepare_region(store,region,owner,owner_id=None,contract=None,foreign=()):
   contract=read_job(store.root.parent)[1][0]
  if owner_id is None:owner_id=ctx.index.membership(owner)[0]
  # Original source features and all actual/reserved foreign copper participate.
- foreign=[*foreign,*[('source:'+o,g)for o,g in ctx.cores.items()if o!=owner_id],*[('reserved:'+o,g)for o,g in ctx.reserved.items()if o!=owner_id]]
+ foreign=[*foreign,*[('source:'+o,g)for o,g in ctx.cores.items()if o!=owner_id],*[('reserved:'+o,g)for o,g in ctx.reserved.items()if o!=owner_id],*[('checking-envelope:'+o,g)for o,g in getattr(ctx,'checking_envelopes',{}).items()if o!=owner_id]]
  return absorb(region,owner,ctx.cores[owner_id],foreign,contract)
 
 def native_before(store,scene,binding,junction_result=None):
@@ -93,7 +93,8 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
   if prefix is not None and radius<=.08:continue
   def progress(r):
    if r['component']%32==0:print(p.canonical(dict(stage=stage+'_inclusive',radius_mm=radius,**r)).decode(),flush=True)
-  report,fills,expected=plan(source,current,contract,checkpoint=progress,reserved=reservations,partial_strategy=policy['settings'].get('large_pocket_strategy'),approved_partials=partials)
+  from .checking_envelopes import indexed
+  report,fills,expected=plan(source,current,contract,checkpoint=progress,reserved=reservations,partial_strategy=policy['settings'].get('large_pocket_strategy'),approved_partials=partials,clearance_only=indexed(context,source_parts))
   partials=report.get('approved_partial_pockets',partials)
   for spec in partials:
    own=context.index.membership(source_parts[spec['source_component']])[0]
@@ -115,7 +116,7 @@ def finish(store,scene,binding,stage,junction_result=None,mode='unit'):
    proposals[own].append(region);feature_counts[item['kind']]+=1;new_area[own]+=patch.area
   encoded_by_owner={}
   for own,regions in sorted(proposals.items()):
-   combined=joined([*([aggregates[own]]if own in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in physical.items()if o!=own]+[('reserved:'+o,g)for o,g in context.reserved.items()if o!=own]
+   combined=joined([*([aggregates[own]]if own in aggregates else[]),*regions]);foreign=[('current:'+o,g)for o,g in physical.items()if o!=own]+[('reserved:'+o,g)for o,g in context.reserved.items()if o!=own]+[('checking-envelope:'+o,g)for o,g in getattr(context,'checking_envelopes',{}).items()if o!=own]
    combined,receipt=absorb(combined,physical[own],context.cores[own],foreign,contract);
    from src.growth_remedy_constraints import require_remedy
    require_remedy(combined,physical[own],scope='absorbed_remedy')

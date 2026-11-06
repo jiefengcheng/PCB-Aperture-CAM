@@ -206,7 +206,8 @@ class OwnerCheck:
             if key in self.cache:
                 fixed,_,_=self.cache[key];self.cache.move_to_end(key)
             else:
-                fixed=joined([g,self.ctx.reserved[o]])if o in self.ctx.reserved else g
+                from src.gerber_u05.checking_envelopes import constraint as foreign_constraint
+                fixed=foreign_constraint(self.ctx,o,g)
                 size=2*len(to_wkb(fixed))+512
                 self.remember(key,fixed,None,size)
             constraint[o]=fixed

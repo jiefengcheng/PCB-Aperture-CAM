@@ -4,6 +4,7 @@ from src import component_clearance as cc
 from src.stage_abi.loaded_geometry import GeometryMemo
 from src.growth_void_remedy_v09 import surface_parts
 from shapely import STRtree
+from .checking_envelopes import constraint
 
 def initialize(store,binding,scene=None):
  from src.t04_width_fence import restore as restore_width_fence
@@ -16,6 +17,8 @@ def initialize(store,binding,scene=None):
  from src import source_channel_scope
  functional=source_channel_scope.bind(source,binding['source_ref']['sha256'],original,store,integral=(store.root.parent/'SOURCE_ASSEMBLY_BINDING.json').exists())
  if (store.root.parent/'LEGACY_REFERENCE_JOB.json').exists():
+  from .checking_envelopes import initialize as initialize_checking
+  initialize_checking(store,binding,scene,functional=functional)
   cc.ACTIVE=None;return None
  context=cc.bind(source,binding['source_ref']['sha256'],current);context.functional=functional
  if functional is not None:functional.physical_context=context
@@ -23,6 +26,8 @@ def initialize(store,binding,scene=None):
   context.register_scene(store,scene)
   if functional is not None:functional.register_scene(store,scene)
   if len(scene['lineage'])>1:reserve_prior(context,store)
+ from .checking_envelopes import initialize as initialize_checking
+ initialize_checking(store,binding,scene,physical=context,functional=functional)
  return context
 
 
@@ -54,33 +59,33 @@ def run_t01(store,scene,binding):
  legacy_scene=store.get_json(legacy['output_scene_ref'],kind='scene');_,current,_=p.operands(store,legacy_scene);reserve_prior(ctx,store)
  functional=getattr(ctx,'functional',None);functional_owned=functional.project(current)if functional is not None else{}
  floor_repairs=[]
- owners=ctx.project(current);ids=list(owners);constraints={o:owners[o].union(ctx.reserved[o])for o in ids};tree=STRtree([constraints[o]for o in ids])
+ owners=ctx.project(current);ids=list(owners);constraints={o:constraint(ctx,o,owners[o])for o in ids};tree=STRtree([constraints[o]for o in ids])
  for site in sites:
   sid=site['source_id'];core=site['core'];floor=current[sid];own=ctx.owner(sid,core)
   foreign=[constraints[ids[j]]for j in sorted(map(int,tree.query(floor.buffer(p.CONSTRUCTION_GAP_MM+.00002).envelope)))if ids[j]!=own]
   integral_core=ctx.cores[own]
   if functional is not None:
    channel=functional.owner(sid,core);integral_core=functional.cores[channel]
-   foreign.extend(g.union(functional.reserved[o])if o in functional.reserved else g for o,g in functional_owned.items()if o!=channel and g.intersects(floor.buffer(p.CONSTRUCTION_GAP_MM+.00002).envelope))
+   foreign.extend(constraint(functional,o,g) for o,g in functional_owned.items()if o!=channel and g.intersects(floor.buffer(p.CONSTRUCTION_GAP_MM+.00002).envelope))
   corrected,proof=guard_legacy_floor(core,floor,integral_core,foreign,sid in set(allocation['priorities_by_physical_component'].values()))
   if proof is not None:
    for alias in site['aliases']:current[alias]=corrected
    if functional is not None:functional_owned=functional.project(current)
-   owners[own]=ctx.project(current)[own];constraints[own]=owners[own].union(ctx.reserved[own]);tree=STRtree([constraints[o]for o in ids]);floor_repairs.append(dict(source_id=sid,**proof))
+   owners[own]=ctx.project(current)[own];constraints[own]=constraint(ctx,own,owners[own]);tree=STRtree([constraints[o]for o in ids]);floor_repairs.append(dict(source_id=sid,**proof))
  after=dict(current);owners=ctx.project(current);memo=GeometryMemo(ctx.binding+'t01');decisions=[];priority=set(allocation['priorities_by_physical_component'].values());order=sorted(priority)+[s['source_id']for s in sites if s['source_id']not in priority];byid={s['source_id']:s for s in sites};gap=p.CONSTRUCTION_GAP_MM+.00002
  for sid in order:
   site=byid[sid];core=site['core'];floor=current[sid];radius=targets[sid];owner=ctx.owner(sid,core);cap=core.union(p.Point(*site['center']).buffer(radius,quad_segs=settings.qsegs));reason=None
   if radius==site['radius']:candidate=core
   else:
    ids=list(owners);tree=STRtree([owners[o]for o in ids]);foreign=[o for j in sorted(map(int,tree.query(cap.buffer(gap).envelope)))if(o:=ids[j])!=owner]
-   foreign=[o for o in ctx.index.ids if o!=owner and (owners[o].intersects(cap.buffer(gap).envelope)or ctx.reserved[o].intersects(cap.buffer(gap).envelope))]
-   foreign_bodies={o:owners[o].union(ctx.reserved[o])for o in foreign}
+   foreign=[o for o in ctx.index.ids if o!=owner and (constraint(ctx,o,owners[o]).intersects(cap.buffer(gap).envelope))]
+   foreign_bodies={o:constraint(ctx,o,owners[o])for o in foreign}
    integral_core=ctx.cores[owner]
    if functional is not None:
     channel=functional.owner(sid,core);integral_core=functional.cores[channel]
     for o,g in functional_owned.items():
      if o==channel:continue
-     body=g.union(functional.reserved[o])if o in functional.reserved else g
+     body=constraint(functional,o,g)
      if body.intersects(cap.buffer(gap).envelope):foreign_bodies['functional:'+o]=body
    forbidden=p.unary_union([memo.buffer(g,gap,quad_segs=128)for g in foreign_bodies.values()])
    optional=cap.difference(core);existing=optional.intersection(integral_core);new=optional.difference(integral_core).difference(forbidden)

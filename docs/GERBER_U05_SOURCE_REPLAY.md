@@ -33,6 +33,25 @@ is at most 0.030 mm (30 um, not 30 um per side). Both limits apply. An excessive
 rung is rejected without clamping to an off-ladder width. Each job captures
 `T04_SETTINGS_SNAPSHOT.json` and binds it to its producer.
 
+Reference preparation keeps nominal T04 material separate from clearance-only
+checking envelopes. The latter constrain subsequent foreign T02/T05 growth and
+whole remedy proposals; they are never source copper, a minimum material floor,
+a fill budget or exported contours. They bind original source widths, selected
+ladder factors, the raw checkpoint and all three matching T04 audits. The
+reference-only construction headroom is twice the existing polygon encoding
+tolerance (4 nm), in addition to the existing 10 nm checking envelope. Normal
+connected T04 retains its 10 nm envelope. Both envelopes are rebuilt directly
+from original geometry; nominal widths and the 30 um ceiling are unchanged.
+The actual reparsed reference must leave the full construction clearance from
+the normal checking envelopes. This additional check cannot waive the existing
+finished-file floor or any pin, topology, fidelity or corruption check.
+
+Prior uniform-width bodies must be covered by the completed T04 material after
+its three matching audits and frozen no-bypass width check. Legitimate smoothing
+may supply coverage. A wider body rejected by the ladder may not be restored
+through a subsequent reference floor. Failure remains a halted run with all
+later operations not run; a corrected implementation starts a separate job.
+
 Each eligible route proposes its next rung independently in a fixed order, once
 per pass, against the current scene. Every candidate uses original source
 geometry and width; offsets never compound. There are at most ten complete

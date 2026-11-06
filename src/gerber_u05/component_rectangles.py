@@ -10,6 +10,7 @@ from src.crop_stage_growth import check_proposal,GrowthContract
 from src.component_voids import holes,joined
 from src.indexed_polygon_distance import distance
 from src.stage_abi.store import digest
+from .checking_envelopes import constraint
 
 class ComponentRectangleAdapter(FastRectangleAdapter):
  def describe(self):
@@ -46,12 +47,12 @@ class ComponentRectangleAdapter(FastRectangleAdapter):
       logical_delta=rect.difference(functional_owned[channel]);window=rect.buffer(contract.construction_gap_mm+contract.comparison_epsilon_mm).envelope
       for other,g in sorted(functional_owned.items()):
        if other==channel:continue
-       if other in functional.reserved:g=g.union(functional.reserved[other])
+       g=constraint(functional,other,g)
        if logical_delta.is_empty or not g.intersects(window):continue
        measured=distance(logical_delta,g);passed=measured+contract.comparison_epsilon_mm>=contract.construction_gap_mm;functional_pairs.append(dict(foreign_source_channel_id=other,gap_mm=measured,passed=passed))
        if not passed:reasons.append('FUNCTIONAL_SOURCE_CHANNEL_CLEARANCE_FAILED')
     if delta.intersection(joined(holes(original_void_core))).area>0:reasons.append('INHERITED_SOURCE_VOID')
-    foreign={o:owned[o].union(ctx.reserved[o])if o in ctx.reserved else owned[o]for o in owned if o!=own}
+    foreign={o:constraint(ctx,o,owned[o])for o in owned if o!=own}
     nearby=[dict(source_id='original-owner:'+o,original=ctx.cores[o],geometry=g,trace_width_mm=0.)for o,g in sorted(foreign.items())if g.intersects(rect.buffer(contract.construction_gap_mm+.001))]
     q=check_proposal(owner_span,rect,nearby,crop=crop,cap=rect,contract=contract)
     for other,g in sorted(foreign.items()):

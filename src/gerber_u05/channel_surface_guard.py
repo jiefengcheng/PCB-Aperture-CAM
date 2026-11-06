@@ -24,7 +24,8 @@ class ChannelSurfaceGuard(SurfaceGuard):
   owned=functional.project(material);radius=self.contract.construction_gap_mm+self.reserve;window=proposal.buffer(radius).envelope;foreign={}
   for other,shape in owned.items():
    if other==owner:continue
-   if other in functional.reserved:shape=shape.union(functional.reserved[other])
+   from .checking_envelopes import constraint
+   shape=constraint(functional,other,shape)
    if shape.intersects(window):foreign[other]=shape
   forbidden=unary_union([g.buffer(radius,quad_segs=128)for g in foreign.values()]);optional=canonical.difference(core).difference(forbidden);candidate,_=retain_attached(optional,core,scene.settings.kernel());candidate=unary_union([candidate,core.buffer(1e-10,quad_segs=128)])
   # Recheck the final, potentially clipped shape through the same canonical

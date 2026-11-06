@@ -20,8 +20,8 @@ class OwnerDependencies:
         self.before = context.project(parent.original)
         self.owners = {s:context.owner(s,parent.original[s]) for s in route_ids}
         self.ids = sorted(self.before)
-        self.foreign = {o:unary_union([self.before[o], context.reserved[o]])
-                        if o in context.reserved else self.before[o] for o in self.ids}
+        from src.gerber_u05.checking_envelopes import constraint
+        self.foreign = {o:constraint(context,o,self.before[o]) for o in self.ids}
         self.tree = STRtree([self.foreign[o] for o in self.ids])
         self.route_ids = list(route_ids)
         self.route_tree = STRtree([box(*parent.original[s].bounds).buffer(maximum_padding[s]).envelope
@@ -88,7 +88,7 @@ class OwnerDependencies:
 
 
 class IncrementalRoutes:
-    def __init__(self,baseline,fixed,build,settings,source_widths):
+    def __init__(self,baseline,fixed,build,settings,source_widths,*,checking_headroom_mm=0.):
         from src.prepared_width_scene import PreparedWidthScene
         from src import component_clearance as cc, source_channel_scope as functional, pin_separation as pin
         self.parent=PreparedWidthScene(baseline,fixed);self.build=build
@@ -98,7 +98,7 @@ class IncrementalRoutes:
         self.pending=None;self.constructed_routes=self.accepted_updates=0
         self.owner_checks=[];self.pin=pin.Prepared(self.parent,pin.ACTIVE)if pin.ACTIVE is not None else None
         from src.native_inventory import ERROR_MM
-        padding={s:float(source_widths[s]*(settings.maximum_factor-1)/2)+ERROR_MM+self.parent.contract.comparison_epsilon_mm for s in self.order}
+        padding={s:float(source_widths[s]*(settings.maximum_factor-1)/2)+ERROR_MM+checking_headroom_mm+self.parent.contract.comparison_epsilon_mm for s in self.order}
         if cc.ACTIVE is not None:
             self.owner_checks.append(OwnerDependencies(self.parent,cc.ACTIVE,self.order,padding,'PHYSICAL_ORIGINAL_OWNER'))
         if functional.ACTIVE is not None:

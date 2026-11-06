@@ -110,9 +110,11 @@ def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void
     return dict(passed=not reasons,reasons=reasons,shortage=shortage,local_cap_bounds_mm=list(cap.bounds),connected_support_sha256=sha(carrier),foreign_gaps=gaps)
 
 
-def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,partial_strategy=None):
+def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,partial_strategy=None,clearance_only=None):
     contract.validate();originals,grown,mapping=components(source,current,contract)
     records=[];accepted=[];tree=STRtree(grown);partial_specs=[]
+    clearance_only={}if clearance_only is None else clearance_only
+    checking_ids=sorted(clearance_only);checking_tree=STRtree([clearance_only[j]for j in checking_ids])
     from src.partial_pocket_remedy import STRATEGY,propose,protected
     if partial_strategy not in(None,STRATEGY):raise ValueError('PARTIAL_POCKET_POLICY_UNSUPPORTED')
     for index,(owner,j) in enumerate(zip(grown,mapping)):
@@ -148,6 +150,10 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
                 if patch.difference(inherited_notches).area<=contract.area_epsilon_mm2:continue
                 candidates.append(('notch',patch))
         for kind,patch in sorted(candidates,key=lambda x:(x[0],sha(x[1]))):
+            checking=[('checking-envelope:'+str(checking_ids[int(k)]),clearance_only[checking_ids[int(k)]])for k in checking_tree.query(patch.buffer(contract.construction_gap_mm+.001))if checking_ids[int(k)]!=j]
+            if any(patch.distance(g)+1e-12<contract.construction_gap_mm for _,g in checking):
+                records.append(dict(kind=kind,owner=index,source_component=j,patch_sha256=sha(patch),area_mm2=patch.area,bounds_mm=list(patch.bounds),status='KEEP_ENTIRE_FILL_CHECKING_ENVELOPE',check=dict(passed=False,reasons=['T04_CHECKING_ENVELOPE_CLEARANCE'],role='CLEARANCE_ONLY_NOT_COPPER_NOT_MINIMUM_FLOOR')))
+                continue
             from src.growth_remedy_constraints import remedy as pin_remedy
             pin_check=pin_remedy(patch,owner)
             if pin_check is not None and not pin_check['passed']:
@@ -157,7 +163,7 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
             if kind=='notch'and owned_specs:
                 patch=joined(surface_parts(patch.difference(protected(owned_specs))))
                 if patch.is_empty:continue
-            nearby=[(int(k),grown[int(k)]) for k in tree.query(patch.buffer(contract.construction_gap_mm+.001)) if int(k)!=index]
+            nearby=[(int(k),grown[int(k)]) for k in tree.query(patch.buffer(contract.construction_gap_mm+.001)) if int(k)!=index]+checking
             check=proposal_check(patch,owner,original,nearby,contract,kind,oldvoid,owner_void_context)
             if partial_strategy==STRATEGY and kind=='hole'and check['reasons']==['SHORTAGE_ABOVE_20_PERCENT']:
                 patch,check,spec=propose(patch,owner,contract,check);spec.update(owner=index,source_component=j);partial_specs.append(spec);kind='partial_rim'
