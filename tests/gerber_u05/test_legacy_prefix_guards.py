@@ -68,6 +68,18 @@ def test_pin_eviction_delta_cannot_authorize_a_spacing_change():
   q.pin_eviction_delta_only(before,after+'def clearance():\n return 0\n')
 
 
+def test_t05_support_delta_cannot_change_its_original_geometry_predicates():
+ after=(Path(q.__file__).with_name('export_absorption.py')).read_text()
+ new=""" window=domain.buffer(-NATIVE_OWNER_OVERLAP_MM,quad_segs=64)
+ support=owner.intersection(window);target=owner.union(addition)
+"""
+ before='\n'.join(line for line in after.splitlines()if not line.lstrip().startswith('#'))+'\n'
+ before=before.replace(new," support=owner.intersection(domain.buffer(-NATIVE_OWNER_OVERLAP_MM,quad_segs=64))\n").replace(' region=target.intersection(window).union(addition)',' region=support.union(addition);target=owner.union(addition)')
+ q.t05_support_delta_only(before,after)
+ with pytest.raises(ValueError,match='SUPPORT_DELTA_NOT_ISOLATED'):
+  q.t05_support_delta_only(before,after.replace('support.difference(owner).area<=CONTRACT.area_epsilon_mm2','True',1))
+
+
 def test_completed_width_checkpoint_is_hash_bound_to_the_retained_t04(tmp_path,monkeypatch):
  old,_,_=binding_fixture(tmp_path,monkeypatch)
  proof=q.inspect(old,'t04')

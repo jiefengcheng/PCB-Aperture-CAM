@@ -53,6 +53,16 @@ def t02_attribution_worker_delta_only(before,after):
 """
  if before.count(old)!=1 or after.count(new)!=1 or ast.dump(ast.parse(before),include_attributes=False)!=ast.dump(ast.parse(after.replace(new,old)),include_attributes=False):raise ValueError('LEGACY_T02_ATTRIBUTION_DELTA_NOT_ISOLATED')
 
+def t05_support_delta_only(before,after):
+ old=""" support=owner.intersection(domain.buffer(-NATIVE_OWNER_OVERLAP_MM,quad_segs=64))
+ region=support.union(addition);target=owner.union(addition)
+"""
+ new=""" window=domain.buffer(-NATIVE_OWNER_OVERLAP_MM,quad_segs=64)
+ support=owner.intersection(window);target=owner.union(addition)
+ region=target.intersection(window).union(addition)
+"""
+ if before.count(old)!=1 or ast.dump(ast.parse(before.replace(old,new)),include_attributes=False)!=ast.dump(ast.parse(after),include_attributes=False):raise ValueError('LEGACY_T05_SUPPORT_DELTA_NOT_ISOLATED')
+
 def prove_no_retained_partials(old,stages):
  # Inspect every retained stage-entry/output scene, not only raw source rows.
  # The changed registration branch is unreachable in all retained operations.
@@ -163,6 +173,10 @@ def inspect(old,through):
    # Completed PASS operations therefore did not execute that branch. Only
    # its exact size-index correction is allowed; all slot geometry is identical.
    pin_eviction_delta_only(file.read_text(),current.read_text())
+  elif relative=='src/gerber_u05/export_absorption.py'and through in('t03','t04','t02'):
+   # Only the T05 support recipe changes. It is called by T05 completion and
+   # export; neither operation belongs to this retained predecessor prefix.
+   t05_support_delta_only(file.read_text(),current.read_text())
   elif relative in CONNECTED_COMPLETION:
    # Legacy stages through T04 initialize ACTIVE=None and never execute the
    # connected owner completion, partial-pocket policy or export obligations.

@@ -1,0 +1,10 @@
+{
+  "source": "Retained synthetic T02 pad-joint/T05 export budget failure; no source board fixture modified",
+  "job_id": "synthetic_t02_pad_joint_20261106T212142Z-2cfa7660ce79429b94d8b08be69cdb8a",
+  "source_id": "route:JR-2b5acefe24e6a3ab",
+  "files": {
+    "owner": "661ff26e5ed1338338967af6f77b6e0a873ffff6b0ef42d710b5e9dbdddc1db2",
+    "addition": "b46619ecb7ba7369d5fe170e426b2a273809b6bfead914019fb0b4c90c466e95",
+    "domain": "5aeaeebdc6e51d58c4cb72e95452236b487a2a4ba122a6d27d01f492676646ee"
+  }
+}

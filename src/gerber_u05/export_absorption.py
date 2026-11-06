@@ -13,8 +13,13 @@ Boolean proof does not hold, use the original qualified support construction.
  from src.junction_spindle_stage import CONTRACT
  from src.u05_board.export import NATIVE_OWNER_OVERLAP_MM
  # Inset redundant support only; retain the complete qualified addition.
- support=owner.intersection(domain.buffer(-NATIVE_OWNER_OVERLAP_MM,quad_segs=64))
- region=support.union(addition);target=owner.union(addition)
+ window=domain.buffer(-NATIVE_OWNER_OVERLAP_MM,quad_segs=64)
+ support=owner.intersection(window);target=owner.union(addition)
+ # Form the physical surface before clipping its redundant owner support.
+ # Re-unioning separately clipped owner/addition boundaries can manufacture
+ # ULP slivers. The qualified addition stays complete; all original predicates
+ # below still apply with their original area epsilon.
+ region=target.intersection(window).union(addition)
  if (region.is_valid and not region.is_empty
      and support.difference(owner).area<=CONTRACT.area_epsilon_mm2
      and addition.difference(region).area<=CONTRACT.area_epsilon_mm2
