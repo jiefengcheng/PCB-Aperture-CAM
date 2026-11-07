@@ -1,23 +1,37 @@
 # Reusable Gerber U05 route
 
-Current candidate: `d8dbe4e`, separate from the installed normal app below.
+Current candidate: `eaaba51`, separate from the installed normal app below.
 It combines fixed-candidate T02 verification and 1% shared-gap matching with
-the qualified T05 adopted-floor/read-authority correction. It passes 745
-focused checks and one complete 47-operation growing-rectangle synthetic route.
-The frozen candidate is `out/lacie_work/releases/U05_20261108_d8dbe4e/`.
-Its `preflight.py` checks all 3,133 source hashes and namespace, read-only source
+the qualified T05 adopted-floor/read-authority correction and complete-domain
+final T05 pin verification. It passes 759 focused checks and one complete
+47-operation growing-rectangle synthetic route. The frozen candidate is
+`out/lacie_work/releases/U05_20261108_eaaba51/`.
+Its `preflight.py` checks all 3,136 source hashes and namespace, read-only source
 permissions, pinned packages, immutable assets, LaCie identity/reserve and
 clearance registry/construction consistency without starting a board job.
 The release README gives its exact report-only preflight and supported command.
 It is **not activated or integrated** while real-board completion is pending.
 
 The current affected-work job is
-`20261107T193222Z-7b6707757bd046578fd002ace6bcadb0`, with 35 retained qualified
+`20261107T204212Z-b2dd9a585ece45c3bd133438f1b3b791`, with 35 retained qualified
 operations and 12 fresh operations, not 47 fresh operations. The failed full job
 and its frozen source remain unchanged. This tail uses strict-gap source
-`c5a4e6f`; the combined future release adds the separately qualified 1% gap policy
+`4730065`; the combined future release adds the separately qualified 1% gap policy
 and fixed-candidate T02 checks. No fresh whole-client execution of the combined
 release is claimed. No further full 3020212826 restart is authorized.
+
+The preceding `c5a4e6f` tail remains failed. Its final global GEOS overlay
+failed before the pin predicate ran; the corrected tail applies the existing
+pin predicate to every complete protected domain without altering copper.
+Current evidence is under
+`out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/pin_projection_union_01/`:
+`APP_CANDIDATE_QUALIFICATION_01.json`, `COMBINED_CANDIDATE_PACKAGE.json`,
+`FROZEN_RELEASE_PREPARATION_01.json` and `NATIVE_TAIL_01_DRIVER.json`.
+The current native constructor passes and reproduces the exact saved final
+scene; both evaluations and subsequent final-file checks are still required.
+Only a successful final delivery audit and actual image inspection permit the
+already authorized app installation and release activation between jobs.
+The dual-source offline bundle retains both exact native and app revisions.
 
 The following describes the earlier installed checkpoint and its retained
 qualification. Its former deployment snapshot is inactive and must not be used
@@ -96,6 +110,18 @@ audit and rendering are mandatory. The final image must be rendered from the
 same checked Gerber hash. Delivery creates one sibling directory containing
 only that Gerber filename and `final_render.png`; companions are not copied.
 The highlighted additions remain visible against the source.
+
+The retained request contains eleven unique targets: the primary 3020212826,
+nine other raw directories and the explicitly listed historical generated
+directory `3020212826_U05_040mm_20261105T083747Z`. Keep that last target in the
+ledger rather than silently dropping it. It is held for source-eligibility and
+scope reconciliation; do not treat an old generated file as fresh raw copper
+or use it to bypass the prohibition on another full primary-board run.
+Retained selection evidence identifies `a-top.art.gbr` for 3020212866 and
+3020212956, and `top.art.gbr` for the other established raw targets. Selection
+for 3020213110 still requires fresh native intake evidence. The old 3020212866
+enclosure-discovery miss remains a finding, not authority to crop or delete
+copper. Start no remaining-board jobs before release activation.
 
 The preceding failed job was incremental: 17 retained qualified operations plus
 30 required fresh operations. Its frozen `caff24a` source used strict gap
