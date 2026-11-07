@@ -101,7 +101,7 @@ class InteractionAdapter:
                 site=next(s for s in sites if s['source_id']==d['source_id'])
                 if to_wkb(result['scene'].accepted[d['source_id']],byte_order=1)!=to_wkb(site['core'],byte_order=1):
                     fail('T01_OVERLAP_KEEP_SOURCE_CHANGED',d['source_id'])
-                d['keep_reason']='KEEP_OTHER_COPPER_COVERAGE_ABOVE_LIMIT'
+                d['keep_reason']='KEEP_EXPOSED_CIRCUMFERENCE_BELOW_LIMIT'
             if d['priority'] and d['proposed_radius_mm']>d['source_radius_mm'] and d['decision']!='ROUND_GROW_PRIORITY':
                 fail('T01_ROUND_ALLOCATION_NOT_CONSTRUCTIBLE',d['source_id'])
         if result['failed_patches']:

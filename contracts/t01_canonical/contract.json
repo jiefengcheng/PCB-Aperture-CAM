@@ -39,7 +39,8 @@
     "src/shape_containment.py": "fe7cc45a9ff3ce2068dde68a735e978baeea0a277a6e6724978d94be6e7385ca",
     "src/clearance_policy.py": "142889faa27680c9eddcc14103e5ec6d0cdc6c8bf902f09128e22d0748aab19a",
     "src/t01_region_contacts.py": "14f21a4ef8466e78479bfddd076222f871726070788d96909efc065f4f15e9e3",
-    "src/t01_bga_single.py": "b1d7957ebf5b3ca2139d39bd4c6e630804aee6f39861ad416e83921fe7909541"
+    "src/t01_bga_single.py": "b1d7957ebf5b3ca2139d39bd4c6e630804aee6f39861ad416e83921fe7909541",
+    "src/t01_circle_exposure.py": "e8c554e4eff9a2db3af618e347f9e5588831af63d5ecc6a95b03caba899ee58b"
   },
   "permissions": {
     "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0": {
@@ -149,5 +150,12 @@
     "sha256": "7355d5573fc6519a83510ae9cf7aa27b71e917c0aae6fae3e067fbdee0e15d78",
     "authority": "Owner authorized isolated explicit-clear BGA singleton optional growth, source-qualified independently of pairs and long-feed terminals; all checks and >70% KEEP retained.",
     "predecessor_contract_sha256": "19ac477f5ed8587d273f2de0a1e45f538a88b112bdc128798937cd4b22349037"
+  },
+  "circle_exposure_rule": {
+    "registry_path": "contracts/t01_circle_exposure/settings.json",
+    "authority": "Owner: allow growth only when at least 70% of original circumference is exposed. Replaces area eligibility; original containment KEEP and all other growth checks remain.",
+    "parameter": "minimum_exposed_circumference_fraction_for_growth",
+    "settings_binding": "Captured raw registry bytes and hash in every canonical job marker",
+    "previous_contract_sha256": "685da61f0384c85bf101d6b0d9fc34d37449f2e15ae2ad552056a48cbba17b7d"
   }
 }

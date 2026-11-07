@@ -77,13 +77,14 @@ def test_changed_original_or_provenance_rejects(fault):
         eligible_sites(sites,rows,shapes)
 
 
-def test_bga_optional_growth_allocation_preserves_overlap_keep(monkeypatch):
+def test_bga_optional_growth_allocation_preserves_exposure_keep(monkeypatch):
     from src import t01_canonical as tc
     circles,clears=source_case();q=qualify(SOURCE,circles,clears,coordinate_grid_mm=.00001)
     rows,shapes,sites=operands(circles,q)
-    # Other copper covers >70% of the first original circle, so it remains
-    # exact even with valid BGA provenance. Uncovered sites may clip growth.
-    covered=shapes[0].intersection(box(-1,-1,.08,1))
+    # Half of the first circle's circumference is buried in original copper.
+    # It remains exact under the new >=70% exposed-arc policy, even with BGA
+    # provenance. Other fully exposed array islands may clip optional growth.
+    covered=box(-1,-1,0,1)
     rows.append(dict(id='cover',kind='gr_poly',trace_width_mm=0.,source_span=[0,0]));shapes.append(covered)
     monkeypatch.setattr(tc,'require',lambda policy:None)
     settings=tc.specification();_,a,targets,_=tc.allocate(b'',rows,shapes,sites,{},dict(reviewed_pairs=[],recess_source_ids=[]))

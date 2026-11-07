@@ -56,15 +56,17 @@ def test_bad_provisional_threshold_rejects(bad):
     with pytest.raises(ValueError):from_bytes(json.dumps(value).encode())
 
 
-def test_replaceable_global_setting_changes_new_policy_and_rejects_old_policy():
+def test_historical_area_setting_no_longer_changes_active_policy():
     from src.t01_canonical import marker,require
     from src.t01_board.policy import compile_policy,english
     policy=compile_policy(english(),dict(artifact_id='t01-binding:'+'a'*64,sha256='a'*64))
     value=json.loads(capture().raw_json);value['maximum_other_copper_coverage_fraction_for_growth']=.8
     changed=from_bytes(json.dumps(value).encode())
-    with patch('src.t01_canonical.overlap_settings',return_value=changed):
-        assert marker()['circle_overlap_settings']['maximum_other_copper_coverage_fraction_for_growth']==.8
-        with pytest.raises(StageABIError):require(policy)
+    before=marker()
+    with patch('src.t01_circle_overlap.capture',return_value=changed):
+        assert marker()==before
+        assert 'circle_overlap_settings'not in marker()
+        require(policy)
     with pytest.raises(ValueError,match='DUPLICATE'):
         from_bytes(capture().raw_json.replace('"revision": 1','"revision": 1, "revision": 2').encode())
 
@@ -94,7 +96,7 @@ def test_allocation_excludes_overlap_from_priorities_pairs_and_growth_but_keeps_
     assert 'target' not in allocation['priorities_by_physical_component'].values()
     assert next(g for g in allocation['groups']if 'target'in g['site_ids'])['site_ids']==['target']
     assert allocation['priority_pool_source_ids']==['roomy','target'] and not square
-    assert allocation['circle_overlap']['target']['excluded_aliases']==['alias','target']
+    assert allocation['circle_exposure']['target']['excluded_aliases']==['alias','target']
     from src.crop_balanced_t01 import execute
     from src.t01_canonical_surface import SurfaceGuard
     result=execute(b'',rows,shapes,sites,allocation['groups'],allocation['priorities_by_physical_component'],
@@ -129,7 +131,7 @@ def test_board_adapter_rejects_growth_of_partial_overlap_keep_and_tampered_plan(
         finally:PORT_STORE.reset(token)
         candidate=adapter._compute(store,scene,policy,{'details':details},lambda _:None)
         d=next(d for d in candidate['decisions']if d['source_id']==sid)
-        assert d['keep_reason']=='KEEP_OTHER_COPPER_COVERAGE_ABOVE_LIMIT'
+        assert d['keep_reason']=='KEEP_EXPOSED_CIRCUMFERENCE_BELOW_LIMIT'
         assert d['candidate_ref']==next(r['geometry_ref']for r in scene['objects']if r['source_id']==sid)
         import src.t01_abi.adapter as module
         original_execute=module.execute

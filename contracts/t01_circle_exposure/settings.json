@@ -1,0 +1,12 @@
+{
+  "schema": "t01-circle-exposure-settings/1",
+  "revision": 1,
+  "status": "PROVISIONAL",
+  "minimum_exposed_circumference_fraction_for_growth": 0.70,
+  "comparison": "GROWTH_ELIGIBLE_WHEN_GREATER_OR_EQUAL",
+  "context": "COMPLETE_ORIGINAL_STAGE_ENTRY_RESOLVED_COPPER",
+  "exclude": "SELF_AND_EXACT_GEOMETRIC_ALIASES",
+  "measurement": "ANALYTIC_SOURCE_CIRCLE_ARC_LENGTH_AGAINST_ORIGINAL_FINITE_COPPER_UNION",
+  "action_below_limit": "KEEP_EXACT_PREDECESSOR",
+  "scope": "T01_CIRCLES_ONLY; existing full-containment KEEP and all growth checks remain"
+}
