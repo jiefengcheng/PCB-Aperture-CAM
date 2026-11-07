@@ -32,8 +32,15 @@ def test_t02_grows_whole_rectangle_without_moving_fixed_copper(tmp_path):
  env=setup(tmp_path,'t02',[('rect','rectangle',box(0,0,.5,.4),{}),('fixed','circle',Point(2,2).buffer(.2),{})],['rect']);c,_=execute_and_verify(env);assert c['decisions'][0]['shape']['factors']==[1.25,1.25] and c['protected_source_refs'].keys()=={'fixed'}
 
 def test_t02_connected_inclusive_fill_and_scope_identity(tmp_path):
- bridge=LineString([(.2,.5),(1.9,.5)]).buffer(.45,quad_segs=128)
- env=setup(tmp_path,'t02',[('a','rectangle',box(0,0,1,1),{}),('b','rectangle',box(1.1,0,2.1,1),{}),('bridge','trace',bridge,{'nominal_width_mm':.9})],['a','b']);c,_=execute_and_verify(env);assert any(r['status']=='MERGED' for r in c['inclusive_candidates']);assert 'bridge' in c['protected_source_refs']
+ bridge=LineString([(.2,.5),(1.9,.5)]).buffer(.4,quad_segs=128)
+ env=setup(tmp_path,'t02',[('a','rectangle',box(0,0,1,1),{}),('b','rectangle',box(1.1,0,2.1,1),{}),('bridge','trace',bridge,{'nominal_width_mm':.8})],['a','b']);c,_=execute_and_verify(env);assert any(r['status']=='MERGED' for r in c['inclusive_candidates']);assert 'bridge' in c['protected_source_refs']
+
+def test_t02_buried_rectangles_cannot_become_inclusive_fill_members(tmp_path):
+ bridge=LineString([(.2,.5),(1.9,.5)]).buffer(.51,quad_segs=128)
+ env=setup(tmp_path,'t02',[('a','rectangle',box(0,0,1,1),{}),('b','rectangle',box(1.1,0,2.1,1),{}),('bridge','trace',bridge,{'nominal_width_mm':1.02})],['a','b'])
+ candidate,_=execute_and_verify(env)
+ assert all(d['status']=='KEEP'and d['keep_reason']=='EXPOSED_PERIMETER_BELOW_LIMIT'for d in candidate['decisions'])
+ assert candidate['inclusive_candidates']==[]and 'bridge'in candidate['protected_source_refs']
 
 def test_t02_disconnected_rectangles_never_combine(tmp_path):
  env=setup(tmp_path,'t02',[('a','rectangle',box(0,0,1,1),{}),('b','rectangle',box(1.1,0,2.1,1),{})],['a','b']);c,_=execute_and_verify(env);assert all(r['status']=='REJECTED' for r in c['inclusive_candidates'])

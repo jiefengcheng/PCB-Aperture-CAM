@@ -71,8 +71,9 @@ def test_original_width_limits_ports_after_predecessor_widening(tmp_path):
  sid=next(r['source_id'] for r in scene['objects'] if r['kind']=='rectangle');a=NativeRectangleAdapter()
  from src.shape_containment import records
  from src.stage_abi.runtime import operands
- _,current,_=operands(store,scene)
- _,current,original,checker,_=a._context(store,scene,dict(stage='t02',parameters=parameters()),dict(targets=[sid],containment=records(current,[sid])))
+ _,current,original=operands(store,scene)
+ from src.t02_rectangle_exposure import records as exposure_records,capture
+ _,current,original,checker,_=a._context(store,scene,dict(stage='t02',parameters=parameters()),dict(targets=[sid],containment=records(current,[sid]),rectangle_exposure=exposure_records(scene,original,[sid],capture())))
  assert checker.widths[trace['source_id']]==.1
  expected=original[sid].intersection(original[trace['source_id']]).buffer(.1+checker.contract.original_port_buffer_gap_mm,quad_segs=checker.contract.port_quad_segs)
  assert checker.ports[(sid,trace['source_id'])][0].equals_exact(expected,0)
@@ -83,7 +84,8 @@ def test_prepared_context_reuses_only_identical_hash_validated_source(tmp_path,m
  store,scene,_,_=native_scene(tmp_path,[rect()]);sid=scene['objects'][0]['source_id'];policy=dict(stage='t02',parameters=parameters());a=NativeRectangleAdapter();calls=[];base=LandAdapter._context
  from src.shape_containment import records
  from src.stage_abi.runtime import operands
- details=dict(targets=[sid],containment=records(operands(store,scene)[1],[sid]))
+ from src.t02_rectangle_exposure import records as exposure_records,capture
+ details=dict(targets=[sid],containment=records(operands(store,scene)[1],[sid]),rectangle_exposure=exposure_records(scene,operands(store,scene)[2],[sid],capture()))
  def tracked(*args):calls.append(1);return base(*args)
  monkeypatch.setattr(LandAdapter,'_context',tracked)
  first=a._context(store,scene,policy,details)

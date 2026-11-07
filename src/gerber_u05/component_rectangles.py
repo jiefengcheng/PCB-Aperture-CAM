@@ -6,7 +6,7 @@ from shapely import to_wkb
 from shapely.ops import unary_union
 from src import component_clearance as cc
 from src.u04_board.search import FastRectangleAdapter
-from src.stage_abi.lands import merge_groups
+from src.stage_abi.lands import merge_groups,exposure_eligible
 from src.crop_stage_growth import check_proposal,GrowthContract
 from src.component_voids import holes,joined
 from src.indexed_polygon_distance import distance
@@ -49,7 +49,7 @@ class ComponentRectangleAdapter(FastRectangleAdapter):
   return value
  def _owner_merges(self,store,scene,plan,rows,current,budget):
   if cc.ACTIVE is None:return super()._merges(store,scene,plan,rows,current,budget)
-  ctx=cc.ACTIVE;crop=box(*scene['viewport_mm']);ids=[s for s in plan['details']['targets']if not plan['details']['containment'][s]['contained']];cores={s:ctx.originals[s]for s in ids};groups=merge_groups(ids,cores);before=unary_union([current[s]for s in sorted(current)]).intersection(crop);owned=ctx.project(current);claimed=set();accepted=[];decisions=[];additions=[];contract=GrowthContract()
+  ctx=cc.ACTIVE;crop=box(*scene['viewport_mm']);ids=[s for s in plan['details']['targets']if not plan['details']['containment'][s]['contained']and exposure_eligible(plan['details'],s)];cores={s:ctx.originals[s]for s in ids};groups=merge_groups(ids,cores);before=unary_union([current[s]for s in sorted(current)]).intersection(crop);owned=ctx.project(current);claimed=set();accepted=[];decisions=[];additions=[];contract=GrowthContract()
   from src import source_channel_scope
   functional=source_channel_scope.ACTIVE;functional_owned=functional.project(current)if functional is not None else{}
   for ordinal,(axis,members)in enumerate(groups):

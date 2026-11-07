@@ -19,10 +19,13 @@ from .scene import geometry,composed
 from .runtime import bounds_check,Budget,operands,output_scene,check_output
 from src.stage_abi.preparation import prepared_buffer
 from src.shape_containment import policy as containment_policy,records as containment_records
+from src.t02_rectangle_exposure import capture as exposure_settings,records as exposure_records,eligible as exposure_eligible
 
 
 def land_parameters(stage):
- return dict(family='round-class/2' if stage=='t01' else 'whole-rectangle-inclusive/2',ceiling=1.5 if stage=='t01' else 1.25,quad_segs=128,search_steps=36,inclusive=stage=='t02',inclusive_shortage=.20 if stage=='t02' else None,original_circle_quad_limit=512 if stage=='t01' else None,surface_contract=asdict(TraceWidthContract()),contained_shape_keep=containment_policy())
+ value=dict(family='round-class/2' if stage=='t01' else 'whole-rectangle-inclusive/2',ceiling=1.5 if stage=='t01' else 1.25,quad_segs=128,search_steps=36,inclusive=stage=='t02',inclusive_shortage=.20 if stage=='t02' else None,original_circle_quad_limit=512 if stage=='t01' else None,surface_contract=asdict(TraceWidthContract()),contained_shape_keep=containment_policy())
+ if stage=='t02':value['rectangle_exposure_settings']=exposure_settings().snapshot()
+ return value
 
 def aligned(core_a,core_b,axis):
  p,q=core_a.bounds,core_b.bounds;j=1-axis;t1,t2=p[j+2]-p[j],q[j+2]-q[j];overlap=min(p[j+2],q[j+2])-max(p[j],q[j]);dc=abs((p[j]+p[j+2]-q[j]-q[j+2])/2);gap=max(p[axis],q[axis])-min(p[axis+2],q[axis+2]);return overlap>=.75*min(t1,t2) and dc<=.15*max(t1,t2) and max(t1,t2)<=2*min(t1,t2) and 0<=gap<=2*max(p[axis+2]-p[axis],q[axis+2]-q[axis])
@@ -52,6 +55,7 @@ class LandAdapter:
   if policy.get('stage')!=self.stage or canonical(policy.get('parameters'))!=canonical(land_parameters(self.stage)):fail('POLICY_UNSUPPORTED','land family')
   rows,current,original=operands(store,scene);ids=details['targets']
   if details.get('containment')!=containment_records(current,ids):fail('CONTAINMENT_PLAN_CHANGED','Reconstruct stage-entry copper and aliases')
+  if self.stage=='t02'and details.get('rectangle_exposure')!=exposure_records(scene,original,ids,exposure_settings()):fail('RECTANGLE_EXPOSURE_PLAN_CHANGED','Reconstruct original perimeter eligibility')
   kind='gr_circle' if self.stage=='t01' else 'gr_poly';parts=[dict(id=s,original=current[s],candidate=current[s],native_source_kind=kind,native_stroke_width_mm=0.) for s in ids];fixed=[dict(id=s,geometry=g,trace_width_mm=rows[s]['metadata'].get('nominal_width_mm',0.)) for s,g in current.items() if s not in ids];checker=PreparedLandScene(parts,fixed)
   # Current predecessor geometry provides visibility; only original contacts may
   # authorize land-to-trace attachment ports after earlier route/width changes.
@@ -83,6 +87,7 @@ class LandAdapter:
     cap=scale(core,1.25,1.25,origin=core.centroid)
     if not g.covers(core) or not cap.covers(g) or g.centroid.distance(core.centroid)>1e-12:fail('PREDECESSOR_OUTSIDE_RECTANGLE_CAP',sid)
   details=dict(targets=targets,bounds=bounds,parameters=parameters,family=land_parameters(self.stage)['family'],containment=containment_records(current,targets))
+  if self.stage=='t02':details['rectangle_exposure']=exposure_records(scene,original,targets,exposure_settings())
   self._context(store,scene,policy,details);return details
  def _check(self,checker,current,selected,ids):
   kind='gr_circle' if self.stage=='t01' else 'gr_poly'
@@ -100,10 +105,11 @@ class LandAdapter:
      trial=Point(*p['center_mm']).buffer(d/2,quad_segs=128)
      if not trial.covers(core):continue
      if feasible(trial):candidate=trial;shape=dict(diameter_mm=d);break
-   elif not covered:
+   elif not covered and exposure_eligible(details,sid):
     candidate,factors=fit_joint_rectangle(core,feasible,max_factor=1.25,steps=36);shape=dict(factors=list(factors))
    if not feasible(candidate):fail('LAND_KEEP_OR_CANDIDATE_INVALID',sid)
-   selected[sid]=candidate;blob=to_wkb(candidate);budget.output(blob);decisions.append(dict(source_id=sid,status='COVERED_SKIP' if covered else 'GROWN' if candidate.difference(core).area>1e-12 else 'KEEP',shape=shape,candidate_ref=rows[sid]['geometry_ref']if covered else store.put('geometry',blob),attempts=attempts));checkpoint(dict(next_ordinal=ordinal+1,evaluations=budget.evaluations,decisions=decisions))
+   held=self.stage=='t02'and not exposure_eligible(details,sid)
+   selected[sid]=candidate;blob=to_wkb(candidate);budget.output(blob);decisions.append(dict(source_id=sid,status='COVERED_SKIP' if covered else 'GROWN' if candidate.difference(core).area>1e-12 else 'KEEP',shape=shape,candidate_ref=rows[sid]['geometry_ref']if covered or held else store.put('geometry',blob),attempts=attempts,**({'keep_reason':'EXPOSED_PERIMETER_BELOW_LIMIT'}if held and not covered else{})));checkpoint(dict(next_ordinal=ordinal+1,evaluations=budget.evaluations,decisions=decisions))
   final=self._check(checker,current,selected,ids)
   if not final['passed']:fail('SIMULTANEOUS_LAND_CHECK_FAILED','final')
   current_after=dict(current,**selected);merges=[];additions=[]
@@ -111,7 +117,7 @@ class LandAdapter:
   replacements={r['source_id']:r['candidate_ref'] for r in decisions};out_ref,out=output_scene(store,scene,plan,replacements=replacements,additions=additions)
   return dict(status='CONSTRUCTED',before_ref=store.put('geometry',to_wkb(composed(store,scene))),after_ref=store.put('geometry',to_wkb(composed(store,out))),output_scene_ref=out_ref,decisions=decisions,inclusive_candidates=merges,checks=final,evaluations=budget.evaluations,protected_source_refs={s:r['geometry_ref'] for s,r in rows.items() if s not in ids})
  def _merges(self,store,scene,plan,rows,current,budget):
-  crop=box(*scene['viewport_mm']);ids=[s for s in plan['details']['targets']if not plan['details']['containment'][s]['contained']];groups=merge_groups(ids,current);before=unary_union([current[s] for s in sorted(current)]).intersection(crop);claimed=set();accepted=[];decisions=[];additions=[]
+  crop=box(*scene['viewport_mm']);ids=[s for s in plan['details']['targets']if not plan['details']['containment'][s]['contained']and exposure_eligible(plan['details'],s)];groups=merge_groups(ids,current);before=unary_union([current[s] for s in sorted(current)]).intersection(crop);claimed=set();accepted=[];decisions=[];additions=[]
   for ordinal,(axis,members) in enumerate(groups):
    budget.evaluation();rect=box(*unary_union([current[s] for s in members]).bounds);span=before.intersection(rect);shortage=rect.difference(span).area/rect.area;near=[s for s,g in current.items() if g.intersects(rect.buffer(HARD_GAP_MM+.001))];supports=set(members)|{s for s in near if rows[s]['kind']=='trace' and current[s].intersection(span).area>0};support_union=unary_union([current[s] for s in supports]);covered={s for s in near if s not in supports and current[s].difference(support_union).is_empty};neighbors=[dict(source_id=s,original=current[s],geometry=current[s],trace_width_mm=rows[s]['metadata'].get('nominal_width_mm',0.)) for s in near if s not in supports|covered];q=journalled('inclusive-land-check',dict(axis=axis,members=list(members),span_sha256=hashlib.sha256(to_wkb(span)).hexdigest(),rectangle_sha256=hashlib.sha256(to_wkb(rect)).hexdigest()),lambda:check_proposal(span,rect,neighbors,crop=crop,cap=rect,contract=GrowthContract()));delta=rect.difference(before);reasons=[]
    from src.growth_remedy_constraints import remedy as pin_remedy
@@ -137,6 +143,7 @@ class LandAdapter:
   for row in candidate['decisions']:
    sid=row['source_id'];core=current[sid];shape=row['shape'];status=row['status'];g=core
    contained=details['containment'][sid]['contained']
+   if self.stage=='t02'and not exposure_eligible(details,sid)and(status not in('KEEP','COVERED_SKIP')or row['candidate_ref']!=rows[sid]['geometry_ref']):fail('RECTANGLE_EXPOSURE_KEEP_CHANGED',sid)
    if contained and (status!='COVERED_SKIP' or row['candidate_ref']!=rows[sid]['geometry_ref']):fail('CONTAINED_SHAPE_CHANGED',sid)
    if not contained and status=='COVERED_SKIP':fail('FALSE_COVERED_SKIP',sid)
    if status=='GROWN':

@@ -62,3 +62,42 @@ T04, T05, full-U05 or manufacturing qualification. All previous jobs and failed
 evidence remain immutable; historical `.DS_Store` custody failures remain
 **EXPLICIT_UNWAIVED_UNATTRIBUTED**. Integration requires separate review of the
 findings and highlighted result.
+
+## Provisional exposed-perimeter rule — 2026-11-07
+
+The owner explicitly activated a 50% exposed-perimeter threshold for **all T02
+rectangles**, including existing Flash/Region rectangles and newly recognized
+short draws. Its replaceable global registry is
+`contracts/t02_rectangle_exposure/settings.json`. Each T02 policy contains the
+registry JSON and hash; each plan reconstructs source-bound exposure records.
+The separate T01 circle threshold remains 58%. The preceding 60% experiment
+and its receipts remain preserved; the owner revised the provisional value
+to 50% after reviewing the marked boxed pad's 50% exposure.
+
+Measure the original rectangle perimeter exposed to empty space in complete
+original resolved copper, excluding self and exact geometric aliases. Original
+internal pad-to-trace edges are buried; coincident outer outlines are exposed.
+Covered area and later grown copper are not measurement operands. Derived
+owner-surface witnesses cannot substitute for original source occurrences.
+
+The owner also activated a globally registered 1% relative exposure tolerance.
+The effective floor is `0.50 × (1 − 0.01) = 0.495`: 49.5% exposed perimeter.
+Both values are provisional and captured in each policy. This exposure
+allowance is separate from clearance tolerance and protected-pin rules.
+
+At or above that effective floor, retain ordinary T02 checks and growth limits.
+Below the effective floor, keep the exact stage-entry geometry/reference,
+retain exclusive T02 ownership,
+and exclude the rectangle from inclusive-fill membership. It never becomes a
+T04 route. Full containment KEEP remains effective. Verification recomputes
+exposure and rejects a changed held rectangle or a modified eligibility record.
+The threshold comparison uses perimeter lengths and the existing surface
+predicate's arithmetic comparison epsilon, so binary rounding does not flip
+a decision at the effective floor. The record identifies
+when the owner-approved relative exposure allowance is consumed.
+
+This eligibility rule does not establish collective uniform gap widths. The
+marked shared-neighbor gap finding remains a separate open requirement; it
+must not be described as solved merely because a below-threshold pad stays
+unchanged. Prior recognition-only qualifications remain evidence of their
+earlier policy and are preserved unchanged.

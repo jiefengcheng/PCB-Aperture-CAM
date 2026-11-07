@@ -1,0 +1,14 @@
+{
+  "schema": "t02-rectangle-exposure-settings/1",
+  "revision": 2,
+  "status": "PROVISIONAL",
+  "minimum_exposed_perimeter_fraction_for_growth": 0.50,
+  "relative_exposure_tolerance": 0.01,
+  "tolerance_convention": "RELATIVE_TO_NOMINAL_THRESHOLD",
+  "comparison": "GROWTH_ELIGIBLE_WHEN_GREATER_OR_EQUAL_TO_TOLERATED_THRESHOLD",
+  "context": "COMPLETE_ORIGINAL_RESOLVED_SOURCE_COPPER",
+  "exclude": "SELF_AND_EXACT_GEOMETRIC_ALIASES",
+  "measurement": "ORIGINAL_RECTANGLE_PERIMETER_EXPOSED_TO_EMPTY_SPACE",
+  "action_below_limit": "KEEP_EXACT_STAGE_ENTRY_AND_RETAIN_T02_OWNERSHIP",
+  "scope": "ALL_T02_RECTANGLES; no T04 reassignment or inclusive-fill membership"
+}
