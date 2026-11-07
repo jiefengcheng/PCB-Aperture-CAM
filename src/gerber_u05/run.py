@@ -34,6 +34,8 @@ class Coordinator:
    if legacy and stage=='t01':self.execute(run,'t01_supplement',['1','2'])
  def prepare(self,run,raw,inventory,legacy=False):
   run.mkdir();(run/'source_snapshot').mkdir();(run/'source_snapshot/top.art.gbr').write_bytes(raw);p.save(run/'input_inventory.json',inventory)
+  from .storage_encoding import policy as storage_policy
+  p.save(run/'STORAGE_ENCODING.json',storage_policy())
   if legacy:p.save(run/'LEGACY_REFERENCE_JOB.json',dict(schema='fresh-legacy-reservation-reference/1',scope='Source-only recipe, no golden input'))
   else:capture_job(run)
   p.save(run/'source.json',p.build_source(p.Store(run/'runtime'),raw))
@@ -63,6 +65,8 @@ class Coordinator:
   legacy=self.job/'legacy';self.prepare(legacy,raw,inventory,True);self.stages(legacy,True)
   self.execute(legacy,'legacy_export',['construct']);self.execute(legacy,'legacy_export',['1','2'])
   reference=self.job/'reference';reference.mkdir();p.save(reference/'source.json',p.load(legacy/'source.json'))
+  from .storage_encoding import policy as storage_policy
+  p.save(reference/'STORAGE_ENCODING.json',storage_policy())
   source_assembly.attach(reference,assembly)
   from .pin_policy import capture as capture_pin
   capture_pin(reference,inventory)

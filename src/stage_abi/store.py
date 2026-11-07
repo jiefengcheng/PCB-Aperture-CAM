@@ -64,8 +64,19 @@ class ArtifactStore:
     temporary=p.with_name(p.name+'.tmp')
     if temporary.is_symlink():raise StageABIError('UNSAFE_STORE','symlink artifact temporary')
     with temporary.open('wb') as stream:stream.write(blob);stream.flush();os.fsync(stream.fileno())
+    if self._prepare_new_artifact(temporary,blob):
+     # A storage hook may change physical encoding only. Independently prove
+     # exact logical bytes before publishing the content-addressed artifact.
+     with temporary.open('rb') as stream:
+      view=memoryview(blob)
+      for offset in range(0,len(blob),1024**2):
+       if stream.read(1024**2)!=view[offset:offset+1024**2]:raise StageABIError('ARTIFACT_CORRUPTED',artifact_id)
+      if stream.read(1):raise StageABIError('ARTIFACT_CORRUPTED',artifact_id)
     os.replace(temporary,p)
   return dict(artifact_id=artifact_id,sha256=h)
+ def _prepare_new_artifact(self,path,blob):
+  """Optional encoding of this new pending file; default storage is unchanged."""
+  return False
  def put_json(self, kind, value):return self.put(kind,canonical(value))
  def get(self, reference, *, kind=None):
   ref(reference,'artifact_ref');aid=reference['artifact_id']

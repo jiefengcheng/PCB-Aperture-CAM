@@ -41,6 +41,9 @@ EPS=1e-12
 
 class Store(ArtifactStore):
     def __init__(self,root):super().__init__(root);self.read_refs={}
+    def _prepare_new_artifact(self,path,blob):
+        from .storage_encoding import prepare_pending
+        return prepare_pending(path,blob)
     def get(self,reference,*,kind=None):
         raw=super().get(reference,kind=kind);self.read_refs[reference['artifact_id']]=dict(reference);return raw
     def verify_reads(self):
@@ -50,7 +53,9 @@ def geomref(store,g):return store.put('geometry',to_wkb(g))
 def save(path,value):
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
     if path.exists():raise ValueError('IMMUTABLE_RESULT_EXISTS:'+str(path))
-    path.write_bytes(canonical(value))
+    body=canonical(value)
+    from .storage_encoding import write_new
+    if not write_new(path,body):path.write_bytes(body)
 def load(path):return json.loads(Path(path).read_bytes())
 def bounds(scene):return dict(max_source_objects=max(10000,len(scene['objects'])*3),max_targets=max(10000,len(scene['objects'])*3),max_evaluations=200000,max_output_bytes=1024**3,max_seconds=3600)
 def offset_part(core,minimum_width,factor,envelope=False,*,extra_envelope_mm=0.):

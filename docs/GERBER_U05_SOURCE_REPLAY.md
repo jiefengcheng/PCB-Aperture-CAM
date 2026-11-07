@@ -25,6 +25,16 @@ the connected-copper sequence. No historical generated result is a generation
 input. A process read fence rejects historical evidence reads outside that fresh
 job and its immutable source tree.
 
+New Gerber evidence files of at least 64 KiB use transparent APFS filesystem
+compression before their immutable names are published. Every compressed file
+is checked against all original bytes and EOF; artifact storage independently
+rechecks those bytes before publication. Existing artifacts are never reencoded.
+Logical content hashes and output-byte budgets remain unchanged. Each new role
+captures a hash-bound `STORAGE_ENCODING.json`. Temporary encoding space is
+checked above the existing 5 GiB reserve. This storage encoding changes no
+Gerber command, geometry, tolerance or gate, and requires no image unmount or
+internal-storage fallback.
+
 Every stage retains complete construction and two fresh outcome reconstructions.
 Gerber T04 uses a deterministic ten-rung widening ladder. The global provisional
 registry is `contracts/t04/settings.json`: the previously practiced maximum
