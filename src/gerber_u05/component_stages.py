@@ -109,7 +109,11 @@ def run_t01(store,scene,binding):
   decisions.append(dict(source_id=sid,aliases=site['aliases'],original_owner_id=owner,source_radius_mm=site['radius'],selected_radius_mm=radius,added_area_mm2=candidate.difference(core).area,decision='KEEP'if p.to_wkb(candidate)==p.to_wkb(core)else'GROW_CONNECTED_COPPER',reason=reason,source_core_preserved=candidate.covers(core),selected_cap_sha256=p.digest(p.to_wkb(cap))))
   if len(decisions)%64==0:print(p.canonical(dict(stage='t01',sites_done=len(decisions),sites=len(sites))).decode(),flush=True)
  lands=[dict(id=s['source_id'],original=s['core'],candidate=after[s['source_id']],native_source_kind='gr_circle',native_stroke_width_mm=0.)for s in sites];omit={a for s in sites for a in s['aliases']};fixed=[dict(id=s,geometry=g,trace_width_mm=next(r['trace_width_mm']for r in meta if r['id']==s))for s,g in current.items()if s not in omit]
- full=p.PreparedLandScene(lands,fixed).check(lands,materialize_scene=True)
+ checker=p.PreparedLandScene(lands,fixed)
+ from src.t01_region_contacts import install_prepared_ports
+ region_ports=install_prepared_ports(checker,meta)
+ full=checker.check(lands,materialize_scene=True)
+ if region_ports:full['original_region_attachment_ports']=region_ports
  if not full['passed']:raise ValueError('T01_FULL_COMPONENT_SCENE_FAILED:'+str(full['failures'][:2]))
  for s in sites:
   if s['source_id']in allocation['contained_keep_source_ids']and p.to_wkb(after[s['source_id']])!=p.to_wkb(s['core']):raise ValueError('T01_CONTAINED_SOURCE_CHANGED')

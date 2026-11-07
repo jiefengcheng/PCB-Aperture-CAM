@@ -402,6 +402,9 @@ def check(run,body,ledger):
             changed=set(by_stage[stage]);lands=[dict(id=s,original=previous[s]if s in previous else p.geometry(store,newrows[s]['original_ref']),candidate=current[s],native_source_kind='gr_circle'if newrows[s]['kind']=='circle'else'gr_poly',native_stroke_width_mm=0.)for s in sorted(changed)]
             if lands:
                 fixed=[dict(id=s,geometry=g,trace_width_mm=newrows[s]['metadata'].get('original_width_mm',0.))for s,g in previous.items()if s not in changed];checker=ActualLandScene(lands,fixed);native_port_proofs=[]
+                if stage=='t01':
+                    from src.t01_region_contacts import install_prepared_ports
+                    native_port_proofs=install_prepared_ports(checker,binding['width_metadata_rows'])
                 if stage=='t02':
                     # Match source-bound T02 port permissions, not contacts
                     # introduced by earlier stages' larger predecessor copper.

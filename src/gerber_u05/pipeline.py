@@ -120,6 +120,9 @@ def build_source(store,raw):
         md.update(nominal_width_mm=width,original_width_mm=width)
         ref=geomref(store,g);objects.append(dict(source_id=sid,kind=kind,original_ref=ref,geometry_ref=ref,metadata=md))
         token=f'(width {width:.17g})\n'.encode();width_text.append(token);physical.append(dict(id=sid,kind='segment'if kind=='stroke'and md['route_kind']=='segment'else'arc'if kind=='stroke'else'gr_circle'if kind=='circle'else'gr_poly',trace_width_mm=width,source_span=[offset,offset+len(token)],geometry_sha256=ref['sha256']));offset+=len(token)
+        if isinstance(o,go.Region):
+            from src.t01_region_contacts import source_marker
+            physical[-1]['t01_original_region']=source_marker(source_hash,sid,ref['sha256'])
         ledger.append(dict(source_id=sid,ordinal=i,polarity_dark=True,disposition='PHYSICAL_SOURCE_CONTRIBUTION',geometry_sha256=ref['sha256']))
     image=unary_union([geometry(store,r['geometry_ref'])for r in objects]);source_image=affine_scale(source_profile.ordered(zip(all_shapes,(o.polarity_dark for o in parsed.objects))),1,-1,origin=(0,0))
     if image.symmetric_difference(source_image).area>1e-10:raise ValueError('ORDERED_POLARITY_CONTRIBUTION_ASSEMBLY_MISMATCH')
@@ -160,7 +163,11 @@ def run_t01(store,scene,binding):
     for s in sites:
         for sid in s['aliases']:after[sid]=result['scene'].accepted[s['source_id']]
     lands=[dict(id=s['source_id'],original=s['core'],candidate=after[s['source_id']],native_source_kind='gr_circle',native_stroke_width_mm=0.)for s in sites];omit={a for s in sites for a in s['aliases']};fixed=[dict(id=s,geometry=g,trace_width_mm=next(r['trace_width_mm']for r in rows if r['id']==s))for s,g in current.items()if s not in omit]
-    full=PreparedLandScene(lands,fixed).check(lands,materialize_scene=True)
+    checker=PreparedLandScene(lands,fixed)
+    from src.t01_region_contacts import install_prepared_ports
+    region_ports=install_prepared_ports(checker,rows)
+    full=checker.check(lands,materialize_scene=True)
+    if region_ports:full['original_region_attachment_ports']=region_ports
     if not full['passed']or any(not d['verification']['passed']for d in result['decisions']):raise ValueError('T01_FULL_SCENE_CHECK_FAILED')
     for s in sites:
         if s['source_id']in allocation['contained_keep_source_ids']and to_wkb(after[s['source_id']])!=to_wkb(s['core']):raise ValueError('T01_CONTAINED_SOURCE_CHANGED')

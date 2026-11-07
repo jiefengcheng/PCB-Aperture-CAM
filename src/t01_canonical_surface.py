@@ -22,7 +22,7 @@ class SurfaceGuard:
             self.original[sid]=g;self.index[sid]=i;self.widths[sid]=r.get('trace_width_mm') or 0.
         self.ids=sorted(self.original);self.tree=STRtree([self.original[s] for s in self.ids])
         self.predecessor=unary_union([self.original[s] for s in self.ids])
-        self.aliases=aliases;self.rows=rows;self.records=[];self.surfaces={}
+        self.aliases=aliases;self.rows=rows;self.records=[];self.surfaces={};self.source_sites={s['source_id']:s for s in sites}
 
     def hidden_by_original(self,sid,g):
         key=(sid,tuple(g.bounds))
@@ -33,6 +33,12 @@ class SurfaceGuard:
     def port(self,sid,other):
         key=tuple(sorted((sid,other)))
         if key not in self.ports:
+            row=self.rows[self.index[other]]
+            if sid in self.source_sites and 't01_original_region'in row:
+                from src.t01_region_contacts import original_port
+                self.ports[key]=original_port(self.source_sites[sid],row,self.original[other],
+                                              quad_segs=self.contract.port_quad_segs)
+                return self.ports[key]
             overlap=self.original[sid].intersection(self.original[other])
             self.ports[key]=None if overlap.is_empty else overlap.buffer(max(self.widths[sid],self.widths[other])+self.contract.original_port_buffer_gap_mm,quad_segs=self.contract.port_quad_segs)
         return self.ports[key]

@@ -29,15 +29,16 @@
     "sha256": "bcc5c0ebde13b88c3356dd5301c32800f09f381f29701078cd4dd8fa14c3f9b8"
   },
   "kernel_sha256": {
-    "src/crop_balanced_t01.py": "571ce152f3b36566c1f7187862c0e40fe01f9069974f0995935738724e8e9b27",
+    "src/crop_balanced_t01.py": "21c37617615ce71cff9c881a3b6941a348687b2c8ced806fab73c919b24a61c4",
     "src/crop_diameter_selection.py": "2f4eeb3c6552edfd764bc91da2d1833f50c67364aa12a2ae3f3a3eea94fc6e20",
     "src/crop_square_neighbor_experiment.py": "8b2fd22b113d61e479b8856032988ffe163f44f2d3147452869c13b8b6942bb4",
     "src/crop_balanced_capped_growth.py": "49c92efd49a04d3aaa1281b221a0b756df83c9329228068b5dbd63b27d6ee796",
     "src/crop_circle_sources.py": "dedf94561a4a167544b233c367b0f71a2da4792d39a6fd9e606f1bf7236c5e86",
     "src/native_inventory.py": "5f19045fa6716671aeae8cf3a0a13b75a5f81a4f58c9ef2679847c2c4702ee11",
-    "src/t01_canonical_surface.py": "fc0ed3cdda5895c6319f294e67fbc4e6785e95ae91ffab1ec8084c7d362ea882",
+    "src/t01_canonical_surface.py": "8d53f5eb1fb7aa38bcdbab1e3db3aeffc7c44047cc7cef07ac1681a60251388f",
     "src/shape_containment.py": "fe7cc45a9ff3ce2068dde68a735e978baeea0a277a6e6724978d94be6e7385ca",
-    "src/clearance_policy.py": "142889faa27680c9eddcc14103e5ec6d0cdc6c8bf902f09128e22d0748aab19a"
+    "src/clearance_policy.py": "142889faa27680c9eddcc14103e5ec6d0cdc6c8bf902f09128e22d0748aab19a",
+    "src/t01_region_contacts.py": "14f21a4ef8466e78479bfddd076222f871726070788d96909efc065f4f15e9e3"
   },
   "permissions": {
     "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0": {
@@ -126,5 +127,20 @@
     "supersedes_sha256": "b3576983e4ba0a598a567fb4ae00c7acd7b71bc8aa4247198c95f3f8a1f152cf",
     "prior_contract_path": "contracts/t01_canonical/revisions/contract_b3576983e4ba0a598a567fb4ae00c7acd7b71bc8aa4247198c95f3f8a1f152cf.json",
     "authority": "Owner 2026-11-07: extend T01 KEEP to circles whose area is covered more than 70% by other copper; register replaceable global provisional threshold; preserve source copper, existing full-containment and all checks"
+  },
+  "original_region_attachments": {
+    "schema": "t01-original-gerber-region-contact/1",
+    "source": "RESOLVED_ORIGINAL_POSITIVE_SOURCE_CONTRIBUTION",
+    "admission": "EXACT_POSITIVE_AREA_CIRCLE_REGION_INTERSECTION",
+    "permission": "ORIGINAL_LOCALLY_ATTACHED_REGION_CORRIDOR_INSIDE_EXISTING_HALF_SOURCE_RADIUS_WINDOW; existing full-source construction guard plus reserve; nonattached local arms remain barriers",
+    "authority": "Original local attachment only; never net or global component exemption",
+    "nomination": "Unchanged source-qualified round priority policy",
+    "verification": "Original primitive, full-surface, pin separation and actual native checks remain required",
+    "local_trace_chain": "Original positive-area local circle\u2192Region\u2192native-trace attachments only; no current/remote connection permission"
+  },
+  "region_attachment_revision": {
+    "supersedes_sha256": "0abea62b43ac016d49acff55b479649e5f18f4b8380fdcd0050edf55091f6f38",
+    "prior_contract_path": "contracts/t01_canonical/revisions/contract_0abea62b43ac016d49acff55b479649e5f18f4b8380fdcd0050edf55091f6f38.json",
+    "authority": "Owner 2026-11-07: fix T01 recognition of existing circle-to-filled-Gerber-Region attachments; preserve checks and wait for next T01 coverage issue"
   }
 }

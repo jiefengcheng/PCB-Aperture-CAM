@@ -67,10 +67,22 @@ class WorkingScene:
             zones={}
             for item in ids:
                 i=int(item);row=rows[i];geometry=shapes[i]
+                if 't01_original_region'in row:
+                    from src.t01_region_contacts import original_port
+                    port=original_port(site,row,geometry,quad_segs=settings.qsegs)
+                    if port is not None:zones[row['id']]=port
+                    continue
                 if row['kind'] not in ('segment','arc') or not geometry.intersects(site['core'].buffer(1e-7,quad_segs=settings.qsegs)):continue
                 width=re.search(r'\(\s*width\s+([0-9.]+)\s*\)',source[slice(*row['source_span'])].decode())
                 if not width:raise ValueError('SOURCE_TRACE_WIDTH_MISSING')
                 zones[row['id']]=prepared_intersection(prepared_buffer(geometry,max(.005,float(width.group(1))/2+.005),quad_segs=settings.qsegs),prepared_buffer(site['core'],.5*site['radius'],quad_segs=settings.qsegs))
+            if any('t01_original_region'in rows[int(i)]for i in ids):
+                from src.t01_region_contacts import integral_trace_ports
+                local_ids=sorted(map(int,ids))
+                linked=integral_trace_ports(site,[rows[i]for i in local_ids],
+                                           [shapes[i]for i in local_ids],quad_segs=settings.qsegs)
+                for sid,permission in linked.items():
+                    zones[sid]=permission if sid not in zones else zones[sid].union(permission)
             self.ports[site['source_id']]=zones
 
     def obstacles(self,site,expected_revision,overrides=None):

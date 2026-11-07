@@ -14,7 +14,7 @@ from src.t01_circle_overlap import capture as overlap_settings,assess as assess_
 
 ROOT=Path(__file__).resolve().parents[1]
 CONTRACT=ROOT/'contracts/t01_canonical/contract.json'
-CONTRACT_SHA256='0abea62b43ac016d49acff55b479649e5f18f4b8380fdcd0050edf55091f6f38'
+CONTRACT_SHA256='19ac477f5ed8587d273f2de0a1e45f538a88b112bdc128798937cd4b22349037'
 
 def specification():
     data=CONTRACT.read_bytes()
