@@ -9,6 +9,8 @@ from .checking_envelopes import constraint
 def initialize(store,binding,scene=None):
  from src.t04_width_fence import restore as restore_width_fence
  restore_width_fence(store,scene)
+ from src.t02_shared_gaps import restore as restore_shared_gaps
+ restore_shared_gaps(store,scene)
  original=store.get_json(binding['scene_ref'],kind='scene');rows,current,_=p.operands(store,original)
  raw=store.get(binding['source_ref'],kind='gerber-source');parsed,_,_=p.source_profile.parse_source(raw)
  source=p.affine_scale(p.source_profile.ordered((p.source_profile.object_geometry(o)[0],o.polarity_dark)for o in parsed.objects),1,-1,origin=(0,0))

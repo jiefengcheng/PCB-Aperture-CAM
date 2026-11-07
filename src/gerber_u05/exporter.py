@@ -29,6 +29,8 @@ def context(run):
     reserve_prior(cc.ACTIVE,store)
     for name in ORDER:
         value=p.load(run/(name+".json"));scene=store.get_json(value["output_scene_ref"],kind="scene");cc.ACTIVE.register_scene(store,scene)
+    from src.t02_shared_gaps import restore as restore_shared_gaps
+    restore_shared_gaps(store,scene)
     from src import pin_separation as pin
     if pin.ACTIVE is not None:
         for entry in reversed(scene['lineage']):
@@ -487,6 +489,8 @@ def check(run,body,ledger):
         for sid,pieces in stage_map.items():all_observed.setdefault(sid,[]).extend(pieces)
     actual_owner_groups=decoded_groups(before,all_observed);checks['whole_board_owner_clearance']=native_clearance(source_groups,actual_owner_groups);checks['whole_board_void_inventory']=final_inventory(before,actual_owner_groups)
     after=before.union(p.unary_union(observed));actual_grid=assemble_native_material(before,observed,grid_mm=GRID_MM);distance,metric=image_hausdorff(actual_grid,expected,tolerance=POLYGON_TOLERANCE_MM);area=actual_grid.symmetric_difference(expected).area;bound=2*expected.length*POLYGON_TOLERANCE_MM
+    from src import t02_shared_gaps as shared_gaps
+    if shared_gaps.ACTIVE is not None:checks['shared_neighbor_gaps']=shared_gaps.complete(shared_gaps.ACTIVE,actual_grid,tolerance_mm=POLYGON_TOLERANCE_MM)
     raw_grid=union_all([before,*raw_observed],grid_size=GRID_MM);raw_distance,raw_metric=image_hausdorff(raw_grid,expected,tolerance=POLYGON_TOLERANCE_MM);raw_overlay_diagnostic=dict(status='DIAGNOSTIC_ONLY_NOT_PHYSICAL_MATERIAL',hausdorff_mm=raw_distance,symmetric_difference_mm2=raw_grid.symmetric_difference(expected).area,metric=raw_metric,basis='Unwelded triangle overlays can create numerical seams; physical qualification uses exact parsed integer-material proofs before assembly')
     raw_decision_image=p.from_wkb(store.get(value['intra']['after_native_ref'],kind='geometry'));raw_area=after.symmetric_difference(raw_decision_image).area;raw_area_bound=2*raw_decision_image.length*POLYGON_TOLERANCE_MM
     if not raw_decision_image.is_valid or raw_area>raw_area_bound:raise ValueError('RAW_MODEL_IMAGE_AREA_FIDELITY_FAILED')

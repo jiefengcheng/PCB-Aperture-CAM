@@ -29,7 +29,7 @@ def verify(job):
         if p.digest((job/name).read_bytes())!=expected:raise ValueError('QUALIFICATION_INPUT_CHANGED:'+name)
 
 
-def prepare(job,old):
+def prepare(job,old,*,shared_neighbors=False):
     from tools.preflight import verify_manifest
     assets=verify_manifest();job.mkdir(exist_ok=False);store=p.Store(job/'runtime')
     raw=(old/'source_snapshot/top.art.gbr').read_bytes();binding=p.build_source(store,raw)
@@ -66,7 +66,18 @@ def prepare(job,old):
         (job/name).write_bytes((old/name).read_bytes())
     targets=[r['source_id']for r in new['objects']if r['source_id'].split(':bytes:')[-1]in TARGET_SPANS]
     if len(targets)!=len(TARGET_SPANS):raise ValueError('MARKED_RECTANGLE_INVENTORY_INCOMPLETE')
-    p.save(job/'SCOPE.json',dict(scope='ELEVEN_MARKED_T02_RECTANGLES_WITH_COMPLETE_RETAINED_T03_CONTEXT; NOT_FULL_U05',
+    marked_targets=sorted(targets)
+    if shared_neighbors:
+        from src.t02_shared_gaps import records
+        _,entry_copper,original_copper=p.operands(store,new_entry)
+        spec=records(new_entry,original_copper,entry_copper);closed=set(targets)
+        for _ in range(len(new_entry['objects'])):
+            peers={s for g in spec['groups']if closed.intersection(s for bank in g['banks']for s in bank)for bank in g['banks']for s in bank}
+            if peers<=closed:break
+            closed.update(peers)
+        else:raise ValueError('SHARED_NEIGHBOR_CLOSURE_DID_NOT_TERMINATE')
+        targets=sorted(closed)
+    p.save(job/'SCOPE.json',dict(scope=('MARKED_RECTANGLES_AND_COMPLETE_SHARED_NEIGHBOR_CLOSURE'if shared_neighbors else'ELEVEN_MARKED_T02_RECTANGLES_WITH_COMPLETE_RETAINED_T03_CONTEXT')+'; NOT_FULL_U05',marked_target_ids=marked_targets,shared_neighbor_closure=shared_neighbors,
         original_job=str(old),source_sha256=p.digest(raw),retained_files={n:p.digest((old/n).read_bytes())for n in ('source.json','t03.json','PIN_SEPARATION_POLICY.json','SOURCE_ASSEMBLY_BINDING.json')},
         new_terminal_ids=sorted(admitted),qualification_target_ids=sorted(targets),assets_verified=assets,
         native_predecessor_occurrences=len(current),preceding_geometry='BYTE_IDENTICAL_RETAINED_T03',
@@ -137,7 +148,10 @@ def execute(job,mode):
     actual=decoded_groups(cc.ACTIVE.index.source,observed)
     native_clearance=clearance(project_groups(before),actual);topology=final_inventory(cc.ACTIVE.index.source,actual)
     whole=unary_union(list(actual.values()));native_pin=pin.require(whole,finished=True,scope='isolated_actual_reparsed_gerber')
-    native=dict(status='PASS',generated_sha256=p.digest(body),original_atoms_preserved=n,contour_fidelity=fidelity,
+    from src.t02_shared_gaps import complete as complete_gaps
+    gap_proof=result['candidate'].get('shared_neighbor_gaps')
+    native_gaps=complete_gaps(gap_proof,whole,tolerance_mm=export.POLYGON_TOLERANCE_MM)if gap_proof is not None else None
+    native=dict(status='PASS',shared_neighbor_gaps=native_gaps,generated_sha256=p.digest(body),original_atoms_preserved=n,contour_fidelity=fidelity,
                 material=material_proof,clearance=native_clearance,topology=topology,pin_separation=native_pin)
     if mode=='construct':
         (job/'qualification.top.art.gbr').write_bytes(body);p.save(job/'NATIVE.json',native)
@@ -150,10 +164,10 @@ def execute(job,mode):
 
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=['prepare','construct','1','2']);parser.add_argument('--job',type=Path,required=True);parser.add_argument('--retained',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('action',choices=['prepare','construct','1','2']);parser.add_argument('--job',type=Path,required=True);parser.add_argument('--retained',type=Path);parser.add_argument('--shared-neighbors',action='store_true');args=parser.parse_args()
     p.configure()
     if not args.job.is_absolute()or not args.job.resolve().is_relative_to(p.configure().resolve()):parser.error('job must be on prepared LaCie workspace')
-    if args.action=='prepare':prepare(args.job,args.retained)
+    if args.action=='prepare':prepare(args.job,args.retained,shared_neighbors=args.shared_neighbors)
     else:execute(args.job,args.action)
 
 

@@ -101,3 +101,39 @@ marked shared-neighbor gap finding remains a separate open requirement; it
 must not be described as solved merely because a below-threshold pad stays
 unchanged. Prior recognition-only qualifications remain evidence of their
 earlier policy and are preserved unchanged.
+
+## Shared-neighbor straight gaps — isolated correction, 2026-11-07
+
+Repeated collinear terminal faces bordering the same original copper neighbor
+now share a bank offset. Recognition uses complete original resolved copper,
+not net names, later growth or pixel labels. At least two disjoint straight
+slots must share the original face planes and a genuine neighbor; each slot
+must be empty in the source. The geometry must support at least 75% facing-edge
+overlap. Discovery is local (gap and repeat spacing at most twice the relevant
+source dimension). This is a conservative straight-channel family; unrelated,
+unequal original gaps and curved/irregular channels are not regularized.
+
+Ordinary independent T02 proposals still undergo all existing checks. A
+deterministic bank projection then reduces only optional proposed growth to
+the smallest safe bank offset, propagating intersecting bank equalities without
+search. A fixed, unselected or exposure-KEEP member anchors its bank. The other
+axis may still grow. Original/entry copper is never removed, the rectangle
+stays centered, and both axes remain within the existing 1.25 cap. Earlier
+intrusions into a protected source corridor halt rather than get trimmed.
+
+Every full inclusive-fill proposal is checked against the coordinated gaps
+before acceptance; any intrusion rejects the entire proposal. The immutable
+accepted gap state is stored as a hash-bound T02 lineage artifact. Later remedy
+and encoding checks use that state; they cannot redefine the gap from a later
+widened rectangle. Final actual Gerber material must preserve both facing
+boundaries and the full straight slot spans, using the existing export numerical
+tolerance. Source joints, protected pin slots and the 20% fill limit remain
+independent requirements. The 50% exposure threshold and its 1% relative
+allowance (49.5% effective floor), plus T01's 58%, are unchanged.
+
+Qualification expands the eleven marked regressions to their complete shared
+neighbor closure, while retaining exact T03 geometry for all other occurrences.
+It remains a bounded T02 trial, not a fresh full U05 or integration verdict.
+The highlighted comparison and final source/export proofs are retained under
+`out/lacie_work/evidence/t02_shared_neighbor_gaps_20261107/`.
+Historical failures and explicit unwaived `.DS_Store` custody findings remain.

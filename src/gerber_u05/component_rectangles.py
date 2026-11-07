@@ -12,6 +12,7 @@ from src.component_voids import holes,joined
 from src.indexed_polygon_distance import distance
 from src.stage_abi.store import digest
 from .checking_envelopes import constraint
+from src import t02_shared_gaps as shared_gaps
 
 class ComponentRectangleAdapter(FastRectangleAdapter):
  def verify(self,*args,**kwargs):
@@ -57,6 +58,8 @@ class ComponentRectangleAdapter(FastRectangleAdapter):
    budget.evaluation();rect=box(*unary_union([current[s]for s in members]).bounds);span=before.intersection(rect);shortage=rect.difference(span).area/rect.area;owners={ctx.owner(s)for s in members};delta=rect.difference(before);reasons=[];pairs=[]
    from src.growth_remedy_constraints import remedy as pin_remedy
    pin_check=pin_remedy(rect,before)
+   shared_check=shared_gaps.fill_check(plan['details'],current,rect)
+   if shared_check is not None and not shared_check['passed']:reasons.append('SHARED_NEIGHBOR_GAP_ENTIRE_FILL')
    if pin_check is not None and not pin_check['passed']:reasons.append('PROTECTED_PIN_SEPARATION_ENTIRE_FILL')
    if shortage>.20:reasons.append('SHORTAGE_ABOVE_20_PERCENT')
    if span.geom_type!='Polygon':reasons.append('SPAN_NOT_ONE_CONNECTED_SURFACE')
@@ -94,6 +97,7 @@ class ComponentRectangleAdapter(FastRectangleAdapter):
    if delta.area<=1e-12:reasons.append('NO_VISIBLE_ADDITION')
    record=dict(ordinal=ordinal,members=list(members),axis=axis,shortage=shortage,status='REJECTED'if reasons else'MERGED',reasons=reasons,check=q,original_component_owners=sorted(owners),foreign_component_pairs=pairs,ownership_policy=cc.POLICY)
    if pin_check is not None:record['pin_separation']=pin_check
+   if shared_check is not None:record['shared_neighbor_gaps']=shared_check
    if functional is not None:record.update(functional_source_channel_ids=sorted(channel_ids),functional_shortage=functional_shortage,functional_channel_pairs=functional_pairs,source_void_basis='Frozen functional source channel; temporary frame excluded analytically')
    if not reasons:
     blob=to_wkb(rect);budget.output(blob);reference=store.put('geometry',blob);sid='t02-inclusive:'+reference['sha256'];md=dict(origin='t02-inclusive-fill',members=list(members),original_component_owner_id=own,original_source_sha256=ctx.source_hash,original_member_wkb_sha256={s:digest(to_wkb(ctx.originals[s]))for s in members})
