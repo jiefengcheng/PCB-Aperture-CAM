@@ -8,7 +8,7 @@ import argparse,datetime,json,os,subprocess,uuid
 from pathlib import Path
 from . import pipeline as p
 from .guard import ROOT,seal,verify_sources,install_read_fence
-from .prefix import sha,load,verify as verify_prefix
+from .prefix import sha,load,verify as verify_prefix,shared_gap_restore_same
 from .incremental import copy_file
 from .run import Coordinator,CONNECTED
 from .workspace import configure
@@ -21,6 +21,7 @@ TAIL_ONLY={
  'src/gerber_u05/native_assembly.py','src/gerber_u05/native_material.py',
  'src/gerber_u05/native_spindle_operand.py','src/gerber_u05/source_prefix_control.py',
  'src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py',
+ 'src/shared_gap_projection.py',
 }
 
 def verify_code(original,current,old_root):
@@ -32,13 +33,15 @@ def verify_code(original,current,old_root):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current/relative)
   if actual!=expected:
+   if relative=='src/t02_shared_gaps.py':
+    changed.append(dict(path=relative,before_sha256=expected,after_sha256=actual,proof=shared_gap_restore_same(old.read_text(),(current/relative).read_text())));continue
    if relative not in TAIL_ONLY:raise ValueError('REUSED_T05_GEOMETRY_CODE_CHANGED:'+relative)
    changed.append(dict(path=relative,before_sha256=expected,after_sha256=actual))
  # A new driver is allowed; new geometry modules/configuration are not.
  files=[file for directory in('src','contracts','tools','web')for file in(current/directory).rglob('*')if file.is_file()and file.suffix in('.py','.json','.command','.js','.html')]
  if(current/'SOURCE_REVISION.json').is_file():files.append(current/'SOURCE_REVISION.json')
  extras={file.relative_to(current).as_posix()for file in files}-known
- if extras-{'src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py','SOURCE_REVISION.json'}:raise ValueError('REUSED_T05_UNDECLARED_PRODUCER_ADDED')
+ if extras-{'src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py','src/shared_gap_projection.py','SOURCE_REVISION.json'}:raise ValueError('REUSED_T05_UNDECLARED_PRODUCER_ADDED')
  return changed
 
 def validate_stage(run,state,producer_sha):

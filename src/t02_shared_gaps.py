@@ -376,7 +376,7 @@ def complete(proof,material,*,tolerance_mm=0.):
   raise ValueError('T02_SHARED_NEIGHBOR_UNIFORMITY_FAILED:'+canonical(dict(failed_slots=failed_slots,failed_boundaries=failed_boundaries)).decode())
  return q
 
-def restore(store,scene):
+def restore(store,scene,*,project_parts=False):
  global ACTIVE
  ACTIVE=None
  if scene is None:return
@@ -397,7 +397,11 @@ def restore(store,scene):
   actual={(s['group_id'],s['lo'],s['hi'])for s in state['zones']}
   if expected!=actual or len(state['zones'])!=len(expected):raise ValueError('SHARED_GAP_FROZEN_COVERAGE_CHANGED')
   ACTIVE=state
-  complete(ACTIVE,unary_union(list(now.values())))
+  if project_parts:
+   from src.shared_gap_projection import complete_parts
+   complete_parts(ACTIVE,now.values())
+  else:
+   complete(ACTIVE,unary_union(list(now.values())))
 
 def remedy(logical,predecessor):
  if ACTIVE is None:return None

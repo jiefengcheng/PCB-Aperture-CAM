@@ -14,6 +14,28 @@ EQUIVALENT={
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def load(path):return json.loads(Path(path).read_bytes())
 
+def shared_gap_restore_same(before,after):
+ """An export opt-in may change only restoration's complete-material overlay."""
+ dump=lambda node:ast.dump(node,include_attributes=False)
+ old=ast.parse('complete(ACTIVE,unary_union(list(now.values())))').body[0]
+ projected=ast.parse('if project_parts:\n from src.shared_gap_projection import complete_parts\n complete_parts(ACTIVE,now.values())\nelse:\n complete(ACTIVE,unary_union(list(now.values())))').body[0]
+ tree=ast.parse(after);found=False
+ for node in tree.body:
+  if not isinstance(node,ast.FunctionDef)or node.name!='restore':continue
+  args=node.args
+  if len(args.kwonlyargs)!=1 or dump(args.kwonlyargs[0])!=dump(ast.arg(arg='project_parts'))or dump(args.kw_defaults[0])!=dump(ast.Constant(False)):raise ValueError('REUSED_SHARED_GAP_RESTORE_SIGNATURE_CHANGED')
+  args.kwonlyargs=[];args.kw_defaults=[]
+  class Normalize(ast.NodeTransformer):
+   count=0
+   def visit_If(self,item):
+    if dump(item)==dump(projected):self.count+=1;return old
+    return self.generic_visit(item)
+  normalizer=Normalize();normalizer.visit(node)
+  if normalizer.count!=1:raise ValueError('REUSED_SHARED_GAP_RESTORE_PROJECTION_CHANGED')
+  found=True
+ if not found or dump(tree)!=dump(ast.parse(before)):raise ValueError('REUSED_SHARED_GAP_ALGORITHM_CHANGED')
+ return dict(status='UNCHANGED_GROWTH_AND_DEFAULT_RESTORE_AST',changed_scope='Exact export-only opt-in to complete protected-gap projections; all existing default geometry and predicates unchanged')
+
 def pipeline_prefix_same(before,after):
  def filtered(text):
   tree=ast.parse(text);result=[]
@@ -72,6 +94,8 @@ def verify_code(original,root,old_root):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if relative=='src/t02_shared_gaps.py':
+   results.append(dict(path=relative,proof=shared_gap_restore_same(path.read_text(),current.read_text())));continue
   if relative=='src/gerber_u05/pipeline.py':
    results.append(dict(path=relative,proof=pipeline_prefix_same(path.read_text(),current.read_text())));continue
   if relative=='src/gerber_u05/worker.py':
