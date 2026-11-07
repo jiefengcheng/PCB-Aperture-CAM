@@ -1,6 +1,6 @@
 # U05 fixed-candidate verification
 
-Status: isolated T02 implementation; not installed in the normal app. The
+Status: qualified T02 implementation installed in app code checkpoint `17a9737`. The
 current 3020212826 full run keeps its frozen source unchanged. The owner has
 required that it be the last full run of that board. Remaining boards stay
 paused until the reusable route is qualified.
@@ -59,7 +59,7 @@ T04 audit directory and stopped at the unchanged missing-proof guard. That
 failed setup is retained. A new complete clone includes the original audits.
 Two fresh-process fixed-candidate evaluations pass and reproduce the complete
 qualified stage value exactly, including all fresh verification, pin and width
-proofs. They took 253.426 and 258.306 seconds, with sampled process peak RSS of
+proofs. They took 253.426 and 258.306 seconds, with reported process peak RSS of
 1,600,815,104 and 1,577,828,352 bytes respectively. Both forbid optimizer and
 trial-search entry points. Retained search-based production evaluations took
 about 26 minutes; this comparison is bounded checkpoint evidence, not a fresh

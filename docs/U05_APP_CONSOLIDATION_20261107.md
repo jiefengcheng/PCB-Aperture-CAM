@@ -2,7 +2,13 @@
 
 ## Current incremental correction
 
-The normal app contains code checkpoint `1c1685f`, including `d1235fe`'s
+The normal app contains code checkpoint `17a9737`: the qualified redundant-owned
+grid-hole export correction and fixed-candidate T02 evaluation path are now
+installed. The latter keeps the complete scene/fill verifier and avoids repeating
+the sizing search in each evaluation. Two retained real fixed-stage evaluations,
+196 focused cases and two 47-operation synthetic routes pass. See the
+[fixed-candidate verification contract](U05_FIXED_CANDIDATE_VERIFICATION_20261108.md).
+This includes code checkpoint `1c1685f` and `d1235fe`'s
 qualified T04-entry walls and downstream frozen-gap veto, plus the separately
 qualified provisional 1% shared-gap matching policy. See
 [qualified walls](T02_QUALIFIED_ENTRY_GAPS_20261107.md) and
@@ -14,7 +20,9 @@ covered completely by predecessor copper, with no physical copper addition.
 Corrected incremental job `20261107T163654Z-ab5d273c176a4dd08a7e60db32c0ca59`
 retains 17 verified legacy operations through T05 and requires 30 fresh native
 operations. Corrected export construction passed; remaining file and downstream
-checks are running. The hole correction remains unintegrated. No completed
+checks are running. The current job uses its unchanged frozen source, despite
+the separately qualified app installation. It is the last authorized full run
+of 3020212826; no new whole-board restart is allowed. No completed
 customer-board result is claimed. Other boards stay paused; recurring baseline
 test issues are deferred, and historical custody findings remain unwaived.
 

@@ -1,4 +1,41 @@
-# Current completion and provisional gap policy — 2026-11-08
+# Current route stabilization — 2026-11-08
+
+Code checkpoint `17a9737` is installed and pushed on
+`codex/u05-reproducible-batch`. It includes the qualified 1% shared-gap policy,
+the redundant-owned-grid-hole export correction and fixed-candidate T02
+evaluations. Construction still performs the sizing search once; each T02
+evaluation reconstructs the chosen geometry and freshly checks complete source,
+eligibility, caps, finite copper, pin slots, shared gaps and all logical fill
+proposals without running that sizing search again. Search-attempt records
+remain construction evidence, not a claim of another optimizer execution.
+
+Qualification: 194 focused tests plus two accepted-fill cases pass. Two
+fresh-process evaluations reproduce the complete retained 78-rectangle stage
+value exactly in 253.426 / 258.306 seconds, with optimizer calls forbidden.
+Two small synthetic fixtures pass all 47 native operations each, including
+actual export/reparse, eight corrupted files, defect audit and rendering. The
+second fixture exercises two growing rectangles through the actual new worker
+path. This is incremental code qualification, not finished client acceptance.
+See [verification contract and evidence](U05_FIXED_CANDIDATE_VERIFICATION_20261108.md).
+
+The current 3020212826 job is the owner's **last authorized full run**:
+`20261107T163654Z-ab5d273c176a4dd08a7e60db32c0ca59`. Its frozen `caff24a`
+source remains unchanged. Paired legacy export, reference remedy, final T01,
+T03 and T04 operations have passed; final T02 is running. Final U05 export,
+controls, audit, rendering and sibling delivery remain required. The pipeline's
+earlier reservation export is an intermediate input, not the final delivery.
+No additional full run or whole-board growth restart is authorized. Corrections
+must use qualified checkpoints and affected-work/final-file validation; if a
+full restart proves necessary, stop and report it. Other boards remain paused.
+
+Further performance experiments are separate from this delivery. The buffered
+predecessor prototype and uncommitted T04 verifier remain excluded. Six
+recurring baseline-test issues are deferred with their FAIL evidence retained.
+Positive-only flattening remains a separate unfinished slice. `.DS_Store`
+custody remains **EXPLICIT_UNWAIVED_UNATTRIBUTED**. Owner PENDING_USER;
+independent NOT_RUN; electrical/manufacturing NOT_ESTABLISHED.
+
+# Earlier completion and provisional gap policy — 2026-11-08
 
 The normal app branch `codex/u05-reproducible-batch` contains code checkpoint
 `1c1685f`, committed and pushed: provisional shared-neighbor gap differences
