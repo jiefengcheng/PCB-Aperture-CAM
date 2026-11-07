@@ -1,4 +1,4 @@
-"""Analytic arc measure, strict >=70% eligibility, frozen original union."""
+"""Analytic arc measure, replaceable eligibility threshold, frozen source."""
 import json,math
 from unittest.mock import patch
 import pytest
@@ -13,14 +13,14 @@ def case(others=()):
     return site,ContainmentIndex(dict(circle=core,**dict(others)))
 
 
-@pytest.mark.parametrize('fraction',[.1,.5,.69999999,.7,.70000001,.9])
-def test_analytic_half_plane_arc_and_exact_seventy_boundary(fraction):
+@pytest.mark.parametrize('fraction',[.1,.5,.57999999,.58,.58000001,.59999999,.6,.60000001,.69999999,.7,.70000001,.9])
+def test_analytic_half_plane_arc_and_registered_threshold_boundary(fraction):
     # x>cos(pi*f) leaves f of a true circle's circumference exposed.
     cutoff=math.cos(math.pi*fraction)
     site,index=case([('half_plane',box(-2,-2,cutoff,2))])
     result=assess(site,index,capture())
     assert result['exposed_circumference_fraction']==pytest.approx(fraction,abs=1e-14)
-    assert result['keep']is(fraction<.7)
+    assert result['keep']is(fraction<capture().minimum_exposed_circumference_fraction_for_growth)
 
 
 def test_area_coverage_no_longer_authorizes_or_blocks_growth():

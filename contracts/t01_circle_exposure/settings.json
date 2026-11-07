@@ -2,7 +2,7 @@
   "schema": "t01-circle-exposure-settings/1",
   "revision": 1,
   "status": "PROVISIONAL",
-  "minimum_exposed_circumference_fraction_for_growth": 0.70,
+  "minimum_exposed_circumference_fraction_for_growth": 0.58,
   "comparison": "GROWTH_ELIGIBLE_WHEN_GREATER_OR_EQUAL",
   "context": "COMPLETE_ORIGINAL_STAGE_ENTRY_RESOLVED_COPPER",
   "exclude": "SELF_AND_EXACT_GEOMETRIC_ALIASES",
