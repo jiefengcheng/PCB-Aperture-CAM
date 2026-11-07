@@ -2,15 +2,21 @@
 
 ## Current incremental correction
 
-The app is now fast-forwarded to code checkpoint `d1235fe`, including the
-qualified T04-entry wall correction and downstream frozen-gap veto. See
-[T02 qualification and installation](T02_QUALIFIED_ENTRY_GAPS_20261107.md).
-The fresh full-client route is RUNNING from an immutable snapshot of this
-exact code; it has passed source assembly, T01, T03 and all three T04 checks.
-It must still pass T02 and every later construction, evaluation, export,
-corruption, defect, rendering and delivery check. Installation is incremental
-code qualification, not a customer-board completion claim. Other boards stay
-paused and historical custody findings remain unwaived.
+The normal app contains code checkpoint `1c1685f`, including `d1235fe`'s
+qualified T04-entry walls and downstream frozen-gap veto, plus the separately
+qualified provisional 1% shared-gap matching policy. See
+[qualified walls](T02_QUALIFIED_ENTRY_GAPS_20261107.md) and
+[1% matching policy](T02_GAP_MATCHING_TOLERANCE_20261107.md).
+The original fresh full-client route passed all geometry stages and halted at
+legacy export; its 20 PASS / 1 FAIL / 26 NOT_RUN evidence is preserved.
+Isolated correction `caff24a` omits one minimum-grid support hole already
+covered completely by predecessor copper, with no physical copper addition.
+Corrected incremental job `20261107T163654Z-ab5d273c176a4dd08a7e60db32c0ca59`
+retains 17 verified legacy operations through T05 and requires 30 fresh native
+operations. Corrected export construction passed; remaining file and downstream
+checks are running. The hole correction remains unintegrated. No completed
+customer-board result is claimed. Other boards stay paused; recurring baseline
+test issues are deferred, and historical custody findings remain unwaived.
 
 The original consolidation record below describes the earlier `0f5ce44`
 checkpoint. Its NOT_STARTED statement and prepared command are historical;
@@ -46,6 +52,9 @@ failed runs and historical evidence remain intact. The saved rollback pointer is
   exact KEEP below the floor and no T04 reassignment. Repeated straight gaps to a
   shared original neighbor use a common safe bank offset; complete fill proposals
   cannot intrude and accepted gaps remain immutable through downstream checks.
+- Shared-neighbor matching permits at most **1% relative gap difference**,
+  registered and captured separately from exposure eligibility. Accepted
+  physical corridors stay frozen: this grants no later fill or erosion budget.
 - Production nominal clearance **0.040 mm**, existing construction margins,
   protected pin slots, inherited source holes, cumulative 20% remedy cap, budgets,
   full reconstruction, export/reparse and corruption controls remain.

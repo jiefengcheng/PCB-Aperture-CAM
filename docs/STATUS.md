@@ -1,4 +1,39 @@
-# Current incremental app integration — 2026-11-07
+# Current completion and provisional gap policy — 2026-11-08
+
+The normal app branch `codex/u05-reproducible-batch` contains code checkpoint
+`1c1685f`, committed and pushed: provisional shared-neighbor gap differences
+are limited to 1% of the smaller gap. This is distinct from T02's 50% exposed
+perimeter threshold with 1% relative allowance. Clearance, pin slots, integral
+joints and accepted downstream gap corridors remain mandatory. The isolated
+policy replay passed both model evaluations, actual native export/reparse,
+both native evaluations, seven corruption controls and highlighted rendering;
+its native Gerber is byte-identical to the qualified predecessor. Sizing
+witnesses were explicitly retained, not claimed as fresh search execution.
+
+The fresh full-client run passed all geometry stages but halted at legacy
+export with 20 PASS / 1 FAIL / 26 NOT_RUN. Its evidence remains unchanged.
+Correction `caff24a` is isolated: a 1 nm square hole in redundant T05 export
+support is already completely covered by qualified predecessor copper. The
+corrected contour omits that hole with zero added physical copper. Its focused
+tests and the actual failing operand passed. New incremental job
+`20261107T163654Z-ab5d273c176a4dd08a7e60db32c0ca59` retains 17 verified legacy
+operations through T05 and requires 30 fresh operations, including fresh source
+assembly. Corrected export construction passed; paired export checks and
+downstream completion are running. The correction is not yet installed in the
+app. No failed job was resumed or resealed, and no final delivery is claimed.
+
+The six recurring baseline-test failures remain FAIL and their remediation is
+deferred by the user. They do not trigger another broad test cycle during this
+completion. T02 profiling found 10,496 sizing trials and repeated optimizer
+execution in the paired workers; shared-gap projection took only 0.027 seconds.
+The bounded predecessor-buffer cache achieved zero hits and remains excluded.
+Other boards remain paused; positive-only flattening remains separately
+unfinished. `.DS_Store` custody remains **EXPLICIT_UNWAIVED_UNATTRIBUTED**.
+Owner PENDING_USER; independent NOT_RUN; electrical/manufacturing
+NOT_ESTABLISHED. Current receipts are under
+`out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/`.
+
+# Earlier incremental app integration — 2026-11-07
 
 The active `codex/u05-reproducible-batch` app now contains qualified code
 `d1235fe`: shared-gap banks use the qualified T04 entry walls, retain exact
