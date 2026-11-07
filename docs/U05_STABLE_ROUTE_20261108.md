@@ -1,37 +1,51 @@
 # Reusable Gerber U05 route
 
-Current candidate: `eaaba51`, separate from the installed normal app below.
-It combines fixed-candidate T02 verification and 1% shared-gap matching with
-the qualified T05 adopted-floor/read-authority correction and complete-domain
-final T05 pin verification. It passes 759 focused checks and one complete
-47-operation growing-rectangle synthetic route. The frozen candidate is
-`out/lacie_work/releases/U05_20261108_eaaba51/`.
-Its `preflight.py` checks all 3,136 source hashes and namespace, read-only source
-permissions, pinned packages, immutable assets, LaCie identity/reserve and
-clearance registry/construction consistency without starting a board job.
-The release README gives its exact report-only preflight and supported command.
-It is **not activated or integrated** while real-board completion is pending.
+Integrated code: `62664ee`, on `codex/u05-reproducible-batch`. It combines the
+fixed-candidate T02 verifier, registered 1% shared-gap matching, the T05
+adopted-floor/read-authority correction, complete-domain T05 pin verification,
+export-local complete-gap checks and source-member identity for new T02
+inclusive rectangles. Qualification: 799 focused tests, a complete 47-operation
+inclusive-fill synthetic route from the frozen candidate, and another complete
+47-operation route from the installed normal-app path. Both construction roles
+exercise an accepted inclusive rectangle; actual native checks include that
+fill. Every tracked snapshot file matched before this documentation overlay.
 
-The current affected-work job is
-`20261107T204212Z-b2dd9a585ece45c3bd133438f1b3b791`, with 35 retained qualified
-operations and 12 fresh operations, not 47 fresh operations. The failed full job
-and its frozen source remain unchanged. This tail uses strict-gap source
-`4730065`; the combined future release adds the separately qualified 1% gap policy
-and fixed-candidate T02 checks. No fresh whole-client execution of the combined
-release is claimed. No further full 3020212826 restart is authorized.
+The frozen batch source is
+`out/lacie_work/releases/U05_20261108_62664ee/source/`.
+Its external manifest binds all 3,143 read-only source files. The release
+preflight verifies source namespace and permissions, 70 immutable assets,
+26 pinned runtime packages, LaCie identity/reserve and clearance consistency.
+Use its README for the exact command. Activation is recorded separately in
+`ACTIVATION.json`; never use an older candidate or infer activation from source
+metadata. All previous release candidates remain inactive.
 
-The preceding `c5a4e6f` tail remains failed. Its final global GEOS overlay
-failed before the pin predicate ran; the corrected tail applies the existing
-pin predicate to every complete protected domain without altering copper.
-Current evidence is under
-`out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/pin_projection_union_01/`:
-`APP_CANDIDATE_QUALIFICATION_01.json`, `COMBINED_CANDIDATE_PACKAGE.json`,
-`FROZEN_RELEASE_PREPARATION_01.json` and `NATIVE_TAIL_01_DRIVER.json`.
-The current native constructor passes and reproduces the exact saved final
-scene; both evaluations and subsequent final-file checks are still required.
-Only a successful final delivery audit and actual image inspection permit the
-already authorized app installation and release activation between jobs.
-The dual-source offline bundle retains both exact native and app revisions.
+Primary 3020212826 finished in
+`20261107T232211Z-6c0ce45c653b4edbad7e3a13e5bd1513`: 38 retained qualified
+operations and nine fresh PASS operations account for all 47. Both export
+proofs agree; all eight actual corruptions are rejected, the remaining-defect
+audit passes, and the checked render and Gerber were delivered to the new
+`3020212826_U05_040mm_20261107T234739532162Z` sibling. Native geometry difference
+is zero. All 126 components, 128 source holes, 13 protected pin slots and
+20 shared-gap spans / 40 boundaries pass. The actual highlighted PNG was viewed.
+All 32 current raw input-file hashes match the retained intake. Failed jobs
+and their frozen sources, exports and original dispositions remain unchanged.
+
+That seed tail uses frozen strict-gap source `64bd19b`; the combined future app
+adds the separately qualified 1% matching setting and fixed-candidate T02
+verification. This is incremental qualification, not a fresh full-client run of
+the combined app profile. No additional full 3020212826 run is authorized.
+The original T01-through-T05 geometry and its proofs were reused unchanged;
+only affected export preparation and native identity handling were corrected.
+
+Current receipts are under
+`out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/export_inclusive_identity_01/`:
+`FINAL_DELIVERY_AUDIT_01.json`, `VISUAL_INSPECTION_01.json`,
+`CURRENT_RAW_INPUT_CUSTODY_01.json`, `APP_CANDIDATE_QUALIFICATION_01.json`,
+`app_integration_01/INSTALL_RECEIPT.json` and `STABLE_ROUTE_QUEUE_01.json`.
+A checked patch and verified dual-source offline Git bundle preserve the exact
+seed and future-app revisions. Release activation follows final documentation
+and remote verification. Other raw boards then use that one frozen source,
+one board at a time, with complete checks and a fresh two-file sibling delivery.
 
 The following describes the earlier installed checkpoint and its retained
 qualification. Its former deployment snapshot is inactive and must not be used
@@ -126,8 +140,9 @@ copper. Start no remaining-board jobs before release activation.
 The preceding failed job was incremental: 17 retained qualified operations plus
 30 required fresh operations. Its frozen `caff24a` source used strict gap
 matching and the older T02 evaluations. It halted at T05 preparation and was
-not modified to install the correction or future-route verifier. The corrected
-35-plus-12 tail is identified above; final receipts must state these differences.
+not modified to install the correction or future-route verifier. The later 35-plus-12 tail passed T05 but failed export preparation. The completed
+38-plus-nine export tail is identified above; receipts retain each source and
+qualification boundary.
 
 A failed native job stops with evidence intact and remaining work NOT_RUN.
 Engineering corrections create separate, dependency-checked affected-work jobs;

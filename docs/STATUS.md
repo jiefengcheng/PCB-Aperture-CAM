@@ -1,3 +1,59 @@
+# Integrated Gerber route and completed primary delivery — 2026-11-08
+
+Code `62664ee` is installed on `codex/u05-reproducible-batch`. The installation
+preserves all four user-owned untracked files, captures the prior source
+metadata and retains a rollback branch at `f2a50c1`. All 3,142 tracked snapshot
+files matched before this documentation update. Qualification is 799 focused
+tests plus a complete 47-operation inclusive-fill route from the frozen app
+candidate and another complete 47-operation route from the installed app path.
+The synthetic case creates one accepted T02 inclusive rectangle in each
+construction role and checks its actual native representation.
+
+Primary 3020212826 completion is
+`20261107T232211Z-6c0ce45c653b4edbad7e3a13e5bd1513`: all 47 operations accounted
+for, with 38 qualified operations retained and nine fresh operations passed.
+The fresh export, both reparse checks, all eight actual corruptions, defect
+audit, rendering, delivery and separate final evidence audit pass. The delivered
+Gerber exactly matches the qualified geometry (zero Hausdorff distance and zero
+symmetric difference), preserves 126 components and 128 source holes, and
+passes all 13 protected pin slots and 20 shared-gap spans / 40 boundaries.
+The delivered highlighted 1800 by 1800 PNG was inspected with the image tool.
+No full primary run or T01-through-T05 growth was restarted in this export tail.
+
+The new sibling is
+`/Users/geoffcheng/Projects/client/PCB/HFlex/gx/3020212826_U05_040mm_20261107T234739532162Z/`,
+containing only `top.art.gbr` and `final_render.png`. Gerber SHA-256:
+`14748a13afc6cbffb59280556afaac4107748200adc1343737852fb94b97a6b7`.
+All 32 raw input-file hashes still match the accepted native intake.
+
+The seed uses frozen strict-gap source `64bd19b` and its accepted T01-through-T05
+checkpoints. The combined app additionally includes the separately qualified
+1% shared-gap policy and fixed-candidate T02 verifier. No fresh full-client run
+of that combined profile is claimed. Export construction is unchanged, and the
+corrected verifier emits the same Gerber bytes as its preserved predecessor.
+
+The frozen batch candidate is `out/lacie_work/releases/U05_20261108_62664ee/`:
+3,143 read-only source files, 70 immutable assets and 26 pinned runtime packages
+pass preflight. Activation and remaining-board job states are separate receipts.
+All earlier candidates remain inactive, including those blocked by preserved
+native export findings. Every failed job and its original dispositions remain.
+
+The target ledger retains all eleven explicit directories. Nine other raw-board
+jobs may start after activation, one at a time. The listed older generated
+3020212826 directory contains the canonical original source plus 1,818 old
+qualified positive additions. Its refresh-versus-new-source clarification is
+pending; it is neither silently dropped nor subjected to compounded growth.
+This question does not block the nine other raw boards.
+
+Evidence: `out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/export_inclusive_identity_01/`.
+See [the reusable route](U05_STABLE_ROUTE_20261108.md) and the integration,
+qualification, delivery, visual and custody receipts there. Positive-only
+flattening remains a separate unfinished slice. Six historical broad-suite
+failures remain deferred and unwaived. `.DS_Store` remains
+**EXPLICIT_UNWAIVED_UNATTRIBUTED**. Owner PENDING_USER; independent NOT_RUN;
+electrical/manufacturing NOT_ESTABLISHED. These limits do not disappear on
+source integration or visual delivery.
+
 # Current final-pin correction and affected-work continuation — 2026-11-08
 
 The earlier `c5a4e6f` T05 tail halted after all four remedy rounds and joint
