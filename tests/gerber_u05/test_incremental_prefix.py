@@ -31,8 +31,9 @@ def test_original_producer_tampering_is_not_a_cache_hit(tmp_path):
  with pytest.raises(ValueError,match='ORIGINAL_PRODUCER_CHANGED'):verify_code(original,new,old)
 
 
-def test_unrecognized_geometry_change_cannot_use_equivalence_exception(tmp_path):
- old=tmp_path/'old';new=tmp_path/'new';relative='src/native_boundary_metric.py'
+@pytest.mark.parametrize('relative',['src/native_boundary_metric.py','src/gerber_u05/prior_copper.py','src/gerber_u05/channel_prior.py'])
+def test_unrecognized_geometry_change_cannot_use_equivalence_exception(tmp_path,relative):
+ old=tmp_path/'old';new=tmp_path/'new'
  for root in(old,new):(root/relative).parent.mkdir(parents=True);(root/relative).write_text('old')
  file=old/relative;original={'files':{str(file):hashlib.sha256(file.read_bytes()).hexdigest()}};(new/relative).write_text('return zero for everything')
  with pytest.raises(ValueError,match='UPSTREAM_DEPENDENCY_CHANGED'):verify_code(original,new,old)
