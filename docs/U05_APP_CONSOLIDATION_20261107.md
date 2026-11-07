@@ -1,5 +1,23 @@
 # Consolidated Gerber U05 app source — 7 November 2026
 
+## Current incremental correction
+
+The app is now fast-forwarded to code checkpoint `d1235fe`, including the
+qualified T04-entry wall correction and downstream frozen-gap veto. See
+[T02 qualification and installation](T02_QUALIFIED_ENTRY_GAPS_20261107.md).
+The fresh full-client route is RUNNING from an immutable snapshot of this
+exact code; it has passed source assembly, T01, T03 and all three T04 checks.
+It must still pass T02 and every later construction, evaluation, export,
+corruption, defect, rendering and delivery check. Installation is incremental
+code qualification, not a customer-board completion claim. Other boards stay
+paused and historical custody findings remain unwaived.
+
+The original consolidation record below describes the earlier `0f5ce44`
+checkpoint. Its NOT_STARTED statement and prepared command are historical;
+do not launch another job while the current fresh run is active.
+
+## Original consolidation record
+
 The owner approved integration of the qualified isolated revisions and preparation
 for a new full rerun. The normal app branch `codex/u05-reproducible-batch` was
 fast-forwarded from `7de93a3` to qualified code checkpoint `4447cf8`, followed by the narrow read-authority

@@ -1,7 +1,8 @@
 # T02 shared gaps after qualified trace widening
 
-Status: isolated correction under qualification. Not integrated and not a
-completed client U05 result. The consolidated app remains at `0f5ce44`.
+Status: qualified code `d1235fe` is integrated into the app under the adopted
+incremental qualification approach. It is not a completed fresh client U05
+result. The separate fresh full route continues from the same frozen source.
 
 The fresh 3020212826 full route passed source assembly, T01, T03 and T04,
 including both complete evaluations. It then halted at T02 because the original
@@ -63,11 +64,44 @@ independent, electrical or manufacturing acceptance.
 
 ## Separate downstream propagation slice
 
-Under isolated development, ordinary T05 taper candidates consult the frozen
+Integrated ordinary T05 taper candidates consult the frozen
 gap predicate before acceptance and again during their existing final checks.
 Fresh reference-repair workers restore that state from T02 lineage alongside
 the existing width and pin constraints. Physical and functional native-prior
 floors check their complete combined material before insertion. This closes
 paths that could otherwise undo a qualified T02 result. Ordinary smoothing
 outside the protected gaps, complete-fill vetoes and final native verification
-remain in place. This slice is separately tested and is not yet integrated.
+remain in place. This slice is separately tested and integrated as code; fresh
+full-client downstream qualification remains pending.
+
+
+## Completed isolated qualification and code installation
+
+All 78 rectangles are accounted for (70 GROWN, 8 KEEP). Construction and both
+complete deterministic rechecks match. Actual Gerber export/reparse and both
+native rechecks match, with all 20 complete shared-gap spans and 40 boundaries,
+126 original components, 128 source holes and 1921 original plotting atoms
+preserved. Seven actual-file corruptions reject, including local gap narrowing,
+protected pin bridging and previously retained unequal gaps. The marked gaps
+both measure 192.680 um; the fixed trace-wall example both measure 79.182 um.
+The complete highlighted intermediate result was shown before installation.
+This is T04-to-T02 qualification, not final T05/export acceptance.
+
+The candidate also has 53 focused regressions, 1010 broader passes plus the
+six baseline-reproduced failures above, and all 47 fresh synthetic native
+operations passing. The fresh raw-client job has separately passed source
+assembly, T01, T03 and all three T04 checks. Its T04 scene and all 2916 distinct
+geometry blobs exactly match this isolated entry. T02 and every downstream
+full-route check remain mandatory.
+
+The idle app was fast-forwarded from `0f5ce44` to `d1235fe`; all 3119 files
+matched the exact qualification snapshot immediately after installation.
+Four user-owned files remain byte-identical; the earlier generated source
+metadata is archived before replacing it with the qualified metadata. No
+reset, cleanup, failed-evidence rewrite or new board job was performed.
+The earlier helper's additional full-route-before-installation planning
+condition is separated from code installation in
+`INCREMENTAL_CODE_INTEGRATION_BASIS_09.json`; no fresh-route check or final
+acceptance requirement is waived. See `APP_CODE_INSTALL_RECEIPT_09.json`,
+`ISOLATED_QUALIFICATION_FINDINGS_07_02.json`, `FINDINGS_07.md` and
+`FULL_CLIENT_09_DRIVER.json` in the separate evidence directory.

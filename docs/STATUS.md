@@ -1,4 +1,31 @@
-# Current app consolidation — 2026-11-07
+# Current incremental app integration — 2026-11-07
+
+The active `codex/u05-reproducible-batch` app now contains qualified code
+`d1235fe`: shared-gap banks use the qualified T04 entry walls, retain exact
+original joints and prevent downstream growth or retained prior copper from
+undoing accepted gaps. The complete isolated 78-rectangle T02 qualification
+passes construction, both model rechecks, actual export/reparse, both native
+rechecks and seven corruptions. All 20 spans / 40 boundaries, 126 original
+components and 128 source holes survive. The highlighted result was shown
+before code installation. See [qualified-wall correction](T02_QUALIFIED_ENTRY_GAPS_20261107.md).
+
+This is incremental code integration, not completed fresh customer acceptance.
+The independent fresh full-U05 process continues from its immutable external
+snapshot of the same code. Fresh source assembly, T01, T03 and all three T04
+operations passed; T02 and every remaining full-route operation are still
+required. No failed job is resumed or promoted. Other boards remain paused.
+The current source inventory and receipts are under
+`out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/`.
+
+Validation includes 53 focused regressions, 1010 passing broader regressions
+with six unchanged-baseline failures retained and unwaived, and a fresh
+47-operation synthetic route. Production parameters, pin and joint constraints,
+20% budgets, all checks and the waived 10% performance target remain unchanged.
+Positive-only flattening remains separately unfinished. `.DS_Store` custody
+remains **EXPLICIT_UNWAIVED_UNATTRIBUTED**. Owner PENDING_USER; independent
+NOT_RUN; electrical/manufacturing NOT_ESTABLISHED.
+
+# Initial app consolidation — 2026-11-07
 
 The active `codex/u05-reproducible-batch` app source now includes code checkpoint
 `4447cf8` plus the sealed same-job read correction `cea8698`: qualified Gerber T04/T05, T01 Region/BGA recognition and 58% exposure,
