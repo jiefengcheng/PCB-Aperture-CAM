@@ -20,6 +20,7 @@ def compute(run,name):
    completed=apply(store,scene,binding,completed,name,value)
   value=dict(value,raw_output_scene_ref=value['output_scene_ref'],output_scene_ref=completed['output_scene_ref'],intra=completed)
   value['summary']=dict(value['summary'],inclusive_fills=completed['summary']['fills'],inclusive_added_area_mm2=completed['summary']['added_area_mm2']);store.verify_reads()
+ if name=='t05':p.save(run/'completion_checkpoints'/('t05_'+os.environ.get('U05_WORKER_MODE','unit')+'_geometry.json'),value)
  from src.t04_width_fence import require as require_width_fence
  if name=='t04':
   store=p.Store(run/'runtime');checked_scene=store.get_json(value['output_scene_ref'],kind='scene');_,material,_=p.operands(store,checked_scene)
@@ -34,7 +35,9 @@ def compute(run,name):
   store=p.Store(run/'runtime');scene=store.get_json(value['output_scene_ref'],kind='scene');_,material,_=p.operands(store,scene)
   import copy
   scene=copy.deepcopy(scene);scene['lineage'][-1]['pin_separation_state']=pin.ACTIVE.state(store)
-  value=dict(value,output_scene_ref=store.put_json('scene',scene),pin_separation=pin.ACTIVE.require(p.unary_union(list(material.values())),scope=name+'_complete'))
+  if name=='t05':
+   from .t05_pin_check import require_parts
+  value=dict(value,output_scene_ref=store.put_json('scene',scene),pin_separation=(require_parts(pin.ACTIVE,material.values(),scope=name+'_complete')if name=='t05'else pin.ACTIVE.require(p.unary_union(list(material.values())),scope=name+'_complete')))
  return value
 
 def main():
