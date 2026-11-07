@@ -18,6 +18,18 @@ from .native_assembly import weld as weld_native_material,assemble as assemble_n
 from src.indexed_hausdorff import distance as hausdorff
 from shapely import set_precision,union_all,STRtree
 
+def initialize_reference_constraints(store,binding,source,original,predecessor):
+ """Future reference repairs retain the already qualified T04 no-bypass rule."""
+ from src import t04_width_fence as width
+ width.restore(store,predecessor)
+ if width.ACTIVE is None:raise ValueError('REFERENCE_FROZEN_T04_WIDTH_RULE_REQUIRED')
+ from .pin_policy import initialize as initialize_pin
+ initialize_pin(store,binding,source,original,predecessor)
+ return dict(schema='reference-inherited-growth-constraints/1',
+             frozen_t04_width_binding=width.ACTIVE.binding,
+             source_sha256=binding['source_ref']['sha256'],
+             scope='Complete logical reference fills and actual parsed parents; qualified existing pad/joint predecessor remains integral')
+
 def append_reference_region(region,stage,sid,records,blocks,store):
  """Compile the model independently, then prove exact serialized parent coverage."""
  normalized=native_grid(region)
@@ -58,8 +70,8 @@ def compute(run):
   if p.canonical(proofs[0])!=p.canonical(proofs[1]) or proofs[0]['status']!='PASS' or proofs[0]['generated_sha256']!=p.digest(body):raise ValueError('BASELINE_PROOFS_CHANGED')
   if proofs[0]['actual_hard_gap_mm']!=contract.hard_gap_mm:raise ValueError('PREDECESSOR_CLEARANCE_POLICY_MISMATCH')
   legacy_store=p.Store(legacy/'runtime');binding=p.load(legacy/'source.json');source_scene=legacy_store.get_json(binding['scene_ref'],kind='scene')
-  from .pin_policy import initialize as initialize_pin
-  initialize_pin(legacy_store,binding,source,source_scene,legacy_store.get_json(p.load(legacy/'t05.json')['output_scene_ref'],kind='scene'))
+  constraint_receipt=initialize_reference_constraints(legacy_store,binding,source,source_scene,legacy_store.get_json(p.load(legacy/'t05.json')['output_scene_ref'],kind='scene'))
+  functional_state['inherited_constraints']=constraint_receipt
   if 'functional_channels'in proofs[0]:
    from src import source_channel_scope
    from .channel_material import check_owned
@@ -228,6 +240,7 @@ def compute(run):
   store.verify_reads();guard();result=dict(status='PASS',generated_sha256=p.digest(body),baseline_sha256=p.digest(base),plan_sha256=p.digest(p.canonical(ledger['plan'])),source_objects_preserved=p.load(legacy/'source.json')['source_objects'],baseline_objects_preserved=n,baseline_clear_operations_preserved=p.load(legacy/'source.json')['clear_operations'],appended_regions=len(shapes),decisions=dict(collections.Counter(r['kind']+':'+r['status']for r in ledger['plan']['records'])),actual_addition_check=addition_check,all_native_contours_pass=all(r['passed']for r in contours),contours=contours,hard_gap_mm=contract.hard_gap_mm,owner_allowance_consumed=False,components_preserved=len(after_parts),actual_predecessor_missing_area_mm2=current.difference(after).area,actual_original_source_missing_area_mm2=source.difference(after).area,auxiliary_file_grid_topology=auxiliary_topology,inherited_source_holes_retained=addition_check['inherited_source_holes_retained'],new_resolvable_holes=len(new_holes),subresolution_holes=subresolution,approved_partial_pocket_remainders=partial_checks,native_model_reference=ledger['native_model_reference'],native_material_assembly=material_proof,raw_boolean_model_comparison=dict(symmetric_difference_mm2=raw_area,area_bound_mm2=raw_bound,role='Raw decision image; native boundary fidelity uses independent file-grid model reference'),whole_native_reference=dict(hausdorff_mm=gap,symmetric_difference_mm2=area,area_bound_mm2=bound,metric=metric),added_remedy_area_mm2=after.difference(current).area,original_area_mm2=source.area,final_area_mm2=after.area,limitations='Predecessor five geometry stages/two fresh export proofs retained unchanged. This is a new additive-stage export/reparse proof, not external independent or manufacturing review.')
 
   result['checking_envelope_clearance']=checking_proof
+  result['inherited_growth_constraints']=functional_state['inherited_constraints']
   if functional_sidecar is not None:result['functional_channels']=functional_sidecar
   return result
 

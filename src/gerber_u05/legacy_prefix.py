@@ -218,6 +218,8 @@ class IncrementalCoordinator(Coordinator):
    if name.startswith('runtime/'):continue
    target=run/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((self.old/name).read_bytes())
   p.save(run/'LEGACY_REFERENCE_JOB.json',dict(schema='fresh-legacy-reservation-reference/1',scope='Fresh source intake with explicitly retained verified native predecessor stages'))
+  from .storage_encoding import policy as storage_policy
+  p.save(run/'STORAGE_ENCODING.json',storage_policy())
   # Fresh assembly and pin intent remain explicit job inputs after prefix
   # adoption. Omitting these would silently change the following T04 profile.
   if(self.job/'assembly').exists():

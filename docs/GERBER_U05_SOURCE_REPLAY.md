@@ -61,6 +61,10 @@ its three matching audits and frozen no-bypass width check. Legitimate smoothing
 may supply coverage. A wider body rejected by the ladder may not be restored
 through a subsequent reference floor. Failure remains a halted run with all
 later operations not run; a corrected implementation starts a separate job.
+The reference-remedy worker explicitly restores the frozen T04 rule from its
+qualified T05 predecessor, together with the pin rule. A missing width rule
+halts. Complete reference proposals and actual parsed native parents therefore
+receive the same no-bypass predicate; their binding is recorded in each proof.
 
 Each eligible route proposes its next rung independently in a fixed order, once
 per pass, against the current scene. Every candidate uses original source
