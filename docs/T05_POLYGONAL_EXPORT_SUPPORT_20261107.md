@@ -50,3 +50,41 @@ does not perform the separate source positive/negative flattening slice.
 Historical `.DS_Store` custody FAIL remains EXPLICIT_UNWAIVED_UNATTRIBUTED.
 Owner PENDING_USER; independent NOT_RUN: CHANNEL_UNAVAILABLE;
 electrical/manufacturing NOT_ESTABLISHED.
+
+## Incremental qualification support
+
+The existing `src.gerber_u05.incremental` route now supports the captured
+ten-step ladder, inherited legacy process evidence, source assembly, pin policy,
+checking envelopes, reference-channel state and mandatory prior-width proof.
+It retains 35 completed heavy native operations. The three inexpensive source
+assembly operations run freshly in the new job, followed by all nine T05 and
+final-file operations. No failed operation is resumed or promoted.
+
+The complete deterministic ladder arithmetic is replayed against every retained
+geometry report and the captured settings. This also rechecks cap-rejected
+attempts, which correctly have no geometry evaluation. Exact complete-solution
+equality is required; this is validation of retained evidence, not a geometry
+search or fresh geometry qualification claim. On the real retained board, all
+3,930 attempts and 2,591 geometry reports across 393 routes validate.
+
+Only the exact qualified export-support normalization delta is allowed through
+the new dependency exception. Its helper AST and three added calls are bound;
+every other statement and original geometry predicate remains unchanged.
+Every retained legacy T05 raw support must additionally prove that normalization
+is identity. The real prefix has 103 distinct such operands. Its source,
+candidate, native process, separate-evaluation, actual reference-file and
+supplemental proofs remain mandatory and hash-bound.
+
+The extension passes 528 scoped regressions. A small native qualification passes
+with 35 explicitly retained operations and 12 fresh operations, including fresh
+source assembly, T05 construction and both evaluations, export construction and
+both reparse evaluations, corruption controls, defect audit and rendering.
+The resulting synthetic Gerber remains byte-identical to its qualified
+predecessor. Logs and receipts are `INCREMENTAL_LADDER_BROAD_04.log` and
+`INCREMENTAL_LADDER_SYNTHETIC_JOB_02.json` in the evidence directory above.
+
+Earlier fixture/test-message failures and the first native prefix-adoption
+failure remain recorded separately. No original assertion, immutable-write
+guard, geometry predicate, tolerance, remedy allowance or budget was removed.
+The actual whole-board T05 and final output still require the corrected native
+qualification. App integration and other boards remain pending.

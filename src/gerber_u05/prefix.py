@@ -3,6 +3,7 @@ import ast,hashlib,json
 from pathlib import Path
 STAGES=('t01','t03','t04','t02')
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/contours.py','src/gerber_u05/exporter.py','src/gerber_u05/render.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/controls.py','src/gerber_u05/delivery.py'}
+DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py'})
 EQUIVALENT={
  'src/component_voids.py':('46f6afbfd029e97a6409ecdc4b20a3c1511f394e02187ea72c9fd2ed762d49b7','db0dbae5d433b02dbe10715f772e0c46bc4144ea96050f62a8ed836d1d28246a','Only alternate global-overlay diagnostic counting uses existing areal-context extraction. Every physical geometry/source/clearance/topology check is unchanged. Valid polygon reports are identical; retained upstream reports prove that path. All positive faces retained; actual candidate remains strict polygonal copper.'),
  'src/native_boundary_metric.py':('b9a1eae932ed66667de7adf52d307b3577c0175c7d2173b29112803dc6e61b83','d84e8392b7b4f3d28c7aa5df3838532902ff99e87dc53038c0a794ac17a84cc7','Valid identical-WKB Hausdorff is exactly zero; all other indexed/native metric paths unchanged. Dedicated valid/invalid and native parity tests retained.'),
@@ -31,6 +32,20 @@ def worker_prefix_same(before,after):
  if ast.dump(ast.parse(before),include_attributes=False)!=ast.dump(tree,include_attributes=False):raise ValueError('REUSED_UPSTREAM_WORKER_CHANGED')
  return dict(status='UNCHANGED_UPSTREAM_AST',changed_scope='T05-only raw-result evidence capture after its complete native geometry verification')
 
+def support_normalization_same(before,after):
+ """The qualified correction adds only three material-container conversions."""
+ tree=ast.parse(after);helpers=[n for n in tree.body if isinstance(n,ast.FunctionDef)and n.name=='polygonal_support']
+ if len(helpers)!=1 or hashlib.sha256(ast.dump(helpers[0],include_attributes=False).encode()).hexdigest()!='1adce06ee62ee35f9d388b7d5f1430fbac6876a9a58714c7703d0be780fe66a5':raise ValueError('REUSED_SUPPORT_NORMALIZER_CHANGED')
+ tree.body.remove(helpers[0]);allowed=ast.dump(ast.parse('region=polygonal_support(region)').body[0],include_attributes=False)
+ class Remove(ast.NodeTransformer):
+  count=0
+  def visit_Assign(self,node):
+   if ast.dump(node,include_attributes=False)==allowed:self.count+=1;return None
+   return self.generic_visit(node)
+ remove=Remove();tree=remove.visit(tree)
+ if remove.count!=3 or ast.dump(tree,include_attributes=False)!=ast.dump(ast.parse(before),include_attributes=False):raise ValueError('REUSED_SUPPORT_NORMALIZATION_DELTA_CHANGED')
+ return dict(status='EXACT_QUALIFIED_SUPPORT_NORMALIZATION_DELTA',added_calls=3,unchanged_geometry_predicates=True)
+
 def verify_code(original,root,old_root):
  results=[];root=Path(root);old_root=Path(old_root)
  for name,expected in original['files'].items():
@@ -51,8 +66,11 @@ def verify_code(original,root,old_root):
    def upstream(text):
     return [ast.dump(n,include_attributes=False)for n in ast.parse(text).body
             if not(isinstance(n,ast.FunctionDef)and n.name=='supported_region')]
-   if upstream(path.read_text())!=upstream(current.read_text()):raise ValueError('REUSED_UPSTREAM_EXPORT_SUPPORT_CHANGED')
-   results.append(dict(path=relative,scope='Only supported_region changed; called exclusively for T05 junctions'));continue
+   if upstream(path.read_text())==upstream(current.read_text()):
+    results.append(dict(path=relative,scope='Only supported_region changed; called exclusively for T05 junctions'));continue
+   try:proof=support_normalization_same(path.read_text(),current.read_text())
+   except ValueError as error:raise ValueError('REUSED_UPSTREAM_EXPORT_SUPPORT_CHANGED')from error
+   results.append(dict(path=relative,proof=proof,scope='Exact T05 support normalization only; upstream completion has no junction result. Retained legacy export operands must separately prove identity.'));continue
   if relative in DOWNSTREAM:
    results.append(dict(path=relative,scope='T05/export/verification only; not an upstream generation dependency'));continue
   proof=EQUIVALENT.get(relative)
@@ -60,6 +78,72 @@ def verify_code(original,root,old_root):
    results.append(dict(path=relative,proof=proof[2],before_sha256=expected,after_sha256=actual));continue
   raise ValueError('REUSED_UPSTREAM_DEPENDENCY_CHANGED:'+relative)
  return results
+
+def verify_width_ledger(value,store):
+ solution=value['solution'];evaluations=value['evaluations']
+ if solution.get('schema')=='source-route-ten-step-width-ladder/1':
+  from src.t04_ladder import solve
+  from src.t04_settings import read_snapshot,SNAPSHOT_NAME
+  from . import pipeline as p
+  settings=read_snapshot(store.root.parent/SNAPSHOT_NAME)
+  widths={row['route_id']:row['original_width_mm']for row in solution['decisions']}
+  if len(solution['evaluations'])!=solution['evaluation_count']or len(evaluations)!=solution['geometry_evaluation_count']:raise ValueError('REUSED_COMPLETE_WIDTH_SEARCH_LEDGER_MISSING')
+  if solution['evaluation_count']>settings.step_count*len(widths):raise ValueError('REUSED_LADDER_ATTEMPT_LIMIT_CHANGED')
+  remaining=iter(evaluations);consumed=0
+  def recorded_check(sid,factor):
+   nonlocal consumed
+   try:row=next(remaining)
+   except StopIteration as error:raise ValueError('REUSED_COMPLETE_WIDTH_SEARCH_LEDGER_MISSING')from error
+   if row['route_id']!=sid or row['factor']!=factor:raise ValueError('REUSED_WIDTH_SEARCH_WITNESS_CHANGED')
+   consumed+=1;return store.get_json(row['report_ref'],kind='width-check')
+  # Replay discrete arithmetic and every cap rejection, using all immutable
+  # geometry reports already qualified by the three original native workers.
+  # This is evidence validation, not a new geometry evaluation or search.
+  actual=solve(widths,settings,recorded_check)
+  if consumed!=len(evaluations)or p.canonical(actual)!=p.canonical(solution):raise ValueError('REUSED_WIDTH_SEARCH_WITNESS_CHANGED')
+  return dict(schema=solution['schema'],attempts=solution['evaluation_count'],geometry_checks=consumed,routes=len(widths))
+ if len(evaluations)!=solution['evaluation_count']or len(solution['evaluations'])!=len(evaluations):raise ValueError('REUSED_COMPLETE_WIDTH_SEARCH_LEDGER_MISSING')
+ for index,(row,witness)in enumerate(zip(evaluations,solution['evaluations'])):
+  report=store.get_json(row['report_ref'],kind='width-check')
+  matched=witness['index']==index and witness['scales']==row['scales']and witness['report_sha256']==row['report_ref']['sha256']
+  if not matched or witness['passed']!=report['passed']or witness['failures']!=report['failures']:raise ValueError('REUSED_WIDTH_SEARCH_WITNESS_CHANGED')
+ return dict(schema=solution.get('schema','legacy-continuous-search'),attempts=len(evaluations))
+
+def legacy_support_identity(run):
+ """The new normalizer must be identity on every retained legacy T05 region."""
+ from . import pipeline as p
+ from .export_absorption import polygonal_support
+ run=Path(run);store=p.Store(run/'runtime');ledger=load(run/'export/ledger.json');refs={r['raw_qualified_ref']['artifact_id']:r['raw_qualified_ref']for r in ledger['records']if r['stage']=='t05'}
+ for ref in refs.values():
+  region=p.geometry(store,ref)
+  if region.geom_type not in('Polygon','MultiPolygon')or not region.is_valid or region.is_empty or polygonal_support(region)is not region:raise ValueError('REUSED_LEGACY_SUPPORT_NORMALIZATION_REQUIRES_FRESH_EXPORT')
+ store.verify_reads();return dict(status='IDENTITY_ON_EVERY_RETAINED_T05_SUPPORT',unique_operands=len(refs))
+
+def verify_predecessor_families(run,binding):
+ evidence=Path(run)/'prefix_evidence';legacy=evidence/'legacy';reference=evidence/'reference';records=binding['original_checks']
+ legacy_seal=load(legacy/'PRODUCER_BINDING.json');source=load(legacy/'source.json')['source_ref']['sha256']
+ if source!=binding['source_sha256']or sha(legacy/'source.json')!=legacy_seal['source_binding_sha256']:raise ValueError('REUSED_LEGACY_SOURCE_BINDING_CHANGED')
+ reference_seal=load(reference/'PRODUCER_BINDING.json')
+ if sha(reference/'source.json')!=reference_seal['source_binding_sha256']or load(reference/'source.json')['source_ref']['sha256']!=source:raise ValueError('REUSED_REFERENCE_SOURCE_BINDING_CHANGED')
+ inherited=None;path=legacy/'REUSED_LEGACY_BINDING.json'
+ if path.exists():
+  expected=[v for k,v in legacy_seal['job_inputs'].items()if Path(k).name==path.name]
+  if expected!=[sha(path)]:raise ValueError('REUSED_LEGACY_AUTHORITY_CHANGED')
+  inherited=load(path)['original']
+ for stage in('t01','t03','t04','t02','t05'):
+  proofs=[load(legacy/'audits'/stage/(m+'.json'))for m in('construct','1','2')]
+  producer=inherited['original_producer_binding_sha256']if inherited and stage in inherited['stages']else sha(legacy/'PRODUCER_BINDING.json')
+  if any(p!=proofs[0]for p in proofs)or proofs[0]['status']!='PASS'or proofs[0]['producer_binding_sha256']!=producer or proofs[0]['source_sha256']!=source or proofs[0]['candidate_sha256']!=sha(legacy/(stage+'.json')):raise ValueError('REUSED_LEGACY_STAGE_PROOF_CHANGED:'+stage)
+  if records['legacy_'+stage+'_1']['pid']==records['legacy_'+stage+'_2']['pid']:raise ValueError('REUSED_LEGACY_EVALUATIONS_NOT_SEPARATE')
+ supplements=[load(legacy/'audits/t01'/('supplement_'+m+'.json'))for m in('1','2')]
+ if supplements[0]!=supplements[1]or supplements[0]['status']!='PASS'or supplements[0]['source_sha256']!=source or supplements[0]['stage_result_sha256']!=sha(legacy/'t01.json')or records['legacy_t01_supplement_1']['pid']==records['legacy_t01_supplement_2']['pid']:raise ValueError('REUSED_T01_SUPPLEMENT_CHANGED')
+ for folder,modes,operation in((legacy,('1','2'),'legacy_legacy_export'),(reference,('construct','1','2'),'reference_remedy')):
+  proofs=[load(folder/'export'/('proof_'+m+'.json'))for m in modes]
+  if any(p!=proofs[0]for p in proofs)or proofs[0]['status']!='PASS'or proofs[0]['generated_sha256']!=sha(folder/'export/top.art.gbr'):raise ValueError('REUSED_NATIVE_REFERENCE_PROOF_CHANGED')
+  if records[operation+'_1']['pid']==records[operation+'_2']['pid']:raise ValueError('REUSED_NATIVE_REFERENCE_EVALUATIONS_NOT_SEPARATE')
+ required=['legacy_'+s+'_'+m for s in('t01','t03','t04','t02','t05')for m in('construct','1','2')]+['legacy_t01_supplement_'+m for m in('1','2')]+['legacy_legacy_export_'+m for m in('construct','1','2')]+['reference_remedy_'+m for m in('construct','1','2')]+['connected_'+s+'_'+m for s in STAGES for m in('construct','1','2')]
+ if set(records)!=set(required)or binding['retained_operation_count']!=len(required)or any(records[k]['status']!='PASS'or records[k]['returncode']!=0 for k in required):raise ValueError('REUSED_COMPLETE_NATIVE_PREFIX_REQUIRED')
+ return dict(status='PASS',retained_operations=len(required))
 
 def verify(run):
  from . import pipeline as p
@@ -73,6 +157,7 @@ def verify(run):
  for relative,expected in binding['files'].items():
   file=run/relative
   if not file.is_relative_to(run)or sha(file)!=expected:raise ValueError('REUSED_PREFIX_EVIDENCE_CHANGED:'+relative)
+ verify_predecessor_families(run,binding)
  for stage in STAGES:
   candidate=sha(run/(stage+'.json'));proofs=[load(run/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
   if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]:raise ValueError('REUSED_PAIRED_PROOFS_DIFFER:'+stage)
@@ -83,9 +168,15 @@ def verify(run):
   if binding['original_checks']['connected_'+stage+'_1']['pid']==binding['original_checks']['connected_'+stage+'_2']['pid']:raise ValueError('REUSED_EVALUATIONS_NOT_SEPARATE_PROCESSES')
  # Preserve and hash-revalidate every original search witness, without solving
  # unchanged geometry again. All new T05 and actual-file predicates stay fresh.
- value=load(run/'t04.json');solution=value['solution'];evaluations=value['evaluations'];store=p.Store(run/'runtime')
- if len(evaluations)!=solution['evaluation_count']or len(solution['evaluations'])!=len(evaluations):raise ValueError('REUSED_COMPLETE_WIDTH_SEARCH_LEDGER_MISSING')
- for index,(row,witness)in enumerate(zip(evaluations,solution['evaluations'])):
-  report=store.get_json(row['report_ref'],kind='width-check')
-  if witness['index']!=index or witness['scales']!=row['scales']or witness['report_sha256']!=row['report_ref']['sha256']or witness['passed']!=report['passed']or witness['failures']!=report['failures']:raise ValueError('REUSED_WIDTH_SEARCH_WITNESS_CHANGED')
+ value=load(run/'t04.json');store=p.Store(run/'runtime');verify_width_ledger(value,store)
+ if binding.get('checked_legacy_files'):
+  legacy=run.parent/'legacy'
+  for relative,expected in binding['checked_legacy_files'].items():
+   file=legacy/relative
+   if not file.resolve().is_relative_to(legacy.resolve())or sha(file)!=expected:raise ValueError('REUSED_CHECKING_ENVELOPE_EVIDENCE_CHANGED')
+  if legacy_support_identity(run/'prefix_evidence/legacy')!=binding['legacy_support_identity']:raise ValueError('REUSED_LEGACY_SUPPORT_IDENTITY_CHANGED')
+ if value['solution'].get('schema')=='source-route-ten-step-width-ladder/1':
+  proof=load(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json')
+  if not proof['passed']or not proof['completed_width_fence']['passed']or proof['completed_t04_sha256']!=sha(run/'t04.json')or proof['connected_checkpoint_sha256']!=sha(run/'RAW_WIDTH_CHECKPOINT.json')or proof['legacy_checkpoint_sha256']!=sha(run.parent/'legacy/RAW_WIDTH_CHECKPOINT.json')or any(not row['passed']for row in proof['parts']):raise ValueError('REUSED_T04_PRIOR_COMPATIBILITY_CHANGED')
+ store.verify_reads()
  return binding

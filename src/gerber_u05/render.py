@@ -11,6 +11,7 @@ if qualification_mode=='INCREMENTAL_REUSED_NATIVE_PREFIX':
  binding=p.load(run/'REUSED_PREFIX_BINDING.json');reused_operations=binding['retained_operation_count']
  if reused_operations!=35 or binding['reused_stages']!=['t01','t03','t04','t02']:raise ValueError('VISUAL_REUSED_EVIDENCE_SCOPE_CHANGED')
  stage_evidence='Incremental qualification: 35 unchanged source/reference/T01/T03/T04/T02 operations are reused with original native proofs and hashes. T05 is newly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
+ if binding.get('fresh_assembly_operations')==3:stage_evidence+=' Source assembly was freshly constructed and checked by two additional native workers in this job.'
 elif qualification_mode=='INCREMENTAL_REUSED_NATIVE_T05':
  binding=p.load(run/'REUSED_T05_BINDING.json');reused_operations=binding['retained_operation_count']
  if reused_operations!=38:raise ValueError('VISUAL_REUSED_T05_SCOPE_CHANGED')
