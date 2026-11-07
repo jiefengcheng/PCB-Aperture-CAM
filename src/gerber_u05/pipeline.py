@@ -260,7 +260,7 @@ def empty_t02(store,scene):
     plan=dict(stage='t02',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation='complete-empty-native-rectangle-inventory/1',details=dict(targets=[],parameters={},family=policy['parameters']['family'],bounds=bounds(scene),containment={},inventory=inventory))
     return dict(output_scene_ref=scene_ref,candidate=candidate,plan=plan,verification=proof,summary=dict(rectangles=0,grown=0,contained_keep=0,inclusive=0))
 
-def run_t02(store,scene):
+def run_t02(store,scene,*,recorded=None):
     ids=[r['source_id']for r in scene['objects']if t02_land(r)]
     if not ids:return empty_t02(store,scene)
     from src import component_clearance as ownership
@@ -274,7 +274,12 @@ def run_t02(store,scene):
         from .checking_envelopes import initialize as initialize_checking
         initialize_checking(store,binding,scene,physical=ownership.ACTIVE)
     try:
-        adapter=FastRectangleAdapter('t02');scene_ref=store.put_json('scene',scene);policy=dict(stage='t02',parameters=land_parameters('t02'));details=adapter.plan(store,scene,policy,dict(stage='t02',scene_ref=scene_ref,source_ids=ids),bounds(scene));plan=dict(stage='t02',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details);candidate=adapter.run(store,scene,policy,plan,lambda _:None);check=adapter.verify(store,scene,policy,plan,candidate,dict(scope='complete-source-land-and-inclusive'),lambda _:None)
+        adapter=FastRectangleAdapter('t02');scene_ref=store.put_json('scene',scene);policy=dict(stage='t02',parameters=land_parameters('t02'));details=adapter.plan(store,scene,policy,dict(stage='t02',scene_ref=scene_ref,source_ids=ids),bounds(scene));plan=dict(stage='t02',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details)
+        if recorded is None:candidate=adapter.run(store,scene,policy,plan,lambda _:None)
+        else:
+            from .land_reconstruction import reconstruct
+            candidate=reconstruct(adapter,store,scene,policy,plan,recorded)
+        check=adapter.verify(store,scene,policy,plan,candidate,dict(scope='complete-source-land-and-inclusive'),lambda _:None)
         if not check['passed']:raise ValueError('T02_RECONSTRUCTION_FAILED')
         return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,summary=dict(rectangles=len(ids),grown=sum(r['status']=='GROWN'for r in candidate['decisions']),contained_keep=sum(r['status']=='COVERED_SKIP'for r in candidate['decisions']),inclusive=sum(r['status']=='MERGED'for r in candidate['inclusive_candidates'])))
     finally:ownership.ACTIVE=previous_context
@@ -305,7 +310,8 @@ def run_t05(store,scene,t04):
     if not check['passed']:raise ValueError('T05_COMPLETE_ATTACHMENT_RECONSTRUCTION_FAILED')
     return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,**({}if prior_floor is None else{'prior_positive_floor':prior_floor}),summary=dict(routes=len(targets),**(dict(protected_frame_routes=sum(c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'for c in contacts),protected_frame_source_contacts=sum(len(c['lands'])for c in contacts if c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'))if functional is not None else{}),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
 
-def stage(run,name):
+def stage(run,name,*,recorded=None):
+    if recorded is not None and name!='t02':raise ValueError('FIXED_CANDIDATE_RECONSTRUCTION_STAGE_UNSUPPORTED')
     store=Store(run/'runtime');binding=load(run/'source.json');order=['t01','t03','t04','t02','t05'];index=order.index(name);scene_ref=binding['scene_ref']if index==0 else load(run/(order[index-1]+'.json'))['output_scene_ref'];scene=validate_scene(store,scene_ref)
     initialize(store,binding,scene)
     source=store.get(binding['source_ref'],kind='gerber-source')
@@ -313,7 +319,7 @@ def stage(run,name):
     if name=='t01':result=run_t01(store,scene,binding)
     elif name=='t03':result=run_t03(store,scene,binding,load(run/'t01.json'))
     elif name=='t04':result=run_t04(store,scene)
-    elif name=='t02':result=run_t02(store,scene)
+    elif name=='t02':result=run_t02(store,scene,recorded=recorded)
     else:result=run_t05(store,scene,load(run/'t04.json'))
     from src import source_channel_scope
     if source_channel_scope.ACTIVE is not None:result=dict(result,functional_source_channels=dict(certificate_sha256=digest(canonical(source_channel_scope.ACTIVE.certificate)),policy=source_channel_scope.ACTIVE.certificate['policy'],source_channels=len(source_channel_scope.ACTIVE.cores),protected_frame_occurrences=len(source_channel_scope.ACTIVE.frame_ids)))

@@ -5,7 +5,15 @@ from . import pipeline as p
 from .guard import verify_sources,install_read_fence
 ORDER=('t01','t03','t04','t02','t05')
 def compute(run,name):
- if name=='t04'and(os.environ.get('U05_WORKER_MODE')!='construct'or(run/'REUSED_WIDTH_BINDING.json').exists()):
+ if name=='t02'and os.environ.get('U05_WORKER_MODE')in('1','2'):
+  recorded=p.load(run/'t02.json');proof=p.load(run/'audits/t02/construct.json')
+  if (proof.get('status')!='PASS'or proof.get('stage')!='t02'or
+      proof.get('candidate_sha256')!=p.digest(p.canonical(recorded))or
+      proof.get('producer_binding_sha256')!=p.digest((run/'PRODUCER_BINDING.json').read_bytes())or
+      proof.get('source_sha256')!=p.load(run/'source.json')['source_ref']['sha256']):
+   raise ValueError('T02_SUCCESSFUL_CONSTRUCTION_CHECKPOINT_REQUIRED')
+  value=p.stage(run,name,recorded=recorded)
+ elif name=='t04'and(os.environ.get('U05_WORKER_MODE')!='construct'or(run/'REUSED_WIDTH_BINDING.json').exists()):
   from .width_prefix import reconstruct
   value=reconstruct(run,os.environ['U05_WORKER_MODE'])
  else:value=p.stage(run,name)
