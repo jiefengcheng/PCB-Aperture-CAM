@@ -14,9 +14,10 @@ from src.trace_width_clearance import TraceWidthContract
 from src.stage_abi.store import canonical
 from src.t02_rectangle_exposure import original_index
 from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM
+from src.t02_gap_settings import capture as gap_settings
 
 EPS=TraceWidthContract().comparison_epsilon_mm
-POLICY=dict(schema='t02-shared-neighbor-gaps/3',source='ORIGINAL_RESOLVED_COPPER',
+POLICY=dict(schema='t02-shared-neighbor-gaps/4',source='ORIGINAL_RESOLVED_COPPER',
  recognition='REPEATED_COLLINEAR_FACES_WITH_EMPTY_STRAIGHT_CORRIDORS',
  minimum_side_overlap_fraction=.75,maximum_gap_width_multiple=2.,
  maximum_repeat_spacing_multiple=2.,projection='MINIMUM_SAFE_CENTERED_BANK_OFFSET',
@@ -28,7 +29,22 @@ POLICY=dict(schema='t02-shared-neighbor-gaps/3',source='ORIGINAL_RESOLVED_COPPER
  comparison_epsilon_mm=EPS)
 ACTIVE=None
 
-def policy():return dict(POLICY)
+def policy():return dict(POLICY,gap_matching=gap_settings().snapshot())
+
+def matching(spec,zones):
+ """Compare complete accepted slot widths, never refresh a later fill budget."""
+ fraction=spec['policy']['gap_matching']['maximum_relative_gap_difference']
+ groups=defaultdict(list)
+ for row in zones:groups[row['group_id']].append(row['gap_mm'])
+ checks=[]
+ for gid,widths in sorted(groups.items()):
+  low,high=min(widths),max(widths)
+  if low<=0:raise ValueError('SHARED_GAP_COLLAPSED')
+  checks.append(dict(group_id=gid,minimum_gap_mm=low,maximum_gap_mm=high,
+   relative_gap_difference=(high-low)/low,maximum_relative_gap_difference=fraction,
+   passed=high-low<=fraction*low+EPS))
+ return dict(passed=all(r['passed']for r in checks),groups=checks,
+  basis='Whole source-qualified spans; (maximum gap - minimum gap) / minimum gap')
 
 def surfaces(g):
  if g.geom_type=='Polygon':return [g]
@@ -125,19 +141,28 @@ def entry_walls(groups,source,current):
     retained=unary_union(surfaces(material.intersection(corridor(axis,a,b,lo,hi))))
     witnesses=lambda values:[dict(source_id=s,original_sha256=hashlib.sha256(to_wkb(source[s])).hexdigest(),entry_sha256=hashlib.sha256(to_wkb(current[s])).hexdigest())for s in values]
     walls.append(dict(group_id=group['group_id'],bank=bank,lo=lo,hi=hi,offset_mm=max(0.,offset),plane=nominal,contour_wkb_hex=to_wkb(contour).hex(),retained_material_wkb_hex=to_wkb(retained).hex(),supports=witnesses(supports),original_attachments=witnesses(attachments)))
-  for bank in (0,1):
-   values=[w['offset_mm']for w in walls if w['group_id']==group['group_id']and w['bank']==bank]
-   if values and max(values)-min(values)>EPS:raise ValueError('SHARED_GAP_FIXED_BANK_NONUNIFORM')
+  # Earlier fixed walls may differ slightly. Their individual qualified planes
+  # remain immutable; the registered tolerance compares the resulting gaps.
  return walls
 
 def bank_anchor(spec,group,bank):
  values=[w['offset_mm']for w in spec['entry_walls']if w['group_id']==group['group_id']and w['bank']==bank]
  return min(values)if values else None
 
-def zone_rows(spec,group,left,right):
+def zone_rows(spec,group,left,right,current):
  for slot in group['slots']:
   walls=[w for w in spec['entry_walls']if w['group_id']==group['group_id']and w['lo']==slot['lo']and w['hi']==slot['hi']]
-  yield dict(group_id=group['group_id'],axis=group['axis'],left=left,right=right,lo=slot['lo'],hi=slot['hi'],gap_mm=right-left,entry_walls=walls)
+  planes=[left,right];axis=group['axis']
+  for bank in (0,1):
+   members=slot['bank_members'][bank]
+   if members:
+    values=[current[s].bounds[axis+2 if bank==0 else axis]for s in members]
+    planes[bank]=max(values)if bank==0 else min(values)
+   else:
+    inherited=[w for w in walls if w['bank']==bank]
+    if len(inherited)!=1:raise ValueError('SHARED_GAP_SLOT_WALL_COVERAGE_CHANGED')
+    planes[bank]=inherited[0]['plane']
+  yield dict(group_id=group['group_id'],axis=axis,left=planes[0],right=planes[1],lo=slot['lo'],hi=slot['hi'],gap_mm=planes[1]-planes[0],entry_walls=walls)
 
 def records(scene,original,current):
  index=original_index(scene,original);source=index.geometries
@@ -195,7 +220,7 @@ def records(scene,original,current):
     for bank in (0,1):
      members={w['source_id']for w in slot['witnesses']if w['bank']==bank}
      banks[bank].update(members);anchors[bank]|=not members
-   group=dict(axis=axis,left=left,right=right,original_gap_mm=right-left,shared_source_components=[sorted(v)for v in common],banks=[sorted(b)for b in banks],fixed_wall_anchors=anchors,slots=[dict(lo=s['lo'],hi=s['hi'])for s in run])
+   group=dict(axis=axis,left=left,right=right,original_gap_mm=right-left,shared_source_components=[sorted(v)for v in common],banks=[sorted(b)for b in banks],fixed_wall_anchors=anchors,slots=[dict(lo=s['lo'],hi=s['hi'],bank_members=[sorted({w['source_id']for w in s['witnesses']if w['bank']==bank})for bank in (0,1)])for s in run])
    group['group_id']=hashlib.sha256(canonical(group)).hexdigest();groups.append(group)
  # T04 does not own these rectangles. A changed T02 member is not a shifted
  # fixed trace wall and must never be adopted as the new source baseline.
@@ -256,7 +281,7 @@ def project(spec,original,current,proposed,*,factor_rows=None):
    if delta<-EPS:raise ValueError('SHARED_GAP_PROJECTION_REMOVES_ENTRY')
    offered.append(max(0.,delta))
   required=[value for v in variables for value in anchors[v]]
-  if required and(max(required)-min(required)>EPS or max(required)>min(offered)+EPS):raise ValueError('SHARED_GAP_FIXED_ANCHOR_INFEASIBLE')
+  if required and min(required)>min(offered)+EPS:raise ValueError('SHARED_GAP_FIXED_ANCHOR_INFEASIBLE')
   value=min(required)if required else min(offered)
   for var in variables:offsets[var]=value
   ledger.append(dict(variables=[list(v)for v in sorted(variables)],offered_offsets_mm=offered,common_offset_mm=value,fixed_wall_anchor=bool(required),fixed_anchor_offsets_mm=required))
@@ -276,8 +301,10 @@ def project(spec,original,current,proposed,*,factor_rows=None):
  for group in spec['groups']:
   axis=group['axis'];bank_offsets=[min([offsets[(sid,axis)]for sid in ids],default=bank_anchor(spec,group,bank)or 0.)for bank,ids in enumerate(group['banks'])];left=group['left']+bank_offsets[0];right=group['right']-bank_offsets[1]
   if right-left<=0:raise ValueError('SHARED_GAP_COLLAPSED')
-  zones.extend(zone_rows(spec,group,left,right))
- proof=dict(policy=policy(),source_sha256=spec['source_sha256'],banks=ledger,zones=zones,factors=result_factors,approaching_proposal_limits=guards)
+  zones.extend(zone_rows(spec,group,left,right,dict(current,**result)))
+ match=matching(spec,zones)
+ if not match['passed']:raise ValueError('SHARED_GAP_MATCHING_TOLERANCE_EXCEEDED:'+canonical(match).decode())
+ proof=dict(policy=spec['policy'],source_sha256=spec['source_sha256'],banks=ledger,zones=zones,factors=result_factors,approaching_proposal_limits=guards)
  return result,proof
 
 def check(proof,material,*,tolerance_mm=0.):
@@ -287,7 +314,8 @@ def check(proof,material,*,tolerance_mm=0.):
   retained=unary_union([from_wkb(bytes.fromhex(w['retained_material_wkb_hex']))for w in row['entry_walls']])
   intrusion=material.intersection(inner).difference(retained).area
   checks.append(dict(group_id=row['group_id'],gap_mm=row['gap_mm'],intrusion_mm2=intrusion,retained_entry_material_mm2=retained.area,passed=intrusion<=EPS))
- return dict(passed=all(q['passed']for q in checks),checks=checks,tolerance_mm=tolerance_mm,scope='Complete original straight slot spans; same-net and fill allowances do not override')
+ match=matching(proof,proof['zones'])
+ return dict(passed=all(q['passed']for q in checks)and match['passed'],checks=checks,gap_matching=match,tolerance_mm=tolerance_mm,scope='Complete original straight slot spans; same-net and fill allowances do not override')
 
 def require(proof,material,*,tolerance_mm=0.):
  q=check(proof,material,tolerance_mm=tolerance_mm)
@@ -307,12 +335,13 @@ def frozen(spec,current):
    values=[current[s].bounds[axis+2]-group['left']if bank==0 else group['right']-current[s].bounds[axis]for s in ids]
    anchor=bank_anchor(spec,group,bank)
    if anchor is not None:values.append(anchor)
-   if values and max(values)-min(values)>EPS:raise ValueError('SHARED_GAP_BANK_NONUNIFORM')
    offsets.append(min(values,default=0.))
   left,right=group['left']+offsets[0],group['right']-offsets[1]
   if right<=left:raise ValueError('SHARED_GAP_COLLAPSED')
-  zones.extend(zone_rows(spec,group,left,right))
- return dict(policy=policy(),source_sha256=spec['source_sha256'],zones=zones)
+  zones.extend(zone_rows(spec,group,left,right,current))
+ match=matching(spec,zones)
+ if not match['passed']:raise ValueError('SHARED_GAP_MATCHING_TOLERANCE_EXCEEDED:'+canonical(match).decode())
+ return dict(policy=spec['policy'],source_sha256=spec['source_sha256'],zones=zones)
 
 def complete(proof,material,*,tolerance_mm=0.):
  q=check(proof,material,tolerance_mm=tolerance_mm);edges=[];boundary=interval_edges(material);epsilon=max(tolerance_mm,EPS);outline=material.boundary

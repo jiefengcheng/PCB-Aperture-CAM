@@ -51,7 +51,7 @@ class LandAdapter:
   self.stage=stage
  def describe(self):
   files=[Path(__file__),Path(__file__).with_name('runtime.py'),Path(__file__).parents[1]/'prepared_land_scene.py',Path(__file__).parents[1]/'joint_rectangle_growth.py',Path(__file__).parents[1]/'prepared_width_scene.py',Path(__file__).parents[1]/'crop_stage_growth.py',Path(__file__).parents[1]/'shape_containment.py']
-  if self.stage=='t02':files.extend([Path(shared_gaps.__file__),Path(__file__).parents[1]/'t02_rectangle_exposure.py'])
+  if self.stage=='t02':files.extend([Path(shared_gaps.__file__),Path(__file__).parents[1]/'t02_rectangle_exposure.py',Path(__file__).parents[1]/'t02_gap_settings.py'])
   return dict(family=land_parameters(self.stage)['family'],implementation=hashlib.sha256(b''.join(p.read_bytes() for p in files)).hexdigest(),operations=['plan','run','verify'],source_support='Filled circles with explicit diameter classes' if self.stage=='t01' else 'Axis-aligned filled rectangles and connected inclusive fills; no trace/junction edits')
  def _context(self,store,scene,policy,details):
   if policy.get('stage')!=self.stage or canonical(policy.get('parameters'))!=canonical(land_parameters(self.stage)):fail('POLICY_UNSUPPORTED','land family')

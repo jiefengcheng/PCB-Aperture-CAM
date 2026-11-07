@@ -1,0 +1,8 @@
+{
+  "schema": "t02-shared-gap-settings/1",
+  "revision": 1,
+  "status": "PROVISIONAL",
+  "maximum_relative_gap_difference": 0.01,
+  "comparison": "MAXIMUM_MINUS_MINIMUM_DIVIDED_BY_MINIMUM",
+  "scope": "Complete source-qualified shared-neighbor gap spans; no clearance, pin, growth-cap or frozen-slot exemption"
+}
