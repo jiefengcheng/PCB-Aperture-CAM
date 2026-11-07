@@ -125,7 +125,7 @@ def run_t03(store,scene,binding,t01):
  if cc.ACTIVE is None:return p.legacy_run_t03(store,scene,binding,t01)
  ctx=cc.ACTIVE;original=store.get_json(binding['scene_ref'],kind='scene');rows,before,_=p.operands(store,original);_,current,_=p.operands(store,scene);records=[]
  for sid,row in sorted(rows.items()):
-  if row['kind']!='stroke':continue
+  if not p.native_draw(row):continue
   if p.to_wkb(before[sid])!=p.to_wkb(current[sid]):raise ValueError('T03_SOURCE_TRACE_CHANGED')
   records.append(dict(source_id=sid,original_owner_id=ctx.owner(sid,before[sid]),original_geometry_ref=row['original_ref'],movement='NONE'))
  # Whole-source new-copper clearance is re-evaluated; internal trace/land ports

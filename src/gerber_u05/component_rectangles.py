@@ -1,5 +1,6 @@
 """Original-owner clearance for T02 inclusive rectangles; legacy mode unchanged."""
 from pathlib import Path
+import copy
 from shapely.geometry import box
 from shapely import to_wkb
 from shapely.ops import unary_union
@@ -13,11 +14,40 @@ from src.stage_abi.store import digest
 from .checking_envelopes import constraint
 
 class ComponentRectangleAdapter(FastRectangleAdapter):
+ def verify(self,*args,**kwargs):
+  self._replaying_merges=True
+  try:return super().verify(*args,**kwargs)
+  finally:self._replaying_merges=False
+ def _merges(self,store,scene,plan,rows,current,budget):
+  from src import pin_separation as pin
+  rule=pin.ACTIVE
+  if rule is None:return self._owner_merges(store,scene,plan,rows,current,budget)
+  state=lambda r:(r.binding,r.prior_binding,to_wkb(r.rejected),r.rejected_count)
+  if not getattr(self,'_replaying_merges',False):
+   # The verifier must replay the same ordered fill proposals from their entry
+   # state. Reusing the construction's final rejection memory adds a spurious
+   # "previously rejected fragment" reason to the first rejected proposal.
+   self._merge_pin_entry=copy.copy(rule)
+   value=self._owner_merges(store,scene,plan,rows,current,budget)
+   self._merge_pin_exit=state(rule)
+   return value
+  entry=getattr(self,'_merge_pin_entry',None)
+  if entry is None or state(rule)!=self._merge_pin_exit:
+   raise ValueError('T02_PIN_MERGE_REPLAY_CONTEXT_CHANGED')
+  replay=copy.copy(entry);pin.ACTIVE=replay
+  try:
+   value=self._owner_merges(store,scene,plan,rows,current,budget)
+   if state(replay)!=self._merge_pin_exit:raise ValueError('T02_PIN_MERGE_REJECTION_HISTORY_CHANGED')
+   return value
+  finally:
+   # Construction's complete sticky rejection history remains authoritative
+   # for subsequent fills, radii and stages. Verification never clears it.
+   pin.ACTIVE=rule
  def describe(self):
   value=super().describe()
   if cc.ACTIVE is not None:value=dict(value,implementation=digest(Path(__file__).read_bytes()),ownership_policy=cc.POLICY)
   return value
- def _merges(self,store,scene,plan,rows,current,budget):
+ def _owner_merges(self,store,scene,plan,rows,current,budget):
   if cc.ACTIVE is None:return super()._merges(store,scene,plan,rows,current,budget)
   ctx=cc.ACTIVE;crop=box(*scene['viewport_mm']);ids=[s for s in plan['details']['targets']if not plan['details']['containment'][s]['contained']];cores={s:ctx.originals[s]for s in ids};groups=merge_groups(ids,cores);before=unary_union([current[s]for s in sorted(current)]).intersection(crop);owned=ctx.project(current);claimed=set();accepted=[];decisions=[];additions=[];contract=GrowthContract()
   from src import source_channel_scope

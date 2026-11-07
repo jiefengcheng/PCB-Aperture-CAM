@@ -35,6 +35,7 @@ from shapely.ops import unary_union
 from gerbonara import graphic_objects as go
 from gerbonara.apertures import CircleAperture,RectangleAperture
 from . import gerber_source_profile as source_profile
+from .source_catalogue import record as catalogue_record,catalogue,native_draw,t04_trace,t02_land,t05_land
 
 PACKET=Path(__file__).resolve().parent
 EPS=1e-12
@@ -110,6 +111,10 @@ def build_source(store,raw):
                 points,_=source_profile.arc_points((o.x1,o.y1),(o.x2,o.y2),(o.x1+o.cx,o.y1+o.cy),o.clockwise);points=[[x,-y]for x,y in points]
             else:points=ends
             md.update(route_points_mm=points,endpoints_decimal_mm=[[format(x,'.12f'),format(y,'.12f')]for x,y in ends],minimum_caliper_mm=minimum,source_port_width_mm=width,aperture_family=family,route_kind='arc'if isinstance(o,go.Arc)else'segment')
+            from .rectangle_terminals import qualify as qualify_rectangle_terminal
+            terminal=qualify_rectangle_terminal(o,all_shapes[i],effective[i])
+            if terminal is not None:
+                kind='rectangle';md.update(qualified_land=True,rectangle_terminal=terminal)
         elif isinstance(o,go.Flash):
             if not effective[i].equals(all_shapes[i]):raise ValueError('CLEAR_CLIPPED_FLASH_NEEDS_SEPARATE_FAMILY')
             if isinstance(o.aperture,CircleAperture):
@@ -117,9 +122,12 @@ def build_source(store,raw):
             elif isinstance(o.aperture,RectangleAperture):kind='rectangle';md['qualified_land']=True
         elif isinstance(o,go.Region)and g.equals(box(*g.bounds)):kind='rectangle';md['qualified_land']=True
         if kind=='rectangle'and not g.equals(box(*g.bounds)):raise ValueError('RECTANGLE_SOURCE_NOT_AXIS_ALIGNED')
-        md.update(nominal_width_mm=width,original_width_mm=width)
+        # Native drawing width remains in the immutable physical/port ledger.
+        # T02's filled-land checker binds a zero trace width for land rows.
+        land_width=0. if md.get('rectangle_terminal')else width
+        md.update(nominal_width_mm=land_width,original_width_mm=land_width)
         ref=geomref(store,g);objects.append(dict(source_id=sid,kind=kind,original_ref=ref,geometry_ref=ref,metadata=md))
-        token=f'(width {width:.17g})\n'.encode();width_text.append(token);physical.append(dict(id=sid,kind='segment'if kind=='stroke'and md['route_kind']=='segment'else'arc'if kind=='stroke'else'gr_circle'if kind=='circle'else'gr_poly',trace_width_mm=width,source_span=[offset,offset+len(token)],geometry_sha256=ref['sha256']));offset+=len(token)
+        token=f'(width {width:.17g})\n'.encode();width_text.append(token);physical.append(dict(id=sid,kind='segment'if isinstance(o,go.Line)else'arc'if isinstance(o,go.Arc)else'gr_circle'if kind=='circle'else'gr_poly',trace_width_mm=width,source_span=[offset,offset+len(token)],geometry_sha256=ref['sha256']));offset+=len(token)
         if isinstance(o,go.Region):
             from src.t01_region_contacts import source_marker
             physical[-1]['t01_original_region']=source_marker(source_hash,sid,ref['sha256'])
@@ -148,7 +156,8 @@ def build_source(store,raw):
     for r in objects:
         if r['metadata']['qualified_land']:r['metadata']['alias_source_ids']=sorted(aliases[(r['kind'],r['original_ref']['sha256'])])
     x0,y0,x1,y1=image.bounds;scene=dict(source_sha256=source_hash,frame='gerber-source-mm-y-down',units='mm',layer='F.Cu',viewport_mm=[x0-.5,y0-.5,x1+.5,y1+.5],objects=objects,findings=[],lineage=[dict(stage='gerber-source-intake',representation='Original Gerber occurrences; F.Cu is only the selected computation surface, not an inferred X2 stack role')],acceptance=dict(owner='PENDING_USER',independent='NOT_RUN',electrical_manufacturing='NOT_ESTABLISHED'))
-    ref=store.put_json('scene',scene);binding=dict(source_ref=store.put('gerber-source',raw),scene_ref=ref,source_ledger=ledger,coordinate_oracle=oracle,max_arc_radius_residual_mm=residual,source_objects=len(parsed.objects),width_metadata_encoding_ref=store.put('kernel-width-data',b''.join(width_text)),width_metadata_rows=physical,KiCad='NOT_APPLICABLE_NO_SOURCE_CREATED',clear_operations=sum(not o.polarity_dark for o in parsed.objects))
+    for row in objects:catalogue_record(row)
+    ref=store.put_json('scene',scene);binding=dict(source_ref=store.put('gerber-source',raw),scene_ref=ref,source_catalogue_ref=store.put_json('source-catalogue',catalogue(scene)),source_ledger=ledger,coordinate_oracle=oracle,max_arc_radius_residual_mm=residual,source_objects=len(parsed.objects),width_metadata_encoding_ref=store.put('kernel-width-data',b''.join(width_text)),width_metadata_rows=physical,KiCad='NOT_APPLICABLE_NO_SOURCE_CREATED',clear_operations=sum(not o.polarity_dark for o in parsed.objects))
     return binding
 
 def t01_sites(store,scene):
@@ -194,7 +203,7 @@ def run_t01(store,scene,binding):
 def run_t03(store,scene,binding,t01):
     original=store.get_json(binding['scene_ref'],kind='scene');rows,before,_=operands(store,original);_,current,_=operands(store,scene);sites=t01_sites(store,original);meta=binding['width_metadata_rows'];raw=store.get(binding['width_metadata_encoding_ref'],kind='kernel-width-data');ws=WorkingScene(raw,meta,[before[r['id']]for r in meta],sites,CropSettings());tree=STRtree([before[s['source_id']]for s in sites]);records=[];policy=dict(hard_gap_mm=HARD_GAP_MM,quad_segs=128,area_epsilon_mm2=1e-10)
     for sid,r in sorted(rows.items()):
-        if r['kind']!='stroke':continue
+        if not native_draw(r):continue
         if to_wkb(before[sid])!=to_wkb(current[sid]):raise ValueError('T03_SOURCE_TRACE_CHANGED')
         pairs=[]
         for i in sorted(map(int,tree.query(before[sid].buffer(HARD_GAP_MM+.000001)))):
@@ -208,7 +217,7 @@ def width_admission(store,scene):
     from src import source_channel_scope
     frame_ids=source_channel_scope.ACTIVE.frame_ids if source_channel_scope.ACTIVE is not None else frozenset()
     for sid,r in rows.items():
-        if r['kind']!='stroke':continue
+        if not t04_trace(r):continue
         md=r['metadata'];n=dict(source_id=sid,kind=md['route_kind'],width_mm=md['minimum_caliper_mm'],endpoints_decimal_mm=md['endpoints_decimal_mm'],route_points_mm=md['route_points_mm'],source_wkb_sha256=r['original_ref']['sha256']);native.append(n);families[tuple(md['aperture_family'])].append(n)
     paths=[]
     for family,records in sorted(families.items()):paths.extend(route_evidence(junction_source_paths(records,[r['source_id']for r in records])))
@@ -242,7 +251,7 @@ def run_t04(store,scene):
 
 def empty_t02(store,scene):
     """A complete empty native-rectangle inventory is a verified identity step."""
-    if any(row['kind']=='rectangle'for row in scene['objects']):raise ValueError('T02_EMPTY_INVENTORY_HAS_ELIGIBLE_TARGET')
+    if any(t02_land(row)for row in scene['objects']):raise ValueError('T02_EMPTY_INVENTORY_HAS_ELIGIBLE_TARGET')
     scene_ref=store.put_json('scene',scene);validate_scene(store,scene_ref)
     rows,current,original=operands(store,scene)
     inventory=dict(source_objects=len(rows),validated_current_geometries=len(current),validated_original_geometries=len(original),eligible_rectangles=0,objects_sha256=digest(canonical(scene['objects'])),source_sha256=scene['source_sha256'])
@@ -252,7 +261,7 @@ def empty_t02(store,scene):
     return dict(output_scene_ref=scene_ref,candidate=candidate,plan=plan,verification=proof,summary=dict(rectangles=0,grown=0,contained_keep=0,inclusive=0))
 
 def run_t02(store,scene):
-    ids=[r['source_id']for r in scene['objects']if r['kind']=='rectangle']
+    ids=[r['source_id']for r in scene['objects']if t02_land(r)]
     if not ids:return empty_t02(store,scene)
     from src import component_clearance as ownership
     previous_context=ownership.ACTIVE
@@ -275,7 +284,7 @@ def run_t05(store,scene,t04):
     functional=source_channel_scope.ACTIVE
     from .prior_copper import prepare as prepare_prior
     scene,prior_floor=prepare_prior(store,scene)
-    rows,current,original=operands(store,scene);objects=copy.deepcopy(scene['objects']);byid={r['source_id']:r for r in objects};lands=[s for s,r in rows.items()if r['metadata'].get('qualified_land')or r['kind']=='inclusive_rectangle']
+    rows,current,original=operands(store,scene);objects=copy.deepcopy(scene['objects']);byid={r['source_id']:r for r in objects};lands=[s for s,r in rows.items()if t05_land(r)]
     for sid in lands:
         r=byid[sid]
         if r['kind']=='inclusive_rectangle':
