@@ -4,6 +4,24 @@ from src import component_clearance as cc
 from src.u05_board.export import export_region
 from .component_finish import prepare_region
 
+def polygonal_support(region):
+ """Keep every copper face; clipped zero-area support is not material."""
+ if not region.is_valid or region.is_empty:
+  raise ValueError('T05_EXPORT_SUPPORT_POLYGONAL_REQUIRED')
+ if region.geom_type in('Polygon','MultiPolygon'):return region
+ if region.geom_type!='GeometryCollection':
+  raise ValueError('T05_EXPORT_SUPPORT_POLYGONAL_REQUIRED')
+ from src.component_voids import surface_parts
+ from shapely.geometry import MultiPolygon
+ faces=surface_parts(region)
+ if not faces:raise ValueError('T05_EXPORT_SUPPORT_POLYGONAL_REQUIRED')
+ # Reuse exact rings, holes and islands. No union, grid snapping, buffer,
+ # area threshold, repair or change to the qualified addition is permitted.
+ result=faces[0]if len(faces)==1 else MultiPolygon(faces)
+ if not result.is_valid or result.is_empty:
+  raise ValueError('T05_EXPORT_SUPPORT_POLYGONAL_REQUIRED')
+ return result
+
 def compact_supported_region(addition,owner,domain):
  """One local joint surface; duplicate only already-present owner copper.
 
@@ -20,6 +38,7 @@ Boolean proof does not hold, use the original qualified support construction.
  # ULP slivers. The qualified addition stays complete; all original predicates
  # below still apply with their original area epsilon.
  region=target.intersection(window).union(addition)
+ region=polygonal_support(region)
  if (region.is_valid and not region.is_empty
      and support.difference(owner).area<=CONTRACT.area_epsilon_mm2
      and addition.difference(region).area<=CONTRACT.area_epsilon_mm2
@@ -31,11 +50,13 @@ Boolean proof does not hold, use the original qualified support construction.
 def supported_region(addition,owner,domain):
  try:
   region,support=export_region(addition,owner,domain)
+  region=polygonal_support(region)
   return region,support,'ORIGINAL_SUPPORT'
  except ValueError as error:
   if str(error)!='U05_NATIVE_SUPPORT_CHANGES_QUALIFIED_COPPER':raise
  try:
   region,support=export_region(addition,owner,domain,support_from_owner=True)
+  region=polygonal_support(region)
   return region,support,'CHECKED_OWNER_FIRST_ALTERNATE'
  except ValueError as error:
   if str(error)!='U05_NATIVE_SUPPORT_CHANGES_QUALIFIED_COPPER':raise
