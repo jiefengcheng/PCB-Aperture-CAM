@@ -1,4 +1,32 @@
-# Current T05 completion and frozen release candidate — 2026-11-08
+# Current final-pin correction and affected-work continuation — 2026-11-08
+
+The earlier `c5a4e6f` T05 tail halted after all four remedy rounds and joint
+smoothing. Its final preliminary whole-scene union raised a GEOS non-noded
+intersection before the pin predicate could run. All 2,535 individual material
+surfaces are valid. The failed job `20261107T193222Z-7b6707757bd046578fd002ace6bcadb0`
+and its FAIL / NOT_RUN dispositions are preserved; it is not a native T05 pass.
+
+Isolated correction `4730065` uses the existing complete-domain streaming pin
+check at T05's final gate. It passes the actual retained scene's 13 protected
+slots with unchanged material bytes, 606 focused checks and a complete synthetic
+47-operation route. Other-stage paths, geometry, tolerances and budgets remain
+unchanged. It also retains the complete pre-verification T05 value so later
+verification failures need not lose its construction report.
+
+Corrected T05-only job `20261107T204212Z-b2dd9a585ece45c3bd133438f1b3b791` is running
+from frozen `4730065` source, using 35 accepted T01-through-T02 prefix operations
+and 12 required fresh operations. There is no new full-board restart. Its final
+checks, rendering and delivery remain pending. The normal app is unchanged at
+`f2a50c1`; the correction is separately combined onto the app candidate for
+qualification before integration. Both prepared releases remain inactive.
+
+See [the correction and evidence](U05_T05_PIN_PROJECTION_20261108.md). Other boards
+remain paused. The six deferred broad-suite failures, explicit unwaived and
+unattributed `.DS_Store` custody finding and separate unfinished flattening slice
+remain unchanged. Owner PENDING_USER; independent NOT_RUN;
+electrical/manufacturing NOT_ESTABLISHED.
+
+# Earlier T05 completion and frozen release candidate — 2026-11-08
 
 The last full job below halted at T05 prior-floor preparation after all T02
 checks passed. Its 38 PASS operations, T05 FAIL and eight NOT_RUN operations
