@@ -97,6 +97,11 @@ class InteractionAdapter:
                 if to_wkb(result['scene'].accepted[d['source_id']],byte_order=1)!=to_wkb(site['core'],byte_order=1):
                     fail('T01_CONTAINED_SOURCE_CHANGED',d['source_id'])
                 d['keep_reason']='KEEP_CONTAINED'
+            elif d['source_id'] in allocation.get('circle_overlap_keep_source_ids',[]):
+                site=next(s for s in sites if s['source_id']==d['source_id'])
+                if to_wkb(result['scene'].accepted[d['source_id']],byte_order=1)!=to_wkb(site['core'],byte_order=1):
+                    fail('T01_OVERLAP_KEEP_SOURCE_CHANGED',d['source_id'])
+                d['keep_reason']='KEEP_OTHER_COPPER_COVERAGE_ABOVE_LIMIT'
             if d['priority'] and d['proposed_radius_mm']>d['source_radius_mm'] and d['decision']!='ROUND_GROW_PRIORITY':
                 fail('T01_ROUND_ALLOCATION_NOT_CONSTRUCTIBLE',d['source_id'])
         if result['failed_patches']:
@@ -109,7 +114,7 @@ class InteractionAdapter:
         decisions=[];replacements={};byid={s['source_id']:s for s in sites};keys={s['source_id']:f'S{i+1:02d}' for i,s in enumerate(sites)};source_rows={r['source_id']:r for r in scene['objects']}
         for d in result['decisions']:
             budget.evaluation();sid=d['source_id'];g=result['scene'].accepted[sid];blob=to_wkb(g,byte_order=1);budget.output(blob)
-            candidate_ref=source_rows[sid]['geometry_ref']if allocation['containment'][sid]['contained']else store.put('geometry',blob)
+            candidate_ref=source_rows[sid]['geometry_ref']if (allocation['containment'][sid]['contained']or sid in allocation.get('circle_overlap_keep_source_ids',[]))else store.put('geometry',blob)
             for alias in byid[sid]['aliases']:replacements[alias]=candidate_ref
             decisions.append(dict(d,key=keys[sid],candidate_ref=candidate_ref,size_class=allocation['size_classes'][sid],containment=allocation['containment'][sid]))
             checkpoint(dict(completed_sources=len(decisions),source_id=sid,candidate_ref=candidate_ref))

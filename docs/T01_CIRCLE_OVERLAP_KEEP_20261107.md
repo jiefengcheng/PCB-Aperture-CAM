@@ -1,0 +1,17 @@
+# T01 circles: provisional other-copper overlap KEEP
+
+The owner extended the existing fully-contained-circle KEEP rule on 2026-11-07: keep a circle when other stage-entry copper covers strictly more than 70% of its original area. Preserve that source copper; suppress its independent circular enlargement.
+
+The global provisional parameter is `maximum_other_copper_coverage_fraction_for_growth` in `contracts/t01_circle_overlap/settings.json`, initially `0.70`. Exactly 70% remains eligible for the ordinary T01 checks. Full containment retains its existing separate policy and 1e-12 mm² epsilon; the rectangle policy is unchanged.
+
+Coverage is the original circle area intersected with the union of all other stage-entry copper. Self and exact geometric aliases are excluded, and overlapping contributors are counted once. Later accepted growth cannot change eligibility. The existing containment area measurement is reused, so geometry support and alias semantics do not diverge. Impossible area-range roundoff may be normalized only within the existing area epsilon; that does not add tolerance to the strict 70% decision.
+
+The complete source/site/alias inventory remains present. KEEP circles are excluded before round-priority selection and competing growth pairing, receive their source radius, retain exact predecessor geometry references, and remain ordinary fixed copper for interaction and clearance checks. Existing integral pad-to-trace joints and all source cores remain intact. A subsequent attempt to enlarge a KEEP circle is rejected, rather than trusted because a plan says KEEP.
+
+The exact registry bytes, hash and resolved threshold are captured in the canonical compiled policy and source-derived allocation. Managed producer bindings also seal the registry file. Changing the global registry changes future policies; an old plan/policy cannot silently adopt the new parameter. The historical canonical contract is archived byte-identically in `contracts/t01_canonical/revisions/contract_b3576983e4ba0a598a567fb4ae00c7acd7b71bc8aa4247198c95f3f8a1f152cf.json`, with an explicit owner-authorized revision in the current contract. Frozen past jobs are never resealed.
+
+This change applies through the canonical allocator shared by whole-board/crop T01 and the Gerber-only legacy/component T01 paths. Source geometry, clearance, palette, scalar bounds, ports, pin separation, remaining source coverage checks and deliberate corruption controls are unchanged. This does not apply the 70% rule to rectangles or delete copper. It does not authorize T04 widening of arbitrary filled regions.
+
+Qualification is isolated under `out/lacie_work/evidence/t01_circle_overlap_20261107/`. The retained-area screen covers all 372 circle sites: 214 already fully contained plus 70 additional overlap KEEP sites. Of the 96 previously grown sites, 62 are filtered by the new rule. The source screen is not fresh growth or export qualification; fresh native T01 results are reported separately.
+
+The production app, previous delivery, failed evidence, paused optimization branch and other boards remain unchanged. Existing downstream results cannot be claimed as regenerated under this new T01 rule; a final updated U05 Gerber requires recomputing the affected successors and export/reparse checks. Historical .DS_Store custody FAIL remains EXPLICIT_UNWAIVED_UNATTRIBUTED. Owner, independent and manufacturing status are not promoted.

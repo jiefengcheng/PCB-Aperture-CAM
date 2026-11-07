@@ -164,6 +164,7 @@ def run_t01(store,scene,binding):
     if not full['passed']or any(not d['verification']['passed']for d in result['decisions']):raise ValueError('T01_FULL_SCENE_CHECK_FAILED')
     for s in sites:
         if s['source_id']in allocation['contained_keep_source_ids']and to_wkb(after[s['source_id']])!=to_wkb(s['core']):raise ValueError('T01_CONTAINED_SOURCE_CHANGED')
+        if s['source_id']in allocation['circle_overlap_keep_source_ids']and to_wkb(after[s['source_id']])!=to_wkb(s['core']):raise ValueError('T01_OVERLAP_KEEP_SOURCE_CHANGED')
     ref=artifact_scene(store,scene,after,'t01')
     return dict(output_scene_ref=ref,allocation=allocation,decisions=result['decisions'],events=[{k:v for k,v in e.items()if k not in('counterfactual','earlier_copper')}for e in result['events']],rejected_hypotheses=[{k:v for k,v in e.items()if k!='candidate'}for e in result['failed_patches']],full_surface_check=full,summary=dict(circle_sites=len(sites),circle_occurrences=sum(len(s['aliases'])for s in sites),grown=sum(d['added_area_mm2']>1e-10 for d in result['decisions']),contained_keep=len(allocation['contained_keep_source_ids'])))
 

@@ -1,0 +1,11 @@
+{
+  "schema": "t01-circle-overlap-settings/1",
+  "revision": 1,
+  "status": "PROVISIONAL",
+  "maximum_other_copper_coverage_fraction_for_growth": 0.70,
+  "comparison": "KEEP_WHEN_STRICTLY_GREATER",
+  "context": "COMPLETE_STAGE_ENTRY_COPPER",
+  "exclude": "SELF_AND_EXACT_GEOMETRIC_ALIASES",
+  "action": "KEEP_EXACT_PREDECESSOR",
+  "scope": "T01_CIRCLES_ONLY; existing full-containment KEEP remains unchanged"
+}

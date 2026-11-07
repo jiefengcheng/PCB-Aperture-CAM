@@ -113,6 +113,7 @@ def run_t01(store,scene,binding):
  if not full['passed']:raise ValueError('T01_FULL_COMPONENT_SCENE_FAILED:'+str(full['failures'][:2]))
  for s in sites:
   if s['source_id']in allocation['contained_keep_source_ids']and p.to_wkb(after[s['source_id']])!=p.to_wkb(s['core']):raise ValueError('T01_CONTAINED_SOURCE_CHANGED')
+  if s['source_id']in allocation['circle_overlap_keep_source_ids']and p.to_wkb(after[s['source_id']])!=p.to_wkb(s['core']):raise ValueError('T01_OVERLAP_KEEP_SOURCE_CHANGED')
  memo.close();ref=p.artifact_scene(store,scene,after,'t01-connected-copper')
  return dict(output_scene_ref=ref,legacy_geometry_compilation_sha256=p.digest(p.canonical(legacy)),legacy_floor_foreign_guard_repairs=floor_repairs,legacy_reference_scene_ref=legacy['output_scene_ref'],allocation=allocation,allocation_basis='Fresh unchanged canonical source-wide allocation; a conservative selected-radius ceiling, not an assertion of legacy primitive-clearance construction parity.',construction_policy=cc.POLICY,ownership_sha256=ctx.index.fingerprint,decisions=decisions,full_surface_check=full,summary=dict(circle_sites=len(sites),circle_occurrences=sum(len(s['aliases'])for s in sites),grown=sum(d['added_area_mm2']>1e-10 for d in decisions),contained_keep=len(allocation['contained_keep_source_ids'])))
 

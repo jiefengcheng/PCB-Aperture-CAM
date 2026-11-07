@@ -109,5 +109,22 @@
     "supersedes_sha256": "650f43a1a58ba477513af32742d05a33a6dd4c20e70e58859e3d82daf26ba17d",
     "prior_contract_path": "contracts/clearance/revisions/contract_650f43a1a58ba477513af32742d05a33a6dd4c20e70e58859e3d82daf26ba17d.json",
     "authority": "Owner requested production 0.020 mm policy adjusted to 0.040 mm by default, 2026-11-05"
+  },
+  "circle_overlap_keep": {
+    "schema": "t01-circle-overlap-keep/1",
+    "settings_registry": "contracts/t01_circle_overlap/settings.json",
+    "threshold_parameter": "maximum_other_copper_coverage_fraction_for_growth",
+    "comparison": "STRICTLY_GREATER",
+    "context": "COMPLETE_STAGE_ENTRY_COPPER",
+    "exclude": "SELF_AND_EXACT_GEOMETRIC_ALIASES",
+    "action": "KEEP_EXACT_PREDECESSOR",
+    "allocation": "EXCLUDE_FROM_ROUND_PRIORITY_AND_COMPETING_GROWTH_PAIRS",
+    "scope": "CIRCLES_ONLY; preserve existing full-containment policy for circles and rectangles",
+    "job_binding": "Exact registry bytes and resolved threshold captured in canonical policy and source-derived allocation"
+  },
+  "circle_overlap_revision": {
+    "supersedes_sha256": "b3576983e4ba0a598a567fb4ae00c7acd7b71bc8aa4247198c95f3f8a1f152cf",
+    "prior_contract_path": "contracts/t01_canonical/revisions/contract_b3576983e4ba0a598a567fb4ae00c7acd7b71bc8aa4247198c95f3f8a1f152cf.json",
+    "authority": "Owner 2026-11-07: extend T01 KEEP to circles whose area is covered more than 70% by other copper; register replaceable global provisional threshold; preserve source copper, existing full-containment and all checks"
   }
 }

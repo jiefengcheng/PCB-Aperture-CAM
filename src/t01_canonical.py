@@ -10,10 +10,11 @@ from src.crop_balanced_t01 import CropSettings,WorkingScene,choose_priorities
 from src.crop_diameter_selection import select_targets,promote_round_priorities
 from src.crop_circle_sources import site_record
 from src.shape_containment import ContainmentIndex,policy as containment_policy
+from src.t01_circle_overlap import capture as overlap_settings,assess as assess_overlap
 
 ROOT=Path(__file__).resolve().parents[1]
 CONTRACT=ROOT/'contracts/t01_canonical/contract.json'
-CONTRACT_SHA256='b3576983e4ba0a598a567fb4ae00c7acd7b71bc8aa4247198c95f3f8a1f152cf'
+CONTRACT_SHA256='0abea62b43ac016d49acff55b479649e5f18f4b8380fdcd0050edf55091f6f38'
 
 def specification():
     data=CONTRACT.read_bytes()
@@ -31,7 +32,8 @@ def specification():
 
 def marker():
     s=specification()
-    return dict(schema=s['schema'],family=s['family'],contract_sha256=CONTRACT_SHA256)
+    return dict(schema=s['schema'],family=s['family'],contract_sha256=CONTRACT_SHA256,
+                circle_overlap_settings=overlap_settings().snapshot())
 
 def fingerprint(source_sha256,result):
     return digest(canonical(dict(canonical_t01=marker(),source_sha256=source_sha256,
@@ -63,12 +65,18 @@ def allocate(raw,rows,shapes,sites,policy,binding):
     containment=ContainmentIndex(dict(zip((r['id']for r in rows),shapes)))
     contained_records={s['source_id']:containment.assess(s['source_id'],s['aliases'])for s in sites}
     contained={sid for sid,r in contained_records.items()if r['contained']}
-    blocked={s['source_id']for s in sites if protected.intersection(s['aliases'])}|contained
+    overlap=overlap_settings()
+    overlap_records={s['source_id']:assess_overlap(s['core'],contained_records[s['source_id']],overlap)for s in sites}
+    overlap_keep={sid for sid,r in overlap_records.items()if r['keep']}
+    blocked={s['source_id']for s in sites if protected.intersection(s['aliases'])}|overlap_keep
     groups=groups_for(sites,directive.get('reviewed_pairs',[]),blocked,settings.construction_gap)
     for group in groups:
-        if set(group['site_ids'])&blocked:group['rule']='CONTAINED_SOURCE_KEEP'if set(group['site_ids'])&contained else'IMMUTABLE_SOURCE_PERMISSION_KEEP'
+        if set(group['site_ids'])&blocked:
+            group['rule']=('CONTAINED_SOURCE_KEEP'if set(group['site_ids'])&contained else
+                           'OTHER_COPPER_OVERLAP_KEEP'if set(group['site_ids'])&overlap_keep else
+                           'IMMUTABLE_SOURCE_PERMISSION_KEEP')
     priorities,exceptions=choose_priorities([s for s in sites if s['source_id']not in blocked],initial)
-    square=set(directive.get('recess_source_ids',[]))-protected-contained
+    square=set(directive.get('recess_source_ids',[]))-protected-overlap_keep
     for component,sid in list(priorities.items()):
         if sid in square:
             del priorities[component];exceptions.append(dict(component_id=component,source_id=sid,reason='SOURCE_RECESS_DIRECTIVE',previous_round_priority=sid))
@@ -90,8 +98,12 @@ def allocate(raw,rows,shapes,sites,policy,binding):
         if s['source_id']in blocked:
             sid=s['source_id'];targets[sid]=s['radius'];records[sid].update(proposed_radius_mm=s['radius'],selected_diameter_mm=2*s['radius'],category_mm=None,original_keep=True)
             if sid in contained:records[sid]['limits'].append(dict(reason='CONTAINED_SOURCE_KEEP'))
+            elif sid in overlap_keep:records[sid]['limits'].append(dict(reason='OTHER_COPPER_COVERAGE_ABOVE_LIMIT'))
             if protected.intersection(s['aliases']):records[sid]['limits'].append(dict(reason='IMMUTABLE_SOURCE_PERMISSION_KEEP'))
     allocation=dict(canonical_t01=marker(),analysis_bounds_mm=full_bounds(shapes),groups=groups,priorities_by_physical_component=priorities,priority_exceptions=exceptions,factor_limits=limits,size_classes=records,sites=[site_record(s)for s in sites],ports={sid:{other:to_wkb(g,byte_order=1).hex()for other,g in zones.items()}for sid,zones in initial.ports.items()},boundary_keep_source_ids=[],permission_keep_source_ids=sorted(protected),priority_pool_source_ids=sorted(ids),roi_semantics='No ROI construction dependency; complete native source priority pool, original source directives and immutable permissions')
     allocation.update(contained_shape_policy=containment_policy(),containment=contained_records,
-                      contained_keep_source_ids=sorted(contained))
+                      contained_keep_source_ids=sorted(contained),
+                      circle_overlap_settings=overlap.snapshot(),circle_overlap=overlap_records,
+                      circle_overlap_keep_source_ids=sorted(overlap_keep),
+                      keep_source_ids=sorted(blocked))
     return settings,allocation,targets,square
