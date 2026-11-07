@@ -399,7 +399,13 @@ def check(run,body,ledger):
     source=store.get_json(binding['scene_ref'],kind='scene');rows,current,original_shapes=p.operands(store,source);checks={}
     for stage in ORDER[:-1]:
         previous=dict(current);result=p.load(run/(stage+'.json'));scene=store.get_json(result['output_scene_ref'],kind='scene');newrows,wanted,_=p.operands(store,scene)
-        for sid,pieces in by_stage[stage].items():current[sid]=certified_union(current[sid],pieces)
+        inclusive_bindings=[]
+        for sid,pieces in by_stage[stage].items():
+            if sid not in current:
+                from .native_inclusive_identity import bind
+                core,source_core,proof=bind(stage,sid,newrows[sid],result,previous,original_shapes,wanted,cc.ACTIVE)
+                previous[sid]=current[sid]=core;original_shapes[sid]=source_core;inclusive_bindings.append(proof)
+            current[sid]=certified_union(current[sid],pieces)
         if stage in('t01','t02'):
             changed=set(by_stage[stage]);lands=[dict(id=s,original=previous[s]if s in previous else p.geometry(store,newrows[s]['original_ref']),candidate=current[s],native_source_kind='gr_circle'if newrows[s]['kind']=='circle'else'gr_poly',native_stroke_width_mm=0.)for s in sorted(changed)]
             if lands:
@@ -419,6 +425,7 @@ def check(run,body,ledger):
                             if port_proof is not None:native_port_proofs.append(dict(source_id=sid,neighbor_id=oid,**port_proof))
                 q=checker.check(lands,materialize_scene=True)
                 q['actual_file_required_gap_mm']=p.HARD_GAP_MM;q['original_source_native_port_proofs']=native_port_proofs
+                if inclusive_bindings:q['inclusive_predecessor_bindings']=inclusive_bindings
                 p.save(run/'export'/('actual_'+sys.argv[2]+'_'+stage+'.json'),q) if __name__=='__main__' else None
                 if not q['passed']:raise ValueError('ACTUAL_GERBER_LAND_CLEARANCE_FAILED:'+stage+':'+str(q['failures'][:3]))
                 checks[stage]=q
