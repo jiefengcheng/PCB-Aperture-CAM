@@ -1,3 +1,16 @@
+# Current app consolidation — 2026-11-07
+
+The active `codex/u05-reproducible-batch` app source now includes code checkpoint
+`4447cf8` plus the sealed same-job read correction `cea8698`: qualified Gerber T04/T05, T01 Region/BGA recognition and 58% exposure,
+exclusive T02 rectangle catalogue, 50% + 1% relative exposure policy, and the
+shared-neighbor straight-gap correction. Prior code and evidence remain retained.
+See [consolidation and rerun preparation](U05_APP_CONSOLIDATION_20261107.md) and
+`out/lacie_work/evidence/u05_app_consolidation_20261107/` for integration checks.
+The app passed 970 scoped tests and all 47 fresh synthetic native operations,
+including export/reparse, eight corruption controls and rendering.
+Fresh full-client U05 qualification has not started; other boards remain paused.
+Historical status sections below are preserved.
+
 # Current app integration — 2026-11-06
 
 The consolidated working branch is `codex/u05-reproducible-batch`, with U05 code

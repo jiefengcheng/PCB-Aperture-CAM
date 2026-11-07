@@ -6,11 +6,11 @@ eligibility threshold is 58% exposed circumference. The partial-area percentage
 rule is retired.** Eligible means that growth may be attempted; it does not mean
 that growth has passed the remaining checks.
 
-The latest isolated implementation checkpoint is `000a604`. The Region-contact,
-BGA-single and circumference revisions remain unintegrated into the normal app.
-The 58% update has passed 673 scoped regressions and source reclassification;
-fresh 58% growth/export qualification has not been run. Earlier native proofs
-retain their original parameters and scope.
+The Region-contact, BGA-single and circumference revisions are now integrated
+in the normal app through code checkpoint `4447cf8`. The consolidated app passed
+970 scoped regressions. Fresh whole-client 58% T01 through full U05 qualification
+has not started. Earlier native proofs retain their original parameters and
+scope. See [app consolidation](U05_APP_CONSOLIDATION_20261107.md).
 
 ## Rule precedence
 
