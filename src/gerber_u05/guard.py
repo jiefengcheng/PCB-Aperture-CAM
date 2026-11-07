@@ -59,6 +59,20 @@ def install_read_fence(run,legacy_authority=None):
   if assembly_seal.get('job_inputs',{}).get(str(assembly_binding))!=sha(assembly_binding):raise ValueError('SOURCE_ASSEMBLY_READ_AUTHORITY_CHANGED')
   from .source_assembly import verify_run
   authority=verify_run(Path(run));allowed.append(Path(authority['assembly_run']).resolve())
+ # Connected workers reconstruct their clearance-only T04 envelopes from the
+ # freshly generated legacy sibling. Grant that exact sealed job-local role,
+ # never the parent directory or arbitrary historical reservation inputs.
+ reference=Path(run)/'REFERENCE_BINDING.json'
+ if reference.exists():
+  seal_value=json.loads((Path(run)/'PRODUCER_BINDING.json').read_bytes())
+  if seal_value.get('job_inputs',{}).get(str(reference))!=sha(reference):raise ValueError('LOCAL_REFERENCE_READ_AUTHORITY_CHANGED')
+  legacy=Path(run).parent/'legacy'
+  if legacy.is_symlink()or legacy.resolve().parent!=Path(run).resolve().parent:raise ValueError('LOCAL_REFERENCE_MUST_BE_SAME_JOB')
+  authority=json.loads(reference.read_bytes());source=json.loads((Path(run)/'source.json').read_bytes())
+  if authority.get('schema')!='job-local-generated-reservation/1'or authority.get('source_only')is not True or authority.get('source_sha256')!=source['source_ref']['sha256']:raise ValueError('LOCAL_REFERENCE_SOURCE_AUTHORITY_CHANGED')
+  legacy_seal=verify_sources(legacy)
+  if legacy_seal.get('profile')!='fresh-legacy-reservation-reference/1'or json.loads((legacy/'source.json').read_bytes())['source_ref']!=source['source_ref']:raise ValueError('LOCAL_REFERENCE_ROLE_OR_SOURCE_CHANGED')
+  allowed.append(legacy.resolve())
  for width in(Path(run)/'REUSED_WIDTH_BINDING.json',Path(run)/'connected/REUSED_WIDTH_BINDING.json'):
   if not width.exists():continue
   width_seal=json.loads((width.parent/'PRODUCER_BINDING.json').read_bytes())

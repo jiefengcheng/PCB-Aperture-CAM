@@ -27,3 +27,21 @@ def test_app_root_enclosing_evidence_does_not_grant_historical_access(tmp_path,m
  hooks[0]('open',(str(run/'working.gbr'),))
  with pytest.raises(PermissionError,match='HISTORICAL_EVIDENCE_READ_FORBIDDEN'):
   hooks[0]('open',(str(tmp_path/'evidence/other-job/top.art.gbr'),))
+
+@pytest.mark.parametrize('mutation',[None,'binding','source','symlink','role'])
+def test_only_hash_sealed_same_job_legacy_reference_is_readable(tmp_path,monkeypatch,mutation):
+ work=tmp_path;job=work/'evidence/fresh';run=job/'connected';run.mkdir(parents=True);legacy=job/'legacy';legacy.mkdir();source=dict(source_ref=dict(artifact_id='gerber-source:'+'a'*64,sha256='a'*64));reference=run/'REFERENCE_BINDING.json'
+ reference.write_text(json.dumps(dict(schema='job-local-generated-reservation/1',source_only=True,source_sha256='a'*64)))
+ (run/'source.json').write_text(json.dumps(source));(legacy/'source.json').write_text(json.dumps(source));(run/'PRODUCER_BINDING.json').write_text(json.dumps(dict(job_inputs={str(reference):guard.sha(reference)})))
+ hooks=[];monkeypatch.setattr(workspace,'configure',lambda:work);monkeypatch.setattr(sys,'addaudithook',hooks.append);monkeypatch.setattr(guard,'verify_sources',lambda role:dict(profile='wrong'if mutation=='role'else'fresh-legacy-reservation-reference/1'))
+ if mutation=='binding':reference.write_text('{}')
+ if mutation=='source':(legacy/'source.json').write_text(json.dumps(dict(source_ref=dict(source['source_ref'],sha256='b'*64))))
+ if mutation=='symlink':
+  (legacy/'source.json').unlink();legacy.rmdir();outside=work/'evidence/other/legacy';outside.mkdir(parents=True);legacy.symlink_to(outside,target_is_directory=True)
+ if mutation is not None:
+  with pytest.raises(ValueError,match='LOCAL_REFERENCE'):guard.install_read_fence(run)
+  assert not hooks
+ else:
+  guard.install_read_fence(run);assert len(hooks)==1;hooks[0]('open',(str(legacy/'RAW_WIDTH_CHECKPOINT.json'),))
+  for forbidden in [job/'unsealed-sibling/result.json',work/'evidence/other/legacy/RAW_WIDTH_CHECKPOINT.json']:
+   with pytest.raises(PermissionError,match='HISTORICAL_EVIDENCE_READ_FORBIDDEN'):hooks[0]('open',(str(forbidden),))
