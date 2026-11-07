@@ -30,7 +30,7 @@ def context(run):
     for name in ORDER:
         value=p.load(run/(name+".json"));scene=store.get_json(value["output_scene_ref"],kind="scene");cc.ACTIVE.register_scene(store,scene)
     from src.t02_shared_gaps import restore as restore_shared_gaps
-    restore_shared_gaps(store,scene)
+    restore_shared_gaps(store,scene,project_parts=True)
     from src import pin_separation as pin
     if pin.ACTIVE is not None:
         for entry in reversed(scene['lineage']):
