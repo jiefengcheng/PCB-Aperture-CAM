@@ -300,6 +300,46 @@ def encoding_support_parents(store,records,value):
         parents[identity]=native
     return list(parents.items())
 
+def treated_attachment_outcome(required,maximum,before,regions):
+    """Use actual predecessor coverage without claiming nonexistent new growth."""
+    try:
+        return dict(status='TREATED_VERIFIED',check=obligation_check(required,before,regions))
+    except ValueError as failure:
+        if str(failure)!='U05_ACTUAL_ATTACHMENT_NO_EFFECT':raise
+        # Both complete extents must already exist, either directly or as
+        # exactly the same integer material on the existing native file grid.
+        # No candidate regions, clipping or uncertainty halo can supply them.
+        approved_covered=before.covers(required);maximum_covered=before.covers(maximum);grid_proof=None
+        if not approved_covered or not maximum_covered:
+            from .native_material import normal_form
+            native_before=union_all([before],grid_size=GRID_MM)
+            native_maximum=union_all([before,required,maximum],grid_size=GRID_MM)
+            def material(shape):
+                if shape.is_empty or not shape.is_valid or shape.geom_type not in('Polygon','MultiPolygon'):return None
+                pieces=[shape]if shape.geom_type=='Polygon'else shape.geoms
+                return sorted(normal_form(piece,grid_mm=GRID_MM)for piece in pieces)
+            one,two=material(native_before),material(native_maximum)
+            if one is None or one!=two:raise
+            grid_proof=dict(status='EXACT_DECLARED_NATIVE_GRID_MATERIAL',grid_mm=GRID_MM,
+                            material_sha256=p.digest(json.dumps(one,separators=(',',':')).encode()),
+                            components=len(one),holes=sum(len(row[1])for row in one),
+                            complete_approved_and_unclipped_maximum_included=True,
+                            positive_faces_or_holes_dropped_after_normalization=0,
+                            tolerance_allowance=False)
+        prior=obligation_check(maximum,before,[],already=True)
+        return dict(status='ALREADY_SATISFIED_VERIFIED',check=prior,
+                    native_predecessor_reconciliation=dict(
+                        source_model_status='TREATED_VERIFIED',
+                        original_positive_effect_rejection=str(failure),
+                        exact_before_covers_complete_approved_extent=approved_covered,
+                        exact_before_covers_complete_unclipped_maximum=maximum_covered,
+                        declared_native_grid_witness=grid_proof,
+                        buffer_used_for_classification=False,
+                        new_growth_credited=False,
+                        actual_before_sha256=p.digest(p.to_wkb(before)),
+                        maximum_extent_sha256=p.digest(p.to_wkb(maximum))))
+
+
 def check(run,body,ledger):
     verify_sources(run);store,binding=context(run);raw=store.get(binding['source_ref'],kind='gerber-source');original,_,_=p.source_profile.parse_source(raw);actual=parse(body);n=len(original.objects)
     expected_base,_=canonical_base(raw)
@@ -426,11 +466,11 @@ def check(run,body,ledger):
         if len(needs)!=len(d['attachment_outcomes']):raise ValueError('ACTUAL_ATTACHMENT_INVENTORY_CHANGED')
         for need,outcome in zip(needs,d['attachment_outcomes']):
             if any(outcome[k]!=need[k]for k in('id','land_id','reference_land_id','required_reference')):raise ValueError('ACTUAL_ATTACHMENT_MEMBERSHIP_CHANGED')
-            if outcome['status']=='TREATED_VERIFIED':q=obligation_check(selected.intersection(need['window']),preimage,parts)
-            elif outcome['status']=='ALREADY_SATISFIED_VERIFIED':q=obligation_check(desired.intersection(need['window']),preimage,[],already=True)
-            elif outcome['status']=='BLOCKED_CLEARANCE_OR_BOUNDARY'and not outcome['required_reference']:q=dict(passed=False,status='BLOCKED_NOT_COUNTED_AS_COVERED')
+            if outcome['status']=='TREATED_VERIFIED':actual=treated_attachment_outcome(selected.intersection(need['window']),desired.intersection(need['window']),preimage,parts)
+            elif outcome['status']=='ALREADY_SATISFIED_VERIFIED':actual=dict(status=outcome['status'],check=obligation_check(desired.intersection(need['window']),preimage,[],already=True))
+            elif outcome['status']=='BLOCKED_CLEARANCE_OR_BOUNDARY'and not outcome['required_reference']:actual=dict(status=outcome['status'],check=dict(passed=False,status='BLOCKED_NOT_COUNTED_AS_COVERED'))
             else:raise ValueError('ACTUAL_ATTACHMENT_OUTCOME_NOT_QUALIFIED')
-            attachments.append(dict(id=outcome['id'],status=outcome['status'],check=q))
+            attachments.append(dict(id=outcome['id'],source_model_status=outcome['status'],**actual))
     adapter.close();checks['attachment_obligations']=attachments
     groups_before=project_groups(current);t05_observed={}
     for stage_name in ('t05',):
