@@ -26,13 +26,27 @@ def pipeline_prefix_same(before,after):
  return dict(status='UNCHANGED_UPSTREAM_AST',changed_scope='run_t05 and its isolated CoverageAdapter import only')
 
 def worker_prefix_same(before,after):
- allowed=ast.dump(ast.parse("if name=='t05':p.save(run/'raw_checkpoints'/('t05_'+os.environ.get('U05_WORKER_MODE','unit')+'.json'),value)").body[0],include_attributes=False)
- tree=ast.parse(after)
- for node in tree.body:
-  if isinstance(node,ast.FunctionDef)and node.name=='compute':
-   node.body=[statement for statement in node.body if ast.dump(statement,include_attributes=False)!=allowed]
- if ast.dump(ast.parse(before),include_attributes=False)!=ast.dump(tree,include_attributes=False):raise ValueError('REUSED_UPSTREAM_WORKER_CHANGED')
- return dict(status='UNCHANGED_UPSTREAM_AST',changed_scope='T05-only raw-result evidence capture after its complete native geometry verification')
+ dump=lambda node:ast.dump(node,include_attributes=False)
+ allowed={dump(ast.parse(text).body[0])for text in(
+  "if name=='t05':p.save(run/'raw_checkpoints'/('t05_'+os.environ.get('U05_WORKER_MODE','unit')+'.json'),value)",
+  "if name=='t05':p.save(run/'completion_checkpoints'/('t05_'+os.environ.get('U05_WORKER_MODE','unit')+'_geometry.json'),value)",
+  "if name=='t05':\n from .t05_pin_check import require_parts")}
+ old=ast.parse("pin.ACTIVE.require(p.unary_union(list(material.values())),scope=name+'_complete')",mode='eval').body
+ projected=ast.parse("require_parts(pin.ACTIVE,material.values(),scope=name+'_complete')if name=='t05'else pin.ACTIVE.require(p.unary_union(list(material.values())),scope=name+'_complete')",mode='eval').body
+ class Normalize(ast.NodeTransformer):
+  def visit_If(self,node):
+   if dump(node)in allowed:return None
+   return self.generic_visit(node)
+  def visit_IfExp(self,node):
+   if dump(node)==dump(projected):return old
+   return self.generic_visit(node)
+ def normalized(text):
+  tree=ast.parse(text)
+  for node in tree.body:
+   if isinstance(node,ast.FunctionDef)and node.name=='compute':Normalize().visit(node)
+  return dump(tree)
+ if normalized(before)!=normalized(after):raise ValueError('REUSED_UPSTREAM_WORKER_CHANGED')
+ return dict(status='UNCHANGED_UPSTREAM_AST',changed_scope='Exact T05-only evidence capture and complete pin-domain projection; every non-T05 statement and check is unchanged')
 
 def support_normalization_same(before,after):
  """The qualified correction adds only three material-container conversions."""
