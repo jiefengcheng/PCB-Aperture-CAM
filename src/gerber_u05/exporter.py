@@ -64,11 +64,44 @@ def owner_encoding_overlap(region,owner,domain):
     return candidate,dict(mode='ENCODING_ONLY_EXISTING_OWNER_OVERLAP',radius_mm=radius,
                           epsilon_mm2=CONTRACT.area_epsilon_mm2,metrics=metrics)
 
+def bounded_owner_surface(region,owner,domain):
+    """Coalesce local export islands using only already-present owner copper.
+
+    The complete qualified region remains an operand. The one fixed window
+    changes redundant serialization support, never a growth/remedy decision.
+    Failed equivalence keeps the original representation and its budget gate.
+    """
+    if region.geom_type!='MultiPolygon':return region,None
+    from src.junction_spindle_stage import CONTRACT
+    margin=NATIVE_OWNER_OVERLAP_MM
+    x,y,x1,y1=region.bounds
+    window=p.box(x-margin,y-margin,x1+margin,y1+margin).intersection(domain)
+    support=owner.intersection(window)
+    target=owner.union(region)
+    candidate=target.intersection(window).union(region)
+    metrics=dict(support_outside_owner_mm2=support.difference(owner).area,
+                 qualified_region_missing_mm2=region.difference(candidate).area,
+                 physical_delta_mm2=owner.union(candidate).symmetric_difference(target).area,
+                 outside_domain_mm2=candidate.difference(domain).area)
+    before=len(region.geoms)
+    after=1 if candidate.geom_type=='Polygon'else len(candidate.geoms)if candidate.geom_type=='MultiPolygon'else before
+    accepted=(not candidate.is_empty and candidate.is_valid
+              and candidate.geom_type in('Polygon','MultiPolygon')and after<before
+              and all(math.isfinite(v)and v<=CONTRACT.area_epsilon_mm2 for v in metrics.values()))
+    proof=dict(mode='BOUNDED_EXISTING_OWNER_SURFACE_ENCODING_ONLY',accepted=accepted,
+               input_components=before,output_components=after,
+               fixed_margin_mm=margin,epsilon_mm2=CONTRACT.area_epsilon_mm2,
+               complete_qualified_region_retained=True,metrics=metrics)
+    return(candidate if accepted else region),proof
+
+
 def prepare_export_region(store,value,adapter,owner,domain,decision,foreign):
     region,receipt=base_prepare_export_region(store,value,adapter,owner,domain,decision,foreign)
     if isinstance(receipt,dict)and receipt.get('support_assembly')=='EXACT_ADDITION_WITHOUT_REDUNDANT_SUPPORT':
         region,proof=owner_encoding_overlap(region,owner,domain)
         receipt=dict(receipt,encoding_owner_overlap=proof)
+    region,proof=bounded_owner_surface(region,owner,domain)
+    if proof is not None:receipt=dict(receipt,bounded_owner_surface=proof)
     return region,receipt
 
 def canonical_base(raw):
@@ -174,6 +207,8 @@ def construct(run):
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
         owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_export_region(store,value,adapter,owner,domain,d,foreign);first=len(records);parents=append_regions(region,'t05',d['source_id'],records,blocks,store)
+        if isinstance(support,dict)and support.get('bounded_owner_surface')is not None:
+            for row in records[first:]:row['encoding_owner_surface']=support['bounded_owner_surface']
         own=adapter.owner_for_route(d['source_id']);encoded_owner=adapter._integral_context.project(encoded_current)[own];preserve_point_contacts(encoded_owner,parents,d['source_id'],records,blocks,store)
         if 'maximum_export_regions_per_attachment'in joint_policy:
             from .compact_contours import require_budget

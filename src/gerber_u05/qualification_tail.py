@@ -45,12 +45,12 @@ def validate_export(run,state,producer_file=None):
  if controls['status']!='PASS'or controls['generated_sha256']!=bodysha:raise ValueError('QUALIFIED_EXPORT_CONTROLS_CHANGED')
  return records
 
-def prepare(old,job):
+def prepare(old,job,coordinator=None):
  old=Path(old);state=load(old.parent/'STATUS.current.json')
  if state['status']not in('HALTED','U05_EXPORT_REPARSE_CONTROLS_RENDER_PASSED'):raise ValueError('QUALIFIED_EXPORT_PREFIX_NOT_TERMINAL')
  records=validate_export(old,state);producer=load(old/'PRODUCER_BINDING.json');oldroot=Path(os.path.commonpath(list(producer['files'])));changes=verify_code(producer,oldroot)
  original_t05=load(old/'REUSED_T05_BINDING.json')['original_run']
- run=prepare_t05(Path(original_t05),job,qualification_mode=MODE,seal_job=False)
+ run=prepare_t05(Path(original_t05),job,qualification_mode=MODE,seal_job=False,coordinator=coordinator)
  for name in('source.json','t01.json','t03.json','t04.json','t02.json','t05.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json'):
   if sha(old/name)!=sha(run/name):raise ValueError('QUALIFIED_EXPORT_INPUT_OR_STAGE_CHANGED:'+name)
  for name in('export','negative_controls'):subprocess.run(['cp','-cR',str(old/name),str(run/name)],check=True)
@@ -113,7 +113,7 @@ def main():
  if not args.verified_export_run.is_absolute():parser.error('verified export run must be absolute')
  parent=configure()/'operator_routes/gerber_u05_qualification';parent.mkdir(parents=True,exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();c=Coordinator(job);c.state.update(source_only=False,qualification_mode=MODE,reused_operations=42,fresh_operations=2)
  try:
-  run=prepare(args.verified_export_run,job);install_read_fence(job)
+  run=prepare(args.verified_export_run,job,coordinator=c);install_read_fence(job)
   from tools.preflight import verify_manifest
   p.save(job/'ASSET_MANIFEST_PROOF.json',dict(status='PASS',files=verify_manifest()));verify_sources(run)
   c.execute(run,'remaining_defects',['all'],module='remaining_defects');c.execute(run,'render',['all'],module='render')

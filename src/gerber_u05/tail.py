@@ -20,6 +20,7 @@ TAIL_ONLY={
  'src/gerber_u05/contours.py','src/gerber_u05/exact_cut_in.py',
  'src/gerber_u05/native_assembly.py','src/gerber_u05/native_material.py',
  'src/gerber_u05/native_spindle_operand.py','src/gerber_u05/source_prefix_control.py',
+ 'src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py',
 }
 
 def verify_code(original,current,old_root):
@@ -67,7 +68,7 @@ def verify(run):
  validate_stage(run,load(run/'prefix_evidence/T05_ORIGINAL_ROUTE_STATUS.json'),binding['producer_binding_sha256'])
  return binding
 
-def prepare(old,job,*,qualification_mode='INCREMENTAL_REUSED_NATIVE_T05',seal_job=True):
+def prepare(old,job,*,qualification_mode='INCREMENTAL_REUSED_NATIVE_T05',seal_job=True,coordinator=None):
  if qualification_mode not in('INCREMENTAL_REUSED_NATIVE_T05','INCREMENTAL_REUSED_NATIVE_EXPORT_REPORT'):raise ValueError('UNSUPPORTED_INCREMENTAL_QUALIFICATION_MODE')
  old=Path(old);original=load(old/'PRODUCER_BINDING.json');state=load(old.parent/'STATUS.current.json')
  if original['profile']!=CONNECTED:raise ValueError('REUSED_T05_CONNECTED_PROFILE_REQUIRED')
@@ -79,19 +80,43 @@ def prepare(old,job,*,qualification_mode='INCREMENTAL_REUSED_NATIVE_T05',seal_jo
  old_root=Path(os.path.commonpath(list(original['files'])));changes=verify_code(original,ROOT,old_root)
  for name,expected in original['job_inputs'].items():
   if sha(name)!=expected:raise ValueError('REUSED_T05_ORIGINAL_INPUT_CHANGED:'+name)
+ fresh_assembly=0
+ if(old/'SOURCE_ASSEMBLY_BINDING.json').exists():
+  from . import source_assembly
+  authority=load(old/'SOURCE_ASSEMBLY_BINDING.json');assembly_source=Path(authority['assembly_run'])
+  if assembly_source.resolve()!=old.parent.resolve()/'assembly':raise ValueError('REUSED_T05_ASSEMBLY_AUTHORITY_CHANGED')
+  if any(sha(name)!=expected for name,expected in authority['files'].items()):raise ValueError('REUSED_T05_ORIGINAL_ASSEMBLY_CHANGED')
+  assembly=job/'assembly';assembly.mkdir()
+  copy_file(assembly_source/'original.gbr',assembly/'original.gbr');copy_file(assembly_source/'INPUT_INVENTORY.json',assembly/'INPUT_INVENTORY.json')
+  p.save(assembly/'ASSEMBLY_PRODUCER.json',source_assembly._producer(assembly))
+  coordinator=Coordinator(job)if coordinator is None else coordinator
+  coordinator.execute(assembly,'source_assembly',['construct'],module='source_assembly');coordinator.execute(assembly,'source_assembly',['1','2'],module='source_assembly')
+  source_assembly.verify_job(assembly)
+  if sha(assembly/'assembled.gbr')!=load(old/'source.json')['source_ref']['sha256']:raise ValueError('REUSED_T05_FRESH_ASSEMBLY_SOURCE_CHANGED')
+  fresh_assembly=3
  run=job/'connected';run.mkdir()
  for folder in('runtime','source_snapshot','reference','prefix_evidence','audits','width_prefix_audits','raw_checkpoints','completion_checkpoints'):
   if(old/folder).exists():subprocess.run(['cp','-cR',str(old/folder),str(run/folder)],check=True)
- names=['source.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REUSED_PREFIX_BINDING.json','RAW_WIDTH_CHECKPOINT.json',*[s+'.json'for s in('t01','t03','t04','t02','t05')]]
+ names=['source.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','REUSED_PREFIX_BINDING.json','RAW_WIDTH_CHECKPOINT.json','T04_PRIOR_WIDTH_COMPATIBILITY.json','T04_SETTINGS_SNAPSHOT.json','PIN_SEPARATION_POLICY.json','STORAGE_ENCODING.json',*[s+'.json'for s in('t01','t03','t04','t02','t05')]]
  for name in names:
   if(old/name).exists():copy_file(old/name,run/name)
  evidence=run/'prefix_evidence';copy_file(old/'PRODUCER_BINDING.json',evidence/'T05_ORIGINAL_PRODUCER_BINDING.json');copy_file(old.parent/'STATUS.current.json',evidence/'T05_ORIGINAL_ROUTE_STATUS.json');copy_file(old/'input_inventory.json',evidence/'T05_ORIGINAL_INPUT_INVENTORY.json')
+ if fresh_assembly:
+  copy_file(old/'SOURCE_ASSEMBLY_BINDING.json',evidence/'T05_ORIGINAL_SOURCE_ASSEMBLY_BINDING.json')
+  source_assembly.attach(run,job/'assembly')
+ prefix_binding=load(run/'REUSED_PREFIX_BINDING.json')
+ if prefix_binding.get('checked_legacy_files'):
+  legacy=job/'legacy';subprocess.run(['cp','-cR',str(old.parent/'legacy'),str(legacy)],check=True)
+  for relative,expected in prefix_binding['checked_legacy_files'].items():
+   file=legacy/relative
+   if not file.resolve().is_relative_to(legacy.resolve())or sha(file)!=expected:raise ValueError('REUSED_T05_CHECKING_ENVELOPE_CHANGED')
  for key in records:
   for suffix in('.log','.stderr.log'):copy_file(old.parent/'logs'/(key+suffix),evidence/'t05_logs'/(key+suffix))
  for name,expected in original['job_inputs'].items():
-  if Path(name).name!='input_inventory.json'and sha(run/Path(name).name)!=expected:raise ValueError('REUSED_T05_PHYSICAL_INPUT_CHANGED:'+name)
+  if Path(name).name not in('input_inventory.json','SOURCE_ASSEMBLY_BINDING.json')and sha(run/Path(name).name)!=expected:raise ValueError('REUSED_T05_PHYSICAL_INPUT_CHANGED:'+name)
  files=[run/'t05.json',*[run/'audits/t05'/(m+'.json')for m in('construct','1','2')],evidence/'T05_ORIGINAL_PRODUCER_BINDING.json',evidence/'T05_ORIGINAL_ROUTE_STATUS.json',evidence/'T05_ORIGINAL_INPUT_INVENTORY.json',*(evidence/'t05_logs').glob('*')]
- binding=dict(schema='incremental-native-t05/1',retained_operation_count=38,original_run=str(old),original_source_root=str(old_root),original_route_completion='NOT_CLAIMED; only completed source/prefix and T05 reused',producer_binding_sha256=sha(old/'PRODUCER_BINDING.json'),code_dependency_changes=changes,files={str(file.relative_to(run)):sha(file)for file in files})
+ if fresh_assembly:files.append(evidence/'T05_ORIGINAL_SOURCE_ASSEMBLY_BINDING.json')
+ binding=dict(schema='incremental-native-t05/1',retained_operation_count=38,fresh_assembly_operations=fresh_assembly,original_run=str(old),original_source_root=str(old_root),original_route_completion='NOT_CLAIMED; only completed source/prefix and T05 reused',producer_binding_sha256=sha(old/'PRODUCER_BINDING.json'),code_dependency_changes=changes,files={str(file.relative_to(run)):sha(file)for file in files})
  p.save(run/'REUSED_T05_BINDING.json',binding)
  inventory=load(old/'input_inventory.json');revision=load(ROOT/'SOURCE_REVISION.json')if(ROOT/'SOURCE_REVISION.json').exists()else dict(status='SOURCE_DIGEST_BOUND_WORKING_CANDIDATE; release commit pending')
  inventory=dict(inventory,source_revision=revision,qualification_mode=qualification_mode,reused_t05_source_revision=inventory['source_revision']);p.save(run/'input_inventory.json',inventory);p.save(job/'INPUT_INVENTORY.json',inventory)
@@ -103,7 +128,7 @@ def main():
  if not args.verified_t05_run.is_absolute():parser.error('verified T05 run must be absolute')
  work=configure();parent=work/'operator_routes/gerber_u05_tail';parent.mkdir(parents=True,exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=Coordinator(job);coordinator.state.update(source_only=False,qualification_mode='INCREMENTAL_REUSED_NATIVE_T05',reused_operations=38)
  try:
-  run=prepare(args.verified_t05_run,job);install_read_fence(job)
+  run=prepare(args.verified_t05_run,job,coordinator=coordinator);install_read_fence(job)
   from tools.preflight import verify_manifest
   p.save(job/'ASSET_MANIFEST_PROOF.json',dict(status='PASS',files=verify_manifest()));verify_sources(run)
   coordinator.execute(run,'export',['construct'],module='exporter');coordinator.execute(run,'export',['1','2'],module='exporter');coordinator.execute(run,'controls',['all'],module='controls');coordinator.execute(run,'remaining_defects',['all'],module='remaining_defects');coordinator.execute(run,'render',['all'],module='render')

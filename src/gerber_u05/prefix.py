@@ -3,7 +3,7 @@ import ast,hashlib,json
 from pathlib import Path
 STAGES=('t01','t03','t04','t02')
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/contours.py','src/gerber_u05/exporter.py','src/gerber_u05/render.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/controls.py','src/gerber_u05/delivery.py'}
-DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py'})
+DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py','src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py'})
 EQUIVALENT={
  'src/component_voids.py':('46f6afbfd029e97a6409ecdc4b20a3c1511f394e02187ea72c9fd2ed762d49b7','db0dbae5d433b02dbe10715f772e0c46bc4144ea96050f62a8ed836d1d28246a','Only alternate global-overlay diagnostic counting uses existing areal-context extraction. Every physical geometry/source/clearance/topology check is unchanged. Valid polygon reports are identical; retained upstream reports prove that path. All positive faces retained; actual candidate remains strict polygonal copper.'),
  'src/native_boundary_metric.py':('b9a1eae932ed66667de7adf52d307b3577c0175c7d2173b29112803dc6e61b83','d84e8392b7b4f3d28c7aa5df3838532902ff99e87dc53038c0a794ac17a84cc7','Valid identical-WKB Hausdorff is exactly zero; all other indexed/native metric paths unchanged. Dedicated valid/invalid and native parity tests retained.'),

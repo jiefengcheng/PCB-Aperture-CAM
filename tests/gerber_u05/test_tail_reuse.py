@@ -21,6 +21,15 @@ def test_export_correction_can_reuse_unchanged_t05(tmp_path):
  assert verify_code(original,new,old)[0]['path']=='src/gerber_u05/exporter.py'
 
 
+@pytest.mark.parametrize('name',['src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py'])
+def test_export_driver_revision_does_not_invalidate_completed_geometry(tmp_path,name):
+ old,new,original=code_pair(tmp_path)
+ for root in(old,new):(root/name).write_text('driver=1')
+ original['files'][str(old/name)]=hashlib.sha256((old/name).read_bytes()).hexdigest()
+ (new/name).write_text('driver=2')
+ assert verify_code(original,new,old)[0]['path']==name
+
+
 @pytest.mark.parametrize('name',['src/geometry.py','contracts/policy.json'])
 def test_geometry_or_policy_change_invalidates_t05_reuse(tmp_path,name):
  old,new,original=code_pair(tmp_path);(new/name).write_text('changed')
