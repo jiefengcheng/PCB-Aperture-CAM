@@ -1,5 +1,28 @@
 # Reusable Gerber U05 route
 
+Current candidate: `d8dbe4e`, separate from the installed normal app below.
+It combines fixed-candidate T02 verification and 1% shared-gap matching with
+the qualified T05 adopted-floor/read-authority correction. It passes 745
+focused checks and one complete 47-operation growing-rectangle synthetic route.
+The frozen candidate is `out/lacie_work/releases/U05_20261108_d8dbe4e/`.
+Its `preflight.py` checks all 3,133 source hashes and namespace, read-only source
+permissions, pinned packages, immutable assets, LaCie identity/reserve and
+clearance registry/construction consistency without starting a board job.
+The release README gives its exact report-only preflight and supported command.
+It is **not activated or integrated** while real-board completion is pending.
+
+The current affected-work job is
+`20261107T193222Z-7b6707757bd046578fd002ace6bcadb0`, with 35 retained qualified
+operations and 12 fresh operations, not 47 fresh operations. The failed full job
+and its frozen source remain unchanged. This tail uses strict-gap source
+`c5a4e6f`; the combined future release adds the separately qualified 1% gap policy
+and fixed-candidate T02 checks. No fresh whole-client execution of the combined
+release is claimed. No further full 3020212826 restart is authorized.
+
+The following describes the earlier installed checkpoint and its retained
+qualification. Its former deployment snapshot is inactive and must not be used
+as the newly corrected release.
+
 Code checkpoint: `17a9737`, installed on `codex/u05-reproducible-batch`.
 Production source matches the qualified `d450572` snapshot; subsequent changes
 add tests and documentation. Other boards remain paused while the last
@@ -13,7 +36,7 @@ LaCie workspace, and owns its native processes. No KiCad file or launcher is
 required. Selection does not establish an X2 layer identity.
 
 For subsequent boards, freeze one qualified source snapshot and use that same
-snapshot throughout the batch. The currently qualified producer snapshot is:
+snapshot throughout the batch. The earlier installed producer snapshot was:
 
 `out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/fixed_candidate_verification_01/source_committed/`
 
@@ -74,10 +97,11 @@ same checked Gerber hash. Delivery creates one sibling directory containing
 only that Gerber filename and `final_render.png`; companions are not copied.
 The highlighted additions remain visible against the source.
 
-The current last job is incremental: 17 retained qualified operations plus 30
-fresh operations, not 47 newly executed operations. Its frozen `caff24a` source
-uses stricter gap matching and the older T02 evaluations. It is not modified to
-install the future-route verifier. A final receipt must state these differences.
+The preceding failed job was incremental: 17 retained qualified operations plus
+30 required fresh operations. Its frozen `caff24a` source used strict gap
+matching and the older T02 evaluations. It halted at T05 preparation and was
+not modified to install the correction or future-route verifier. The corrected
+35-plus-12 tail is identified above; final receipts must state these differences.
 
 A failed native job stops with evidence intact and remaining work NOT_RUN.
 Engineering corrections create separate, dependency-checked affected-work jobs;

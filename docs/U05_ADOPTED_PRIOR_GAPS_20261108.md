@@ -50,3 +50,26 @@ integration or final delivery. The prepared deployment snapshot remains inactive
 All previous failed evidence, the six deferred broad-suite findings and explicit
 unwaived `.DS_Store` custody remain. Other boards stay paused. Owner acceptance
 is pending; independent review NOT_RUN; electrical/manufacturing NOT_ESTABLISHED.
+
+## Combined candidate and deployment preparation
+
+The correction is cherry-picked without conflicts onto installed app checkpoint
+`f2a50c1`, producing separate candidate `d8dbe4e`. All 745 focused checks pass.
+A fresh synthetic case with growing rectangles in both construction roles
+passes all 47 native operations, including actual final export/reparse, eight
+corrupted-Gerber controls, defect audit and rendering. A checked patch and
+verified offline bundle are retained separately; the normal app is unchanged.
+
+The actual client tail uses frozen source `c5a4e6f`. Its adopted-floor hash is
+identical to the isolated diagnostic's actual floor, and its native strict-gap
+proof passes all 20 spans and 40 boundaries. The raw T05 junction model passes
+its internal verification; intra-step completion and final checks remain
+pending. This does not claim final T05 or client acceptance.
+
+Frozen combined release `out/lacie_work/releases/U05_20261108_d8dbe4e/` contains
+all 3,133 qualified source files and registries as read-only files. Its separate
+preflight checks the exact source namespace/hashes, pinned packages, assets,
+LaCie identity/reserve and agreement of clearance settings with construction
+defaults, without starting a board job. It remains inactive pending the actual
+client final findings, highlighted image inspection and app integration receipt.
+No new full client run or other-board job has been started for this preparation.

@@ -1,4 +1,37 @@
-# Current route stabilization — 2026-11-08
+# Current T05 completion and frozen release candidate — 2026-11-08
+
+The last full job below halted at T05 prior-floor preparation after all T02
+checks passed. Its 38 PASS operations, T05 FAIL and eight NOT_RUN operations
+are preserved. The isolated correction validates the copper actually adopted
+by the unchanged floor selector, rather than a hypothetical union containing
+redundant rounded support. The actual adopted scene is unchanged and passes
+all 20 shared-gap spans and 40 boundaries at zero tolerance. Separate controls
+still reject a genuine adopted intrusion. The checking-reference read fence
+also binds the incremental copy to the complete verified prefix.
+
+The current T05-onward job is
+`20261107T193222Z-7b6707757bd046578fd002ace6bcadb0`: 35 retained operations and
+12 required fresh operations, including source assembly. T01-through-T02 growth
+is not restarted. Its frozen `c5a4e6f` source remains unchanged; final native
+checks, export/reparse, controls, rendering and file delivery remain pending.
+
+Combined app candidate `d8dbe4e` is committed and pushed on
+`codex/u05-adopted-floor-app-candidate-20261108`, separately from the normal app.
+It passes 745 focused checks and a complete growing-rectangle synthetic route
+with all 47 native operations, actual export/reparse, eight corruption controls,
+defect audit and rendering. Its frozen release candidate is
+`out/lacie_work/releases/U05_20261108_d8dbe4e/`; all 3,133 source files, pinned
+runtime, assets, storage identity and clearance consistency pass preflight.
+It remains inactive and unintegrated until real-board final findings and visual
+inspection. The prior `f2a50c1` release remains inactive and lacks this correction.
+
+No further full 3020212826 run is authorized. Other boards remain paused.
+The six deferred broad-suite failures and explicit unwaived, unattributed
+`.DS_Store` custody finding remain. Positive-only flattening is separately
+unfinished. See [the reusable route](U05_STABLE_ROUTE_20261108.md) and
+[the isolated correction](U05_ADOPTED_PRIOR_GAPS_20261108.md).
+
+# Earlier route stabilization checkpoint — 2026-11-08
 
 Code checkpoint `17a9737` is installed and pushed on
 `codex/u05-reproducible-batch`. It includes the qualified 1% shared-gap policy,
