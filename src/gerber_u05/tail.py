@@ -22,6 +22,7 @@ TAIL_ONLY={
  'src/gerber_u05/native_spindle_operand.py','src/gerber_u05/source_prefix_control.py',
  'src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py',
  'src/shared_gap_projection.py',
+ 'src/gerber_u05/native_inclusive_identity.py',
 }
 
 def verify_code(original,current,old_root):
@@ -41,7 +42,7 @@ def verify_code(original,current,old_root):
  files=[file for directory in('src','contracts','tools','web')for file in(current/directory).rglob('*')if file.is_file()and file.suffix in('.py','.json','.command','.js','.html')]
  if(current/'SOURCE_REVISION.json').is_file():files.append(current/'SOURCE_REVISION.json')
  extras={file.relative_to(current).as_posix()for file in files}-known
- if extras-{'src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py','src/shared_gap_projection.py','SOURCE_REVISION.json'}:raise ValueError('REUSED_T05_UNDECLARED_PRODUCER_ADDED')
+ if extras-{'src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py','src/shared_gap_projection.py','src/gerber_u05/native_inclusive_identity.py','SOURCE_REVISION.json'}:raise ValueError('REUSED_T05_UNDECLARED_PRODUCER_ADDED')
  return changed
 
 def validate_stage(run,state,producer_sha):
