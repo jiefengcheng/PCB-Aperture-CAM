@@ -1,5 +1,13 @@
 # PCB-Aperture-CAM-V1 — isolated Codex handoff
 
+## Current T01 rules
+
+Use the maintained [plain-language T01 rulebook](docs/T01_RULES.md) for current
+user-directed rules, precedence and parameter sources. It includes the **58%
+exposed-circumference** threshold, separate paired/single/BGA cases, integral
+source joints and protected pin separation. Qualification and app integration
+are listed separately; historical crop guides below retain their original scope.
+
 ## First intake gate: profile a received directory
 
 For a new dataset with no existing qualified package recipe, start with the [general directory profiler](docs/okf/ingestion/general-profiling.md). It preserves regular files, records source-relative paths and SHA-256 identities, and writes a sealed draft profile. Use `out/` for temporary review or `dataset/` for a durable local intake package:
