@@ -44,10 +44,11 @@ mandatory native operations.
 
 ## Qualification and limits
 
-Nineteen new tests cover identical reconstruction without optimizer calls,
+Twenty-one new tests cover identical reconstruction without optimizer calls,
 changed plans/targets/factors/geometry/gaps/counts, protected contributions,
-changed complete-scene proofs and construction-receipt binding. A focused suite
-of 194 tests passes, including existing gap, pin, rectangle exposure, terminal,
+changed complete-scene proofs, construction-receipt binding, accepted integral
+fills and rejection of a changed fill ledger. A focused suite of 194 tests plus
+two accepted-fill cases passes, including existing gap, pin, rectangle exposure, terminal,
 empty-inventory and export cases. The six historical broad-suite findings are
 deferred by the owner; they have not been relabeled PASS.
 
@@ -55,8 +56,23 @@ A separate fixed-output qualification uses the retained 78-rectangle checkpoint;
 optimizer and trial-search entry points are forbidden in that process. It is
 not a new full-board growth run. The first diagnostic clone omitted the existing
 T04 audit directory and stopped at the unchanged missing-proof guard. That
-failed setup is retained. A new complete clone includes the original audits;
-its result and timing remain pending.
+failed setup is retained. A new complete clone includes the original audits.
+Two fresh-process fixed-candidate evaluations pass and reproduce the complete
+qualified stage value exactly, including all fresh verification, pin and width
+proofs. They took 253.426 and 258.306 seconds, with sampled process peak RSS of
+1,600,815,104 and 1,577,828,352 bytes respectively. Both forbid optimizer and
+trial-search entry points. Retained search-based production evaluations took
+about 26 minutes; this comparison is bounded checkpoint evidence, not a fresh
+whole-route timing claim.
+
+Two small synthetic fixtures each pass all 47 native operations, including
+export/reparse, eight actual-Gerber corruptions, defect audit and rendering.
+The original 971-byte fixture exercises the empty T02 inventory. A separate
+1065-byte derived fixture adds two exposed rectangular flashes; both its legacy
+and connected stages grow both rectangles and pass construction plus both new
+fixed-candidate worker evaluations. These are synthetic route checks, not new
+client-board runs. Exact source manifests, per-operation results and retained
+case proofs are recorded with the evidence.
 
 Evidence: `out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/fixed_candidate_verification_01/`.
 The T01/T04/T05 evaluation paths and the two preparation/final-construction roles
