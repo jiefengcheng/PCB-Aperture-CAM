@@ -23,10 +23,13 @@ def initialize_reference_constraints(store,binding,source,original,predecessor):
  from src import t04_width_fence as width
  width.restore(store,predecessor)
  if width.ACTIVE is None:raise ValueError('REFERENCE_FROZEN_T04_WIDTH_RULE_REQUIRED')
+ from src import t02_shared_gaps as shared_gaps
+ shared_gaps.restore(store,predecessor)
  from .pin_policy import initialize as initialize_pin
  initialize_pin(store,binding,source,original,predecessor)
- return dict(schema='reference-inherited-growth-constraints/1',
+ return dict(schema='reference-inherited-growth-constraints/2',
              frozen_t04_width_binding=width.ACTIVE.binding,
+             frozen_shared_gap_state_sha256=None if shared_gaps.ACTIVE is None else p.digest(p.canonical(shared_gaps.ACTIVE)),
              source_sha256=binding['source_ref']['sha256'],
              scope='Complete logical reference fills and actual parsed parents; qualified existing pad/joint predecessor remains integral')
 

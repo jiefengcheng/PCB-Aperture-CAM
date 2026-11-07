@@ -152,6 +152,11 @@ class CoverageAdapter(NativeSpindleAdapter):
         return out
     def _check(self,owner,candidate,addition,window,foreign):
         result=check_spindle(owner,candidate,addition,window,self._foreign_for(owner,foreign),gap=CONTRACT.construction_gap_mm,geometry=self._geometry)
+        from src import t02_shared_gaps as shared_gaps
+        gap_proof=shared_gaps.remedy(addition,owner)
+        if gap_proof is not None:
+            result=dict(result,shared_neighbor_gaps=gap_proof)
+            if not gap_proof['passed']:result=dict(result,passed=False,failures=[*result.get('failures',[]),'FROZEN_SHARED_NEIGHBOR_GAP'])
         from src import pin_separation as pin
         if pin.ACTIVE is not None:
             context=getattr(self,'_integral_context',None)

@@ -13,6 +13,12 @@ def protected_owners(current,prior):
  if set(current)!=set(prior):raise ValueError('PRIOR_ORIGINAL_OWNER_INVENTORY_CHANGED')
  return{o:unary_union([current[o],prior[o]])for o in current}
 
+def require_shared_prior(material):
+ """A retained native floor cannot redefine an accepted T02 gap."""
+ from src import t02_shared_gaps as shared_gaps
+ if shared_gaps.ACTIVE is None:return None
+ return shared_gaps.complete(shared_gaps.ACTIVE,unary_union(list(material.values())))
+
 
 def local_floor(current,prior,*,tolerance_mm=POLYGON_TOLERANCE_MM,support_mm=.000004):
  if current.is_empty or prior.is_empty or not current.is_valid or not prior.is_valid:raise ValueError('PRIOR_FLOOR_INVALID_MATERIAL')
@@ -67,6 +73,7 @@ def prepare(store,scene):
  # New T05 growth still uses the unchanged, larger construction guard.
  prior_check=clearance(context.cores,context.reserved);combined_check=clearance(context.cores,protected)
  if context.partial_pocket_failures(protected):raise ValueError('PRIOR_POSITIVE_COPPER_CONFLICTS_WITH_FROZEN_PARTIAL_OPENING')
+ shared_gap_check=require_shared_prior(protected)
  existing={row['metadata']['original_owner_id']:row for row in scene['objects']if row['kind']=='component_remedy'};changes={};metadata={};additions=[];records=[]
  for own in sorted(owned):
   material,proof=local_floor(owned[own],context.reserved[own])
@@ -80,5 +87,5 @@ def prepare(store,scene):
    changes[sid]=aggregate;metadata[sid]=md
   context.assign(sid,aggregate,[own]);records.append(dict(source_id=sid,original_owner_id=own,geometry_ref=reference,prior_owner_sha256=digest(to_wkb(context.reserved[own])),proof=proof))
  output_ref=p.artifact_scene(store,scene,changes,'t05-qualified-prior-floor',metadata=metadata,additions=additions);output=store.get_json(output_ref,kind='scene');context.register_scene(store,output)
- receipt=dict(schema='qualified-source-derived-prior-floor/1',source_sha256=context.source_hash,prior_generated_sha256=context.reservation_sha256,input_scene_ref=store.put_json('scene',scene),output_scene_ref=output_ref,records=records,prior_current_policy_check=prior_check,combined_predecessor_policy_check=combined_check,policy='The source-only generated prior is minimum physical copper, present before T05 planning. All original owners stay frozen; current and prior foreign material constrain every new spindle. Source void, scope, native export and final retention checks remain mandatory.')
+ receipt=dict(schema='qualified-source-derived-prior-floor/1',source_sha256=context.source_hash,prior_generated_sha256=context.reservation_sha256,input_scene_ref=store.put_json('scene',scene),output_scene_ref=output_ref,records=records,prior_current_policy_check=prior_check,combined_predecessor_policy_check=combined_check,shared_neighbor_gaps=shared_gap_check,policy='The source-only generated prior is minimum physical copper, present before T05 planning. All original owners stay frozen; current and prior foreign material constrain every new spindle. Source void, scope, native export and final retention checks remain mandatory.')
  return output,receipt

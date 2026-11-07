@@ -144,3 +144,134 @@ def test_real_source_binary_bounds_cannot_round_past_original_factor_cap(tmp_pat
  result,proof=gaps.project(spec,original,original,proposed,factor_rows={s:[1.25,1.25]for s in proposed})
  for sid,g in result.items():
   assert all(1<=f<=1.25 for f in proof['factors'][sid])and proposed[sid].covers(g)
+
+@pytest.mark.parametrize('rotation',[False,True])
+def test_qualified_t04_fixed_wall_shift_is_preserved_over_every_full_span(tmp_path,rotation):
+ original,scene,store=fixture(tmp_path,rotation=rotation);axis=1 if rotation else 0
+ factors=[1.,1.];factors[axis]=1.06
+ current=dict(original,wall=scale(original['wall'],*factors,origin=original['wall'].centroid))
+ spec=gaps.records(scene,original,current)
+ assert len(spec['groups'])==1 and len(spec['entry_walls'])==2
+ assert all(w['offset_mm']==pytest.approx(.03)for w in spec['entry_walls'])
+ proposed={s:scale(original[s],1.1,1.1,origin=original[s].centroid)for s in('a','b')}
+ result,proof=gaps.project(spec,original,current,proposed)
+ whole=unary_union(list(dict(current,**result).values()))
+ check=gaps.complete(proof,whole)
+ assert len(check['checks'])==2 and len(check['boundaries'])==4
+ assert all(v['gap_mm']==pytest.approx(.92)for v in proof['zones'])
+ assert all(v['gap_mm']==pytest.approx(.92)for v in gaps.frozen(spec,dict(current,**result))['zones'])
+ assert current['wall'].difference(whole).is_empty
+
+def test_integral_prior_trace_corner_is_absorbed_by_ordinary_checked_rectangle(tmp_path):
+ original,scene,store=fixture(tmp_path);original['joint']=box(.8,.01,1.,.02)
+ scene['objects'].append(dict(source_id='joint',kind='stroke',metadata={}))
+ current=dict(original,joint=box(.8,.01,1.03,.08));spec=gaps.records(scene,original,current)
+ proposed={s:scale(original[s],1.1,1.1,origin=original[s].centroid)for s in('a','b')}
+ result,proof=gaps.project(spec,original,current,proposed);after=unary_union(list(dict(current,**result).values()))
+ assert gaps.complete(proof,after)['passed']
+ assert unary_union(list(current.values())).difference(after).is_empty
+
+def test_prior_local_bridge_is_not_authority_to_redefine_the_gap(tmp_path):
+ original,scene,store=fixture(tmp_path);original['joint']=box(.8,.01,1.,.02)
+ scene['objects'].append(dict(source_id='joint',kind='stroke',metadata={}))
+ current=dict(original,joint=box(.8,.01,2.1,.08));spec=gaps.records(scene,original,current)
+ proposed={s:scale(original[s],1.25,1.25,origin=original[s].centroid)for s in('a','b')}
+ result,proof=gaps.project(spec,original,current,proposed)
+ with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,unary_union(list(dict(current,**result).values())))
+
+def test_fixed_wall_support_is_source_bound_and_cannot_disappear_or_lose_core(tmp_path):
+ original,scene,store=fixture(tmp_path);spec=gaps.records(scene,original,original)
+ assert all([v['source_id']for v in w['supports']]==['wall']for w in spec['entry_walls'])
+ with pytest.raises(ValueError,match='SUPPORT_MISSING'):gaps.records(scene,original,{k:v for k,v in original.items()if k!='wall'})
+ with pytest.raises(ValueError,match='SUPPORT_CORE_CHANGED'):gaps.records(scene,original,dict(original,wall=box(2,-1,3,2.9)))
+
+def test_mixed_bank_is_anchored_at_qualified_wall_offset_and_never_exceeds_proposal(tmp_path):
+ original,scene,store=fixture(tmp_path)
+ original['wall']=box(2.5,-1,3,4).union(box(2,2,3,3));original['c']=box(2,0,3,1)
+ scene['objects'].append(dict(source_id='c',kind='rectangle',metadata={}))
+ current=dict(original,wall=original['wall'].union(box(1.95,2,2.5,3)))
+ spec=gaps.records(scene,original,current);assert len(spec['groups'])==1
+ proposed={s:scale(original[s],1.2,1.2,origin=original[s].centroid)for s in('a','b','c')}
+ result,proof=gaps.project(spec,original,current,proposed)
+ assert result['c'].bounds[0]==pytest.approx(1.95)
+ assert gaps.complete(proof,unary_union(list(dict(current,**result).values())))['passed']
+ proposed['c']=scale(original['c'],1.04,1.2,origin=original['c'].centroid)
+ with pytest.raises(ValueError,match='ANCHOR_INFEASIBLE'):gaps.project(spec,original,current,proposed)
+
+def test_inherited_subgrid_endpoint_is_preserved_exactly_and_native_fidelity_is_unchanged(tmp_path):
+ from shapely import set_precision
+ original,scene,store=fixture(tmp_path)
+ wall=box(1.97,-1,3.03,4).union(box(1.97-1.65e-10,0.,2.,3.2e-8));current=dict(original,wall=wall)
+ spec=gaps.records(scene,original,current);proposed={s:scale(original[s],1.1,1.1,origin=original[s].centroid)for s in('a','b')}
+ result,proof=gaps.project(spec,original,current,proposed);whole=unary_union(list(dict(current,**result).values()))
+ assert gaps.complete(proof,whole)['passed']
+ assert gaps.complete(proof,set_precision(whole,1e-6),tolerance_mm=2e-6)['passed']
+ with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,whole.union(box(1.969,.2,2.,.8)),tolerance_mm=2e-6)
+
+def test_canonical_source_plane_rounding_keeps_original_support_identity(tmp_path):
+ from shapely.affinity import translate
+ original,scene,store=fixture(tmp_path)
+ original={s:translate(g,5.599100000000002,-15.388565248402)for s,g in original.items()}
+ current=dict(original,wall=scale(original['wall'],1.06,1.,origin=original['wall'].centroid))
+ spec=gaps.records(scene,original,current)
+ assert len(spec['groups'])==1 and len(spec['entry_walls'])==2
+ assert all([q['source_id']for q in w['supports']]==['wall']for w in spec['entry_walls'])
+ proposed={s:scale(original[s],1.1,1.1,origin=original[s].centroid)for s in('a','b')}
+ result,proof=gaps.project(spec,original,current,proposed)
+ assert gaps.complete(proof,unary_union(list(dict(current,**result).values())))['passed']
+
+def test_original_joint_subgrid_lip_is_frozen_exactly_without_allowing_new_lips(tmp_path):
+ from shapely.geometry import Polygon
+ from shapely import set_precision
+ original,scene,store=fixture(tmp_path);original['joint']=box(2.1,0,2.2,.1)
+ scene['objects'].append(dict(source_id='joint',kind='stroke',metadata={}))
+ lip=Polygon([(1.97,0),(1.97-1.65189291e-7,0),(1.97,3.213139e-5)])
+ assert lip.area>gaps.EPS
+ current=dict(original,wall=box(1.97,-1,3.03,4),joint=box(1.97,0,2.2,.1).union(lip))
+ spec=gaps.records(scene,original,current)
+ assert any('joint'in[w['source_id']for w in wall['original_attachments']]for wall in spec['entry_walls'])
+ proposed={s:scale(original[s],1.1,1.1,origin=original[s].centroid)for s in('a','b')}
+ result,proof=gaps.project(spec,original,current,proposed);whole=unary_union(list(dict(current,**result).values()))
+ checked=gaps.complete(proof,whole)
+ assert checked['passed']and any(r['retained_entry_material_mm2']>gaps.EPS for r in checked['checks'])
+ assert gaps.complete(proof,set_precision(whole,1e-6),tolerance_mm=2e-6)['passed']
+ # A new 0.1 nm lip is not part of the exact inherited footprint, even though
+ # it is smaller than the wall-recognition/native fidelity tolerance.
+ with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,whole.union(box(1.97-1e-7,.3,2.,.4)))
+
+def test_fixed_wall_full_middle_boundary_cannot_disappear_between_endpoints(tmp_path):
+ original,scene,store=fixture(tmp_path);current=dict(original,wall=box(1.97,-1,3.03,4));spec=gaps.records(scene,original,current)
+ proposed={s:scale(original[s],1.1,1.1,origin=original[s].centroid)for s in('a','b')};result,proof=gaps.project(spec,original,current,proposed);whole=unary_union(list(dict(current,**result).values()))
+ # Remove only preceding growth, not the original wall, to widen a local gap.
+ bad=whole.difference(box(1.96,.2,1.971,.8))
+ with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,bad)
+ with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,bad,tolerance_mm=2e-6)
+
+def test_ordinary_t05_smoothing_preserves_the_frozen_gap_and_unrelated_treatment(tmp_path,monkeypatch):
+ from src.u05_board.coverage import CoverageAdapter
+ original,scene,store=fixture(tmp_path);spec=gaps.records(scene,original,original);_,proof=gaps.project(spec,original,original,{s:original[s]for s in('a','b')})
+ monkeypatch.setattr(gaps,'ACTIVE',proof);adapter=CoverageAdapter(box(-2,-2,4,5));owner=original['a'];window=box(-1,-1,2,2)
+ bad=box(.9,.2,1.001,.8);q=adapter._check(owner,owner.union(bad),bad,window,[])
+ assert not q['passed']and 'FROZEN_SHARED_NEIGHBOR_GAP'in q['failures']
+ good=box(-.01,.2,.2,.8);assert adapter._check(owner,owner.union(good),good,window,[])['passed']
+
+def test_fresh_reference_worker_restores_shared_gaps_from_t02_lineage(tmp_path):
+ from src.gerber_u05.reference_recipe import initialize_reference_constraints
+ from src.stage_abi.store import digest,canonical
+ original,scene,store=fixture(tmp_path);source=unary_union(list(original.values()));width=t04_width_fence.Rule(box(10,10,11,11),source,'frozen-width-fixture')
+ scene['lineage']=[dict(stage='t04',t04_width_fence=width.state(store))]
+ adapter=FastRectangleAdapter('t02');ref=store.put_json('scene',scene);policy=dict(stage='t02',parameters=land_parameters('t02'));bounds=dict(max_source_objects=100,max_targets=100,max_evaluations=10000,max_output_bytes=10**7,max_seconds=60)
+ details=adapter.plan(store,scene,policy,dict(stage='t02',scene_ref=ref,source_ids=['a','b']),bounds);plan=dict(stage='t02',scene_ref=ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details);result=adapter.run(store,scene,policy,plan,lambda _:None);after=store.get_json(result['output_scene_ref'],kind='scene')
+ assert gaps.ACTIVE is None
+ binding=dict(source_ref=dict(artifact_id='gerber-source:'+'a'*64,sha256='a'*64));receipt=initialize_reference_constraints(store,binding,source,scene,after)
+ assert receipt['frozen_shared_gap_state_sha256']==digest(canonical(result['shared_neighbor_gaps']))
+ from src.growth_remedy_constraints import remedy
+ zone=result['shared_neighbor_gaps']['zones'][0];bad=box(zone['left']-.01,.2,zone['left']+.001,.8)
+ assert not remedy(bad,source)['passed']
+
+def test_retained_prior_cannot_bridge_or_narrow_an_accepted_shared_gap(tmp_path,monkeypatch):
+ from src.gerber_u05.prior_copper import require_shared_prior
+ original,scene,store=fixture(tmp_path);spec=gaps.records(scene,original,original);_,proof=gaps.project(spec,original,original,{s:original[s]for s in('a','b')});monkeypatch.setattr(gaps,'ACTIVE',proof)
+ assert require_shared_prior(original)['passed']
+ for patch in (box(.9,.2,1.001,.8),box(.9,.2,2.1,.8)):
+  with pytest.raises(ValueError,match='UNIFORMITY'):require_shared_prior(dict(original,a=original['a'].union(patch)))
