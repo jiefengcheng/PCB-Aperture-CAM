@@ -38,7 +38,8 @@
     "src/t01_canonical_surface.py": "8d53f5eb1fb7aa38bcdbab1e3db3aeffc7c44047cc7cef07ac1681a60251388f",
     "src/shape_containment.py": "fe7cc45a9ff3ce2068dde68a735e978baeea0a277a6e6724978d94be6e7385ca",
     "src/clearance_policy.py": "142889faa27680c9eddcc14103e5ec6d0cdc6c8bf902f09128e22d0748aab19a",
-    "src/t01_region_contacts.py": "14f21a4ef8466e78479bfddd076222f871726070788d96909efc065f4f15e9e3"
+    "src/t01_region_contacts.py": "14f21a4ef8466e78479bfddd076222f871726070788d96909efc065f4f15e9e3",
+    "src/t01_bga_single.py": "b1d7957ebf5b3ca2139d39bd4c6e630804aee6f39861ad416e83921fe7909541"
   },
   "permissions": {
     "850c4c74d55717a721d4bbed7ec876ee086f475efd97f69bb5b5164ef77533a0": {
@@ -142,5 +143,11 @@
     "supersedes_sha256": "0abea62b43ac016d49acff55b479649e5f18f4b8380fdcd0050edf55091f6f38",
     "prior_contract_path": "contracts/t01_canonical/revisions/contract_0abea62b43ac016d49acff55b479649e5f18f4b8380fdcd0050edf55091f6f38.json",
     "authority": "Owner 2026-11-07: fix T01 recognition of existing circle-to-filled-Gerber-Region attachments; preserve checks and wait for next T01 coverage issue"
+  },
+  "bga_single_circle_rule": {
+    "path": "contracts/t01_bga_single/settings.json",
+    "sha256": "7355d5573fc6519a83510ae9cf7aa27b71e917c0aae6fae3e067fbdee0e15d78",
+    "authority": "Owner authorized isolated explicit-clear BGA singleton optional growth, source-qualified independently of pairs and long-feed terminals; all checks and >70% KEEP retained.",
+    "predecessor_contract_sha256": "19ac477f5ed8587d273f2de0a1e45f538a88b112bdc128798937cd4b22349037"
   }
 }

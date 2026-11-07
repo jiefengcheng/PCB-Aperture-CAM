@@ -11,10 +11,11 @@ from src.crop_diameter_selection import select_targets,promote_round_priorities
 from src.crop_circle_sources import site_record
 from src.shape_containment import ContainmentIndex,policy as containment_policy
 from src.t01_circle_overlap import capture as overlap_settings,assess as assess_overlap
+from src.t01_bga_single import capture as bga_settings,eligible_sites as bga_eligible_sites
 
 ROOT=Path(__file__).resolve().parents[1]
 CONTRACT=ROOT/'contracts/t01_canonical/contract.json'
-CONTRACT_SHA256='19ac477f5ed8587d273f2de0a1e45f538a88b112bdc128798937cd4b22349037'
+CONTRACT_SHA256='685da61f0384c85bf101d6b0d9fc34d37449f2e15ae2ad552056a48cbba17b7d'
 
 def specification():
     data=CONTRACT.read_bytes()
@@ -24,6 +25,7 @@ def specification():
     clearance_spec()
     if spec['production_clearance']!=dict(path='contracts/clearance/production.json',sha256=clearance_marker()['sha256'],hard_gap_mm=clearance_marker()['hard_gap_mm']):fail('T01_CLEARANCE_POLICY_CHANGED','Pinned production defaults')
     if spec['contained_shape_keep']!=containment_policy():fail('T01_CONTAINMENT_POLICY_CHANGED','Uniform source containment rule')
+    if spec['bga_single_circle_rule']['sha256']!=bga_settings()['sha256']:fail('T01_BGA_SINGLE_POLICY_CHANGED','Versioned source classification')
     for name,h in spec['kernel_sha256'].items():
         if not kernel_matches(ROOT,name,h):fail('T01_CANONICAL_KERNEL_CHANGED',name)
     directive=spec['source_directives']
@@ -33,7 +35,7 @@ def specification():
 def marker():
     s=specification()
     return dict(schema=s['schema'],family=s['family'],contract_sha256=CONTRACT_SHA256,
-                circle_overlap_settings=overlap_settings().snapshot())
+                circle_overlap_settings=overlap_settings().snapshot(),bga_single_circle_settings=bga_settings())
 
 def fingerprint(source_sha256,result):
     return digest(canonical(dict(canonical_t01=marker(),source_sha256=source_sha256,
@@ -69,7 +71,16 @@ def allocate(raw,rows,shapes,sites,policy,binding):
     overlap_records={s['source_id']:assess_overlap(s['core'],contained_records[s['source_id']],overlap)for s in sites}
     overlap_keep={sid for sid,r in overlap_records.items()if r['keep']}
     blocked={s['source_id']for s in sites if protected.intersection(s['aliases'])}|overlap_keep
-    groups=groups_for(sites,directive.get('reviewed_pairs',[]),blocked,settings.construction_gap)
+    bga_source=bga_eligible_sites(sites,rows,shapes)
+    bga=set(bga_source)-blocked
+    # This case has no paired-pad partner. Giving an isolated array island a
+    # synthetic proximity partner would impose that pair's square-follower
+    # size limit before its independently clipped growth was ever proposed.
+    # All actual neighbours remain in the complete scene and all final checks.
+    groups=groups_for([s for s in sites if s['source_id']not in bga],
+                      directive.get('reviewed_pairs',[]),blocked,settings.construction_gap)
+    for sid in sorted(bga):
+        groups.append(dict(group_id=f'G{len(groups)+1:02d}',site_ids=[sid],rule='BGA_SINGLE_CLEAR_ARRAY_INDEPENDENT_SITE'))
     for group in groups:
         if set(group['site_ids'])&blocked:
             group['rule']=('CONTAINED_SOURCE_KEEP'if set(group['site_ids'])&contained else
@@ -78,8 +89,8 @@ def allocate(raw,rows,shapes,sites,policy,binding):
     priorities,exceptions=choose_priorities([s for s in sites if s['source_id']not in blocked],initial)
     square=set(directive.get('recess_source_ids',[]))-protected-overlap_keep
     for component,sid in list(priorities.items()):
-        if sid in square:
-            del priorities[component];exceptions.append(dict(component_id=component,source_id=sid,reason='SOURCE_RECESS_DIRECTIVE',previous_round_priority=sid))
+        if sid in square or sid in bga:
+            del priorities[component];exceptions.append(dict(component_id=component,source_id=sid,reason='BGA_SINGLE_CLEAR_ARRAY_OPTIONAL_GROWTH'if sid in bga else'SOURCE_RECESS_DIRECTIVE',previous_round_priority=sid))
     from src.t01_canonical_surface import SurfaceGuard
     surface=SurfaceGuard(rows,shapes,sites)
     round_checks={}
@@ -106,4 +117,8 @@ def allocate(raw,rows,shapes,sites,policy,binding):
                       circle_overlap_settings=overlap.snapshot(),circle_overlap=overlap_records,
                       circle_overlap_keep_source_ids=sorted(overlap_keep),
                       keep_source_ids=sorted(blocked))
+    allocation.update(bga_single_circle_settings=bga_settings(),
+                      bga_single_circle_source_proofs=bga_source,
+                      bga_single_circle_growth_source_ids=sorted(bga),
+                      bga_single_circle_keep_source_ids=sorted(set(bga_source)&blocked))
     return settings,allocation,targets,square

@@ -126,6 +126,22 @@ def build_source(store,raw):
         ledger.append(dict(source_id=sid,ordinal=i,polarity_dark=True,disposition='PHYSICAL_SOURCE_CONTRIBUTION',geometry_sha256=ref['sha256']))
     image=unary_union([geometry(store,r['geometry_ref'])for r in objects]);source_image=affine_scale(source_profile.ordered(zip(all_shapes,(o.polarity_dark for o in parsed.objects))),1,-1,origin=(0,0))
     if image.symmetric_difference(source_image).area>1e-10:raise ValueError('ORDERED_POLARITY_CONTRIBUTION_ASSEMBLY_MISMATCH')
+    # Record actual original clear removal, then the later restoring dark
+    # flashes. The clear footprint is provenance, never a growth veto mask.
+    from src.t01_bga_single import qualify as qualify_bga
+    clears=[]
+    for i,o in enumerate(parsed.objects):
+        if o.polarity_dark:continue
+        before=source_profile.ordered(zip(all_shapes[:i],(v.polarity_dark for v in parsed.objects[:i])))
+        removed=affine_scale(before.intersection(all_shapes[i]),1,-1,origin=(0,0))
+        span=parser.spans[i]
+        clears.append(dict(source_id=f'{source_hash}:bytes:{span[0]}:{span[1]}',ordinal=i,removed=removed))
+    circles=[dict(source_id=r['source_id'],ordinal=r['metadata']['gerber_ordinal'],
+                  center=r['metadata']['center_mm'],radius=r['metadata']['radius_mm'],
+                  core=geometry(store,r['original_ref']))for r in objects if r['kind']=='circle']
+    bga=qualify_bga(source_hash,circles,clears,coordinate_grid_mm=oracle['coordinate_grid_mm'])
+    for row in physical:
+        if row['id']in bga:row['t01_bga_single']=bga[row['id']]
     aliases=collections.defaultdict(list)
     for r in objects:
         if r['metadata']['qualified_land']:aliases[(r['kind'],r['original_ref']['sha256'])].append(r['source_id'])
