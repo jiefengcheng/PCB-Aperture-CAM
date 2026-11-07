@@ -66,7 +66,31 @@ def connected_native_normalization(shape):
         normalized=supported
     return normalized,proof
 
-def append_regions(shape,stage,sid,records,blocks,store):
+def owned_grid_holes(shape,owner):
+    """Omit microscopic holes in redundant support already covered by its owner.
+
+    This adds no physical copper: the entire closed hole must be covered by
+    qualified predecessor copper. Other holes and all exterior vertices stay
+    exact. No size, clearance, source-void or pin-separation waiver is granted.
+    """
+    if owner is None or not shape.interiors:return shape,[]
+    kept=[];absorbed=[]
+    for ring in shape.interiors:
+        hole=p.Polygon(ring);x,y,x1,y1=hole.bounds
+        allowance=8*max(math.ulp(v)for v in hole.bounds)
+        if x1-x<=GRID_MM+allowance and y1-y<=GRID_MM+allowance and owner.covers(hole):
+            absorbed.append(dict(hole_sha256=p.digest(p.to_wkb(hole)),area_mm2=hole.area,
+                                 bounds_mm=list(hole.bounds),owner_sha256=p.digest(p.to_wkb(owner)),
+                                 owner_covers_complete_hole=True,added_physical_copper_mm2=0.))
+        else:kept.append(ring)
+    if not absorbed:return shape,[]
+    result=p.Polygon(shape.exterior,kept)
+    if not result.is_valid or not result.covers(shape)or not owner.covers(result.difference(shape)):
+        raise ValueError('OWNED_GRID_HOLE_CHANGES_PHYSICAL_COPPER')
+    return result,absorbed
+
+
+def append_regions(shape,stage,sid,records,blocks,store,*,owner=None):
     qualified=shape
     # Nominal nearest-grid contours: inward padding changes overlap topology.
     # Construction margins remain in the source-stage proofs; actual native
@@ -85,13 +109,18 @@ def append_regions(shape,stage,sid,records,blocks,store):
     pieces=[normalized]if normalized.geom_type=='Polygon'else list(normalized.geoms)
     for piece in sorted(pieces,key=p.to_wkb):
         if piece.is_empty or piece.area<=0:raise ValueError('INVALID_EXPORT_COMPONENT')
-        q,proof=export_reference(piece);points=bridge_contour(q);points=points+[points[0]]
+        q,proof=export_reference(piece);q,absorbed=owned_grid_holes(q,owner)
+        material=piece
+        if absorbed:
+            material=q;proof=dict(proof or {},redundant_owned_grid_holes=absorbed,
+                                 encoded_reference_sha256=p.digest(p.to_wkb(q)))
+        points=bridge_contour(q);points=points+[points[0]]
         # Kernel y-down -> original Gerber y-up. Every word is explicit, 1 nm.
         xy=[(round(x*1e6),round(-y*1e6))for x,y in points]
         if any(a==b for a,b in zip(xy,xy[1:])):raise ValueError('EXPORT_ZERO_LENGTH_GRID_EDGE')
         block=['G04 qualified '+stage+' '+str(len(records))+'*','%LPD*%','G01*','G75*','D10*','G36*']
         block+=['X'+str(x)+'Y'+str(y)+('D02*'if i==0 else'D01*')for i,(x,y)in enumerate(xy)];block+=['G37*']
-        blocks.append('\n'.join(block)+'\n');records.append(dict(stage=stage,source_id=sid,geometry_ref=p.geomref(store,piece),reference_ref=p.geomref(store,q),raw_qualified_ref=raw_ref,normalization=normalization,component_reference_proof=proof))
+        blocks.append('\n'.join(block)+'\n');records.append(dict(stage=stage,source_id=sid,geometry_ref=p.geomref(store,material),reference_ref=p.geomref(store,q),raw_qualified_ref=raw_ref,normalization=normalization,component_reference_proof=proof))
 
 def preserve_point_contacts(owner,pieces,sid,records,blocks,store):
     before=owner.union(p.unary_union(pieces))
@@ -136,7 +165,7 @@ def construct(run):
     objects={row['source_id']:row for row in prepared['objects']}
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support,_support_mode=supported_region(addition,owner,domain);first=len(records);append_regions(region,'t05',d['source_id'],records,blocks,store)
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support,_support_mode=supported_region(addition,owner,domain);first=len(records);append_regions(region,'t05',d['source_id'],records,blocks,store,owner=owner)
         members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=encoded_route_owner(encoded_current,members,d['land_ids'],d['source_id']);pieces=[p.geometry(store,row['geometry_ref'])for row in records[first:]];preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store)
     adapter.close();body=(base+'\n'+''.join(blocks)+'M02*\n').encode('ascii');store.verify_reads();verify_sources(run)
     return body,dict(source_sha256=binding['source_ref']['sha256'],coordinate_oracle=oracle,records=records,generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()),profile='GERBER_SOURCE_ONLY; KiCad source/write/plot N/A; positive appended contours, original ordered clear operations retained')
@@ -152,12 +181,12 @@ def original_contact_port(overlap,width,contact):
 
 def native_model_reference(run,store,before):
     binding=p.load(run/'source.json');source=store.get_json(binding['scene_ref'],kind='scene');source_rows={r['source_id']:r for r in source['objects']};value=p.load(run/'t05.json');final=store.get_json(value['output_scene_ref'],kind='scene');references=[];inventory=[]
-    def prepare(shape,sid):
+    def prepare(shape,sid,owner=None):
         normalized,_connectivity=connected_native_normalization(shape);area=shape.symmetric_difference(normalized).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
         if normalized.is_empty or not normalized.is_valid or normalized.geom_type not in('Polygon','MultiPolygon')or area>bound:raise ValueError('NATIVE_MODEL_REFERENCE_NORMALIZATION_FAILED:'+sid)
         parts=[normalized]if normalized.geom_type=='Polygon'else list(normalized.geoms)
         for part in parts:
-            reference,proof=export_reference(part);references.append(reference);inventory.append(dict(source_id=sid,qualified_sha256=p.digest(p.to_wkb(shape)),native_reference_sha256=p.digest(p.to_wkb(reference)),normalization_area_mm2=area,normalization_area_bound_mm2=bound))
+            reference,proof=export_reference(part);reference,absorbed=owned_grid_holes(reference,owner);references.append(reference);inventory.append(dict(source_id=sid,qualified_sha256=p.digest(p.to_wkb(shape)),native_reference_sha256=p.digest(p.to_wkb(reference)),normalization_area_mm2=area,normalization_area_bound_mm2=bound,redundant_owned_grid_holes=absorbed))
     if not set(source_rows)<={r['source_id']for r in final['objects']}:raise ValueError('NATIVE_REFERENCE_SOURCE_OCCURRENCE_MISSING')
     aliases=0
     for row in final['objects']:
@@ -171,7 +200,7 @@ def native_model_reference(run,store,before):
     try:
         for d in value['candidate']['decisions']:
             if d['status']!='GROWN':continue
-            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_,_support_mode=supported_region(p.geometry(store,d['patch_ref']),owner,domain);prepare(region,d['source_id'])
+            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_,_support_mode=supported_region(p.geometry(store,d['patch_ref']),owner,domain);prepare(region,d['source_id'],owner)
     finally:adapter.close()
     expected=union_all([before,*references],grid_size=GRID_MM)
     if expected.is_empty or not expected.is_valid or expected.area<=0:raise ValueError('NATIVE_AGGREGATE_REFERENCE_INVALID')
