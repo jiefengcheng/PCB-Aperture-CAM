@@ -45,6 +45,25 @@ def verify_sources(run):
   verify_width(run)
  return seal
 
+def checked_legacy_reference(run,legacy,seal_value):
+ """Authorize only an exactly copied, verified incremental checking role."""
+ run=Path(run);legacy=Path(legacy);path=run/'REUSED_PREFIX_BINDING.json'
+ if not path.exists():return False
+ if seal_value.get('job_inputs',{}).get(str(path))!=sha(path):raise ValueError('REUSED_PREFIX_READ_AUTHORITY_CHANGED')
+ from .prefix import verify as verify_prefix
+ binding=verify_prefix(run)
+ if not binding or not binding.get('checked_legacy_files'):raise ValueError('REUSED_CHECKING_ROLE_AUTHORITY_REQUIRED')
+ if legacy.is_symlink()or legacy.resolve().parent!=run.resolve().parent:raise ValueError('LOCAL_REFERENCE_MUST_BE_SAME_JOB')
+ if any(p.is_symlink()for p in legacy.rglob('*')):raise ValueError('REUSED_CHECKING_ROLE_SYMLINK_FORBIDDEN')
+ expected=binding['checked_legacy_files'];actual={p.relative_to(legacy).as_posix()for p in legacy.rglob('*')if p.is_file()}
+ if actual!=set(expected):raise ValueError('REUSED_CHECKING_ROLE_NAMESPACE_CHANGED')
+ for relative,h in expected.items():
+  if sha(legacy/relative)!=h:raise ValueError('REUSED_CHECKING_ENVELOPE_EVIDENCE_CHANGED')
+ scope=json.loads((legacy/'SCOPE.json').read_bytes())
+ if scope!=dict(role='HASH_BOUND_CHECKING_ENVELOPE_INPUTS_ONLY',original_run=str(Path(binding['original_run']).parent/'legacy'),native_job_resumed=False):raise ValueError('REUSED_CHECKING_ROLE_CHANGED')
+ if json.loads((legacy/'source.json').read_bytes())['source_ref']!=json.loads((run/'source.json').read_bytes())['source_ref']:raise ValueError('LOCAL_REFERENCE_ROLE_OR_SOURCE_CHANGED')
+ return True
+
 def install_read_fence(run,legacy_authority=None):
  """Generation cannot open any retained result outside its own fresh job."""
  import os,sys
@@ -70,8 +89,9 @@ def install_read_fence(run,legacy_authority=None):
   if legacy.is_symlink()or legacy.resolve().parent!=Path(run).resolve().parent:raise ValueError('LOCAL_REFERENCE_MUST_BE_SAME_JOB')
   authority=json.loads(reference.read_bytes());source=json.loads((Path(run)/'source.json').read_bytes())
   if authority.get('schema')!='job-local-generated-reservation/1'or authority.get('source_only')is not True or authority.get('source_sha256')!=source['source_ref']['sha256']:raise ValueError('LOCAL_REFERENCE_SOURCE_AUTHORITY_CHANGED')
-  legacy_seal=verify_sources(legacy)
-  if legacy_seal.get('profile')!='fresh-legacy-reservation-reference/1'or json.loads((legacy/'source.json').read_bytes())['source_ref']!=source['source_ref']:raise ValueError('LOCAL_REFERENCE_ROLE_OR_SOURCE_CHANGED')
+  if not checked_legacy_reference(run,legacy,seal_value):
+   legacy_seal=verify_sources(legacy)
+   if legacy_seal.get('profile')!='fresh-legacy-reservation-reference/1'or json.loads((legacy/'source.json').read_bytes())['source_ref']!=source['source_ref']:raise ValueError('LOCAL_REFERENCE_ROLE_OR_SOURCE_CHANGED')
   allowed.append(legacy.resolve())
  for width in(Path(run)/'REUSED_WIDTH_BINDING.json',Path(run)/'connected/REUSED_WIDTH_BINDING.json'):
   if not width.exists():continue
