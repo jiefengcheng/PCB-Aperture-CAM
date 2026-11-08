@@ -13,7 +13,7 @@ from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM,GRID_MM
 from src.indexed_hausdorff import distance as image_hausdorff
 from src.native_boundary_metric import distance as boundary_distance
 from src.u05_board.export import export_region,actual_spindle_check
-from .export_absorption import supported_region
+from .export_absorption import compact_supported_region as supported_region
 from src.junction_spindle_stage import prepare_spindle_context
 from src.junction_spindle_blend import spindle_blend
 from src.u05_board.attachment_export import obligation_check

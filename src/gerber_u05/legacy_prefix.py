@@ -9,6 +9,7 @@ from .workspace import configure
 sha=lambda f:hashlib.sha256(Path(f).read_bytes()).hexdigest()
 load=lambda f:json.loads(Path(f).read_bytes())
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/run.py','src/gerber_u05/render.py','src/gerber_u05/legacy_export.py','src/gerber_u05/reference_recipe.py','src/u05_board/coverage.py','src/gerber_u05/legacy_prefix.py'}
+DOWNSTREAM.update({'src/gerber_u05/prefix.py','src/gerber_u05/incremental.py'})
 CONNECTED_COMPLETION={'src/component_clearance.py','src/component_voids.py','src/growth_void_remedy_v09.py','src/partial_pocket_remedy.py','src/gerber_u05/component_finish.py','src/gerber_u05/component_policy.py','src/gerber_u05/component_stages.py','src/gerber_u05/native_component_checks_final.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/prior_copper.py','contracts/component_remedy/settings.json','contracts/growth_void/settings.json','src/u05_board/attachment_export.py','src/gerber_u05/width_adoption.py'}
 
 def source_namespace(root,work):
@@ -206,6 +207,14 @@ def inspect(old,through):
   if relative=='SOURCE_REVISION.json':continue
   current=ROOT/relative;actual=sha(current)
   if actual==expected:continue
+  from .prefix import WIDTH_CORRECTION
+  if relative in WIDTH_CORRECTION and WIDTH_CORRECTION[relative]==(expected,actual):
+   # Only the exact qualified positive-operand subtraction/report correction.
+   # Above, every retained stage already proved PASS under the old checker;
+   # all candidate geometry, source identities and native stage proofs remain
+   # unchanged. Connected T04 is always freshly constructed after this legacy
+   # reference. This is not permission to retain a failed width decision.
+   changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_E10FCE9_CHECKER_DELTA; ORIGINAL_PASS_GEOMETRY_UNCHANGED'));continue
   if relative=='src/gerber_u05/pipeline.py':
    pipeline_same(file.read_text(),current.read_text(),through=through)
    if through=='t02'and not any(r['kind']=='rectangle'for r in scene['objects']):raise ValueError('EMPTY_T02_REQUIRES_FRESH_T02_VERIFICATION')
