@@ -33,6 +33,18 @@ class PreparedWidthScene:
         self.ids=sorted(self.original);self.tree=STRtree([self.original[sid] for sid in self.ids])
         self.predecessor=unary_union([self.original[sid] for sid in self.ids]);self.predecessor_sha=sha(self.predecessor)
         self.fixed_visibility={};self.trace_visibility={};self.ports={};self.addition_visibility={}
+        # Opt in here, rather than on the class: filled lands have a separate
+        # initializer and retain their existing owner-check calculation.
+        self.owner_added_material=self._source_width_added_material
+
+    @staticmethod
+    def _source_width_added_material(predecessor,candidates):
+        from src.component_clearance import joined
+        # (A union B1 union ...) minus A = union(Bi minus A). Including all
+        # unchanged A in a new large overlay can leave numerical boundary
+        # spurs on old copper. Every positive-area candidate piece is retained;
+        # there is no area epsilon, buffering, snapping or clearance waiver.
+        return joined(candidate.difference(predecessor) for candidate in candidates)
 
     @staticmethod
     def valid_geometry(g):

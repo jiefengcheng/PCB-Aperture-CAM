@@ -44,7 +44,10 @@ def run(store,scene,*,route_ids=None,settings=None):
         selected=solution['selected_scales'];full=p.PreparedWidthScene(baseline,fixed)
         checks={name:full.check(trial(selected,envelope),materialize_scene=True)
                 for name,envelope in (('nominal',False),('envelope',True))}
-        if not all(q['passed']for q in checks.values()):raise ValueError('T04_FRESH_FULL_FINAL_SCENE_REJECTED')
+        if not all(q['passed']for q in checks.values()):
+            report=store.put_json('width-final-rejection',dict(schema='t04-complete-final-rejection/1',
+                solution=solution,checks=checks,settings=settings.resolved(),qualification='REJECTED_NOT_ACCEPTED'))
+            raise ValueError('T04_FRESH_FULL_FINAL_SCENE_REJECTED:'+p.canonical(report).decode('ascii'))
         after=dict(current);factors={}
         for s,path in paths.items():
             for m in path['source_ids']:after[m]=part(m,selected[s],False);factors[m]=selected[s]
