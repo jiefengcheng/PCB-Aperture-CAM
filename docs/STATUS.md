@@ -1,3 +1,22 @@
+# Isolated nested-enclosure preparation correction — 2026-11-08
+
+Candidate code `c4260cf` passes 806 focused tests, all 47 operations of a nested-frame
+inclusive-fill synthetic route and three native assembly workers on actual
+3020213110. It removes 4 then 80 certified strokes while retaining all 4,668 other
+native objects. Eight other sources have byte-identical prepared input and
+complete receipts, including the accepted primary and active 3020212849 input.
+No growth stage was repeated for these comparisons. The actual preparation
+comparison was shown before integration; it is not a final 3110 U05 result.
+
+The candidate is not installed. Normal app `5c44b45` / code `62664ee` and the
+active 3020212849 frozen job remain unchanged. Release `U05_20261108_c4260cf` is
+prepared, inactive and separately preflighted. See
+[the correction and retained evidence](U05_NESTED_SOURCE_ENCLOSURES_20261108.md).
+Further app integration and release activation belong between client jobs.
+All checks, budgets, six deferred test findings and explicit unwaived,
+unattributed `.DS_Store` custody remain. Positive-only flattening is separately
+unfinished; source-scope questions affect only their named held targets.
+
 # Integrated Gerber route and completed primary delivery — 2026-11-08
 
 Code `62664ee` is installed on `codex/u05-reproducible-batch`. The installation
