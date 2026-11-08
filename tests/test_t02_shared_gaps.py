@@ -247,6 +247,23 @@ def test_fixed_wall_full_middle_boundary_cannot_disappear_between_endpoints(tmp_
  with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,bad)
  with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,bad,tolerance_mm=2e-6)
 
+def test_native_inherited_attachment_rounding_uses_existing_fidelity_only(tmp_path):
+ from shapely import set_precision
+ from src.gerber_u05.exporter import native_shared_gap_complete
+ from shapely.geometry import LineString
+ lip=box(1.,.2,1.1000006,.4)
+ wall=dict(bank=0,retained_material_wkb_hex=to_wkb(lip).hex(),contour_wkb_hex=to_wkb(LineString([(1.,0.),(1.,.2),(1.1000006,.2),(1.1000006,.4),(1.,.4),(1.,1.)])).hex(),supports=['original_joint'])
+ proof=dict(policy=gaps.policy(),zones=[dict(axis=0,left=1.,right=2.,lo=0.,hi=1.,gap_mm=.8999994,group_id='fixture',entry_walls=[wall])])
+ whole=unary_union([box(0,0,1,1),box(2,0,3,1),lip]);frozen=copy.deepcopy(proof)
+ assert gaps.complete(proof,whole)['passed']
+ from shapely import from_wkb
+ native=from_wkb(to_wkb(set_precision(whole,1e-6)))
+ with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,native,tolerance_mm=2e-6)
+ assert native_shared_gap_complete(proof,native)['passed']
+ assert proof==frozen
+ with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,native)
+ with pytest.raises(ValueError,match='UNIFORMITY'):native_shared_gap_complete(proof,native.union(box(1.,.25,1.10001,.35)))
+
 def test_ordinary_t05_smoothing_preserves_the_frozen_gap_and_unrelated_treatment(tmp_path,monkeypatch):
  from src.u05_board.coverage import CoverageAdapter
  original,scene,store=fixture(tmp_path);spec=gaps.records(scene,original,original);_,proof=gaps.project(spec,original,original,{s:original[s]for s in('a','b')})
