@@ -29,13 +29,16 @@ class OwnerDependencies:
         self.gap = parent.required_new_copper_gap()
         self.epsilon = parent.contract.comparison_epsilon_mm
         self.cache = OrderedDict(); self.bytes = 0; self.limit = 16*1024**2
+        from src.t04_topology import SourceVoids
+        self.source_voids=SourceVoids(self,self.limit)
+        self.source_void_bytes=self.source_voids.bytes;self.bytes=self.source_void_bytes
         self.exact_distances = self.hits = 0
 
     def memo(self, key, calculate):
         if key in self.cache:
             self.hits += 1; self.cache.move_to_end(key); return self.cache[key][0]
         result = calculate(); size = len(canonical(result)) + len(canonical(list(key))) + 128
-        if size <= self.limit:
+        if size <= self.limit-getattr(self,'source_void_bytes',0):
             while self.cache and (self.bytes+size>self.limit or len(self.cache)>=8192):
                 self.bytes -= self.cache.popitem(last=False)[1][1]
             self.cache[key]=(result,size); self.bytes+=size
@@ -145,6 +148,7 @@ class IncrementalRoutes:
                     full_scene_checks_during_attempts=0 if self.fallback is None else 'DEPENDENCY_CHECKER_FALLBACK',
                     owner_indices_prepared=len(self.owner_checks),
                     owner_cache_bytes=sum(c.bytes for c in self.owner_checks),
+                    source_void_index_bytes=sum(c.source_void_bytes for c in self.owner_checks),
                     owner_cache_limit_bytes=sum(c.limit for c in self.owner_checks),
                     exact_distance_calls=sum(c.exact_distances for c in self.owner_checks),
                     cached_distance_hits=sum(c.hits for c in self.owner_checks))

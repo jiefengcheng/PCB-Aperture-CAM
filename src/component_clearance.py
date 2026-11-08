@@ -193,7 +193,9 @@ class OwnerCheck:
                 whole,delta,size=self.cache[key];self.cache.move_to_end(key)
             else:
                 whole=joined([self.before[o],*[current[s]for s in sorted(ids)]])
-                delta=joined(surfaces(whole.difference(self.before[o])))
+                added_material=getattr(p,'owner_added_material',None)
+                delta=(added_material(self.before[o],[current[s]for s in sorted(ids)])
+                       if added_material is not None else joined(surfaces(whole.difference(self.before[o]))))
                 size=2*(len(to_wkb(whole))+len(to_wkb(delta)))+512
                 if size<=self.limit:
                     while self.cache and(self.weight+size>self.limit or len(self.cache)>=4096):

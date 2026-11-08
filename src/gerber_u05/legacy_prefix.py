@@ -1,5 +1,5 @@
 """Hash-bound incremental qualification from completed legacy predecessor stages."""
-import argparse,ast,datetime,hashlib,importlib.util,json,os,subprocess,uuid
+import argparse,ast,datetime,functools,hashlib,importlib.util,json,os,subprocess,uuid
 from pathlib import Path
 from . import pipeline as p
 from .guard import ROOT,seal
@@ -9,7 +9,70 @@ from .workspace import configure
 sha=lambda f:hashlib.sha256(Path(f).read_bytes()).hexdigest()
 load=lambda f:json.loads(Path(f).read_bytes())
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/run.py','src/gerber_u05/render.py','src/gerber_u05/legacy_export.py','src/gerber_u05/reference_recipe.py','src/u05_board/coverage.py','src/gerber_u05/legacy_prefix.py'}
+DOWNSTREAM.update({'src/gerber_u05/prefix.py','src/gerber_u05/incremental.py'})
 CONNECTED_COMPLETION={'src/component_clearance.py','src/component_voids.py','src/growth_void_remedy_v09.py','src/partial_pocket_remedy.py','src/gerber_u05/component_finish.py','src/gerber_u05/component_policy.py','src/gerber_u05/component_stages.py','src/gerber_u05/native_component_checks_final.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/prior_copper.py','contracts/component_remedy/settings.json','contracts/growth_void/settings.json','src/u05_board/attachment_export.py','src/gerber_u05/width_adoption.py'}
+
+def source_void_supplement(old):
+ """Freshly check the added predicate, keeping every old native proof intact."""
+ old=Path(old)
+ names=('source.json','t03.json','RAW_WIDTH_CHECKPOINT.json','T04_SETTINGS_SNAPSHOT.json','SOURCE_ASSEMBLY_BINDING.json')
+ if any(not(old/name).is_file()for name in names):raise ValueError('SOURCE_VOID_REVALIDATION_REQUIRES_ASSEMBLED_LADDER')
+ # inspect() already revalidates all producer, job-input and artifact hashes
+ # before this call. Cache only a small immutable report, never geometry.
+ key=(str(old),*(sha(old/name)for name in names),*(sha(ROOT/name)for name in('src/t04_topology.py','src/gerber_u05/pipeline.py','src/gerber_u05/legacy_prefix.py')))
+ return json.loads(_source_void_supplement(key))
+
+
+@functools.lru_cache(maxsize=4)
+def _source_void_supplement(key):
+ from types import SimpleNamespace
+ from shapely import STRtree
+ from src.component_clearance import Context
+ from src.source_channel_guard import SourceChannels,ASSEMBLED_POLICY
+ from src.source_channel_scope import Scope
+ from src.t04_topology import SourceVoids
+ from .prefix import verify_width_ledger
+ from src.native_inventory import ERROR_MM
+ from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM
+ old=Path(key[0])
+ class ReadOnlyStore(p.Store):
+  def put(self,*args,**kwargs):raise ValueError('SOURCE_VOID_REVALIDATION_CANNOT_WRITE_OLD_ARTIFACTS')
+ store=ReadOnlyStore(old/'runtime');binding=p.load(old/'source.json');source_scene=store.get_json(binding['scene_ref'],kind='scene');rows,_,original=p.operands(store,source_scene);raw=p.load(old/'RAW_WIDTH_CHECKPOINT.json')
+ if raw['solution'].get('schema')!='source-route-ten-step-width-ladder/1':raise ValueError('SOURCE_VOID_REVALIDATION_REQUIRES_LADDER')
+ ledger=verify_width_ledger(raw,store)
+ source_bytes=store.get(binding['source_ref'],kind='gerber-source');plot,_,_=p.source_profile.parse_source(source_bytes);source=p.affine_scale(p.source_profile.ordered((p.source_profile.object_geometry(o)[0],o.polarity_dark)for o in plot.objects),1,-1,origin=(0,0));entry=store.get_json(p.load(old/'t03.json')['output_scene_ref'],kind='scene');_,before,_=p.operands(store,entry)
+ frame=p.Polygon();certificate=dict(policy=ASSEMBLED_POLICY,source_sha256=binding['source_ref']['sha256'],source_geometry_sha256=p.digest(p.to_wkb(source)),frame_geometry_sha256=p.digest(p.to_wkb(frame)),frame_source_rows=[])
+ contexts=[('physical',Context(source,binding['source_ref']['sha256'],original)),('functional',Scope(SourceChannels(source,binding['source_ref']['sha256'],frame,certificate),certificate,original))]
+ paths={r['path_id']:r for r in raw['admission']['admitted']};ids=sorted(paths);cores={sid:p.unary_union([original[m]for m in paths[sid]['source_ids']])for sid in ids};headroom=raw.get('checking_only_native_headroom_mm',0.);records=[]
+ def route(sid,factor,envelope):
+  return cores[sid]if factor==1 else p.unary_union([p.offset_part(original[m],rows[m]['metadata']['minimum_caliper_mm'],factor,envelope,extra_envelope_mm=headroom if envelope else 0.)for m in paths[sid]['source_ids']])
+ decisions={row['route_id']:row for row in raw['solution']['decisions']}
+ if any(decisions[sid]['original_width_mm']!=paths[sid]['uniform_original_width_mm']or any(rows[m]['metadata']['minimum_caliper_mm']!=paths[sid]['uniform_original_width_mm']for m in paths[sid]['source_ids'])for sid in ids):raise ValueError('SOURCE_VOID_REVALIDATION_ORIGINAL_WIDTH_CHANGED')
+ if raw['part_factors']!={m:raw['solution']['selected_scales'][sid]for sid in ids for m in paths[sid]['source_ids']}:raise ValueError('SOURCE_VOID_REVALIDATION_PART_FACTORS_CHANGED')
+ recorded_scene=store.get_json(raw['output_scene_ref'],kind='scene');_,recorded,_=p.operands(store,recorded_scene)
+ nominal={sid:route(sid,raw['solution']['selected_scales'][sid],False)for sid in ids}
+ if any(p.to_wkb(nominal[sid])!=p.to_wkb(p.unary_union([recorded[m]for m in paths[sid]['source_ids']]))for sid in ids):raise ValueError('SOURCE_VOID_REVALIDATION_NOMINAL_ROUTE_CHANGED')
+ for name,context in contexts:
+  d=SimpleNamespace(context=context,owners={sid:context.owner(paths[sid]['source_ids'][0])for sid in ids},before=context.project(before),route_ids=ids,route_tree=STRtree([cores[sid].buffer(paths[sid]['uniform_original_width_mm']*(raw['settings_snapshot']['resolved']['maximum_factor']-1)/2+ERROR_MM+headroom+POLYGON_TOLERANCE_MM).envelope for sid in ids]));index=SourceVoids(d,16*1024**2);current=dict(cores);versions=dict.fromkeys(ids,1.);sizes={sid:len(p.to_wkb(g))+256 for sid,g in current.items()};weight=sum(sizes.values());peak=weight;accepted=0
+  if weight>128*1024**2:raise ValueError('SOURCE_VOID_REVALIDATION_ROUTE_BUDGET_EXCEEDED')
+  for row in raw['solution']['evaluations']:
+   # Rejected old trials stay rejected under the unchanged old predicates;
+   # the extra constraint cannot turn an old rejection into an acceptance.
+   if not row['passed']:continue
+   sid=row['route_id'];factor=row['candidate']['factor'];candidate=route(sid,factor,True);check=index.check(sid,candidate,current,versions)
+   if not check['passed']:raise ValueError('RETAINED_WIDTH_FAILS_SOURCE_VOID_CHECK:'+p.canonical(check).decode())
+   size=len(p.to_wkb(candidate))+256;weight+=size-sizes[sid];sizes[sid]=size;peak=max(peak,weight)
+   if weight>128*1024**2:raise ValueError('SOURCE_VOID_REVALIDATION_ROUTE_BUDGET_EXCEEDED')
+   current[sid]=candidate;versions[sid]=factor;accepted+=1
+  if versions!=raw['solution']['selected_scales']:raise ValueError('SOURCE_VOID_REVALIDATION_LADDER_CHANGED')
+  complete={k:index.complete(nominal if not envelope else current,versions)for k,envelope in [('nominal',False),('envelope',True)]}
+  if any(not q['passed']for q in complete.values()):raise ValueError('RETAINED_WIDTH_COMPLETE_SOURCE_VOID_CHECK_FAILED')
+  records.append(dict(scope=name,accepted_trials_checked=accepted,complete=complete,index_bytes=index.bytes,route_bytes_peak=peak,route_budget_bytes=128*1024**2))
+ store.verify_reads();report=dict(status='ORIGINAL_WIDTH_GEOMETRY_AND_FRESH_SOURCE_VOID_CHECKS_PASS',source_sha256=binding['source_ref']['sha256'],raw_checkpoint_sha256=sha(old/'RAW_WIDTH_CHECKPOINT.json'),ledger=ledger,nominal_route_bytes_identical=True,records=records,scope='All original stage proofs and rejected trials remain unchanged. Every accepted ladder proposal and both complete scenes freshly satisfy the added physical/functional source-void predicate. No search, geometry substitution or tolerance waiver.')
+ body=p.canonical(report).decode()
+ if len(body)>16384:raise ValueError('SOURCE_VOID_REVALIDATION_REPORT_BUDGET_EXCEEDED')
+ return body
+
 
 def source_namespace(root,work):
  """A frozen app release has the same source authority as an evidence snapshot.
@@ -206,6 +269,23 @@ def inspect(old,through):
   if relative=='SOURCE_REVISION.json':continue
   current=ROOT/relative;actual=sha(current)
   if actual==expected:continue
+  from .prefix import source_void_t04_delta
+  if source_void_t04_delta(relative,expected,actual):
+   supplement=None if through=='t03'else source_void_supplement(old)
+   changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_SOURCE_VOID_T04_ONLY',source_void_supplement=supplement));continue
+  from .prefix import WIDTH_CORRECTION
+  if relative in WIDTH_CORRECTION and WIDTH_CORRECTION[relative]==(expected,actual):
+   # Only the exact qualified positive-operand subtraction/report correction.
+   # Above, every retained stage already proved PASS under the old checker;
+   # all candidate geometry, source identities and native stage proofs remain
+   # unchanged. Connected T04 is always freshly constructed after this legacy
+   # reference. This is not permission to retain a failed width decision.
+   changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_E10FCE9_CHECKER_DELTA; ORIGINAL_PASS_GEOMETRY_UNCHANGED'));continue
+  from .prefix import CONNECTED_PREPARATION
+  if CONNECTED_PREPARATION.get(relative)==(expected,actual):
+   # Legacy workers never call connected channel completion. Keep this
+   # exception bound to the exact coordinate-preserving metadata correction.
+   changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_CONNECTED_ONLY_NATIVE_PRECISION_METADATA_RESET'));continue
   if relative=='src/gerber_u05/pipeline.py':
    pipeline_same(file.read_text(),current.read_text(),through=through)
    if through=='t02'and not any(r['kind']=='rectangle'for r in scene['objects']):raise ValueError('EMPTY_T02_REQUIRES_FRESH_T02_VERIFICATION')

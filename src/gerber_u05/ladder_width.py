@@ -44,7 +44,17 @@ def run(store,scene,*,route_ids=None,settings=None):
         selected=solution['selected_scales'];full=p.PreparedWidthScene(baseline,fixed)
         checks={name:full.check(trial(selected,envelope),materialize_scene=True)
                 for name,envelope in (('nominal',False),('envelope',True))}
-        if not all(q['passed']for q in checks.values()):raise ValueError('T04_FRESH_FULL_FINAL_SCENE_REJECTED')
+        for name,envelope in (('nominal',False),('envelope',True)):
+            material={s:route(s,selected[s],envelope)for s in paths}
+            voids=[dict(scope=d.scope,**d.source_voids.complete(material,selected))for d in incremental.owner_checks]
+            checks[name]['original_source_voids']=voids
+            if any(not q['passed']for q in voids):
+                checks[name]['passed']=False
+                checks[name].setdefault('failures',[]).extend(f for q in voids for f in q['failures'])
+        if not all(q['passed']for q in checks.values()):
+            report=store.put_json('width-final-rejection',dict(schema='t04-complete-final-rejection/1',
+                solution=solution,checks=checks,settings=settings.resolved(),qualification='REJECTED_NOT_ACCEPTED'))
+            raise ValueError('T04_FRESH_FULL_FINAL_SCENE_REJECTED:'+p.canonical(report).decode('ascii'))
         after=dict(current);factors={}
         for s,path in paths.items():
             for m in path['source_ids']:after[m]=part(m,selected[s],False);factors[m]=selected[s]

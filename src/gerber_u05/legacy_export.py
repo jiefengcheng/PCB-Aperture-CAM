@@ -8,12 +8,18 @@ from .guard import verify_sources
 from gerbonara.rs274x import GerberFile
 from gerbonara.utils import MM
 from src.gerber_image import CompletionParser
-from src.pcb_data_abi.board_geometry import export_reference,bridge_contour,fidelity
+from src.pcb_data_abi.board_geometry import bridge_contour
+from src.native_grid_reference import reference as export_reference,fidelity
 from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM,GRID_MM
 from src.indexed_hausdorff import distance as image_hausdorff
 from src.native_boundary_metric import distance as boundary_distance
 from src.u05_board.export import export_region,actual_spindle_check
-from .export_absorption import supported_region
+from .export_absorption import compact_supported_region as supported_region
+from .native_spindle_operand import operand as native_spindle_operand
+from .exporter import treated_attachment_outcome
+from .native_assembly import assemble as assemble_native_material,weld as weld_native_material,canonical_parent
+from .contours import contours as serializable_contours
+from .compact_contours import contours as compact_t05_contours
 from src.junction_spindle_stage import prepare_spindle_context
 from src.junction_spindle_blend import spindle_blend
 from src.u05_board.attachment_export import obligation_check
@@ -92,7 +98,7 @@ def owned_grid_holes(shape,owner):
 
 
 def append_regions(shape,stage,sid,records,blocks,store,*,owner=None):
-    qualified=shape
+    qualified=shape;parents=[]
     # Nominal nearest-grid contours: inward padding changes overlap topology.
     # Construction margins remain in the source-stage proofs; actual native
     # clearance is checked separately against the production hard floor.
@@ -115,27 +121,45 @@ def append_regions(shape,stage,sid,records,blocks,store,*,owner=None):
         if absorbed:
             material=q;proof=dict(proof or {},redundant_owned_grid_holes=absorbed,
                                  encoded_reference_sha256=p.digest(p.to_wkb(q)))
-        points=bridge_contour(q);points=points+[points[0]]
-        # Kernel y-down -> original Gerber y-up. Every word is explicit, 1 nm.
-        xy=[(round(x*1e6),round(-y*1e6))for x,y in points]
-        if any(a==b for a,b in zip(xy,xy[1:])):raise ValueError('EXPORT_ZERO_LENGTH_GRID_EDGE')
-        block=['G04 qualified '+stage+' '+str(len(records))+'*','%LPD*%','G01*','G75*','D10*','G36*']
-        block+=['X'+str(x)+'Y'+str(y)+('D02*'if i==0 else'D01*')for i,(x,y)in enumerate(xy)];block+=['G37*']
-        blocks.append('\n'.join(block)+'\n');records.append(dict(stage=stage,source_id=sid,geometry_ref=p.geomref(store,material),reference_ref=p.geomref(store,q),raw_qualified_ref=raw_ref,normalization=normalization,component_reference_proof=proof))
+        serializer=compact_t05_contours if stage=='t05'else serializable_contours
+        serialized,partition_proof=serializer(q,bridge_contour,grid_mm=GRID_MM)
+        parents.append(canonical_parent(q,grid_mm=GRID_MM))
+        for part_index,(face,points)in enumerate(serialized):
+            points=points+[points[0]]
+            # Kernel y-down -> original Gerber y-up. Every word is explicit, 1 nm.
+            xy=[(round(x*1e6),round(-y*1e6))for x,y in points]
+            if any(a==b for a,b in zip(xy,xy[1:])):raise ValueError('EXPORT_ZERO_LENGTH_GRID_EDGE')
+            block=['G04 qualified '+stage+' '+str(len(records))+'*','%LPD*%','G01*','G75*','D10*','G36*']
+            block+=['X'+str(x)+'Y'+str(y)+('D02*'if i==0 else'D01*')for i,(x,y)in enumerate(xy)];block+=['G37*']
+            reference,face_proof=export_reference(face)
+            component_proof=dict(proof or {},**(face_proof or {}),partition_parent_reference_proof=dict(proof or {},export_reference_sha256=p.digest(p.to_wkb(q))),serialization_partition=partition_proof,serialization_part=part_index)
+            blocks.append('\n'.join(block)+'\n');records.append(dict(stage=stage,source_id=sid,geometry_ref=p.geomref(store,face),reference_ref=p.geomref(store,reference),raw_qualified_ref=raw_ref,normalization=normalization,component_reference_proof=component_proof))
+    return parents
 
-def preserve_point_contacts(owner,pieces,sid,records,blocks,store):
+def preserve_point_contacts(owner,pieces,sid,records,blocks,store,*,pregrid=None):
     before=owner.union(p.unary_union(pieces))
     if before.geom_type=='Polygon' and before.is_valid:return []
     if before.geom_type!='MultiPolygon' or not before.is_valid:raise ValueError('EXPORT_JUNCTION_INVALID_BEFORE_ENCODING_SUPPORT')
-    grid=.000001;caps=[]
+    grid=.000001;caps=[];connected=None
     for part in before.geoms:
         if part.intersection(owner).area>0:continue
         gap=part.distance(owner)
-        if part.area>grid*grid or gap>grid:raise ValueError('EXPORT_JUNCTION_COMPONENT_NOT_FILE_GRID_POINT_CONTACT')
+        if gap>grid:raise ValueError('EXPORT_JUNCTION_COMPONENT_NOT_FILE_GRID_POINT_CONTACT')
+        large=part.area>grid*grid
+        if large:
+            if pregrid is None:raise ValueError('EXPORT_JUNCTION_COMPONENT_NOT_FILE_GRID_POINT_CONTACT')
+            if connected is None:
+                model_owner,region=pregrid;qualified=model_owner.union(region)
+                if not qualified.is_valid or qualified.geom_type!='Polygon':raise ValueError('EXPORT_UNQUALIFIED_PREGRID_CONNECTED_SURFACE')
+                connected=dict(schema='source-qualified-pregrid-connected-surface/1',
+                               model_owner_ref=p.geomref(store,model_owner),region_ref=p.geomref(store,region),
+                               connected_surface_sha256=p.digest(p.to_wkb(qualified)),
+                               role='TOPOLOGY_WITNESS_ONLY; actual file fidelity and all native stage checks remain mandatory')
         point=nearest_points(owner,part)[0];x,y=round(point.x,6),round(point.y,6)
         cap=p.Polygon([(round(x-grid,6),y),(x,round(y-grid,6)),(round(x+grid,6),y),(x,round(y+grid,6))])
         first=len(records);append_regions(cap,'t05',sid,records,blocks,store)
         proof=dict(reason='One-grid cap at minimum-grid component point contact; triangle retained, no topology/tolerance waiver',component_sha256=p.digest(p.to_wkb(part)),component_area_mm2=part.area,gap_to_encoded_owner_mm=gap,cap_radius_mm=grid)
+        if large:proof=dict(proof,reason='Restore a source-qualified pre-grid connection after native rounding; unchanged one-grid cap and two-nanometre fidelity bounds',pregrid_connection=connected)
         for row in records[first:]:row['encoding_support']=proof;caps.append(p.geometry(store,row['geometry_ref']))
     after=owner.union(p.unary_union([*pieces,*caps]));distance=boundary_distance(before,after);area=before.symmetric_difference(after).area;bound=2*before.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
     if after.geom_type!='Polygon' or not after.is_valid or not math.isfinite(distance)or distance>POLYGON_TOLERANCE_MM or area>bound:raise ValueError('EXPORT_POINT_CONTACT_SUPPORT_NOT_QUALIFIED')
@@ -160,14 +184,14 @@ def construct(run):
         value=p.load(run/(stage+'.json'));scene=store.get_json(value['output_scene_ref'],kind='scene');rows,after,_=p.operands(store,scene)
         for sid,g in sorted(after.items()):
             if sid not in current or p.to_wkb(g)!=p.to_wkb(current[sid]):
-                first=len(records);append_regions(g,stage,sid,records,blocks,store);parts=[p.geometry(store,row['geometry_ref'])for row in records[first:]];encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parts])
+                parts=append_regions(g,stage,sid,records,blocks,store);encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parts])
         current=after
     value=p.load(run/'t05.json');prepared=store.get_json(value['plan']['scene_ref'],kind='scene');policy=store.get_json(value['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']))
     objects={row['source_id']:row for row in prepared['objects']}
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support,_support_mode=supported_region(addition,owner,domain);first=len(records);append_regions(region,'t05',d['source_id'],records,blocks,store,owner=owner)
-        members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=encoded_route_owner(encoded_current,members,d['land_ids'],d['source_id']);pieces=[p.geometry(store,row['geometry_ref'])for row in records[first:]];preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store)
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support,_support_mode=supported_region(addition,owner,domain);pieces=append_regions(region,'t05',d['source_id'],records,blocks,store,owner=owner)
+        members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=encoded_route_owner(encoded_current,members,d['land_ids'],d['source_id']);preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store,pregrid=(owner,region))
     adapter.close();body=(base+'\n'+''.join(blocks)+'M02*\n').encode('ascii');store.verify_reads();verify_sources(run)
     return body,dict(source_sha256=binding['source_ref']['sha256'],coordinate_oracle=oracle,records=records,generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()),profile='GERBER_SOURCE_ONLY; KiCad source/write/plot N/A; positive appended contours, original ordered clear operations retained')
 
@@ -180,32 +204,45 @@ def original_contact_port(overlap,width,contact):
     return port,dict(original_contact=True,raw_source_port_sha256=p.digest(p.to_wkb(raw)),native_port_sha256=p.digest(p.to_wkb(port)),file_uncertainty_mm=POLYGON_TOLERANCE_MM)
 
 
-def native_model_reference(run,store,before):
-    binding=p.load(run/'source.json');source=store.get_json(binding['scene_ref'],kind='scene');source_rows={r['source_id']:r for r in source['objects']};value=p.load(run/'t05.json');final=store.get_json(value['output_scene_ref'],kind='scene');references=[];inventory=[]
-    def prepare(shape,sid,owner=None):
+def native_model_reference(run,store,before,*,include_parents=False):
+    binding=p.load(run/'source.json');source=store.get_json(binding['scene_ref'],kind='scene');source_rows={r['source_id']:r for r in source['objects']};value=p.load(run/'t05.json');final=store.get_json(value['output_scene_ref'],kind='scene');references=[];inventory=[];parents=[]
+    def prepare(shape,sid,stage,owner=None):
         normalized,_connectivity=connected_native_normalization(shape);area=shape.symmetric_difference(normalized).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
         if normalized.is_empty or not normalized.is_valid or normalized.geom_type not in('Polygon','MultiPolygon')or area>bound:raise ValueError('NATIVE_MODEL_REFERENCE_NORMALIZATION_FAILED:'+sid)
         parts=[normalized]if normalized.geom_type=='Polygon'else list(normalized.geoms)
-        for part in parts:
-            reference,proof=export_reference(part);reference,absorbed=owned_grid_holes(reference,owner);references.append(reference);inventory.append(dict(source_id=sid,qualified_sha256=p.digest(p.to_wkb(shape)),native_reference_sha256=p.digest(p.to_wkb(reference)),normalization_area_mm2=area,normalization_area_bound_mm2=bound,redundant_owned_grid_holes=absorbed))
+        material=[]
+        for part in sorted(parts,key=p.to_wkb):
+            reference,proof=export_reference(part);reference,absorbed=owned_grid_holes(reference,owner);sha=p.digest(p.to_wkb(reference));references.append(reference);parents.append(((stage,sid,sha),reference));material.append(canonical_parent(reference,grid_mm=GRID_MM));inventory.append(dict(stage=stage,source_id=sid,qualified_sha256=p.digest(p.to_wkb(shape)),native_reference_sha256=sha,normalization_area_mm2=area,normalization_area_bound_mm2=bound,redundant_owned_grid_holes=absorbed))
+        return material
     if not set(source_rows)<={r['source_id']for r in final['objects']}:raise ValueError('NATIVE_REFERENCE_SOURCE_OCCURRENCE_MISSING')
-    aliases=0
-    for row in final['objects']:
-        # Trace rows are immutable reference views; CoverageAdapter's material
-        # ledger excludes them. Original material strokes remain included.
-        if row['kind']=='trace':aliases+=1;continue
-        if row['kind']=='junction_addition':continue
-        sid=row['source_id']
-        if sid not in source_rows or row['geometry_ref']!=source_rows[sid]['geometry_ref']:prepare(p.geometry(store,row['geometry_ref']),sid)
-    prepared=store.get_json(value['plan']['scene_ref'],kind='scene');policy=store.get_json(value['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']))
+    aliases=sum(row['kind']=='trace'for row in final['objects'])
+    # Nearest-grid conversion is not monotone. Recompile the complete immutable
+    # model history of this append-only file, including earlier native copper.
+    # No generated ledger or exported face participates in the reference.
+    _,current,_=p.operands(store,source);encoded_current=dict(current)
+    for stage in ORDER[:-1]:
+        scene=store.get_json(p.load(run/(stage+'.json'))['output_scene_ref'],kind='scene');_,after,_=p.operands(store,scene)
+        for sid,shape in sorted(after.items()):
+            if sid not in current or p.to_wkb(shape)!=p.to_wkb(current[sid]):
+                parts=prepare(shape,sid,stage);encoded_current[sid]=p.unary_union([*([encoded_current[sid]]if sid in encoded_current else[]),*parts])
+        current=after
+    prepared=store.get_json(value['plan']['scene_ref'],kind='scene');objects={r['source_id']:r for r in prepared['objects']};policy=store.get_json(value['plan']['policy_ref'],kind='policy');adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']))
     try:
         for d in value['candidate']['decisions']:
             if d['status']!='GROWN':continue
-            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_,_support_mode=supported_region(p.geometry(store,d['patch_ref']),owner,domain);prepare(region,d['source_id'],owner)
+            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_,_support_mode=supported_region(p.geometry(store,d['patch_ref']),owner,domain);parts=prepare(region,d['source_id'],'t05',owner)
+            # Reconstruct bounded encoding support from immutable models, not
+            # the generated ledger. The constructor and reference must account
+            # for the same legal one-grid material before global assembly.
+            members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=encoded_route_owner(encoded_current,members,d['land_ids'],d['source_id']);support_rows=[]
+            preserve_point_contacts(encoded_owner,parts,d['source_id'],support_rows,[],store,pregrid=(owner,region))
+            for row in support_rows:
+                support=p.geometry(store,row['reference_ref']);sha=p.digest(p.to_wkb(support));references.append(support);parents.append((('t05',d['source_id'],sha),support));inventory.append(dict(stage='t05',source_id=d['source_id'],native_reference_sha256=sha,encoding_support=row['encoding_support']))
     finally:adapter.close()
-    expected=union_all([before,*references],grid_size=GRID_MM)
+    expected=assemble_native_material(before,references,grid_mm=GRID_MM)
     if expected.is_empty or not expected.is_valid or expected.area<=0:raise ValueError('NATIVE_AGGREGATE_REFERENCE_INVALID')
-    return expected,dict(basis='Immutable original source plus independently prepared source/model native contours on the existing file grid; no generated ledger used',source_objects=len(source_rows),nonmaterial_route_views=aliases,reference_parts=len(references),grid_mm=GRID_MM,inventory=inventory,raw_decision_image_ref=value['candidate']['after_ref'])
+    proof=dict(basis='Immutable original source plus every qualified intermediate source-stage native contribution, source-bound junction and independently reconstructed bounded one-grid encoding support; no generated ledger used',source_objects=len(source_rows),nonmaterial_route_views=aliases,reference_parts=len(references),grid_mm=GRID_MM,inventory=inventory,raw_decision_image_ref=value['candidate']['after_ref'])
+    return(expected,proof,parents)if include_parents else(expected,proof)
 
 
 def check(run,body,ledger):
@@ -219,9 +256,15 @@ def check(run,body,ledger):
         if type(a)!=type(b)or a.polarity_dark!=b.polarity_dark or boundary_distance(ga,gb)>1e-8 or ga.symmetric_difference(gb).area>2*ga.length*1e-8:raise ValueError('ORIGINAL_PLOTTING_ATOM_CHANGED:'+str(i))
         source_shapes.append((gb,b.polarity_dark));reference_source_shapes.append((ga,a.polarity_dark))
     before=p.affine_scale(p.source_profile.ordered(source_shapes),1,-1,origin=(0,0));by_stage=collections.defaultdict(dict);observed=[]
+    reference_before=p.affine_scale(p.source_profile.ordered(reference_source_shapes),1,-1,origin=(0,0));expected,reference_proof,native_parents=native_model_reference(run,store,reference_before,include_parents=True)
     for i,(obj,row)in enumerate(zip(actual.objects[n:],ledger['records'])):
         if not obj.polarity_dark or not isinstance(obj,p.go.Region):raise ValueError('APPENDED_REGION_ROLE_OR_POLARITY_CHANGED')
         g,_=p.source_profile.object_geometry(obj);g=p.affine_scale(g,1,-1,origin=(0,0));reference=p.geometry(store,row['geometry_ref']);proofs.append(dict(ordinal=n+i,stage=row['stage'],source_id=row['source_id'],**fidelity(reference,g)));observed.append(g);d=by_stage[row['stage']];d.setdefault(row['source_id'],[]).append(g)
+    raw_observed=observed
+    welded,material_proof=weld_native_material(ledger['records'],raw_observed,native_parents,grid_mm=GRID_MM)
+    observed=[];by_stage=collections.defaultdict(dict)
+    for (stage,sid,sha),shape in welded:
+        observed.append(shape);by_stage[stage].setdefault(sid,[]).append(shape)
     # Actual Gerber is an exact append-only constructive set: the original
     # source prefix is independently verified above, all additions are parsed
     # positive regions, and every later stage adds to its exact predecessor.
@@ -311,10 +354,11 @@ def check(run,body,ledger):
     adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']));preimage=p.unary_union(list(current.values()));patches=[]
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);declared_domain=declared_domains[d['source_id']];parts=by_stage['t05'][d['source_id']];addition=p.unary_union(parts).difference(preimage);patches.append(dict(id=d['source_id'],owner=owner,regions=parts,addition=addition,window=declared_domain.buffer(POLYGON_TOLERANCE_MM),foreign=foreign))
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);declared_domain=declared_domains[d['source_id']];parts=by_stage['t05'][d['source_id']];addition=native_spindle_operand(parts);patches.append(dict(id=d['source_id'],owner=owner,regions=parts,addition=addition,net_addition=addition.difference(preimage),window=declared_domain.buffer(POLYGON_TOLERANCE_MM),foreign=foreign))
     adapter.close();checks['t05']=[]
     for patch in patches:
         q=actual_spindle_check(patch['owner'],patch['regions'],patch['addition'],patch['window'],original_foreign(patch['id'],patch['foreign']+[(other['id'],other['addition'])for other in patches if other['id']!=patch['id']]))
+        q['additive_operand_basis']=dict(policy='ACTUAL_PARSED_POSITIVE_APPEND_REGIONS_INCLUDING_OWNER_ENCODING_SUPPORT',net_added_area_mm2=patch['net_addition'].area,positive_operand_area_mm2=patch['addition'].area,clearance_scope='Complete positive operand; conservative relative to net-only testing',delta_reassembly_tolerance_unchanged=True)
         p.save(run/'export'/('junction_'+sys.argv[2]+'_'+str(len(checks['t05']))+'.json'),dict(source_id=patch['id'],check=q)) if __name__=='__main__' else None
         if not q['passed']:raise ValueError('ACTUAL_GERBER_JUNCTION_CHECK_FAILED:'+patch['id']+':'+str(q['failures']))
         checks['t05'].append(dict(source_id=patch['id'],check=q))
@@ -326,18 +370,18 @@ def check(run,body,ledger):
         if len(needs)!=len(d['attachment_outcomes']):raise ValueError('ACTUAL_ATTACHMENT_INVENTORY_CHANGED')
         for need,outcome in zip(needs,d['attachment_outcomes']):
             if any(outcome[k]!=need[k]for k in('id','land_id','reference_land_id','required_reference')):raise ValueError('ACTUAL_ATTACHMENT_MEMBERSHIP_CHANGED')
-            if outcome['status']=='TREATED_VERIFIED':q=obligation_check(selected.intersection(need['window']),preimage,parts)
-            elif outcome['status']=='ALREADY_SATISFIED_VERIFIED':q=obligation_check(desired.intersection(need['window']),preimage,[],already=True)
-            elif outcome['status']=='BLOCKED_CLEARANCE_OR_BOUNDARY'and not outcome['required_reference']:q=dict(passed=False,status='BLOCKED_NOT_COUNTED_AS_COVERED')
+            if outcome['status']=='TREATED_VERIFIED':actual=treated_attachment_outcome(selected.intersection(need['window']),desired.intersection(need['window']),preimage,parts)
+            elif outcome['status']=='ALREADY_SATISFIED_VERIFIED':actual=dict(status=outcome['status'],check=obligation_check(desired.intersection(need['window']),preimage,[],already=True))
+            elif outcome['status']=='BLOCKED_CLEARANCE_OR_BOUNDARY'and not outcome['required_reference']:actual=dict(status=outcome['status'],check=dict(passed=False,status='BLOCKED_NOT_COUNTED_AS_COVERED'))
             else:raise ValueError('ACTUAL_ATTACHMENT_OUTCOME_NOT_QUALIFIED')
-            attachments.append(dict(id=outcome['id'],status=outcome['status'],check=q))
+            attachments.append(dict(id=outcome['id'],source_model_status=outcome['status'],**actual))
     adapter.close();checks['attachment_obligations']=attachments
-    after=before.union(p.unary_union(observed));reference_before=p.affine_scale(p.source_profile.ordered(reference_source_shapes),1,-1,origin=(0,0));expected,reference_proof=native_model_reference(run,store,reference_before);actual_grid=union_all([before,*observed],grid_size=GRID_MM);distance,metric=image_hausdorff(actual_grid,expected,tolerance=POLYGON_TOLERANCE_MM);area=actual_grid.symmetric_difference(expected).area;bound=2*expected.length*POLYGON_TOLERANCE_MM
+    after=before.union(p.unary_union(observed));actual_grid=assemble_native_material(before,observed,grid_mm=GRID_MM);distance,metric=image_hausdorff(actual_grid,expected,tolerance=POLYGON_TOLERANCE_MM);area=actual_grid.symmetric_difference(expected).area;bound=2*expected.length*POLYGON_TOLERANCE_MM
     raw_decision_image=p.from_wkb(store.get(value['candidate']['after_ref'],kind='geometry'));raw_area=after.symmetric_difference(raw_decision_image).area;raw_area_bound=2*raw_decision_image.length*POLYGON_TOLERANCE_MM
     if not raw_decision_image.is_valid or raw_area>raw_area_bound:raise ValueError('RAW_MODEL_IMAGE_AREA_FIDELITY_FAILED')
     if not all(math.isfinite(v) for v in (distance,area,bound)) or distance>POLYGON_TOLERANCE_MM or area>bound or before.difference(after).area>1e-12:raise ValueError('ACTUAL_FINAL_COPPER_FIDELITY_OR_PRESERVATION_FAILED')
     store.verify_reads();verify_sources(run)
-    result=dict(status='PASS',source_objects_preserved=n,source_clear_operations_preserved=sum(not o.polarity_dark for o in original.objects),appended_positive_regions=len(observed),actual_hard_gap_mm=p.HARD_GAP_MM,contour_proofs=proofs,actual_scene_checks=checks,exact_append_only_core_proofs=core_evidence,native_model_reference=reference_proof,aggregate_metric=metric,raw_model_image_comparison=dict(reference_type=raw_decision_image.geom_type,symmetric_difference_mm2=raw_area,area_bound_mm2=raw_area_bound,role="Decision image; native boundary fidelity uses the declared file-grid reference"),final_copper=dict(hausdorff_mm=distance,symmetric_difference_mm2=area,area_bound_mm2=bound,original_area_mm2=before.area,final_area_mm2=after.area,added_area_mm2=after.difference(before).area),generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()))
+    result=dict(status='PASS',source_objects_preserved=n,source_clear_operations_preserved=sum(not o.polarity_dark for o in original.objects),appended_positive_regions=len(raw_observed),native_material_assembly=material_proof,actual_hard_gap_mm=p.HARD_GAP_MM,contour_proofs=proofs,actual_scene_checks=checks,exact_append_only_core_proofs=core_evidence,native_model_reference=reference_proof,aggregate_metric=metric,raw_model_image_comparison=dict(reference_type=raw_decision_image.geom_type,symmetric_difference_mm2=raw_area,area_bound_mm2=raw_area_bound,role="Decision image; native boundary fidelity uses the declared file-grid reference"),final_copper=dict(hausdorff_mm=distance,symmetric_difference_mm2=area,area_bound_mm2=bound,original_area_mm2=before.area,final_area_mm2=after.area,added_area_mm2=after.difference(before).area),generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()))
 
     from src import source_channel_scope
     functional=source_channel_scope.ACTIVE
