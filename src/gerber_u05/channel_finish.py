@@ -1,6 +1,6 @@
 """Intra-step completion extends existing functional-channel material surfaces."""
 import collections
-from shapely import to_wkb
+from shapely import to_wkb,get_precision,set_precision
 from . import pipeline as p
 from src import component_clearance as cc
 from src.component_voids import plan,parts,joined
@@ -9,8 +9,19 @@ from src.growth_void_encoding import filled_surface
 from src.native_grid_reference import reference as export_reference,normalize as native_grid
 from src.source_channel_scope import physical_owner
 from .channel_material import check_owned
-from src.pin_separation import native_parent as canonical_parent
+from src.pin_separation import native_parent as profiled_parent
 from src.pcb_data_abi.geometry import GRID_MM
+
+def canonical_parent(reference,*,grid_mm):
+ # Keep the existing pin-profile integer canonicalization, then remove only
+ # GEOS precision metadata. A fixed-grid parent can otherwise make a mixed
+ # union snap the unchanged analytic source. Native coordinates stay exact;
+ # their serialization grid and every subsequent source/clearance check stay.
+ value=profiled_parent(reference,grid_mm=grid_mm)
+ if get_precision(value)==0:return value
+ plain=set_precision(value,0)
+ if to_wkb(value)!=to_wkb(plain):raise ValueError('NATIVE_PARENT_PRECISION_RESET_CHANGED_COORDINATES')
+ return plain
 
 def native_before_owned(store,scene,binding,junction_result=None):
  from .exporter import prepare_export_region

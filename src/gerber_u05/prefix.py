@@ -6,6 +6,7 @@ WIDTH_CORRECTION={
  'src/component_clearance.py':('957f90407b119660bffd6946320b0af398b3ee1d6402a1cfb8b1a9694dd0b904','8a705db3911686d2bb760cde74c484a16243487013e2798148bdf038886fb72d'),
  'src/prepared_width_scene.py':('6ed21e7cebd6395f8a7e29215282832a81bdbb8dd16386202e58fe019bd4ce2d','6c3f5a1d8f3ab2eb2e5482e7227af14339a4cd57fcae488d5d6b3acefd516782'),
  'src/gerber_u05/ladder_width.py':('e97b3bc77b97f292194b196d4e5bd7e2164745bb6b747c10e5003905bca1a112','5ba74cca9e73802c00444f3289ebca455254156eceaf3874a48040d930b33f95')}
+CONNECTED_PREPARATION={'src/gerber_u05/channel_finish.py':('9eb20e39363b8eeea25fce0872619373547967a4d9bc08d096c2431f41e91dd6','b9ff517b1c48fae0604f2c753a91d3252bccfb77bd1dd87851b10a4b15fadf8b')}
 
 def retained_stages(stages):
  stages=tuple(stages)
@@ -24,7 +25,7 @@ def require_retained_t03(run):
  summary=load(Path(run)/'t03.json')['summary']
  if summary.get('moved')!=0 or summary.get('disposition')!='NO_CHANGE_REQUIRED':raise ValueError('REUSED_T03_MOVEMENT_REQUIRES_FRESH_QUALIFICATION')
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/contours.py','src/gerber_u05/exporter.py','src/gerber_u05/render.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/controls.py','src/gerber_u05/delivery.py'}
-DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py','src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py'})
+DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py','src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py','src/gerber_u05/legacy_prefix.py'})
 EQUIVALENT={
  'src/gerber_u05/prior_copper.py':('6b9858d2fa67c3917b79d7ceaecdf0f1588e751231c2a3398127bf946f354676','f1280dc37961373a01cf578f6b5815ee694c2462b3f5aeb2045294eb1d187cf1','Move the unchanged strict shared-gap predicate to the complete actually adopted T05 floor. local_floor, all geometry and numerical predicates, CoverageAdapter and the cc.ACTIVE=None legacy early return are unchanged. Upstream T01/T03/T04/T02 do not call this preparation; legacy T05 retains its original adapter descriptor. The actual retained T02 case passes all 20 gap spans / 40 boundaries with identical adopted geometry.'),
  'src/gerber_u05/channel_prior.py':('b35cc910bce1c94208d9e6a678828912b5400edfcd27509dc46c8e7a0193f478','665a57635e20fb8ddc86dbb036e6fa4c1002b45ea95d906b0ae8a7db9a9b28fa','Move only the strict gap check after existing T05 channel-floor selection. Every owner, channel, physical, source and floor check remains; no geometry or tolerance change. This module is called only by connected T05 prior preparation, never the retained legacy/reference or T01-through-T02 construction. Exact hash pair only; arbitrary changes remain rejected.'),
@@ -105,6 +106,16 @@ def support_normalization_same(before,after):
  if remove.count!=3 or ast.dump(tree,include_attributes=False)!=ast.dump(ast.parse(before),include_attributes=False):raise ValueError('REUSED_SUPPORT_NORMALIZATION_DELTA_CHANGED')
  return dict(status='EXACT_QUALIFIED_SUPPORT_NORMALIZATION_DELTA',added_calls=3,unchanged_geometry_predicates=True)
 
+def legacy_export_encoding_same(before,after):
+ dump=lambda node:ast.dump(node,include_attributes=False)
+ old=ast.parse('from .export_absorption import supported_region').body[0]
+ new=ast.parse('from .export_absorption import compact_supported_region as supported_region').body[0]
+ tree=ast.parse(after);matches=[i for i,node in enumerate(tree.body)if dump(node)==dump(new)]
+ if len(matches)!=1:raise ValueError('REUSED_LEGACY_EXPORT_ENCODING_DELTA_CHANGED')
+ tree.body[matches[0]]=old
+ if dump(tree)!=dump(ast.parse(before)):raise ValueError('REUSED_LEGACY_EXPORT_ENCODING_DELTA_CHANGED')
+ return dict(status='EXACT_CONSTRUCTION_AND_NATIVE_MODEL_SUPPORT_IMPORT_ONLY',scope='Retained reference Gerber, ledger and paired native proofs remain unchanged; parsing, source identity, every metric and all other functions are unchanged.')
+
 def verify_code(original,root,old_root,*,stages=STAGES):
  stages=retained_stages(stages);results=[];root=Path(root);old_root=Path(old_root)
  for name,expected in original['files'].items():
@@ -115,8 +126,12 @@ def verify_code(original,root,old_root,*,stages=STAGES):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if relative=='src/gerber_u05/legacy_export.py':
+   results.append(dict(path=relative,proof=legacy_export_encoding_same(path.read_text(),current.read_text())));continue
   if stages==('t01','t03')and WIDTH_CORRECTION.get(relative)==(expected,actual):
    results.append(dict(path=relative,scope='Exact e10fce9 positive-operand width delta correction and rejection evidence only. Retain connected T01 and zero-movement T03; T04 and every downstream operation run fresh. Previously passed legacy geometry and its native export remain immutable.',before_sha256=expected,after_sha256=actual));continue
+  if stages==('t01','t03')and CONNECTED_PREPARATION.get(relative)==(expected,actual):
+   results.append(dict(path=relative,scope='Exact coordinate-preserving native precision-metadata reset inside connected T04/T05 completion only. Retain T01 and zero-movement T03; no connected T04/T02 completion reused.',before_sha256=expected,after_sha256=actual));continue
   if relative=='src/t02_shared_gaps.py':
    results.append(dict(path=relative,proof=shared_gap_restore_same(path.read_text(),current.read_text())));continue
   if relative=='src/gerber_u05/pipeline.py':

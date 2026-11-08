@@ -215,6 +215,11 @@ def inspect(old,through):
    # unchanged. Connected T04 is always freshly constructed after this legacy
    # reference. This is not permission to retain a failed width decision.
    changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_E10FCE9_CHECKER_DELTA; ORIGINAL_PASS_GEOMETRY_UNCHANGED'));continue
+  from .prefix import CONNECTED_PREPARATION
+  if CONNECTED_PREPARATION.get(relative)==(expected,actual):
+   # Legacy workers never call connected channel completion. Keep this
+   # exception bound to the exact coordinate-preserving metadata correction.
+   changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_CONNECTED_ONLY_NATIVE_PRECISION_METADATA_RESET'));continue
   if relative=='src/gerber_u05/pipeline.py':
    pipeline_same(file.read_text(),current.read_text(),through=through)
    if through=='t02'and not any(r['kind']=='rectangle'for r in scene['objects']):raise ValueError('EMPTY_T02_REQUIRES_FRESH_T02_VERIFICATION')
