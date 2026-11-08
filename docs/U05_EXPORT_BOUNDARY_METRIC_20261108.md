@@ -44,17 +44,36 @@ claimed producer. A three-generation regression retains the different original
 T01 and T05 producers; altered metric policy/geometry still rejects.
 
 The final focused run passes 638 tests, including board hole/contour controls,
-actual metric parity, bounded metric use and prefix ancestry. Native synthetic
-qualification and a fresh independent export continuation remain pending at
-this coding checkpoint. The old construction cannot substitute for that fresh
-construction, paired evaluation, native reparse, corruption, defect or rendering
-work. The new generator must not read the old export; comparison is separate.
+actual metric parity, bounded metric use and prefix ancestry. All 47 native
+synthetic operations subsequently passed, including actual export/reparse,
+corruption controls, defect auditing and rendering. That fixture does not
+establish whole-board qualification.
+
+Fresh 3020212849 reference construction passed in 505.285 seconds and produced
+79,876,839 bytes, exactly matching the preserved construction's SHA-256
+`dcaad0fa7f9df1a6022b9c2d8df73c3c1e98d89820e7a91f91ed9a50ba270331`.
+The old file was not an input to generation: a separate validator compared it
+after construction. The observed construction time is about 31% lower than
+732.163 seconds, with different prefix ancestry and background work; this is
+not an uncontended end-to-end benchmark. Both native whole-board export
+evaluations are still running. Reference remedy, connected stages and final
+export/reparse, corruption, defect and rendering checks remain required before
+delivery. Byte equality cannot substitute for those checks or authorize
+integration.
+
+3020212866 is qualifying in a second isolated lane using the same frozen code,
+following the user's PCB-artwork-only scope confirmation. All three fresh
+source assembly operations passed before T01 began. The two-lane plan leaves
+all per-job checks and budgets unchanged; the consolidated release remains
+inactive. No new full 3020212826 run is authorized.
 
 Evidence is under `out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/`
 `export_inclusive_identity_01/remaining_boards_01/shared_gap_entry_contour_01/`
 `legacy_export_metric_01/`: `actual_metric_parity_01/RESULT.json`,
 `PREFIX_INSPECTION_02.json`, `FAILED_EXPORT_EVIDENCE_CUSTODY_01.json`,
-`CONTROLLED_EXPORT_STOP_02.json`, `FOCUSED_METRIC_02.log`. The parent
+`CONTROLLED_EXPORT_STOP_02.json`, `FOCUSED_METRIC_02.log`,
+`SYNTHETIC_QUALIFICATION_01.json`, `FRESH_REFERENCE_BYTE_PARITY_01.json` and
+`LIVE_JOB_03.json`. The parent
 `t05_memory_01/LEGACY_EXPORT_SAMPLE_01.txt` retains the original native profile.
 Record01 was an unexecuted constructor stop intent: that constructor had
 already passed and was never signaled. Record02 identifies the two evaluations
