@@ -20,7 +20,7 @@ CONNECTED_PREPARATION={'src/gerber_u05/channel_finish.py':('9eb20e39363b8eeea25f
 
 def retained_stages(stages):
  stages=tuple(stages)
- if stages not in (('t01','t03'),STAGES):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
+ if stages not in ((),('t01','t03'),STAGES):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
  return stages
 
 def operation_keys(stages):
@@ -35,6 +35,8 @@ def connected_visual_evidence(binding):
  stages=retained_stages(binding['reused_stages'])
  count=len(operation_keys(stages))
  if binding['retained_operation_count']!=count:raise ValueError('VISUAL_REUSED_EVIDENCE_SCOPE_CHANGED')
+ if stages==():
+  return 'Incremental qualification: 23 source/reference operations are retained with original native proofs and hashes. T01, T03, T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
  if stages==('t01','t03'):
   return 'Incremental qualification: 29 unchanged source/reference/T01/T03 operations are retained with original native proofs and hashes. T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
  return 'Incremental qualification: 35 unchanged source/reference/T01/T03/T04/T02 operations are retained with original native proofs and hashes. T05 is newly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
@@ -44,6 +46,21 @@ def require_retained_t03(run):
  if summary.get('moved')!=0 or summary.get('disposition')!='NO_CHANGE_REQUIRED':raise ValueError('REUSED_T03_MOVEMENT_REQUIRES_FRESH_QUALIFICATION')
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/contours.py','src/gerber_u05/exporter.py','src/gerber_u05/render.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/controls.py','src/gerber_u05/delivery.py'}
 DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py','src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py','src/gerber_u05/legacy_prefix.py'})
+NATIVE_FLOOR_CHECK={
+ 'src/gerber_u05/prior_copper.py':('f1280dc37961373a01cf578f6b5815ee694c2462b3f5aeb2045294eb1d187cf1','5bcd448cb7e231c518ad737072d5feccacb489dd7bab1dc797c29cd9e46743bf'),
+ 'src/gerber_u05/channel_prior.py':('665a57635e20fb8ddc86dbb036e6fa4c1002b45ea95d906b0ae8a7db9a9b28fa','cdbfc5d1e69211b303dbcb0556b8806a66baf89bf78b1137dcb84fadf1acf73f')}
+
+STAGE_ENTRY_T05_ONLY={'src/gerber_u05/prior_copper.py': ('5bcd448cb7e231c518ad737072d5feccacb489dd7bab1dc797c29cd9e46743bf', '8e9b7da8352e41212f6887ecf3c4ee4685adf40cf742f10cc836408b8246c13e'), 'src/gerber_u05/channel_prior.py': ('cdbfc5d1e69211b303dbcb0556b8806a66baf89bf78b1137dcb84fadf1acf73f', '77e0e73cccdd51adcdfc7b1e687816770ef3e35bbaa25962d151a2a4bbac8dfc')}
+
+def stage_entry_delta(relative,before,after):
+ known=STAGE_ENTRY_T05_ONLY.get(relative);native=NATIVE_FLOOR_CHECK.get(relative)
+ return known is not None and native is not None and before in(native[0],known[0])and after==known[1]and native[1]==known[0]
+
+REFERENCE_BOUNDARY_COORDINATOR={'src/gerber_u05/hole_policy_prefix.py': ('a0b7226c83fea9cb035ca0801eda224a1b5470b414aff724c1480275bf6b0600', 'b83b92a5f3f82af03e18dd9c48092c072fc86df9745dfd5638de5b7e1d59eccf')}
+
+def native_floor_check_delta(relative,before,after):
+ return NATIVE_FLOOR_CHECK.get(relative)==(before,after)
+
 EQUIVALENT={
  'src/gerber_u05/prior_copper.py':('6b9858d2fa67c3917b79d7ceaecdf0f1588e751231c2a3398127bf946f354676','f1280dc37961373a01cf578f6b5815ee694c2462b3f5aeb2045294eb1d187cf1','Move the unchanged strict shared-gap predicate to the complete actually adopted T05 floor. local_floor, all geometry and numerical predicates, CoverageAdapter and the cc.ACTIVE=None legacy early return are unchanged. Upstream T01/T03/T04/T02 do not call this preparation; legacy T05 retains its original adapter descriptor. The actual retained T02 case passes all 20 gap spans / 40 boundaries with identical adopted geometry.'),
  'src/gerber_u05/channel_prior.py':('b35cc910bce1c94208d9e6a678828912b5400edfcd27509dc46c8e7a0193f478','665a57635e20fb8ddc86dbb036e6fa4c1002b45ea95d906b0ae8a7db9a9b28fa','Move only the strict gap check after existing T05 channel-floor selection. Every owner, channel, physical, source and floor check remains; no geometry or tolerance change. This module is called only by connected T05 prior preparation, never the retained legacy/reference or T01-through-T02 construction. Exact hash pair only; arbitrary changes remain rejected.'),
@@ -148,9 +165,19 @@ def verify_code(original,root,old_root,*,stages=STAGES):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if REFERENCE_BOUNDARY_COORDINATOR.get(relative)==(expected,actual):
+   results.append(dict(path=relative,scope='Exact proof-only reference boundary extension; existing T01/T03 policy transition and all geometry code unchanged.',before_sha256=expected,after_sha256=actual));continue
+  if relative=='src/gerber_u05/component_stages.py':
+   from .t01_delta_compat import known,prove
+   if known(expected,actual):
+    results.append(dict(path=relative,proof=prove(path.read_text(),current.read_text()),scope='Retained PASS geometry unchanged; corrected positive-material predicate runs for fresh connected T01 only.'));continue
+  if stage_entry_delta(relative,expected,actual):
+   results.append(dict(path=relative,scope='Exact T05-only qualified T02 entry authority. Upstream stages unchanged; T05 and export run fresh.',before_sha256=expected,after_sha256=actual));continue
+  if native_floor_check_delta(relative,expected,actual):
+   results.append(dict(path=relative,scope='Exact T05-only adopted native-floor check: use existing final-reparse fidelity for native-grid boundary comparison. local_floor geometry, exact model default, CoverageAdapter and legacy cc.ACTIVE=None behavior unchanged. Retained T01/T03/T04/T02 generation is unchanged; every T05 and final native check runs fresh.',before_sha256=expected,after_sha256=actual));continue
   from .hole_policy_prefix import allowed_delta as hole_policy_delta
   if hole_policy_delta(relative,expected,actual,stages,root):
-   results.append(dict(path=relative,scope='Exact owner-authorized ordinary-hole policy relaxation. Retain only previously qualified T01 and zero-movement T03 geometry; T04 and later run fresh. Source ancestry is optional; all non-hole constraints remain mandatory.',before_sha256=expected,after_sha256=actual));continue
+   results.append(dict(path=relative,scope=('Exact owner-authorized ordinary-hole policy relaxation. Retain only previously qualified T01 and zero-movement T03 geometry; T04 and later run fresh. Source ancestry is optional; all non-hole constraints remain mandatory.'if stages else'Exact owner-authorized ordinary-hole policy relaxation. Only verified source/legacy/reference evidence is retained; every connected stage runs fresh. Source ancestry is optional; all non-hole constraints remain mandatory.'),before_sha256=expected,after_sha256=actual));continue
   if relative=='src/gerber_u05/legacy_export.py':
    results.append(dict(path=relative,proof=legacy_export_encoding_same(path.read_text(),current.read_text())));continue
   if stages==('t01','t03')and WIDTH_CORRECTION.get(relative)==(expected,actual):
@@ -242,7 +269,8 @@ def verify_predecessor_families(run,binding):
   # inherited stages to the immediate parent's producer: each may have a
   # different, recursively verified producer several generations back.
   proof=load(evidence/'ORIGINAL_LEGACY_PREFIX_PROOF.json')
-  if proof['original_run']!=str(Path(binding['original_run']).parent/'legacy')or proof['original_producer_binding_sha256']!=sha(legacy/'PRODUCER_BINDING.json')or proof['source_binding_sha256']!=sha(legacy/'source.json')or proof['source_sha256']!=source or proof['stages']!=['t01','t03','t04','t02','t05']or proof['retained_operation_count']!=17:raise ValueError('REUSED_LEGACY_INSPECTION_BINDING_CHANGED')
+  authority=binding.get('legacy_authority_run',str(Path(binding['original_run']).parent/'legacy'))
+  if proof['original_run']!=authority or proof['original_producer_binding_sha256']!=sha(legacy/'PRODUCER_BINDING.json')or proof['source_binding_sha256']!=sha(legacy/'source.json')or proof['source_sha256']!=source or proof['stages']!=['t01','t03','t04','t02','t05']or proof['retained_operation_count']!=17:raise ValueError('REUSED_LEGACY_INSPECTION_BINDING_CHANGED')
   for key,record in proof['original_checks'].items():
    if records.get(key)!=record:raise ValueError('REUSED_LEGACY_INSPECTION_RECORD_CHANGED')
   for relative,expected in proof['files'].items():
@@ -283,10 +311,13 @@ def verify(run):
   file=run/relative
   if not file.is_relative_to(run)or sha(file)!=expected:raise ValueError('REUSED_PREFIX_EVIDENCE_CHANGED:'+relative)
  verify_predecessor_families(run,binding)
+ producers=binding.get('stage_producer_bindings')
+ if producers is not None and set(producers)!=set(stages):raise ValueError('REUSED_STAGE_PRODUCER_INVENTORY_CHANGED')
  for stage in stages:
   candidate=sha(run/(stage+'.json'));proofs=[load(run/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
   if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]:raise ValueError('REUSED_PAIRED_PROOFS_DIFFER:'+stage)
-  if proofs[0]['status']!='PASS'or proofs[0]['candidate_sha256']!=candidate or proofs[0]['producer_binding_sha256']!=binding['original_producer_binding_sha256']:raise ValueError('REUSED_STAGE_PROOF_CHANGED:'+stage)
+  producer=binding['original_producer_binding_sha256']if producers is None else producers[stage]
+  if proofs[0]['status']!='PASS'or proofs[0]['candidate_sha256']!=candidate or proofs[0]['producer_binding_sha256']!=producer:raise ValueError('REUSED_STAGE_PROOF_CHANGED:'+stage)
   for mode in('construct','1','2'):
    key='connected_'+stage+'_'+mode;record=binding['original_checks'][key]
    if record['status']!='PASS'or record['returncode']!=0:raise ValueError('REUSED_NATIVE_PROCESS_DID_NOT_PASS:'+key)

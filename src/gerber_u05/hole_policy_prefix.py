@@ -1,4 +1,4 @@
-"""Exact owner-authorized strict-to-relaxed transition before fresh T04 only."""
+"""Exact owner-authorized strict-to-relaxed transition before fresh connected T01 or T04."""
 import hashlib,json
 from pathlib import Path
 from src import hole_acceptance as holes
@@ -35,12 +35,13 @@ def enabled(root=ROOT):
 
 
 def allowed_delta(relative,before,after,stages,root=ROOT):
- return tuple(stages)==('t01','t03') and PAIRS.get(relative)==(before,after) and enabled(root)
+ return tuple(stages)in((),('t01','t03')) and PAIRS.get(relative)==(before,after) and enabled(root)
 
 
-def transition_remedy_snapshot(run):
+def transition_remedy_snapshot(run,*,retained=('t01','t03')):
  """Only this policy label changes; all numerical and growth settings must match."""
  from . import pipeline as p
+ if tuple(retained)not in((),('t01','t03')):raise ValueError('HOLE_POLICY_TRANSITION_RETAINED_SCOPE_CHANGED')
  if not enabled():raise ValueError('QUALIFIED_HOLE_POLICY_TRANSITION_REQUIRED')
  path=Path(run)/'REMEDY_POLICY_SNAPSHOT.json';value=p.load(path)
  raw=(ROOT/'contracts/component_remedy/settings.json').read_bytes();new=json.loads(raw)
@@ -53,4 +54,4 @@ def transition_remedy_snapshot(run):
  if archive.exists():raise ValueError('HOLE_POLICY_TRANSITION_ARCHIVE_EXISTS')
  path.rename(archive)
  p.save(path,value)
- return dict(schema='owner-hole-policy-prefix-transition/1',ordinary_holes=holes.RELAXED,retained_stages=['t01','t03'],fresh_from='t04',source_ancestry_requirement='NOT_REQUIRED',nonhole_settings='IDENTICAL',retained_geometry='UNCHANGED; qualified under stricter earlier policy',original_failures='PRESERVED_UNCHANGED')
+ return dict(schema='owner-hole-policy-prefix-transition/1',ordinary_holes=holes.RELAXED,retained_stages=list(retained),fresh_from='t01'if not retained else't04',source_ancestry_requirement='NOT_REQUIRED',nonhole_settings='IDENTICAL',retained_geometry='UNCHANGED; qualified under stricter earlier policy',original_failures='PRESERVED_UNCHANGED')

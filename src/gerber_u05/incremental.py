@@ -3,7 +3,7 @@ import argparse,datetime,json,os,shutil,subprocess,sys,uuid
 from pathlib import Path
 from . import pipeline as p
 from .guard import seal,verify_sources,install_read_fence
-from .prefix import STAGES,sha,load,verify_code,retained_stages,operation_keys,require_retained_t03
+from .prefix import STAGES,sha,load,verify_code,retained_stages,operation_keys,require_retained_t03,verify as verify_native_prefix
 from .run import Coordinator,CONNECTED,ORDER
 from .workspace import configure
 
@@ -14,12 +14,47 @@ def copy_file(source,target):
  subprocess.run(['cp','-c',str(source),str(target)],check=True)
  if sha(source)!=sha(target):raise ValueError('INCREMENTAL_COPY_CHANGED')
 
+def source_family_job(prefix):
+ """Resolve only independently verified prefix ancestry; never resume it."""
+ prefix=Path(prefix);seen=set()
+ while(prefix/'REUSED_PREFIX_BINDING.json').exists():
+  identity=str(prefix.resolve())
+  if identity in seen:raise ValueError('REUSED_NATIVE_PREFIX_AUTHORITY_CYCLE')
+  seen.add(identity);binding=verify_native_prefix(prefix)
+  if binding is None:raise ValueError('REUSED_NATIVE_PREFIX_AUTHORITY_MISSING')
+  prefix=Path(binding['original_run'])
+ return prefix.parent
+
+
+def stage_producers(prefix,stages):
+ """Keep each native stage bound to its actual verified producer."""
+ prefix=Path(prefix);own=sha(prefix/'PRODUCER_BINDING.json');inherited=verify_native_prefix(prefix);result={}
+ for stage in stages:
+  producer=own
+  if inherited is not None and stage in inherited['reused_stages']:
+   producer=inherited.get('stage_producer_bindings',{}).get(stage,inherited['original_producer_binding_sha256'])
+  proofs=[load(prefix/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
+  if any(proof!=proofs[0]for proof in proofs)or proofs[0]['status']!='PASS'or proofs[0]['candidate_sha256']!=sha(prefix/(stage+'.json'))or proofs[0]['producer_binding_sha256']!=producer:raise ValueError('REUSED_STAGE_PRODUCER_ANCESTRY_CHANGED:'+stage)
+  result[stage]=producer
+ return result
+
+
 def completed_records(old_job,old_root):
  """Re-evaluate the existing frozen legacy-prefix verifier before adoption."""
- state=load(old_job/'STATUS.current.json');records=dict(state['checks']);log_roots=[old_job];legacy=old_job/'legacy';proof=None
+ state=load(old_job/'STATUS.current.json');records=dict(state['checks']);log_roots=[old_job];prefix=old_job/'connected';legacy=old_job/'legacy';proof=None
+ if(prefix/'REUSED_PREFIX_BINDING.json').exists():
+  retained=verify_native_prefix(prefix)
+  records=dict(retained['original_checks'],**records)
+  log_roots.append(prefix/'prefix_evidence')
+  legacy=source_family_job(prefix)/'legacy'
  if(legacy/'REUSED_LEGACY_BINDING.json').exists():
+  inspection_root=old_root
+  if(prefix/'REUSED_PREFIX_BINDING.json').exists():
+   producer=load(legacy/'PRODUCER_BINDING.json')
+   if any(sha(name)!=expected for name,expected in producer['files'].items()):raise ValueError('REUSED_LEGACY_PRODUCER_CHANGED')
+   inspection_root=Path(os.path.commonpath(list(producer['files'])))
   script="import json,sys;from src.gerber_u05.legacy_prefix import inspect;print(json.dumps(inspect(sys.argv[1],'t05')))"
-  proof=json.loads(subprocess.check_output([sys.executable,'-B','-c',script,str(legacy)],cwd=old_root,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'}))
+  proof=json.loads(subprocess.check_output([sys.executable,'-B','-c',script,str(legacy)],cwd=inspection_root,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'}))
   if proof['retained_operation_count']!=17:raise ValueError('REUSED_LEGACY_COMPLETE_PREFIX_REQUIRED')
   records=dict(proof['original_checks'],**records);seen=set();current=legacy
   while(current/'REUSED_LEGACY_BINDING.json').exists():
@@ -28,14 +63,20 @@ def completed_records(old_job,old_root):
  return records,log_roots,proof
 
 
+def stages_before(through):
+ if through=='reference':return retained_stages(())
+ if through not in('t03','t02'):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
+ return retained_stages(ORDER[:ORDER.index(through)+1])
+
+
 def prepare(prefix,job,coordinator=None,*,through='t02'):
  from src.pcb_data_abi.input_directory import collect_raw
  prefix=Path(prefix);old_job=prefix.parent;original=load(prefix/'PRODUCER_BINDING.json');state=load(old_job/'STATUS.current.json');inventory=load(prefix/'input_inventory.json')
  if original['profile']!=CONNECTED:raise ValueError('CONNECTED_PREFIX_PROFILE_REQUIRED')
- stages=retained_stages(ORDER[:ORDER.index(through)+1])
+ stages=stages_before(through)
  if stages==('t01','t03'):require_retained_t03(prefix)
  old_root=Path(os.path.commonpath(list(original['files'])));code=verify_code(original,p.ROOT,old_root,stages=stages)
- records,log_roots,legacy_proof=completed_records(old_job,old_root)
+ records,log_roots,legacy_proof=completed_records(old_job,old_root);family_job=source_family_job(prefix);producers=stage_producers(prefix,stages)
  required=operation_keys(stages)
  if any(key not in records or records[key]['status']!='PASS'or records[key]['returncode']!=0 for key in required):raise ValueError('REUSED_SOURCE_OR_PREFIX_CHECK_INCOMPLETE')
  root,blobs,ignored=collect_raw(inventory['input_directory'])
@@ -67,7 +108,7 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
   if sha(name)!=expected:raise ValueError('REUSED_ORIGINAL_JOB_INPUT_CHANGED')
   copy_file(name,evidence/'original_inputs'/(str(index)+'_'+Path(name).name))
  for family in('legacy','reference'):
-  source_family=old_job/family
+  source_family=family_job/family
   for name in('PRODUCER_BINDING.json','source.json','POLICY_SNAPSHOT.json','CLEARANCE_SNAPSHOT.json'):
    if(source_family/name).exists():copy_file(source_family/name,evidence/family/name)
   if family=='legacy':
@@ -91,17 +132,19 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
    if not matches:raise ValueError('REUSED_NATIVE_PROCESS_LOG_MISSING:'+key)
    copy_file(matches[0],evidence/'logs'/(key+suffix))
  checked_legacy={}
- if legacy_proof is not None or load(old_job/'legacy/t04.json')['solution'].get('schema')=='source-route-ten-step-width-ladder/1':
+ if legacy_proof is not None or load(family_job/'legacy/t04.json')['solution'].get('schema')=='source-route-ten-step-width-ladder/1':
   # These are hash-bound checking-envelope inputs, not a resumed legacy job.
-  legacy=job/'legacy';legacy.mkdir();subprocess.run(['cp','-cR',str(old_job/'legacy/runtime'),str(legacy/'runtime')],check=True)
-  for name in('source.json','RAW_WIDTH_CHECKPOINT.json','t04.json'):copy_file(old_job/'legacy'/name,legacy/name)
-  subprocess.run(['cp','-cR',str(old_job/'legacy/audits'),str(legacy/'audits')],check=True)
-  p.save(legacy/'SCOPE.json',dict(role='HASH_BOUND_CHECKING_ENVELOPE_INPUTS_ONLY',original_run=str(old_job/'legacy'),native_job_resumed=False))
+  legacy=job/'legacy';legacy.mkdir();subprocess.run(['cp','-cR',str(family_job/'legacy/runtime'),str(legacy/'runtime')],check=True)
+  for name in('source.json','RAW_WIDTH_CHECKPOINT.json','t04.json'):copy_file(family_job/'legacy'/name,legacy/name)
+  subprocess.run(['cp','-cR',str(family_job/'legacy/audits'),str(legacy/'audits')],check=True)
+  p.save(legacy/'SCOPE.json',dict(role='HASH_BOUND_CHECKING_ENVELOPE_INPUTS_ONLY',original_run=str(family_job/'legacy'),native_job_resumed=False))
   checked_legacy={str(f.relative_to(legacy)):sha(f)for f in legacy.rglob('*')if f.is_file()}
  binding=dict(schema='incremental-native-prefix/1',source_sha256=source['source_ref']['sha256'],original_source_root=str(old_root),original_run=str(prefix),original_job_status=state['status'],original_route_completion='NOT_CLAIMED; original failed/boundary status preserved',original_producer_binding_sha256=sha(prefix/'PRODUCER_BINDING.json'),original_checks={key:records[key]for key in required},retained_operation_count=len(required),reused_stages=list(stages),code_dependency_checks=code,fresh_assembly_operations=fresh_assembly,checked_legacy_files=checked_legacy,legacy_support_identity=support_identity,files={})
+ if family_job!=old_job:binding['legacy_authority_run']=str(family_job/'legacy')
+ binding['stage_producer_bindings']=producers
  from .hole_policy_prefix import enabled as hole_transition_enabled,transition_remedy_snapshot
- if stages==('t01','t03')and hole_transition_enabled():
-  binding['hole_acceptance_transition']=transition_remedy_snapshot(run)
+ if stages in((),('t01','t03'))and hole_transition_enabled():
+  binding['hole_acceptance_transition']=transition_remedy_snapshot(run,retained=stages)
  files=[*evidence.rglob('*'),*[run/(stage+'.json')for stage in stages],*(run/'audits').rglob('*.json')]
  if(run/'RAW_WIDTH_CHECKPOINT.json').exists():files.append(run/'RAW_WIDTH_CHECKPOINT.json')
  if(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json').exists():files.append(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json')
@@ -119,8 +162,8 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
 
 
 def continue_stages(coordinator,run,through):
- retained_stages(ORDER[:ORDER.index(through)+1])
- for stage in ORDER[ORDER.index(through)+1:]:
+ stages=stages_before(through)
+ for stage in ORDER[len(stages):]:
   coordinator.execute(run,stage,['construct']);coordinator.execute(run,stage,['1','2'])
   proofs=[p.load(run/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
   if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]or proofs[0]['status']!='PASS':raise ValueError('FRESH_PAIRED_STAGE_PROOFS_DIFFER:'+stage)
@@ -129,7 +172,7 @@ def continue_stages(coordinator,run,through):
    verify(coordinator.job/'legacy',run)
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('t03','t02'),default='t02');args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('reference','t03','t02'),default='t02');args=parser.parse_args()
  if not args.prefix_run.is_absolute():parser.error('prefix run must be an explicit absolute path')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental';parent.mkdir(parents=True,exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=Coordinator(job);coordinator.state.update(source_only=False,qualification_mode='INCREMENTAL_REUSED_NATIVE_PREFIX')
  try:

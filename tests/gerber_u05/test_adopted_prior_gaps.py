@@ -71,3 +71,24 @@ def test_actually_adopted_intrusion_still_rejects_complete_floor(tmp_path,monkey
  # is ample. Moving the check must not become a gap-tolerance exemption.
  with pytest.raises(ValueError,match='UNIFORMITY'):
   prior_copper.prepare(store,scene)
+
+
+@pytest.mark.parametrize('channel',[False,True])
+def test_adopted_native_rounding_uses_existing_reparse_bound(tmp_path,monkeypatch,channel):
+ source,scene,store,context=case(tmp_path,monkeypatch,box(0,0,1+1.7*GRID_MM,1),channel)
+ with pytest.raises(ValueError,match='UNIFORMITY'):
+  prior_copper.require_shared_prior(prior_copper.protected_owners(source,context.reserved))
+ output,receipt=prior_copper.prepare(store,scene)
+ _,actual,_=p.operands(store,output)
+ assert receipt['records']
+ assert receipt['shared_neighbor_gaps']['passed']
+ assert receipt['shared_neighbor_gaps']['tolerance_mm']==2*GRID_MM
+ assert unary_union(list(actual.values())).covers(unary_union(list(source.values())))
+ assert context.reserved['a'].difference(unary_union(list(actual.values()))).area<=1e-12
+
+
+@pytest.mark.parametrize('channel',[False,True])
+def test_native_floor_beyond_reparse_bound_still_rejects(tmp_path,monkeypatch,channel):
+ source,scene,store,context=case(tmp_path,monkeypatch,box(0,0,1+2.1*GRID_MM,1),channel)
+ with pytest.raises(ValueError,match='UNIFORMITY'):
+  prior_copper.prepare(store,scene)

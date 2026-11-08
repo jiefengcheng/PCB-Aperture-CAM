@@ -54,6 +54,13 @@ def guard_legacy_floor(core,floor,owner_core,foreign,complete_round):
  if remaining and min(remaining)+1e-12<p.CONSTRUCTION_GAP_MM:raise ValueError('T01_CORRECTED_FLOOR_FOREIGN_GUARD_FAILED')
  return corrected,dict(mode=mode,original_new_copper_gap_mm=min(distances),corrected_new_copper_gap_mm=min(remaining)if remaining else None,removed_optional_area_mm2=floor.difference(corrected).area,source_core_preserved=True,construction_gap_mm=p.CONSTRUCTION_GAP_MM)
 
+def t01_land_checker(lands,fixed):
+ """Use exact positive proposals, not numerical spurs on re-unioned old copper."""
+ checker=p.PreparedLandScene(lands,fixed)
+ checker.owner_added_material=checker._source_width_added_material
+ return checker
+
+
 def run_t01(store,scene,binding):
  if cc.ACTIVE is None:return p.legacy_run_t01(store,scene,binding)
  ctx=cc.ACTIVE;sites=p.t01_sites(store,scene);_,current,_=p.operands(store,scene);meta=binding['width_metadata_rows'];shapes=[current[r['id']]for r in meta];raw=store.get(binding['width_metadata_encoding_ref'],kind='kernel-width-data');spec=p.specification();policy=dict(canonical_t01=p.marker(),family=p.marker()['family'],settings=spec['settings'],diameter_classes_mm=spec['diameter_classes_mm'])
@@ -111,7 +118,7 @@ def run_t01(store,scene,binding):
   decisions.append(dict(source_id=sid,aliases=site['aliases'],original_owner_id=owner,source_radius_mm=site['radius'],selected_radius_mm=radius,added_area_mm2=candidate.difference(core).area,decision='KEEP'if p.to_wkb(candidate)==p.to_wkb(core)else'GROW_CONNECTED_COPPER',reason=reason,source_core_preserved=candidate.covers(core),selected_cap_sha256=p.digest(p.to_wkb(cap))))
   if len(decisions)%64==0:print(p.canonical(dict(stage='t01',sites_done=len(decisions),sites=len(sites))).decode(),flush=True)
  lands=[dict(id=s['source_id'],original=s['core'],candidate=after[s['source_id']],native_source_kind='gr_circle',native_stroke_width_mm=0.)for s in sites];omit={a for s in sites for a in s['aliases']};fixed=[dict(id=s,geometry=g,trace_width_mm=next(r['trace_width_mm']for r in meta if r['id']==s))for s,g in current.items()if s not in omit]
- checker=p.PreparedLandScene(lands,fixed)
+ checker=t01_land_checker(lands,fixed)
  from src.t01_region_contacts import install_prepared_ports
  region_ports=install_prepared_ports(checker,meta)
  full=checker.check(lands,materialize_scene=True)

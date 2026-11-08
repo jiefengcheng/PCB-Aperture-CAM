@@ -31,6 +31,8 @@ def context(run):
         value=p.load(run/(name+".json"));scene=store.get_json(value["output_scene_ref"],kind="scene");cc.ACTIVE.register_scene(store,scene)
     from src.t02_shared_gaps import restore as restore_shared_gaps
     restore_shared_gaps(store,scene,project_parts=True)
+    from .stage_entry_prior import bind as bind_entry
+    bind_entry(store)
     from src import pin_separation as pin
     if pin.ACTIVE is not None:
         for entry in reversed(scene['lineage']):
@@ -60,11 +62,39 @@ def owner_encoding_overlap(region,owner,domain):
                  region_missing_mm2=region.difference(candidate).area,
                  physical_delta_mm2=owner.union(candidate).symmetric_difference(owner.union(region)).area,
                  outside_domain_mm2=candidate.difference(domain).area)
-    if (candidate.is_empty or not candidate.is_valid or candidate.geom_type not in('Polygon','MultiPolygon')
-        or any(not math.isfinite(v)or v>CONTRACT.area_epsilon_mm2 for v in metrics.values())):
-        raise ValueError('EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER')
-    return candidate,dict(mode='ENCODING_ONLY_EXISTING_OWNER_OVERLAP',radius_mm=radius,
+    accepted=(not candidate.is_empty and candidate.is_valid and candidate.geom_type in('Polygon','MultiPolygon')
+              and all(math.isfinite(v)and v<=CONTRACT.area_epsilon_mm2 for v in metrics.values()))
+    if not accepted:
+        # Redundant owner overlap is an optional representation proposal. Reject
+        # the whole proposal; retain the already-qualified addition, never a
+        # clipped fragment. Its scope/validity and every later native encoding,
+        # fidelity, clearance, connectivity and corruption gate remain required.
+        outside=region.difference(domain).area
+        if (region.is_empty or not region.is_valid or region.geom_type not in('Polygon','MultiPolygon')
+            or not math.isfinite(outside)or outside>CONTRACT.area_epsilon_mm2):
+            raise ValueError('EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER')
+        return region,dict(mode='ORIGINAL_QUALIFIED_REGION_OPTIONAL_OWNER_OVERLAP_REJECTED',
+                           accepted=False,radius_mm=radius,epsilon_mm2=CONTRACT.area_epsilon_mm2,
+                           attempted_candidate_type=candidate.geom_type,metrics=metrics,
+                           selected_geometry_unchanged=True,selected_outside_domain_mm2=outside)
+    return candidate,dict(mode='ENCODING_ONLY_EXISTING_OWNER_OVERLAP',accepted=True,radius_mm=radius,
                           epsilon_mm2=CONTRACT.area_epsilon_mm2,metrics=metrics)
+
+def owner_surface_equivalence(region,owner,candidate,epsilon):
+    """Prove owner-union equality by both inclusions, without re-unioning it.
+
+    R is retained in C, and every C-minus-R face is already in O. Therefore
+    O union C equals O union R. This avoids comparing two separately overlaid
+    board-sized unions whose coincident edges can manufacture false faces.
+    """
+    missing=region.difference(candidate).area
+    outside=candidate.difference(region).difference(owner).area
+    valid=(not candidate.is_empty and candidate.is_valid
+           and candidate.geom_type in('Polygon','MultiPolygon'))
+    return dict(passed=valid and all(math.isfinite(v)and v<=epsilon for v in(missing,outside)),
+                qualified_region_missing_mm2=missing,new_material_outside_owner_mm2=outside,
+                epsilon_mm2=epsilon,basis='TWO_DIRECT_SET_INCLUSIONS')
+
 
 def bounded_owner_surface(region,owner,domain):
     """Coalesce local export islands using only already-present owner copper.
@@ -87,13 +117,18 @@ def bounded_owner_surface(region,owner,domain):
                  outside_domain_mm2=candidate.difference(domain).area)
     before=len(region.geoms)
     after=1 if candidate.geom_type=='Polygon'else len(candidate.geoms)if candidate.geom_type=='MultiPolygon'else before
+    inclusion=owner_surface_equivalence(region,owner,candidate,CONTRACT.area_epsilon_mm2)
+    # Retain the original global overlay diagnostic. Its equality obligation
+    # can also be proved directly, with the same area epsilon and no buffering,
+    # clipping, face deletion or change to any downstream native predicate.
     accepted=(not candidate.is_empty and candidate.is_valid
               and candidate.geom_type in('Polygon','MultiPolygon')and after<before
-              and all(math.isfinite(v)and v<=CONTRACT.area_epsilon_mm2 for v in metrics.values()))
+              and all(math.isfinite(v)and (v<=CONTRACT.area_epsilon_mm2 or
+                      (key=='physical_delta_mm2'and inclusion['passed']))for key,v in metrics.items()))
     proof=dict(mode='BOUNDED_EXISTING_OWNER_SURFACE_ENCODING_ONLY',accepted=accepted,
                input_components=before,output_components=after,
                fixed_margin_mm=margin,epsilon_mm2=CONTRACT.area_epsilon_mm2,
-               complete_qualified_region_retained=True,metrics=metrics)
+               complete_qualified_region_retained=True,metrics=metrics,direct_set_inclusion=inclusion)
     return(candidate if accepted else region),proof
 
 
@@ -502,7 +537,7 @@ def check(run,body,ledger):
     raw_decision_image=p.from_wkb(store.get(value['intra']['after_native_ref'],kind='geometry'));raw_area=after.symmetric_difference(raw_decision_image).area;raw_area_bound=2*raw_decision_image.length*POLYGON_TOLERANCE_MM
     if not raw_decision_image.is_valid or raw_area>raw_area_bound:raise ValueError('RAW_MODEL_IMAGE_AREA_FIDELITY_FAILED')
     if not all(math.isfinite(v) for v in (distance,area,bound)) or distance>POLYGON_TOLERANCE_MM or area>bound or before.difference(after).area>1e-12:raise ValueError('ACTUAL_FINAL_COPPER_FIDELITY_OR_PRESERVATION_FAILED')
-    prior=cc.ACTIVE.reserved;coverage=after.buffer(POLYGON_TOLERANCE_MM);prior_missing=sum(g.difference(coverage).area for g in prior.values());checks['prior_positive_retention']=dict(passed=prior_missing<=1e-12,missing_area_mm2=prior_missing,prior_sha256=cc.ACTIVE.reservation_sha256,contour_uncertainty_mm=POLYGON_TOLERANCE_MM)
+    prior=cc.ACTIVE.reserved;coverage=after.buffer(POLYGON_TOLERANCE_MM);prior_missing=sum(g.difference(coverage).area for g in prior.values());checks['stage_entry_prior']=getattr(cc.ACTIVE,'stage_entry_prior',None);checks['prior_positive_retention']=dict(passed=prior_missing<=1e-12,missing_area_mm2=prior_missing,prior_sha256=cc.ACTIVE.reservation_sha256,contour_uncertainty_mm=POLYGON_TOLERANCE_MM)
     if prior_missing>1e-12:raise ValueError('PRIOR_QUALIFIED_POSITIVE_COPPER_MISSING:'+str(prior_missing))
     store.verify_reads();verify_sources(run)
     return dict(status='PASS',geometry_producer_binding_sha256=p.digest((run/'PRODUCER_BINDING.json').read_bytes()),remedy_policy_snapshot_sha256=p.digest((run/'REMEDY_POLICY_SNAPSHOT.json').read_bytes()),original_ownership_sha256=cc.ACTIVE.index.fingerprint,source_objects_preserved=n,source_clear_operations_preserved=sum(not o.polarity_dark for o in original.objects),appended_positive_regions=len(raw_observed),native_material_assembly=material_proof,actual_material_image_ref=p.geomref(store,after),raw_region_overlay_diagnostic=raw_overlay_diagnostic,actual_hard_gap_mm=p.HARD_GAP_MM,contour_proofs=proofs,actual_scene_checks=checks,exact_append_only_core_proofs=core_evidence,native_model_reference=reference_proof,aggregate_metric=metric,raw_model_image_comparison=dict(reference_type=raw_decision_image.geom_type,symmetric_difference_mm2=raw_area,area_bound_mm2=raw_area_bound,role="Decision image; native boundary fidelity uses the declared file-grid reference"),final_copper=dict(hausdorff_mm=distance,symmetric_difference_mm2=area,area_bound_mm2=bound,original_area_mm2=before.area,final_area_mm2=after.area,added_area_mm2=after.difference(before).area),generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()))
