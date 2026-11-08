@@ -99,6 +99,9 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
   p.save(legacy/'SCOPE.json',dict(role='HASH_BOUND_CHECKING_ENVELOPE_INPUTS_ONLY',original_run=str(old_job/'legacy'),native_job_resumed=False))
   checked_legacy={str(f.relative_to(legacy)):sha(f)for f in legacy.rglob('*')if f.is_file()}
  binding=dict(schema='incremental-native-prefix/1',source_sha256=source['source_ref']['sha256'],original_source_root=str(old_root),original_run=str(prefix),original_job_status=state['status'],original_route_completion='NOT_CLAIMED; original failed/boundary status preserved',original_producer_binding_sha256=sha(prefix/'PRODUCER_BINDING.json'),original_checks={key:records[key]for key in required},retained_operation_count=len(required),reused_stages=list(stages),code_dependency_checks=code,fresh_assembly_operations=fresh_assembly,checked_legacy_files=checked_legacy,legacy_support_identity=support_identity,files={})
+ from .hole_policy_prefix import enabled as hole_transition_enabled,transition_remedy_snapshot
+ if stages==('t01','t03')and hole_transition_enabled():
+  binding['hole_acceptance_transition']=transition_remedy_snapshot(run)
  files=[*evidence.rglob('*'),*[run/(stage+'.json')for stage in stages],*(run/'audits').rglob('*.json')]
  if(run/'RAW_WIDTH_CHECKPOINT.json').exists():files.append(run/'RAW_WIDTH_CHECKPOINT.json')
  if(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json').exists():files.append(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json')

@@ -32,3 +32,14 @@ No pre-existing running worker has been changed. The earlier T05 closure
 and source-hole failures remain preserved as failures under their captured
 policy. .DS_Store custody remains EXPLICIT_UNWAIVED_UNATTRIBUTED. Owner review,
 independent review and electrical/manufacturing status are not promoted.
+
+The strict-to-relaxed incremental transition is limited to exact qualified
+source hash pairs and retained T01/zero-movement T03. It cannot retain connected
+T04 or later stages. Earlier native reference geometry remains unchanged and
+qualified under its stricter policy. All numerical remedy settings must be
+identical; only the ordinary-hole policy label may change. The fresh job archives
+its copied old remedy snapshot before creating a separately sealed new one.
+83 affected regressions pass, including rejection of unknown source hashes,
+retained T04, and altered non-hole parameters. The first transition test's
+immutable-write rejection remains preserved. Affected client 2849 qualification
+is underway from its verified T03 prefix; no old failed job is resumed.
