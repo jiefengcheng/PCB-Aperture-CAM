@@ -4,8 +4,18 @@ from pathlib import Path
 STAGES=('t01','t03','t04','t02')
 WIDTH_CORRECTION={
  'src/component_clearance.py':('957f90407b119660bffd6946320b0af398b3ee1d6402a1cfb8b1a9694dd0b904','8a705db3911686d2bb760cde74c484a16243487013e2798148bdf038886fb72d'),
- 'src/prepared_width_scene.py':('6ed21e7cebd6395f8a7e29215282832a81bdbb8dd16386202e58fe019bd4ce2d','6c3f5a1d8f3ab2eb2e5482e7227af14339a4cd57fcae488d5d6b3acefd516782'),
- 'src/gerber_u05/ladder_width.py':('e97b3bc77b97f292194b196d4e5bd7e2164745bb6b747c10e5003905bca1a112','5ba74cca9e73802c00444f3289ebca455254156eceaf3874a48040d930b33f95')}
+ 'src/prepared_width_scene.py':('6ed21e7cebd6395f8a7e29215282832a81bdbb8dd16386202e58fe019bd4ce2d','6c3f5a1d8f3ab2eb2e5482e7227af14339a4cd57fcae488d5d6b3acefd516782')}
+
+SOURCE_VOID_T04_ONLY={
+ 'src/t04_topology.py':(('f7e98a25a9e15de213454946af2cb340479696cc67c92dbd88ca22b54d8a1872',),'82f73006c10d9e2f31e140b3a6b889d56f9666f704c7b4aa7714984a3489a10c'),
+ 'src/t04_incremental.py':(('047a49cf09ad0a276336154c68100c8c66d0ea958f3264c1cb09c04324046f98',),'2d9587e9c361c4dfbb50b4e25018a3c77607fa3865b73d52c4ea2a1d3161be41'),
+ 'src/gerber_u05/ladder_width.py':(('e97b3bc77b97f292194b196d4e5bd7e2164745bb6b747c10e5003905bca1a112', '5ba74cca9e73802c00444f3289ebca455254156eceaf3874a48040d930b33f95'),'71d51adff9848eb7340aed62bf27cb6a60ee7e2b5a068fbe28dfb0c79fc6af85'),
+}
+
+def source_void_t04_delta(relative,before,after):
+ known=SOURCE_VOID_T04_ONLY.get(relative)
+ return known is not None and before in known[0]and after==known[1]
+
 CONNECTED_PREPARATION={'src/gerber_u05/channel_finish.py':('9eb20e39363b8eeea25fce0872619373547967a4d9bc08d096c2431f41e91dd6','b9ff517b1c48fae0604f2c753a91d3252bccfb77bd1dd87851b10a4b15fadf8b')}
 
 def retained_stages(stages):
@@ -20,6 +30,14 @@ def operation_keys(stages):
          +['legacy_legacy_export_'+m for m in('construct','1','2')]
          +['reference_remedy_'+m for m in('construct','1','2')]
          +['connected_'+s+'_'+m for s in stages for m in('construct','1','2')])
+
+def connected_visual_evidence(binding):
+ stages=retained_stages(binding['reused_stages'])
+ count=len(operation_keys(stages))
+ if binding['retained_operation_count']!=count:raise ValueError('VISUAL_REUSED_EVIDENCE_SCOPE_CHANGED')
+ if stages==('t01','t03'):
+  return 'Incremental qualification: 29 unchanged source/reference/T01/T03 operations are retained with original native proofs and hashes. T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
+ return 'Incremental qualification: 35 unchanged source/reference/T01/T03/T04/T02 operations are retained with original native proofs and hashes. T05 is newly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
 
 def require_retained_t03(run):
  summary=load(Path(run)/'t03.json')['summary']
@@ -134,6 +152,8 @@ def verify_code(original,root,old_root,*,stages=STAGES):
    results.append(dict(path=relative,proof=legacy_export_encoding_same(path.read_text(),current.read_text())));continue
   if stages==('t01','t03')and WIDTH_CORRECTION.get(relative)==(expected,actual):
    results.append(dict(path=relative,scope='Exact e10fce9 positive-operand width delta correction and rejection evidence only. Retain connected T01 and zero-movement T03; T04 and every downstream operation run fresh. Previously passed legacy geometry and its native export remain immutable.',before_sha256=expected,after_sha256=actual));continue
+  if stages==('t01','t03')and source_void_t04_delta(relative,expected,actual):
+   results.append(dict(path=relative,scope='Exact source-void T04-only correction. Retain only T01/zero-movement T03; every T04 attempt and complete scene runs fresh.',before_sha256=expected,after_sha256=actual));continue
   if stages==('t01','t03')and CONNECTED_PREPARATION.get(relative)==(expected,actual):
    results.append(dict(path=relative,scope='Exact coordinate-preserving native precision-metadata reset inside connected T04/T05 completion only. Retain T01 and zero-movement T03; no connected T04/T02 completion reused.',before_sha256=expected,after_sha256=actual));continue
   if relative=='src/t02_shared_gaps.py':

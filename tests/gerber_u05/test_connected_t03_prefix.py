@@ -100,3 +100,21 @@ def test_legacy_ancestry_keeps_distinct_stage_producers_and_rejects_forgery(tmp_
  inspection['stage_producer_bindings']['t02']='wrong-immediate-parent'
  inspection_path.write_text(json.dumps(inspection))
  with pytest.raises(ValueError,match='REUSED_LEGACY_STAGE_PROOF_CHANGED:t02'):prefix.verify_predecessor_families(run,binding)
+
+
+@pytest.mark.parametrize('relative',sorted(prefix.SOURCE_VOID_T04_ONLY))
+def test_source_void_t04_delta_cannot_retain_old_width_stages(tmp_path,monkeypatch,relative):
+ root=Path(__file__).resolve().parents[2];old=tmp_path/'old';new=tmp_path/'new';source=old/relative;target=new/relative;source.parent.mkdir(parents=True);target.parent.mkdir(parents=True);source.write_bytes(b'old qualified upstream fixture');target.write_bytes((root/relative).read_bytes());before=prefix.SOURCE_VOID_T04_ONLY[relative][0][0];after=prefix.SOURCE_VOID_T04_ONLY[relative][1];real_sha=prefix.sha;assert real_sha(target)==after
+ monkeypatch.setattr(prefix,'sha',lambda f:before if Path(f)==source else real_sha(f));original={'files':{str(source):before}}
+ assert prefix.verify_code(original,new,old,stages=('t01','t03'))
+ with pytest.raises(ValueError,match='UPSTREAM_DEPENDENCY_CHANGED'):prefix.verify_code(original,new,old)
+ target.write_bytes(target.read_bytes()+b'\nINVALID_POLICY=True\n')
+ with pytest.raises(ValueError,match='UPSTREAM_DEPENDENCY_CHANGED'):prefix.verify_code(original,new,old,stages=('t01','t03'))
+
+
+@pytest.mark.parametrize('stages,count,fresh',[(('t01','t03'),29,'T04, T02 and T05'),(prefix.STAGES,35,'T05 is newly')])
+def test_connected_visual_reports_the_actual_retained_boundary(stages,count,fresh):
+ value={'reused_stages':list(stages),'retained_operation_count':count};text=prefix.connected_visual_evidence(value)
+ assert str(count)in text and fresh in text
+ value['retained_operation_count']=count+3
+ with pytest.raises(ValueError,match='VISUAL_REUSED_EVIDENCE_SCOPE_CHANGED'):prefix.connected_visual_evidence(value)

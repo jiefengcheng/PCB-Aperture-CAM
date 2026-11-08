@@ -207,6 +207,10 @@ def inspect(old,through):
   if relative=='SOURCE_REVISION.json':continue
   current=ROOT/relative;actual=sha(current)
   if actual==expected:continue
+  from .prefix import source_void_t04_delta
+  if source_void_t04_delta(relative,expected,actual):
+   if through!='t03':raise ValueError('SOURCE_VOID_CHANGE_REQUIRES_FRESH_T04')
+   changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_SOURCE_VOID_T04_ONLY; retain T01/T03 only'));continue
   from .prefix import WIDTH_CORRECTION
   if relative in WIDTH_CORRECTION and WIDTH_CORRECTION[relative]==(expected,actual):
    # Only the exact qualified positive-operand subtraction/report correction.
