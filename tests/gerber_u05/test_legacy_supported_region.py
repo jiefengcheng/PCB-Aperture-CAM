@@ -2,7 +2,7 @@ import hashlib,json
 from pathlib import Path
 import pytest
 from shapely import from_wkb
-from src.gerber_u05.legacy_export import supported_region
+from src.gerber_u05.export_absorption import supported_region
 from src.u05_board.export import export_region
 from src.junction_spindle_stage import CONTRACT
 
