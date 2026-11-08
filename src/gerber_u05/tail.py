@@ -101,7 +101,7 @@ def prepare(old,job,*,qualification_mode='INCREMENTAL_REUSED_NATIVE_T05',seal_jo
  run=job/'connected';run.mkdir()
  for folder in('runtime','source_snapshot','reference','prefix_evidence','audits','width_prefix_audits','raw_checkpoints','completion_checkpoints'):
   if(old/folder).exists():subprocess.run(['cp','-cR',str(old/folder),str(run/folder)],check=True)
- names=['source.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','REUSED_PREFIX_BINDING.json','RAW_WIDTH_CHECKPOINT.json','T04_PRIOR_WIDTH_COMPATIBILITY.json','T04_SETTINGS_SNAPSHOT.json','PIN_SEPARATION_POLICY.json','STORAGE_ENCODING.json',*[s+'.json'for s in('t01','t03','t04','t02','t05')]]
+ names=['source.json','CLEARANCE_SNAPSHOT.json','HOLE_ACCEPTANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','REUSED_PREFIX_BINDING.json','RAW_WIDTH_CHECKPOINT.json','T04_PRIOR_WIDTH_COMPATIBILITY.json','T04_SETTINGS_SNAPSHOT.json','PIN_SEPARATION_POLICY.json','STORAGE_ENCODING.json',*[s+'.json'for s in('t01','t03','t04','t02','t05')]]
  for name in names:
   if(old/name).exists():copy_file(old/name,run/name)
  evidence=run/'prefix_evidence';copy_file(old/'PRODUCER_BINDING.json',evidence/'T05_ORIGINAL_PRODUCER_BINDING.json');copy_file(old.parent/'STATUS.current.json',evidence/'T05_ORIGINAL_ROUTE_STATUS.json');copy_file(old/'input_inventory.json',evidence/'T05_ORIGINAL_INPUT_INVENTORY.json')
