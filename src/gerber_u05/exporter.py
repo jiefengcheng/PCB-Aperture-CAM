@@ -80,6 +80,22 @@ def owner_encoding_overlap(region,owner,domain):
     return candidate,dict(mode='ENCODING_ONLY_EXISTING_OWNER_OVERLAP',accepted=True,radius_mm=radius,
                           epsilon_mm2=CONTRACT.area_epsilon_mm2,metrics=metrics)
 
+def owner_surface_equivalence(region,owner,candidate,epsilon):
+    """Prove owner-union equality by both inclusions, without re-unioning it.
+
+    R is retained in C, and every C-minus-R face is already in O. Therefore
+    O union C equals O union R. This avoids comparing two separately overlaid
+    board-sized unions whose coincident edges can manufacture false faces.
+    """
+    missing=region.difference(candidate).area
+    outside=candidate.difference(region).difference(owner).area
+    valid=(not candidate.is_empty and candidate.is_valid
+           and candidate.geom_type in('Polygon','MultiPolygon'))
+    return dict(passed=valid and all(math.isfinite(v)and v<=epsilon for v in(missing,outside)),
+                qualified_region_missing_mm2=missing,new_material_outside_owner_mm2=outside,
+                epsilon_mm2=epsilon,basis='TWO_DIRECT_SET_INCLUSIONS')
+
+
 def bounded_owner_surface(region,owner,domain):
     """Coalesce local export islands using only already-present owner copper.
 
@@ -101,13 +117,18 @@ def bounded_owner_surface(region,owner,domain):
                  outside_domain_mm2=candidate.difference(domain).area)
     before=len(region.geoms)
     after=1 if candidate.geom_type=='Polygon'else len(candidate.geoms)if candidate.geom_type=='MultiPolygon'else before
+    inclusion=owner_surface_equivalence(region,owner,candidate,CONTRACT.area_epsilon_mm2)
+    # Retain the original global overlay diagnostic. Its equality obligation
+    # can also be proved directly, with the same area epsilon and no buffering,
+    # clipping, face deletion or change to any downstream native predicate.
     accepted=(not candidate.is_empty and candidate.is_valid
               and candidate.geom_type in('Polygon','MultiPolygon')and after<before
-              and all(math.isfinite(v)and v<=CONTRACT.area_epsilon_mm2 for v in metrics.values()))
+              and all(math.isfinite(v)and (v<=CONTRACT.area_epsilon_mm2 or
+                      (key=='physical_delta_mm2'and inclusion['passed']))for key,v in metrics.items()))
     proof=dict(mode='BOUNDED_EXISTING_OWNER_SURFACE_ENCODING_ONLY',accepted=accepted,
                input_components=before,output_components=after,
                fixed_margin_mm=margin,epsilon_mm2=CONTRACT.area_epsilon_mm2,
-               complete_qualified_region_retained=True,metrics=metrics)
+               complete_qualified_region_retained=True,metrics=metrics,direct_set_inclusion=inclusion)
     return(candidate if accepted else region),proof
 
 

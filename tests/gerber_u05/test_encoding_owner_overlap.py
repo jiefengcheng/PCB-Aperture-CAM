@@ -46,3 +46,22 @@ def test_invalid_original_region_is_not_salvaged_by_fallback():
  region=Polygon()
  with pytest.raises(ValueError,match='EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER'):
   e.owner_encoding_overlap(region,box(-1,-1,2,2),box(0,0,1,1))
+
+
+def test_direct_owner_union_proof_retains_cutouts_and_existing_support():
+ owner=box(0,0,2,2).difference(box(.5,.5,1.5,1.5))
+ region=box(1.9,.8,2.3,1.2)
+ candidate=region.union(owner.intersection(box(1.8,.7,2.2,1.3)))
+ proof=e.owner_surface_equivalence(region,owner,candidate,1e-12)
+ assert proof['passed']
+ assert owner.union(candidate).equals(owner.union(region))
+ assert candidate.intersection(box(.6,.6,1.4,1.4)).is_empty
+
+
+@pytest.mark.parametrize('defect',['missing-growth','foreign-bridge','filled-cutout'])
+def test_direct_owner_union_proof_rejects_real_material_changes(defect):
+ owner=box(0,0,2,2).difference(box(.5,.5,1.5,1.5));region=box(1.9,.8,2.3,1.2)
+ candidate={'missing-growth':box(1.9,.8,2.1,1.2),
+            'foreign-bridge':region.union(box(2.2,.9,2.8,1.1)),
+            'filled-cutout':region.union(box(.6,.6,1.4,1.4))}[defect]
+ assert not e.owner_surface_equivalence(region,owner,candidate,1e-12)['passed']
