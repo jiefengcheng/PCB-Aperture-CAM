@@ -48,6 +48,12 @@ NATIVE_FLOOR_CHECK={
  'src/gerber_u05/prior_copper.py':('f1280dc37961373a01cf578f6b5815ee694c2462b3f5aeb2045294eb1d187cf1','5bcd448cb7e231c518ad737072d5feccacb489dd7bab1dc797c29cd9e46743bf'),
  'src/gerber_u05/channel_prior.py':('665a57635e20fb8ddc86dbb036e6fa4c1002b45ea95d906b0ae8a7db9a9b28fa','cdbfc5d1e69211b303dbcb0556b8806a66baf89bf78b1137dcb84fadf1acf73f')}
 
+STAGE_ENTRY_T05_ONLY={'src/gerber_u05/prior_copper.py': ('5bcd448cb7e231c518ad737072d5feccacb489dd7bab1dc797c29cd9e46743bf', '8e9b7da8352e41212f6887ecf3c4ee4685adf40cf742f10cc836408b8246c13e'), 'src/gerber_u05/channel_prior.py': ('cdbfc5d1e69211b303dbcb0556b8806a66baf89bf78b1137dcb84fadf1acf73f', '77e0e73cccdd51adcdfc7b1e687816770ef3e35bbaa25962d151a2a4bbac8dfc')}
+
+def stage_entry_delta(relative,before,after):
+ known=STAGE_ENTRY_T05_ONLY.get(relative);native=NATIVE_FLOOR_CHECK.get(relative)
+ return known is not None and native is not None and before in(native[0],known[0])and after==known[1]and native[1]==known[0]
+
 def native_floor_check_delta(relative,before,after):
  return NATIVE_FLOOR_CHECK.get(relative)==(before,after)
 
@@ -155,6 +161,8 @@ def verify_code(original,root,old_root,*,stages=STAGES):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if stage_entry_delta(relative,expected,actual):
+   results.append(dict(path=relative,scope='Exact T05-only qualified T02 entry authority. Upstream stages unchanged; T05 and export run fresh.',before_sha256=expected,after_sha256=actual));continue
   if native_floor_check_delta(relative,expected,actual):
    results.append(dict(path=relative,scope='Exact T05-only adopted native-floor check: use existing final-reparse fidelity for native-grid boundary comparison. local_floor geometry, exact model default, CoverageAdapter and legacy cc.ACTIVE=None behavior unchanged. Retained T01/T03/T04/T02 generation is unchanged; every T05 and final native check runs fresh.',before_sha256=expected,after_sha256=actual));continue
   from .hole_policy_prefix import allowed_delta as hole_policy_delta

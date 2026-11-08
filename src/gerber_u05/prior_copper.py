@@ -65,6 +65,8 @@ class CoverageAdapter(BaseCoverageAdapter):
 
 def prepare(store,scene):
  if cc.ACTIVE is None:return scene,None
+ from .stage_entry_prior import bind as bind_entry
+ bind_entry(store)
  if getattr(cc.ACTIVE,'functional',None)is not None:
   from .channel_prior import prepare
   return prepare(store,scene)
@@ -94,5 +96,5 @@ def prepare(store,scene):
  # support skipped by local_floor is not part of the adopted candidate.
  _,adopted,_=p.operands(store,output)
  shared_gap_check=require_shared_prior(context.project(adopted),native_floor=True)
- receipt=dict(schema='qualified-source-derived-prior-floor/1',source_sha256=context.source_hash,prior_generated_sha256=context.reservation_sha256,input_scene_ref=store.put_json('scene',scene),output_scene_ref=output_ref,records=records,prior_current_policy_check=prior_check,combined_predecessor_policy_check=combined_check,shared_neighbor_gaps=shared_gap_check,policy='The source-only generated prior is minimum physical copper, present before T05 planning. All original owners stay frozen; current and prior foreign material constrain every new spindle. Source void, scope, native export and final retention checks remain mandatory.')
+ receipt=dict(stage_entry_prior=getattr(context,'stage_entry_prior',None),schema='qualified-source-derived-prior-floor/1',source_sha256=context.source_hash,prior_generated_sha256=context.reservation_sha256,input_scene_ref=store.put_json('scene',scene),output_scene_ref=output_ref,records=records,prior_current_policy_check=prior_check,combined_predecessor_policy_check=combined_check,shared_neighbor_gaps=shared_gap_check,policy='The source-only generated prior is minimum physical copper, present before T05 planning. All original owners stay frozen; current and prior foreign material constrain every new spindle. Source void, scope, native export and final retention checks remain mandatory.')
  return output,receipt

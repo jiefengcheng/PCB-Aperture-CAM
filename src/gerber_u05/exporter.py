@@ -31,6 +31,8 @@ def context(run):
         value=p.load(run/(name+".json"));scene=store.get_json(value["output_scene_ref"],kind="scene");cc.ACTIVE.register_scene(store,scene)
     from src.t02_shared_gaps import restore as restore_shared_gaps
     restore_shared_gaps(store,scene,project_parts=True)
+    from .stage_entry_prior import bind as bind_entry
+    bind_entry(store)
     from src import pin_separation as pin
     if pin.ACTIVE is not None:
         for entry in reversed(scene['lineage']):
@@ -502,7 +504,7 @@ def check(run,body,ledger):
     raw_decision_image=p.from_wkb(store.get(value['intra']['after_native_ref'],kind='geometry'));raw_area=after.symmetric_difference(raw_decision_image).area;raw_area_bound=2*raw_decision_image.length*POLYGON_TOLERANCE_MM
     if not raw_decision_image.is_valid or raw_area>raw_area_bound:raise ValueError('RAW_MODEL_IMAGE_AREA_FIDELITY_FAILED')
     if not all(math.isfinite(v) for v in (distance,area,bound)) or distance>POLYGON_TOLERANCE_MM or area>bound or before.difference(after).area>1e-12:raise ValueError('ACTUAL_FINAL_COPPER_FIDELITY_OR_PRESERVATION_FAILED')
-    prior=cc.ACTIVE.reserved;coverage=after.buffer(POLYGON_TOLERANCE_MM);prior_missing=sum(g.difference(coverage).area for g in prior.values());checks['prior_positive_retention']=dict(passed=prior_missing<=1e-12,missing_area_mm2=prior_missing,prior_sha256=cc.ACTIVE.reservation_sha256,contour_uncertainty_mm=POLYGON_TOLERANCE_MM)
+    prior=cc.ACTIVE.reserved;coverage=after.buffer(POLYGON_TOLERANCE_MM);prior_missing=sum(g.difference(coverage).area for g in prior.values());checks['stage_entry_prior']=getattr(cc.ACTIVE,'stage_entry_prior',None);checks['prior_positive_retention']=dict(passed=prior_missing<=1e-12,missing_area_mm2=prior_missing,prior_sha256=cc.ACTIVE.reservation_sha256,contour_uncertainty_mm=POLYGON_TOLERANCE_MM)
     if prior_missing>1e-12:raise ValueError('PRIOR_QUALIFIED_POSITIVE_COPPER_MISSING:'+str(prior_missing))
     store.verify_reads();verify_sources(run)
     return dict(status='PASS',geometry_producer_binding_sha256=p.digest((run/'PRODUCER_BINDING.json').read_bytes()),remedy_policy_snapshot_sha256=p.digest((run/'REMEDY_POLICY_SNAPSHOT.json').read_bytes()),original_ownership_sha256=cc.ACTIVE.index.fingerprint,source_objects_preserved=n,source_clear_operations_preserved=sum(not o.polarity_dark for o in original.objects),appended_positive_regions=len(raw_observed),native_material_assembly=material_proof,actual_material_image_ref=p.geomref(store,after),raw_region_overlay_diagnostic=raw_overlay_diagnostic,actual_hard_gap_mm=p.HARD_GAP_MM,contour_proofs=proofs,actual_scene_checks=checks,exact_append_only_core_proofs=core_evidence,native_model_reference=reference_proof,aggregate_metric=metric,raw_model_image_comparison=dict(reference_type=raw_decision_image.geom_type,symmetric_difference_mm2=raw_area,area_bound_mm2=raw_area_bound,role="Decision image; native boundary fidelity uses the declared file-grid reference"),final_copper=dict(hausdorff_mm=distance,symmetric_difference_mm2=area,area_bound_mm2=bound,original_area_mm2=before.area,final_area_mm2=after.area,added_area_mm2=after.difference(before).area),generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()))
