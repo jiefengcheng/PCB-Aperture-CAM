@@ -5,7 +5,9 @@ predicate and perform complete ordered final assembly. Cache estimates bound
 retained objects, not transient GEOS allocations or the process allocator.
 """
 from collections import Counter, OrderedDict
+from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 import weakref,struct
 
 from shapely import from_wkb, to_wkb, get_precision
@@ -37,6 +39,27 @@ def valid(shape):
     return shape
 
 
+class OperandView(Mapping):
+    """Source-order operands; optional decoded shapes live only in the LRU."""
+    def __init__(self, snapshot, store, field, pinned):
+        self.snapshot, self.store, self.field = snapshot, store, field
+        self.pinned = pinned
+        self.ids = tuple(snapshot.objects)
+
+    def __iter__(self): return iter(self.ids)
+    def __len__(self): return len(self.ids)
+
+    def __getitem__(self, sid):
+        s = self.snapshot
+        if s.closed: raise ValueError('LOADED_GEOMETRY_SNAPSHOT_CLOSED')
+        aid, sha = s.bindings[sid, self.field]
+        ref = dict(artifact_id=aid, sha256=sha)
+        if s.objects[sid][self.field] != ref:
+            raise ValueError('LOADED_GEOMETRY_SNAPSHOT_BINDING_CHANGED')
+        if sid in self.pinned: return self.pinned[sid]
+        return s.geometry(self.store, ref)
+
+
 class GeometrySnapshot:
     """One versioned source snapshot with deduplicated immutable decoded shapes.
 
@@ -44,44 +67,104 @@ class GeometrySnapshot:
     the store. Original/current maps preserve source order and separate identity.
     No artifact-byte cache or identity-only validity shortcut is introduced.
     """
-    def __init__(self, store, scene, *, limit=SNAPSHOT_BYTES):
+    def __init__(self, store, scene, *, limit=SNAPSHOT_BYTES, bounded_operands=False, pin_current=True):
         self.limit = budget(limit, 'snapshot')
         self.shapes = {}
+        self.optional = OrderedDict()
+        self.optional_weight = 0
+        self.external_reserved = 0
+        self.bounded_operands = bounded_operands
+        self.closed = False
         self.weight = 0
         self.peak = 0
         self.stats = Counter()
         self.objects = {r['source_id']: r for r in scene['objects']}
+        self.bindings = MappingProxyType({(s, field): (r[field]['artifact_id'], r[field]['sha256'])
+            for s, r in self.objects.items() for field in ('geometry_ref', 'original_ref')})
+        # Eager spatial callers may pin physical current surfaces. Envelope-only
+        # callers can decode every operand on demand without losing any source
+        # occurrence, artifact check, ordering or final composition operand.
+        self.pinned_keys = ({r['geometry_ref']['sha256'] for r in scene['objects'] if r['kind'] != 'trace'} if pin_current else set()) if bounded_operands else None
         self._charge(256 * len(self.objects))
         try:
-            self.current = {s: self.geometry(store, r['geometry_ref']) for s, r in self.objects.items()}
-            self.original = {s: self.geometry(store, r['original_ref']) for s, r in self.objects.items()}
+            if bounded_operands:
+                pinned_current, pinned_original = {}, {}
+                # Validate every input, even operands that no selected route
+                # eventually uses. Optional entries may be evicted, never skipped.
+                for s, r in self.objects.items():
+                    shape = self.geometry(store, r['geometry_ref'])
+                    if r['geometry_ref']['sha256'] in self.pinned_keys: pinned_current[s] = shape
+                for s, r in self.objects.items():
+                    shape = self.geometry(store, r['original_ref'])
+                    if r['original_ref']['sha256'] in self.pinned_keys: pinned_original[s] = shape
+                self.current = OperandView(self, store, 'geometry_ref', pinned_current)
+                self.original = OperandView(self, store, 'original_ref', pinned_original)
+                self.views = (self.current, self.original)
+            else:
+                self.current = {s: self.geometry(store, r['geometry_ref']) for s, r in self.objects.items()}
+                self.original = {s: self.geometry(store, r['original_ref']) for s, r in self.objects.items()}
             self.crop = box(*scene['viewport_mm'])
         except BaseException:
             self.close()
             raise
 
     def _charge(self, amount):
-        if self.weight + amount > self.limit:
+        self._evict_for(amount)
+        if self.weight + amount + self.external_reserved > self.limit:
             raise ValueError('LOADED_GEOMETRY_SNAPSHOT_BUDGET')
         self.weight += amount
         self.peak = max(self.peak, self.weight)
+
+    def _evict_for(self, amount):
+        while self.optional and self.weight + amount + self.external_reserved > self.limit:
+            _, (_, _, size) = self.optional.popitem(last=False)
+            self.weight -= size
+            self.optional_weight -= size
+            self.stats['optional_evictions'] += 1
+
+    def reserve_external(self, amount):
+        """Partition this same budget with the owner's decoded-surface LRU."""
+        amount = budget(amount, 'external-reservation')
+        base = self.weight - self.optional_weight
+        if base + amount > self.limit:
+            raise ValueError('LOADED_GEOMETRY_SNAPSHOT_BUDGET')
+        self.external_reserved = amount
+        self._evict_for(0)
+
+    def optional_capacity(self):
+        return self.limit - (self.weight - self.optional_weight) - self.external_reserved
 
     def geometry(self, store, reference):
         body = store.get(reference, kind='geometry')
         key = reference['sha256']
         self.stats['artifact_accesses'] += 1
-        if key not in self.shapes:
-            self._charge(2 * len(body) + 512)
+        cached = self.shapes.get(key)
+        if cached is None and key in self.optional:
+            shape, expected, _ = self.optional[key]
+            cached = (shape, expected)
+            self.optional.move_to_end(key)
+        if cached is None:
+            size = 2 * len(body) + 512
+            pinned = not self.bounded_operands or key in self.pinned_keys
+            if pinned: self._charge(size)
             try:
                 from .preparation import decode_geometry
                 shape = valid(decode_geometry(body))
-                self.shapes[key] = (shape, geometry_checksum(shape))
+                cached = (shape, geometry_checksum(shape))
             except (TypeError, ValueError) as error:
                 fail('GEOMETRY_INVALID', str(error))
+            if pinned:
+                self.shapes[key] = cached
+            elif size <= self.optional_capacity():
+                self._charge(size)
+                self.optional[key] = (*cached, size)
+                self.optional_weight += size
+            else:
+                self.stats['optional_not_retained'] += 1
             self.stats['decodes'] += 1
         else:
             self.stats['decode_reuses'] += 1
-        shape, expected = self.shapes[key]
+        shape, expected = cached
         if geometry_checksum(shape) != expected:
             raise ValueError('LOADED_GEOMETRY_SNAPSHOT_CORRUPTED')
         # Preserve the original geometry validation even on a decoded-shape hit.
@@ -98,15 +181,26 @@ class GeometrySnapshot:
     def diagnostics(self):
         return dict(self.stats, resident_estimated_bytes=self.weight,
                     peak_estimated_bytes=self.peak, limit_bytes=self.limit,
-                    resident_geometry_entries=len(self.shapes))
+                    resident_geometry_entries=len(self.shapes) + len(self.optional),
+                    optional_resident_estimated_bytes=self.optional_weight,
+                    optional_entries=len(self.optional), external_reserved_bytes=self.external_reserved)
 
     def validate_bindings(self):
         if self.current.keys() != self.objects.keys() or self.original.keys() != self.objects.keys():
             raise ValueError('LOADED_GEOMETRY_SNAPSHOT_BINDING_CHANGED')
+        if self.bounded_operands and (self.current is not self.views[0] or self.original is not self.views[1]):
+            raise ValueError('LOADED_GEOMETRY_SNAPSHOT_BINDING_CHANGED')
         checked = set()
         for sid, row in self.objects.items():
             for name, view in (('geometry_ref', self.current), ('original_ref', self.original)):
+                if (row[name]['artifact_id'], row[name]['sha256']) != self.bindings[sid, name]:
+                    raise ValueError('LOADED_GEOMETRY_SNAPSHOT_BINDING_CHANGED')
                 key = row[name]['sha256']
+                if self.bounded_operands and key not in self.pinned_keys:
+                    # The LRU may have evicted this input. Re-read its exact
+                    # bytes and validate the decoded geometry independently.
+                    self.geometry(view.store, row[name])
+                    continue
                 entry = self.shapes.get(key)
                 if entry is None or view[sid] is not entry[0]:
                     raise ValueError('LOADED_GEOMETRY_SNAPSHOT_BINDING_CHANGED')
@@ -117,6 +211,13 @@ class GeometrySnapshot:
 
     def close(self):
         self.shapes.clear()
+        self.optional.clear()
+        self.optional_weight = 0
+        self.external_reserved = 0
+        self.closed = True
+        for view in getattr(self, 'views', ()):
+            view.pinned.clear()
+        self.views = ()
         self.current = {}
         self.original = {}
         self.objects = {}

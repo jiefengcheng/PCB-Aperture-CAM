@@ -83,10 +83,10 @@ class CoverageAdapter(NativeSpindleAdapter):
             if policy!={'stage':'t05','parameters':parameters()}:raise ValueError('U05_ATTACHMENT_POLICY_OR_BOUNDS_INVALID')
             self.close()
             try:
-                self._snapshot=GeometrySnapshot(store,scene,limit=self.geometry_budgets['snapshot_bytes']);s=self._snapshot
+                self._snapshot=GeometrySnapshot(store,scene,limit=self.geometry_budgets['snapshot_bytes'],bounded_operands=True,pin_current=False);s=self._snapshot
                 self._hot=(s.objects,s.current,s.original,s.crop);self._hot_key=key
                 self._ids=sorted(sid for sid in s.current if s.objects[sid]['kind']!='trace')
-                self._spatial=SpatialQueries({sid:s.current[sid] for sid in self._ids},context=key[1],versions={sid:s.objects[sid]['geometry_ref']['sha256'] for sid in self._ids})
+                self._spatial=SpatialQueries({sid:s.current[sid] for sid in self._ids},context=key[1],versions={sid:s.objects[sid]['geometry_ref']['sha256'] for sid in self._ids},envelopes_only=True)
                 self._before=s.retain_derived(unary_union([s.current[sid] for sid in self._ids]))
                 context=integral_context()
                 if cc.ACTIVE is not None:cc.ACTIVE.register_scene(store,scene)
@@ -94,7 +94,9 @@ class CoverageAdapter(NativeSpindleAdapter):
                     context.register_scene(store,scene)
                     self._integral_context=context
                     from .owner_surfaces import OwnerSurfaces
-                    self._copper_owners=OwnerSurfaces(context,{sid:s.current[sid]for sid in self._ids},store,limit=s.limit-s.weight)
+                    owner_limit=s.optional_capacity()//2
+                    s.reserve_external(owner_limit)
+                    self._copper_owners=OwnerSurfaces(context,{sid:s.current[sid]for sid in self._ids},store,limit=owner_limit)
                     self._surface_owners={}
             except BaseException:
                 self.close();raise

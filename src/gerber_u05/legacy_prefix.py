@@ -37,6 +37,21 @@ def t02_only_before_stage(stages,old):
   scene=load(file)
   if any(row.get('stage')=='t02'or row.get('shared_gap_state_ref')is not None for row in scene.get('lineage',[])):raise ValueError('LEGACY_PRE_T02_HAS_SHARED_GAP_STATE')
 
+def preparation_class_delta_only(before,after,kind):
+ """T05-only classes may change; shared constants and helpers may not."""
+ classes={'GeometrySnapshot','OperandView'}if kind=='loaded_geometry'else{'SpatialQueries'}
+ imports={'Mapping','MappingProxyType'}if kind=='loaded_geometry'else{'box','geometry_checksum'}
+ def reduced(text):
+  tree=ast.parse(text);nodes=[]
+  for node in tree.body:
+   if isinstance(node,ast.ClassDef)and node.name in classes:continue
+   if isinstance(node,ast.ImportFrom):
+    node.names=[name for name in node.names if name.name not in imports]
+    if not node.names:continue
+   nodes.append(node)
+  tree.body=nodes;return ast.dump(tree,include_attributes=False)
+ if reduced(before)!=reduced(after):raise ValueError('LEGACY_PREPARATION_POLICY_OR_HELPER_CHANGED:'+kind)
+
 def pipeline_same(before,after,through='t02'):
  def reduced(text):
   tree=ast.parse(text);tree.body=[n for n in tree.body if not(isinstance(n,ast.FunctionDef)and(n.name=='empty_t02'or(through=='t04'and n.name=='run_t02')))]
@@ -196,6 +211,17 @@ def inspect(old,through):
   elif relative=='src/gerber_u05/component_stages.py'and through in('t02','t05'):
    reservation_witness_delta_only(file.read_text(),current.read_text());prove_no_retained_partials(old,stages)
   elif relative=='src/u05_board/coverage.py'and through=='t05':raise ValueError('LEGACY_T05_ADAPTER_CHANGE_REQUIRES_FRESH_T05')
+  elif relative=='src/stage_abi/loaded_geometry.py':
+   # The legacy pipeline first constructs a GeometrySnapshot inside T05.
+   # No T01/T03/T04/T02 geometry or completed T05 result may be replaced by
+   # a decoded-cache correction. T05 is freshly constructed and evaluated.
+   if through=='t05':raise ValueError('LEGACY_T05_SNAPSHOT_CHANGE_REQUIRES_FRESH_T05')
+   preparation_class_delta_only(file.read_text(),current.read_text(),'loaded_geometry')
+  elif relative=='src/stage_abi/spatial_queries.py':
+   # Earlier preparation imports this module's unchanged budget constants;
+   # the SpatialQueries class itself is instantiated by T05 only.
+   if through=='t05':raise ValueError('LEGACY_T05_SPATIAL_CHANGE_REQUIRES_FRESH_T05')
+   preparation_class_delta_only(file.read_text(),current.read_text(),'spatial_queries')
   elif relative=='src/t04_incremental.py'and through=='t03':
    # This module is first called by T04. Retain only T01/T03 after the exact
    # cache-accounting correction; no geometry/policy change receives reuse.

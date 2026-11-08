@@ -10,8 +10,9 @@ import math
 import struct
 
 from shapely import STRtree, to_wkb
+from shapely.geometry import box
 
-from .loaded_geometry import budget
+from .loaded_geometry import budget, geometry_checksum
 from .store import canonical, digest
 
 INDEX_BYTES = 32 * 1024**2
@@ -50,16 +51,21 @@ rollback uses the same update path, never a special validity shortcut.
 """
     def __init__(self, geometries, *, context, versions=None, index_bytes=INDEX_BYTES,
                  query_bytes=QUERY_BYTES, query_entries=QUERY_ENTRIES,
-                 overlay_entries=OVERLAY_ENTRIES):
+                 overlay_entries=OVERLAY_ENTRIES, envelopes_only=False):
         self.context = context
         self.limits = tuple(budget(v, n) for v, n in (
             (index_bytes, 'index'), (query_bytes, 'queries'),
             (query_entries, 'query_entries'), (overlay_entries, 'overlay_entries')))
+        self.envelopes_only = envelopes_only
         self.current = dict(geometries)
         self._check_capacity(len(self.current))
         self.boxes = {sid: bounds(g) for sid, g in self.current.items()}
         self.versions = ({sid: digest(to_wkb(g)) for sid, g in self.current.items()}
                          if versions is None else dict(versions))
+        self.fingerprints = ({sid: geometry_checksum(g) for sid, g in self.current.items()}
+                             if envelopes_only else {})
+        if envelopes_only:
+            self.current = {sid: box(*self.boxes[sid]) for sid in self.current}
         if self.versions.keys() != self.current.keys():
             raise ValueError('SPATIAL_VERSION_COVERAGE')
         self.tokens = {s: self._token(s, v) for s, v in self.versions.items()}
@@ -153,11 +159,13 @@ rollback uses the same update path, never a special validity shortcut.
             self.boxes.pop(sid, None)
             self.versions.pop(sid, None)
             self.tokens.pop(sid, None)
+            self.fingerprints.pop(sid, None)
         else:
-            self.current[sid] = shape
+            self.current[sid] = box(*new) if self.envelopes_only else shape
             self.boxes[sid] = new
             self.versions[sid] = version
             self.tokens[sid] = self._token(sid, version)
+            if self.envelopes_only: self.fingerprints[sid] = geometry_checksum(shape)
         self.overlay.add(sid)
         if len(self.overlay) > self.limits[3]:
             self._rebuild()
@@ -166,7 +174,16 @@ rollback uses the same update path, never a special validity shortcut.
     def validate_bindings(self, geometries, versions, *, context):
         """Pair with the caller's full byte validation at each verdict boundary."""
         if (context != self.context or self.current.keys() != geometries.keys() or
-                self.versions != versions or any(self.current[s] is not g for s, g in geometries.items())):
+                self.versions != versions):
+            raise ValueError('SPATIAL_INPUT_BINDING_CHANGED')
+        if self.envelopes_only:
+            if self.fingerprints != {s: geometry_checksum(g) for s, g in geometries.items()}:
+                raise ValueError('SPATIAL_INPUT_BINDING_CHANGED')
+            if any(bounds(g) != self.boxes[s] or
+                   geometry_checksum(self.current[s]) != geometry_checksum(box(*self.boxes[s]))
+                   for s, g in geometries.items()):
+                raise ValueError('SPATIAL_INPUT_BINDING_CHANGED')
+        elif any(self.current[s] is not g for s, g in geometries.items()):
             raise ValueError('SPATIAL_INPUT_BINDING_CHANGED')
         if (self.context_token != bytes.fromhex(digest(canonical(context))) or
                 self.tokens != {s:self._token(s,v) for s,v in versions.items()}):
@@ -188,6 +205,7 @@ rollback uses the same update path, never a special validity shortcut.
         self.versions.clear()
         self.tokens.clear()
         self.boxes.clear()
+        self.fingerprints.clear()
         self.overlay.clear()
         self.ids = ()
         self.tree = STRtree([])

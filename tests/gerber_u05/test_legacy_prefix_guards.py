@@ -60,6 +60,41 @@ def test_shared_gap_correction_never_adopts_a_completed_t02_or_its_frozen_state(
  with pytest.raises(ValueError,match='HAS_SHARED_GAP_STATE'):q.t02_only_before_stage(['t04'],old)
 
 
+def test_snapshot_cache_change_retains_pre_t05_only_and_rejects_a_t05_result(tmp_path,monkeypatch):
+ old,current,_=binding_fixture(tmp_path,monkeypatch)
+ seal=json.loads((old/'PRODUCER_BINDING.json').read_bytes())
+ original=Path(next(iter(seal['files']))).parents[1]
+ name='src/stage_abi/loaded_geometry.py'
+ for root,text in [(original,'# old cache\n'),(current,'# bounded cache\n')]:
+  file=root/name;file.parent.mkdir(parents=True,exist_ok=True);file.write_text(text)
+ seal['files'][str(original/name)]=q.sha(original/name);put(old/'PRODUCER_BINDING.json',seal)
+ source=json.loads((old/'source.json').read_bytes());scene_ref=source['scene_ref']
+ put(old/'t05.json',dict(output_scene_ref=scene_ref,stage='t05'))
+ state=json.loads((old.parent/'STATUS.current.json').read_bytes())
+ for stage in('t01','t03','t04','t02','t05'):
+  proof=dict(status='PASS',producer_binding_sha256=q.sha(old/'PRODUCER_BINDING.json'),candidate_sha256=q.sha(old/(stage+'.json')))
+  for i,mode in enumerate(('construct','1','2')):
+   put(old/'audits'/stage/(mode+'.json'),proof)
+   if stage=='t05':state['checks']['legacy_t05_'+mode]=dict(status='PASS',returncode=0,pid=100+i)
+  put(old/'audits'/stage/'proof.json',proof)
+ put(old.parent/'STATUS.current.json',state)
+ monkeypatch.setattr(guard,'producer_files',lambda:[current/Path(n).relative_to(original)for n in seal['files']])
+ assert q.inspect(old,'t02')['retained_operation_count']==14
+ with pytest.raises(ValueError,match='SNAPSHOT_CHANGE_REQUIRES_FRESH_T05'):q.inspect(old,'t05')
+
+
+def test_preparation_class_delta_cannot_change_a_shared_budget_or_geometry_helper():
+ before='from .loaded_geometry import budget\nINDEX_BYTES=32\nclass SpatialQueries: pass\ndef bounds(x): return x\n'
+ after=before.replace('import budget','import budget, geometry_checksum').replace('class SpatialQueries: pass','class SpatialQueries:\n def bounded(self): return True')
+ q.preparation_class_delta_only(before,after,'spatial_queries')
+ for changed in(after.replace('INDEX_BYTES=32','INDEX_BYTES=64'),after.replace('return x','return None')):
+  with pytest.raises(ValueError,match='POLICY_OR_HELPER_CHANGED'):q.preparation_class_delta_only(before,changed,'spatial_queries')
+ before='SNAPSHOT_BYTES=192\nMEMO_BYTES=32\nclass GeometrySnapshot: pass\nclass GeometryMemo: pass\n'
+ after=before.replace('class GeometrySnapshot: pass','class OperandView: pass\nclass GeometrySnapshot:\n def bounded(self): return True')
+ q.preparation_class_delta_only(before,after,'loaded_geometry')
+ with pytest.raises(ValueError,match='POLICY_OR_HELPER_CHANGED'):q.preparation_class_delta_only(before,after.replace('MEMO_BYTES=32','MEMO_BYTES=64'),'loaded_geometry')
+
+
 def test_t03_boundary_never_retains_a_failed_t04(tmp_path,monkeypatch):
  old,_,_=binding_fixture(tmp_path,monkeypatch)
  path=old.parent/'STATUS.current.json';state=json.loads(path.read_bytes())
