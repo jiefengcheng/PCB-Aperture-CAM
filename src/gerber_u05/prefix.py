@@ -2,6 +2,27 @@
 import ast,hashlib,json
 from pathlib import Path
 STAGES=('t01','t03','t04','t02')
+WIDTH_CORRECTION={
+ 'src/component_clearance.py':('957f90407b119660bffd6946320b0af398b3ee1d6402a1cfb8b1a9694dd0b904','8a705db3911686d2bb760cde74c484a16243487013e2798148bdf038886fb72d'),
+ 'src/prepared_width_scene.py':('6ed21e7cebd6395f8a7e29215282832a81bdbb8dd16386202e58fe019bd4ce2d','6c3f5a1d8f3ab2eb2e5482e7227af14339a4cd57fcae488d5d6b3acefd516782'),
+ 'src/gerber_u05/ladder_width.py':('e97b3bc77b97f292194b196d4e5bd7e2164745bb6b747c10e5003905bca1a112','5ba74cca9e73802c00444f3289ebca455254156eceaf3874a48040d930b33f95')}
+
+def retained_stages(stages):
+ stages=tuple(stages)
+ if stages not in (('t01','t03'),STAGES):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
+ return stages
+
+def operation_keys(stages):
+ stages=retained_stages(stages)
+ return (['legacy_'+s+'_'+m for s in('t01','t03','t04','t02','t05')for m in('construct','1','2')]
+         +['legacy_t01_supplement_'+m for m in('1','2')]
+         +['legacy_legacy_export_'+m for m in('construct','1','2')]
+         +['reference_remedy_'+m for m in('construct','1','2')]
+         +['connected_'+s+'_'+m for s in stages for m in('construct','1','2')])
+
+def require_retained_t03(run):
+ summary=load(Path(run)/'t03.json')['summary']
+ if summary.get('moved')!=0 or summary.get('disposition')!='NO_CHANGE_REQUIRED':raise ValueError('REUSED_T03_MOVEMENT_REQUIRES_FRESH_QUALIFICATION')
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/contours.py','src/gerber_u05/exporter.py','src/gerber_u05/render.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/controls.py','src/gerber_u05/delivery.py'}
 DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py','src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py'})
 EQUIVALENT={
@@ -84,8 +105,8 @@ def support_normalization_same(before,after):
  if remove.count!=3 or ast.dump(tree,include_attributes=False)!=ast.dump(ast.parse(before),include_attributes=False):raise ValueError('REUSED_SUPPORT_NORMALIZATION_DELTA_CHANGED')
  return dict(status='EXACT_QUALIFIED_SUPPORT_NORMALIZATION_DELTA',added_calls=3,unchanged_geometry_predicates=True)
 
-def verify_code(original,root,old_root):
- results=[];root=Path(root);old_root=Path(old_root)
+def verify_code(original,root,old_root,*,stages=STAGES):
+ stages=retained_stages(stages);results=[];root=Path(root);old_root=Path(old_root)
  for name,expected in original['files'].items():
   path=Path(name)
   if not path.is_relative_to(old_root):raise ValueError('REUSED_PRODUCER_OUTSIDE_DECLARED_SOURCE')
@@ -94,6 +115,8 @@ def verify_code(original,root,old_root):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if stages==('t01','t03')and WIDTH_CORRECTION.get(relative)==(expected,actual):
+   results.append(dict(path=relative,scope='Exact e10fce9 positive-operand width delta correction and rejection evidence only. Retain connected T01 and zero-movement T03; T04 and every downstream operation run fresh. Previously passed legacy geometry and its native export remain immutable.',before_sha256=expected,after_sha256=actual));continue
   if relative=='src/t02_shared_gaps.py':
    results.append(dict(path=relative,proof=shared_gap_restore_same(path.read_text(),current.read_text())));continue
   if relative=='src/gerber_u05/pipeline.py':
@@ -170,9 +193,27 @@ def verify_predecessor_families(run,binding):
   expected=[v for k,v in legacy_seal['job_inputs'].items()if Path(k).name==path.name]
   if expected!=[sha(path)]:raise ValueError('REUSED_LEGACY_AUTHORITY_CHANGED')
   inherited=load(path)['original']
+ stage_producers=None
+ if inherited is not None:
+  # prepare() obtains this by executing the frozen producer's recursive
+  # inspector, then seals it with every copied operand. Do not attribute all
+  # inherited stages to the immediate parent's producer: each may have a
+  # different, recursively verified producer several generations back.
+  proof=load(evidence/'ORIGINAL_LEGACY_PREFIX_PROOF.json')
+  if proof['original_run']!=str(Path(binding['original_run']).parent/'legacy')or proof['original_producer_binding_sha256']!=sha(legacy/'PRODUCER_BINDING.json')or proof['source_binding_sha256']!=sha(legacy/'source.json')or proof['source_sha256']!=source or proof['stages']!=['t01','t03','t04','t02','t05']or proof['retained_operation_count']!=17:raise ValueError('REUSED_LEGACY_INSPECTION_BINDING_CHANGED')
+  for key,record in proof['original_checks'].items():
+   if records.get(key)!=record:raise ValueError('REUSED_LEGACY_INSPECTION_RECORD_CHANGED')
+  for relative,expected in proof['files'].items():
+   part=Path(relative)
+   if part.is_absolute()or'..'in part.parts:raise ValueError('REUSED_LEGACY_INSPECTION_PATH_INVALID')
+   file=legacy/part
+   if not file.is_file():file=Path(run).parent/'legacy'/part
+   if sha(file)!=expected:raise ValueError('REUSED_LEGACY_INSPECTION_OPERAND_CHANGED:'+relative)
+  stage_producers=proof['stage_producer_bindings']
+  if set(stage_producers)!=set(proof['stages']):raise ValueError('REUSED_LEGACY_STAGE_PRODUCERS_INCOMPLETE')
  for stage in('t01','t03','t04','t02','t05'):
   proofs=[load(legacy/'audits'/stage/(m+'.json'))for m in('construct','1','2')]
-  producer=inherited['original_producer_binding_sha256']if inherited and stage in inherited['stages']else sha(legacy/'PRODUCER_BINDING.json')
+  producer=stage_producers[stage]if stage_producers is not None else sha(legacy/'PRODUCER_BINDING.json')
   if any(p!=proofs[0]for p in proofs)or proofs[0]['status']!='PASS'or proofs[0]['producer_binding_sha256']!=producer or proofs[0]['source_sha256']!=source or proofs[0]['candidate_sha256']!=sha(legacy/(stage+'.json')):raise ValueError('REUSED_LEGACY_STAGE_PROOF_CHANGED:'+stage)
   if records['legacy_'+stage+'_1']['pid']==records['legacy_'+stage+'_2']['pid']:raise ValueError('REUSED_LEGACY_EVALUATIONS_NOT_SEPARATE')
  supplements=[load(legacy/'audits/t01'/('supplement_'+m+'.json'))for m in('1','2')]
@@ -181,7 +222,7 @@ def verify_predecessor_families(run,binding):
   proofs=[load(folder/'export'/('proof_'+m+'.json'))for m in modes]
   if any(p!=proofs[0]for p in proofs)or proofs[0]['status']!='PASS'or proofs[0]['generated_sha256']!=sha(folder/'export/top.art.gbr'):raise ValueError('REUSED_NATIVE_REFERENCE_PROOF_CHANGED')
   if records[operation+'_1']['pid']==records[operation+'_2']['pid']:raise ValueError('REUSED_NATIVE_REFERENCE_EVALUATIONS_NOT_SEPARATE')
- required=['legacy_'+s+'_'+m for s in('t01','t03','t04','t02','t05')for m in('construct','1','2')]+['legacy_t01_supplement_'+m for m in('1','2')]+['legacy_legacy_export_'+m for m in('construct','1','2')]+['reference_remedy_'+m for m in('construct','1','2')]+['connected_'+s+'_'+m for s in STAGES for m in('construct','1','2')]
+ required=operation_keys(binding['reused_stages'])
  if set(records)!=set(required)or binding['retained_operation_count']!=len(required)or any(records[k]['status']!='PASS'or records[k]['returncode']!=0 for k in required):raise ValueError('REUSED_COMPLETE_NATIVE_PREFIX_REQUIRED')
  return dict(status='PASS',retained_operations=len(required))
 
@@ -191,14 +232,16 @@ def verify(run):
  run=Path(run);path=run/'REUSED_PREFIX_BINDING.json'
  if not path.exists():return None
  binding=load(path);original=load(run/'prefix_evidence/ORIGINAL_PRODUCER_BINDING.json')
+ stages=retained_stages(binding['reused_stages'])
  if sha(run/'prefix_evidence/ORIGINAL_PRODUCER_BINDING.json')!=binding['original_producer_binding_sha256']:raise ValueError('REUSED_PRODUCER_BINDING_CHANGED')
- verify_code(original,ROOT,binding['original_source_root'])
+ verify_code(original,ROOT,binding['original_source_root'],stages=stages)
+ if stages==('t01','t03'):require_retained_t03(run)
  if sha(run/'source.json')!=original['source_binding_sha256']:raise ValueError('REUSED_PREFIX_SOURCE_CHANGED')
  for relative,expected in binding['files'].items():
   file=run/relative
   if not file.is_relative_to(run)or sha(file)!=expected:raise ValueError('REUSED_PREFIX_EVIDENCE_CHANGED:'+relative)
  verify_predecessor_families(run,binding)
- for stage in STAGES:
+ for stage in stages:
   candidate=sha(run/(stage+'.json'));proofs=[load(run/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
   if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]:raise ValueError('REUSED_PAIRED_PROOFS_DIFFER:'+stage)
   if proofs[0]['status']!='PASS'or proofs[0]['candidate_sha256']!=candidate or proofs[0]['producer_binding_sha256']!=binding['original_producer_binding_sha256']:raise ValueError('REUSED_STAGE_PROOF_CHANGED:'+stage)
@@ -208,14 +251,16 @@ def verify(run):
   if binding['original_checks']['connected_'+stage+'_1']['pid']==binding['original_checks']['connected_'+stage+'_2']['pid']:raise ValueError('REUSED_EVALUATIONS_NOT_SEPARATE_PROCESSES')
  # Preserve and hash-revalidate every original search witness, without solving
  # unchanged geometry again. All new T05 and actual-file predicates stay fresh.
- value=load(run/'t04.json');store=p.Store(run/'runtime');verify_width_ledger(value,store)
+ store=p.Store(run/'runtime');value=None
+ if 't04'in stages:
+  value=load(run/'t04.json');verify_width_ledger(value,store)
  if binding.get('checked_legacy_files'):
   legacy=run.parent/'legacy'
   for relative,expected in binding['checked_legacy_files'].items():
    file=legacy/relative
    if not file.resolve().is_relative_to(legacy.resolve())or sha(file)!=expected:raise ValueError('REUSED_CHECKING_ENVELOPE_EVIDENCE_CHANGED')
   if legacy_support_identity(run/'prefix_evidence/legacy')!=binding['legacy_support_identity']:raise ValueError('REUSED_LEGACY_SUPPORT_IDENTITY_CHANGED')
- if value['solution'].get('schema')=='source-route-ten-step-width-ladder/1':
+ if value is not None and value['solution'].get('schema')=='source-route-ten-step-width-ladder/1':
   proof=load(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json')
   if not proof['passed']or not proof['completed_width_fence']['passed']or proof['completed_t04_sha256']!=sha(run/'t04.json')or proof['connected_checkpoint_sha256']!=sha(run/'RAW_WIDTH_CHECKPOINT.json')or proof['legacy_checkpoint_sha256']!=sha(run.parent/'legacy/RAW_WIDTH_CHECKPOINT.json')or any(not row['passed']for row in proof['parts']):raise ValueError('REUSED_T04_PRIOR_COMPATIBILITY_CHANGED')
  store.verify_reads()

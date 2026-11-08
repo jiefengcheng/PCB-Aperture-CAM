@@ -1,10 +1,10 @@
-"""Incremental qualification: reuse an accepted source/prefix, run T05 onward."""
+"""Incremental qualification from an audited T03 or T02 prefix in a new job."""
 import argparse,datetime,json,os,shutil,subprocess,sys,uuid
 from pathlib import Path
 from . import pipeline as p
 from .guard import seal,verify_sources,install_read_fence
-from .prefix import STAGES,sha,load,verify_code
-from .run import Coordinator,CONNECTED
+from .prefix import STAGES,sha,load,verify_code,retained_stages,operation_keys,require_retained_t03
+from .run import Coordinator,CONNECTED,ORDER
 from .workspace import configure
 
 
@@ -28,13 +28,15 @@ def completed_records(old_job,old_root):
  return records,log_roots,proof
 
 
-def prepare(prefix,job,coordinator=None):
+def prepare(prefix,job,coordinator=None,*,through='t02'):
  from src.pcb_data_abi.input_directory import collect_raw
  prefix=Path(prefix);old_job=prefix.parent;original=load(prefix/'PRODUCER_BINDING.json');state=load(old_job/'STATUS.current.json');inventory=load(prefix/'input_inventory.json')
  if original['profile']!=CONNECTED:raise ValueError('CONNECTED_PREFIX_PROFILE_REQUIRED')
- old_root=Path(os.path.commonpath(list(original['files'])));code=verify_code(original,p.ROOT,old_root)
+ stages=retained_stages(ORDER[:ORDER.index(through)+1])
+ if stages==('t01','t03'):require_retained_t03(prefix)
+ old_root=Path(os.path.commonpath(list(original['files'])));code=verify_code(original,p.ROOT,old_root,stages=stages)
  records,log_roots,legacy_proof=completed_records(old_job,old_root)
- required=['legacy_'+stage+'_'+mode for stage in('t01','t03','t04','t02','t05')for mode in('construct','1','2')]+['legacy_t01_supplement_'+m for m in('1','2')]+['legacy_legacy_export_'+m for m in('construct','1','2')]+['reference_remedy_'+m for m in('construct','1','2')]+['connected_'+stage+'_'+m for stage in STAGES for m in('construct','1','2')]
+ required=operation_keys(stages)
  if any(key not in records or records[key]['status']!='PASS'or records[key]['returncode']!=0 for key in required):raise ValueError('REUSED_SOURCE_OR_PREFIX_CHECK_INCOMPLETE')
  root,blobs,ignored=collect_raw(inventory['input_directory'])
  if {n:p.digest(b)for n,b in blobs.items()}!=inventory['files']or ignored!=inventory['ignored']:raise ValueError('REUSED_RAW_INPUT_CUSTODY_CHANGED')
@@ -43,16 +45,21 @@ def prepare(prefix,job,coordinator=None):
  if(prefix/'SOURCE_ASSEMBLY_BINDING.json').exists():
   from . import source_assembly
   coordinator=Coordinator(job)if coordinator is None else coordinator
-  assembly=job/'assembly';assembly.mkdir();(assembly/'original.gbr').write_bytes(raw);p.save(assembly/'INPUT_INVENTORY.json',inventory);p.save(assembly/'ASSEMBLY_PRODUCER.json',source_assembly._producer(assembly))
+  assembly=job/'assembly';assembly.mkdir();(assembly/'original.gbr').write_bytes(raw);p.save(assembly/'INPUT_INVENTORY.json',inventory)
+  from .pcb_artwork_scope import capture as capture_scope
+  capture_scope(assembly,root,blobs,inventory)
+  p.save(assembly/'ASSEMBLY_PRODUCER.json',source_assembly._producer(assembly))
   coordinator.execute(assembly,'source_assembly',['construct'],module='source_assembly');coordinator.execute(assembly,'source_assembly',['1','2'],module='source_assembly');source_assembly.verify_job(assembly);raw=(assembly/'assembled.gbr').read_bytes();fresh_assembly=3
  if p.digest(raw)!=source['source_ref']['sha256']:raise ValueError('REUSED_SELECTED_SOURCE_CHANGED')
  run=job/'connected';run.mkdir();subprocess.run(['cp','-cR',str(prefix/'runtime'),str(run/'runtime')],check=True)
- for name in('source.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','RAW_WIDTH_CHECKPOINT.json','T04_PRIOR_WIDTH_COMPATIBILITY.json','T04_SETTINGS_SNAPSHOT.json','PIN_SEPARATION_POLICY.json','STORAGE_ENCODING.json'):
+ names=['source.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','T04_SETTINGS_SNAPSHOT.json','PIN_SEPARATION_POLICY.json','STORAGE_ENCODING.json']
+ if 't04'in stages:names+=['RAW_WIDTH_CHECKPOINT.json','T04_PRIOR_WIDTH_COMPATIBILITY.json']
+ for name in names:
   if(prefix/name).exists():copy_file(prefix/name,run/name)
- for folder in('source_snapshot','reference','width_prefix_audits'):
+ for folder in(('source_snapshot','reference','width_prefix_audits')if 't04'in stages else('source_snapshot','reference')):
   if(prefix/folder).exists():subprocess.run(['cp','-cR',str(prefix/folder),str(run/folder)],check=True)
  (run/'audits').mkdir()
- for stage in STAGES:
+ for stage in stages:
   copy_file(prefix/(stage+'.json'),run/(stage+'.json'));subprocess.run(['cp','-cR',str(prefix/'audits'/stage),str(run/'audits'/stage)],check=True)
  evidence=run/'prefix_evidence';evidence.mkdir();copy_file(prefix/'PRODUCER_BINDING.json',evidence/'ORIGINAL_PRODUCER_BINDING.json');copy_file(old_job/'STATUS.current.json',evidence/'ORIGINAL_ROUTE_STATUS.json');copy_file(old_job/'ASSET_MANIFEST_PROOF.json',evidence/'ORIGINAL_ASSET_MANIFEST_PROOF.json')
  if legacy_proof is not None:p.save(evidence/'ORIGINAL_LEGACY_PREFIX_PROOF.json',legacy_proof)
@@ -84,15 +91,15 @@ def prepare(prefix,job,coordinator=None):
    if not matches:raise ValueError('REUSED_NATIVE_PROCESS_LOG_MISSING:'+key)
    copy_file(matches[0],evidence/'logs'/(key+suffix))
  checked_legacy={}
- if load(run/'t04.json')['solution'].get('schema')=='source-route-ten-step-width-ladder/1':
+ if legacy_proof is not None or load(old_job/'legacy/t04.json')['solution'].get('schema')=='source-route-ten-step-width-ladder/1':
   # These are hash-bound checking-envelope inputs, not a resumed legacy job.
   legacy=job/'legacy';legacy.mkdir();subprocess.run(['cp','-cR',str(old_job/'legacy/runtime'),str(legacy/'runtime')],check=True)
   for name in('source.json','RAW_WIDTH_CHECKPOINT.json','t04.json'):copy_file(old_job/'legacy'/name,legacy/name)
   subprocess.run(['cp','-cR',str(old_job/'legacy/audits'),str(legacy/'audits')],check=True)
   p.save(legacy/'SCOPE.json',dict(role='HASH_BOUND_CHECKING_ENVELOPE_INPUTS_ONLY',original_run=str(old_job/'legacy'),native_job_resumed=False))
   checked_legacy={str(f.relative_to(legacy)):sha(f)for f in legacy.rglob('*')if f.is_file()}
- binding=dict(schema='incremental-native-prefix/1',source_sha256=source['source_ref']['sha256'],original_source_root=str(old_root),original_run=str(prefix),original_job_status=state['status'],original_route_completion='NOT_CLAIMED; original failed/boundary status preserved',original_producer_binding_sha256=sha(prefix/'PRODUCER_BINDING.json'),original_checks={key:records[key]for key in required},retained_operation_count=len(required),reused_stages=list(STAGES),code_dependency_checks=code,fresh_assembly_operations=fresh_assembly,checked_legacy_files=checked_legacy,legacy_support_identity=support_identity,files={})
- files=[*evidence.rglob('*'),*[run/(stage+'.json')for stage in STAGES],*(run/'audits').rglob('*.json')]
+ binding=dict(schema='incremental-native-prefix/1',source_sha256=source['source_ref']['sha256'],original_source_root=str(old_root),original_run=str(prefix),original_job_status=state['status'],original_route_completion='NOT_CLAIMED; original failed/boundary status preserved',original_producer_binding_sha256=sha(prefix/'PRODUCER_BINDING.json'),original_checks={key:records[key]for key in required},retained_operation_count=len(required),reused_stages=list(stages),code_dependency_checks=code,fresh_assembly_operations=fresh_assembly,checked_legacy_files=checked_legacy,legacy_support_identity=support_identity,files={})
+ files=[*evidence.rglob('*'),*[run/(stage+'.json')for stage in stages],*(run/'audits').rglob('*.json')]
  if(run/'RAW_WIDTH_CHECKPOINT.json').exists():files.append(run/'RAW_WIDTH_CHECKPOINT.json')
  if(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json').exists():files.append(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json')
  binding['files']={str(file.relative_to(run)):sha(file)for file in files if file.is_file()}
@@ -108,8 +115,18 @@ def prepare(prefix,job,coordinator=None):
  return run,binding
 
 
+def continue_stages(coordinator,run,through):
+ retained_stages(ORDER[:ORDER.index(through)+1])
+ for stage in ORDER[ORDER.index(through)+1:]:
+  coordinator.execute(run,stage,['construct']);coordinator.execute(run,stage,['1','2'])
+  proofs=[p.load(run/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
+  if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]or proofs[0]['status']!='PASS':raise ValueError('FRESH_PAIRED_STAGE_PROOFS_DIFFER:'+stage)
+  if stage=='t04':
+   from .width_prior import verify
+   verify(coordinator.job/'legacy',run)
+
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('t03','t02'),default='t02');args=parser.parse_args()
  if not args.prefix_run.is_absolute():parser.error('prefix run must be an explicit absolute path')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental';parent.mkdir(parents=True,exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=Coordinator(job);coordinator.state.update(source_only=False,qualification_mode='INCREMENTAL_REUSED_NATIVE_PREFIX')
  try:
@@ -118,10 +135,8 @@ def main():
   for name,expected in manifest.items():
    if sha(p.ROOT/'assets/starter'/name)!=expected:raise ValueError('IMMUTABLE_ASSET_HASH_CHANGED:'+name)
   p.save(job/'ASSET_MANIFEST_PROOF.json',dict(status='PASS',files=count,starter_files=len(manifest)))
-  run,binding=prepare(args.prefix_run,job,coordinator);coordinator.state['reused_prefix']=dict(operations=binding['retained_operation_count'],stages=binding['reused_stages'],binding_sha256=sha(run/'REUSED_PREFIX_BINDING.json'));install_read_fence(job);verify_sources(run)
-  coordinator.execute(run,'t05',['construct']);coordinator.execute(run,'t05',['1','2'])
-  proofs=[p.load(run/'audits/t05'/(mode+'.json'))for mode in('construct','1','2')]
-  if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]:raise ValueError('FRESH_T05_PAIRED_PROOFS_DIFFER')
+  run,binding=prepare(args.prefix_run,job,coordinator,through=args.through_stage);coordinator.state['reused_prefix']=dict(operations=binding['retained_operation_count'],stages=binding['reused_stages'],binding_sha256=sha(run/'REUSED_PREFIX_BINDING.json'));install_read_fence(job);verify_sources(run)
+  continue_stages(coordinator,run,args.through_stage)
   coordinator.execute(run,'export',['construct'],module='exporter');coordinator.execute(run,'export',['1','2'],module='exporter')
   coordinator.execute(run,'controls',['all'],module='controls');coordinator.execute(run,'remaining_defects',['all'],module='remaining_defects');coordinator.execute(run,'render',['all'],module='render')
   from .delivery import deliver
