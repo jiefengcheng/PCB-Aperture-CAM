@@ -23,7 +23,7 @@ def prove_atoms(raw,assembled,removed_ordinals):
   retained.append(dict(original_ordinal=i,kind=type(old).__name__,polarity_dark=old.polarity_dark,geometry_sha256=p.digest(p.to_wkb(a))))
  return retained
 
-def reconstruct(raw,store):
+def _enclosures(raw,store):
  from src.source_common_frame import discover
  original,parser,oracle=p.source_profile.parse_source(raw)
  originals={tuple(span):i for i,span in parser.spans.items()}
@@ -74,14 +74,41 @@ def reconstruct(raw,store):
  if len(rounds)>1:proof.update(enclosure_rounds=rounds,final_enclosure_certificate=found)
  return assembled,proof
 
-def verify_payload(raw,assembled,receipt,store):
- expected,proof=reconstruct(raw,store)
+def reconstruct(raw,store,scope=None):
+ from .pcb_artwork_scope import REGISTERED,select
+ if scope is None:
+  if any(p.digest(raw)==s['source_sha256']for s in REGISTERED.values()):raise ValueError('PCB_SCOPE_AUTHORIZATION_AND_OUTLINE_REQUIRED')
+  return _enclosures(raw,store)
+ contract,outline=scope
+ scoped,selection=select(raw,outline,contract)
+ assembled,enclosure=_enclosures(scoped,store)
+ original,parser,_=p.source_profile.parse_source(raw)
+ ordinals={tuple(span):i for i,span in parser.spans.items()}
+ removed=set(selection['excluded_original_ordinals'])
+ removed.update(ordinals[tuple(row['source_span'])]for row in enclosure['removed'])
+ if not set(selection['boundary_marker_original_ordinals'])<=removed:raise ValueError('PCB_SCOPE_BOUNDARY_MARKER_MUST_BE_REMOVED_AS_CONFIRMED_FRAME')
+ retained=prove_atoms(raw,assembled,removed)
+ proof=dict(schema='original-to-assembled-gerber/2',status='PASS',policy=POLICY,
+  raw_source_sha256=p.digest(raw),assembled_source_sha256=p.digest(assembled),
+  source_objects=len(original.objects),removed_objects=len(removed),retained_objects=len(retained),
+  removed_original_ordinals=sorted(removed),retained_atom_proofs=retained,
+  pcb_scope=selection,post_scope_enclosure=enclosure,
+  disposition='APPROVED_PCB_SCOPE_AND_CONFIRMED_ENCLOSURE_REMOVAL',
+  method='Excluded native plots become moves; retained native atoms and original drawing order unchanged',
+  raw_input_modified=False)
+ return assembled,proof
+
+def verify_payload(raw,assembled,receipt,store,scope=None):
+ expected,proof=reconstruct(raw,store,scope)
  if expected!=assembled or p.canonical(proof)!=p.canonical(receipt):raise ValueError('ASSEMBLY_AUTHORIZED_CHANGE_OR_PROOF_CHANGED')
  return proof
 
 def _producer(run):
  from .guard import producer_files,sha
- return dict(schema='enclosure-assembly-producer/1',files={str(f):sha(f)for f in producer_files()},raw_source_sha256=sha(run/'original.gbr'),inventory_sha256=sha(run/'INPUT_INVENTORY.json'))
+ result=dict(schema='enclosure-assembly-producer/1',files={str(f):sha(f)for f in producer_files()},raw_source_sha256=sha(run/'original.gbr'),inventory_sha256=sha(run/'INPUT_INVENTORY.json'))
+ from .pcb_artwork_scope import captured
+ if captured(run)is not None:result['pcb_scope_inputs']={str(run/name):sha(run/name)for name in('PCB_SCOPE.json','pcb_outline.gbr')}
+ return result
 
 def verify_job(run):
  """Recheck immutable assembly proof bindings; native proofs are separate workers."""
@@ -93,7 +120,9 @@ def verify_job(run):
  if any(v!=proofs[0]for v in proofs)or proofs[0]!=dict(status='PASS',receipt_sha256=p.digest(p.canonical(receipt)),producer_sha256=p.digest(p.canonical(captured))):raise ValueError('ASSEMBLY_PAIRED_PROOFS_CHANGED')
  executions=[p.load(run/'audits'/('execution_'+m+'.json'))for m in('construct','1','2')]
  if len({row['pid']for row in executions})!=3 or any(row['mode']!=m or row['proof_sha256']!=p.digest(p.canonical(proofs[0]))for row,m in zip(executions,('construct','1','2'))):raise ValueError('ASSEMBLY_SEPARATE_NATIVE_WORKERS_REQUIRED')
- return dict(schema='verified-source-assembly-binding/1',policy=POLICY,assembly_run=str(run.resolve()),raw_source_sha256=receipt['raw_source_sha256'],assembled_source_sha256=receipt['assembled_source_sha256'],removed_objects=receipt['removed_objects'],files={str(f.resolve()):p.digest(f.read_bytes())for f in [run/'ASSEMBLY_PRODUCER.json',run/'INPUT_INVENTORY.json',run/'original.gbr',run/'assembled.gbr',run/'RECEIPT.json',*[run/'audits'/(m+'.json')for m in('construct','1','2')],*[run/'audits'/('execution_'+m+'.json')for m in('construct','1','2')]]})
+ scope_inputs=[run/name for name in('PCB_SCOPE.json','pcb_outline.gbr')]if'pcb_scope'in receipt else[]
+ if bool(scope_inputs)!=bool(captured.get('pcb_scope_inputs')):raise ValueError('ASSEMBLY_SCOPE_PRODUCER_BINDING_CHANGED')
+ return dict(schema='verified-source-assembly-binding/1',policy=POLICY,assembly_run=str(run.resolve()),raw_source_sha256=receipt['raw_source_sha256'],assembled_source_sha256=receipt['assembled_source_sha256'],removed_objects=receipt['removed_objects'],files={str(f.resolve()):p.digest(f.read_bytes())for f in [run/'ASSEMBLY_PRODUCER.json',run/'INPUT_INVENTORY.json',run/'original.gbr',run/'assembled.gbr',run/'RECEIPT.json',*scope_inputs,*[run/'audits'/(m+'.json')for m in('construct','1','2')],*[run/'audits'/('execution_'+m+'.json')for m in('construct','1','2')]]})
 
 def attach(run,assembly):
  p.save(run/'SOURCE_ASSEMBLY_BINDING.json',verify_job(assembly))
@@ -116,7 +145,8 @@ def main():
  install_read_fence(run)
  captured=p.load(run/'ASSEMBLY_PRODUCER.json')
  if captured!=_producer(run):raise ValueError('ASSEMBLY_PRODUCER_OR_ORIGINAL_CHANGED')
- body,receipt=reconstruct((run/'original.gbr').read_bytes(),p.Store(run/'runtime'))
+ from .pcb_artwork_scope import captured as scope_inputs
+ body,receipt=reconstruct((run/'original.gbr').read_bytes(),p.Store(run/'runtime'),scope_inputs(run))
  if mode=='construct':
   (run/'assembled.gbr').write_bytes(body);p.save(run/'RECEIPT.json',receipt)
  elif mode in('1','2'):

@@ -59,7 +59,10 @@ class Coordinator:
    if p.digest((p.ROOT/'assets/starter'/name).read_bytes())!=expected:raise ValueError('IMMUTABLE_ASSET_HASH_CHANGED:'+name)
   p.save(self.job/'ASSET_MANIFEST_PROOF.json',dict(status='PASS',files=asset_count,starter_files=len(manifest)))
   from . import source_assembly
-  assembly=self.job/'assembly';assembly.mkdir();(assembly/'original.gbr').write_bytes(raw);p.save(assembly/'INPUT_INVENTORY.json',inventory);p.save(assembly/'ASSEMBLY_PRODUCER.json',source_assembly._producer(assembly))
+  assembly=self.job/'assembly';assembly.mkdir();(assembly/'original.gbr').write_bytes(raw);p.save(assembly/'INPUT_INVENTORY.json',inventory)
+  from .pcb_artwork_scope import capture as capture_scope
+  capture_scope(assembly,root,blobs,inventory)
+  p.save(assembly/'ASSEMBLY_PRODUCER.json',source_assembly._producer(assembly))
   self.execute(assembly,'source_assembly',['construct'],module='source_assembly');self.execute(assembly,'source_assembly',['1','2'],module='source_assembly');source_assembly.verify_job(assembly)
   raw=(assembly/'assembled.gbr').read_bytes()
   legacy=self.job/'legacy';self.prepare(legacy,raw,inventory,True);self.stages(legacy,True)

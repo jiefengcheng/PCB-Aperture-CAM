@@ -245,6 +245,10 @@ def inspect(old,through):
  from .guard import producer_files
  extras={file.relative_to(ROOT).as_posix()for file in producer_files()}-known
  allowed_extras={'src/gerber_u05/legacy_prefix.py','src/gerber_u05/width_adoption.py','src/partial_pocket_remedy.py','SOURCE_REVISION.json'}
+ # A new intake-only helper cannot authorize changed retained geometry: all
+ # three fresh source-assembly workers and the exact prepared-source/build
+ # comparison in prepare() still precede adoption of the old native prefix.
+ if(old/'SOURCE_ASSEMBLY_BINDING.json').exists():allowed_extras.add('src/gerber_u05/pcb_artwork_scope.py')
  if through in('t03','t04'):allowed_extras.add('src/gerber_u05/width_stage_constraints.py')
  if extras-allowed_extras:raise ValueError('LEGACY_PREFIX_UNDECLARED_PRODUCER')
  return dict(schema='verified-legacy-native-prefix/1',through=through,stages=list(stages),retained_operation_count=len(keys),original_run=str(old),original_source_root=str(original_root),original_source_roots=sorted(set(source_roots)),original_producer_binding_sha256=producer_sha,source_binding_sha256=binding['source_binding_sha256'],source_sha256=source['source_ref']['sha256'],original_checks={key:records[key]for key in keys},files={name:sha(old/name)for name in sorted(files)},code_dependency_changes=changes,original_route_completion='NOT_CLAIMED; only completed prefix operations retained')
