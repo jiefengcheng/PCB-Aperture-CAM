@@ -63,3 +63,15 @@ must not receive another full run. All checks, limits and six deferred broad
 test findings remain. The 10% performance target is waived. Prior `.DS_Store`
 custody remains EXPLICIT_UNWAIVED_UNATTRIBUTED. Owner PENDING_USER, independent
 NOT_RUN, electrical/manufacturing NOT_ESTABLISHED.
+
+The first actual native assembly qualification was deliberately stopped with
+its failed operation retained. A one-second sample placed all 768 main-thread
+samples in GEOS's general Hausdorff-distance calculation on the complete,
+identical source scene. The correction first proves exact complete set
+equality, including every hole and disconnected island. That proof establishes
+Hausdorff distance zero mathematically; unequal geometries still run the
+unchanged distance calculation and both area checks. No predicate, tolerance,
+input or geometry is removed. The added regression rejects any redundant
+distance call after exact equality. All 51 scope/assembly/prefix tests pass.
+The stopped job remains unchanged; native qualification uses a fresh immutable
+source revision and a separate job, never a resume of the stopped worker.

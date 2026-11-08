@@ -170,7 +170,11 @@ def select(raw, outline_raw, contract):
     designated = resolved.intersection(domain)
     added = copper.difference(designated).area
     missing = designated.difference(copper).area
-    distance = copper.hausdorff_distance(designated)
+    # Exact complete set equality includes all holes and disconnected islands
+    # and mathematically establishes Hausdorff distance zero. GEOS's general
+    # discrete-distance algorithm is quadratic on this large identical scene.
+    exact_equal = copper.equals(designated)
+    distance = 0. if exact_equal else copper.hausdorff_distance(designated)
     # Native atoms above are byte-exact geometry. Overlay comparison also
     # retains the existing numerical limits; no new clearance/fill allowance.
     if added > p.EPS or missing > p.EPS or distance > p.source_profile.SAG:
@@ -188,7 +192,8 @@ def select(raw, outline_raw, contract):
                  resolved_geometry_sha256=p.digest(to_wkb(copper)),
                  resolved_comparison=dict(added_area_mm2=added,missing_area_mm2=missing,
                      hausdorff_mm=distance,area_epsilon_mm2=p.EPS,
-                     geometry_fidelity_mm=p.source_profile.SAG),
+                     geometry_fidelity_mm=p.source_profile.SAG,
+                     exact_complete_set_equal=exact_equal),
                  exact_retained_native_atoms=True, original_order_preserved=True,
                  source_core_cutting=False, polarity_flattening=False, growth=False)
     return selected, proof

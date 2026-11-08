@@ -47,6 +47,16 @@ def test_native_selection_preserves_hole_and_later_dark_restoration_without_clip
     assert len(raw)==len(selected)and not proof['polarity_flattening']and not proof['growth']
 
 
+def test_exact_complete_set_equality_proves_zero_distance_without_quadratic_distance(monkeypatch):
+    from shapely.geometry.base import BaseGeometry
+    def forbidden(*args,**kwargs):
+        raise AssertionError('Redundant distance must not run after exact complete set equality')
+    monkeypatch.setattr(BaseGeometry,'hausdorff_distance',forbidden)
+    raw,outline,contract=fixture();_,proof=scope.select(raw,outline,contract)
+    comparison=proof['resolved_comparison']
+    assert comparison['exact_complete_set_equal']and comparison['hausdorff_mm']==0
+
+
 def test_entire_clear_footprint_may_cross_outline_while_its_resolved_cutout_survives():
     raw,outline,contract=fixture();raw=raw.replace(rectangle(4,4,6,6),rectangle(4,4,11,6));contract['source_sha256']=p.digest(raw)
     selected,proof=scope.select(raw,outline,contract)
