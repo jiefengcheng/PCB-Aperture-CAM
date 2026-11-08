@@ -52,9 +52,23 @@ def test_exact_complete_set_equality_proves_zero_distance_without_quadratic_dist
     def forbidden(*args,**kwargs):
         raise AssertionError('Redundant distance must not run after exact complete set equality')
     monkeypatch.setattr(BaseGeometry,'hausdorff_distance',forbidden)
+    monkeypatch.setattr(BaseGeometry,'equals',lambda *args:False)
     raw,outline,contract=fixture();_,proof=scope.select(raw,outline,contract)
     comparison=proof['resolved_comparison']
     assert comparison['exact_complete_set_equal']and comparison['hausdorff_mm']==0
+
+
+def test_nonempty_microscopic_hole_cannot_use_zero_area_as_an_equality_shortcut(monkeypatch):
+    from shapely.geometry import box
+    from shapely.geometry.base import BaseGeometry
+    original=box(0,0,1,1);with_hole=original.difference(box(.5,.5,.5000001,.5000001))
+    assert 0<original.difference(with_hole).area<p.EPS
+    calls=[]
+    def measured(a,b):calls.append(True);return .1
+    monkeypatch.setattr(BaseGeometry,'hausdorff_distance',measured)
+    with pytest.raises(ValueError,match='RESOLVED_MATERIAL_CHANGED'):
+        scope.compare_material(original,with_hole)
+    assert calls==[True]
 
 
 def test_entire_clear_footprint_may_cross_outline_while_its_resolved_cutout_survives():

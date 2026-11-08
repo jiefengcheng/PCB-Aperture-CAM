@@ -115,6 +115,24 @@ def disable_objects(raw, parser, excluded):
     return bytes(body)
 
 
+def compare_material(copper, designated):
+    added = copper.difference(designated)
+    missing = designated.difference(copper)
+    # Mutual empty differences prove complete set equality even when GEOS's
+    # topological equals predicate disagrees on collinear overlay subdivisions.
+    # Do not infer equality from zero/small area: a nonempty difference must
+    # still execute the original distance check, including microscopic holes.
+    exact_equal = added.is_empty and missing.is_empty
+    distance = 0. if exact_equal else copper.hausdorff_distance(designated)
+    if added.area > p.EPS or missing.area > p.EPS or distance > p.source_profile.SAG:
+        raise ValueError(f'PCB_SCOPE_RESOLVED_MATERIAL_CHANGED:{added.area}:{missing.area}:{distance}')
+    return dict(added_area_mm2=added.area, missing_area_mm2=missing.area,
+                hausdorff_mm=distance, area_epsilon_mm2=p.EPS,
+                geometry_fidelity_mm=p.source_profile.SAG,
+                exact_complete_set_equal=exact_equal,
+                exact_equality_basis='MUTUAL_EMPTY_COMPLETE_SET_DIFFERENCES')
+
+
 def select(raw, outline_raw, contract):
     if (p.digest(raw) != contract['source_sha256'] or
             p.digest(outline_raw) != contract['outline_source_sha256']):
@@ -168,17 +186,7 @@ def select(raw, outline_raw, contract):
     # separate, mandatory confirmed-frame removal instead of cutting it in half.
     domain = outline if not boundary_ordinals else outline.union(unary_union([shapes[i]for i in boundary_ordinals]))
     designated = resolved.intersection(domain)
-    added = copper.difference(designated).area
-    missing = designated.difference(copper).area
-    # Exact complete set equality includes all holes and disconnected islands
-    # and mathematically establishes Hausdorff distance zero. GEOS's general
-    # discrete-distance algorithm is quadratic on this large identical scene.
-    exact_equal = copper.equals(designated)
-    distance = 0. if exact_equal else copper.hausdorff_distance(designated)
-    # Native atoms above are byte-exact geometry. Overlay comparison also
-    # retains the existing numerical limits; no new clearance/fill allowance.
-    if added > p.EPS or missing > p.EPS or distance > p.source_profile.SAG:
-        raise ValueError(f'PCB_SCOPE_RESOLVED_MATERIAL_CHANGED:{added}:{missing}:{distance}')
+    comparison = compare_material(copper, designated)
     proof = dict(policy=POLICY, authorization=contract['authorization'], contract=contract,
                  source_sha256=p.digest(raw), outline_source_sha256=p.digest(outline_raw),
                  outline_geometry_sha256=p.digest(to_wkb(outline)),
@@ -190,10 +198,7 @@ def select(raw, outline_raw, contract):
                  boundary_marker_disposition='MUST_BE_REMOVED_BY_CONFIRMED_ENCLOSURE_PREDICATE',
                  boundary_centerline_fidelity_mm=p.source_profile.SAG,
                  resolved_geometry_sha256=p.digest(to_wkb(copper)),
-                 resolved_comparison=dict(added_area_mm2=added,missing_area_mm2=missing,
-                     hausdorff_mm=distance,area_epsilon_mm2=p.EPS,
-                     geometry_fidelity_mm=p.source_profile.SAG,
-                     exact_complete_set_equal=exact_equal),
+                 resolved_comparison=comparison,
                  exact_retained_native_atoms=True, original_order_preserved=True,
                  source_core_cutting=False, polarity_flattening=False, growth=False)
     return selected, proof

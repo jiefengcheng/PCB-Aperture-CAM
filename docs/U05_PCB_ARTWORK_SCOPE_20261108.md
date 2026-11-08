@@ -75,3 +75,17 @@ input or geometry is removed. The added regression rejects any redundant
 distance call after exact equality. All 51 scope/assembly/prefix tests pass.
 The stopped job remains unchanged; native qualification uses a fresh immutable
 source revision and a separate job, never a resume of the stopped worker.
+
+The actual retained comparison operands contain 937,159 and 937,110 coordinates.
+GEOS reports `equals=False` although both complete directional differences are
+exactly empty. The second qualification attempt is also stopped and retained.
+The revised proof uses those two empty differences directly, as the existing
+coverage checker already does for collinear overlay boundaries. It never uses
+zero area alone as equality: any nonempty difference still runs the unchanged
+distance fallback. A regression with a microscopic hole below the area epsilon
+requires the distance check and rejects the changed material. All 52 focused
+scope/assembly/prefix tests pass. The actual full operands pass with zero added
+area, zero missing area and proven zero Hausdorff distance; the diagnostic
+explicitly forbids the general distance call and does not run growth.
+See `scope_comparison_operands_01/RESULT.json` and
+`actual_material_comparison_01/RESULT.json` in the slice evidence directory.
