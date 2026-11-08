@@ -123,19 +123,30 @@ def append_regions(shape,stage,sid,records,blocks,store,*,owner=None):
         block+=['X'+str(x)+'Y'+str(y)+('D02*'if i==0 else'D01*')for i,(x,y)in enumerate(xy)];block+=['G37*']
         blocks.append('\n'.join(block)+'\n');records.append(dict(stage=stage,source_id=sid,geometry_ref=p.geomref(store,material),reference_ref=p.geomref(store,q),raw_qualified_ref=raw_ref,normalization=normalization,component_reference_proof=proof))
 
-def preserve_point_contacts(owner,pieces,sid,records,blocks,store):
+def preserve_point_contacts(owner,pieces,sid,records,blocks,store,*,pregrid=None):
     before=owner.union(p.unary_union(pieces))
     if before.geom_type=='Polygon' and before.is_valid:return []
     if before.geom_type!='MultiPolygon' or not before.is_valid:raise ValueError('EXPORT_JUNCTION_INVALID_BEFORE_ENCODING_SUPPORT')
-    grid=.000001;caps=[]
+    grid=.000001;caps=[];connected=None
     for part in before.geoms:
         if part.intersection(owner).area>0:continue
         gap=part.distance(owner)
-        if part.area>grid*grid or gap>grid:raise ValueError('EXPORT_JUNCTION_COMPONENT_NOT_FILE_GRID_POINT_CONTACT')
+        if gap>grid:raise ValueError('EXPORT_JUNCTION_COMPONENT_NOT_FILE_GRID_POINT_CONTACT')
+        large=part.area>grid*grid
+        if large:
+            if pregrid is None:raise ValueError('EXPORT_JUNCTION_COMPONENT_NOT_FILE_GRID_POINT_CONTACT')
+            if connected is None:
+                model_owner,region=pregrid;qualified=model_owner.union(region)
+                if not qualified.is_valid or qualified.geom_type!='Polygon':raise ValueError('EXPORT_UNQUALIFIED_PREGRID_CONNECTED_SURFACE')
+                connected=dict(schema='source-qualified-pregrid-connected-surface/1',
+                               model_owner_ref=p.geomref(store,model_owner),region_ref=p.geomref(store,region),
+                               connected_surface_sha256=p.digest(p.to_wkb(qualified)),
+                               role='TOPOLOGY_WITNESS_ONLY; actual file fidelity and all native stage checks remain mandatory')
         point=nearest_points(owner,part)[0];x,y=round(point.x,6),round(point.y,6)
         cap=p.Polygon([(round(x-grid,6),y),(x,round(y-grid,6)),(round(x+grid,6),y),(x,round(y+grid,6))])
         first=len(records);append_regions(cap,'t05',sid,records,blocks,store)
         proof=dict(reason='One-grid cap at minimum-grid component point contact; triangle retained, no topology/tolerance waiver',component_sha256=p.digest(p.to_wkb(part)),component_area_mm2=part.area,gap_to_encoded_owner_mm=gap,cap_radius_mm=grid)
+        if large:proof=dict(proof,reason='Restore a source-qualified pre-grid connection after native rounding; unchanged one-grid cap and two-nanometre fidelity bounds',pregrid_connection=connected)
         for row in records[first:]:row['encoding_support']=proof;caps.append(p.geometry(store,row['geometry_ref']))
     after=owner.union(p.unary_union([*pieces,*caps]));distance=boundary_distance(before,after);area=before.symmetric_difference(after).area;bound=2*before.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
     if after.geom_type!='Polygon' or not after.is_valid or not math.isfinite(distance)or distance>POLYGON_TOLERANCE_MM or area>bound:raise ValueError('EXPORT_POINT_CONTACT_SUPPORT_NOT_QUALIFIED')
@@ -167,7 +178,7 @@ def construct(run):
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
         owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support,_support_mode=supported_region(addition,owner,domain);first=len(records);append_regions(region,'t05',d['source_id'],records,blocks,store,owner=owner)
-        members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=encoded_route_owner(encoded_current,members,d['land_ids'],d['source_id']);pieces=[p.geometry(store,row['geometry_ref'])for row in records[first:]];preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store)
+        members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=encoded_route_owner(encoded_current,members,d['land_ids'],d['source_id']);pieces=[p.geometry(store,row['geometry_ref'])for row in records[first:]];preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store,pregrid=(owner,region))
     adapter.close();body=(base+'\n'+''.join(blocks)+'M02*\n').encode('ascii');store.verify_reads();verify_sources(run)
     return body,dict(source_sha256=binding['source_ref']['sha256'],coordinate_oracle=oracle,records=records,generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()),profile='GERBER_SOURCE_ONLY; KiCad source/write/plot N/A; positive appended contours, original ordered clear operations retained')
 
