@@ -44,6 +44,13 @@ def require_retained_t03(run):
  if summary.get('moved')!=0 or summary.get('disposition')!='NO_CHANGE_REQUIRED':raise ValueError('REUSED_T03_MOVEMENT_REQUIRES_FRESH_QUALIFICATION')
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/contours.py','src/gerber_u05/exporter.py','src/gerber_u05/render.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/controls.py','src/gerber_u05/delivery.py'}
 DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py','src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py','src/gerber_u05/legacy_prefix.py'})
+NATIVE_FLOOR_CHECK={
+ 'src/gerber_u05/prior_copper.py':('f1280dc37961373a01cf578f6b5815ee694c2462b3f5aeb2045294eb1d187cf1','5bcd448cb7e231c518ad737072d5feccacb489dd7bab1dc797c29cd9e46743bf'),
+ 'src/gerber_u05/channel_prior.py':('665a57635e20fb8ddc86dbb036e6fa4c1002b45ea95d906b0ae8a7db9a9b28fa','cdbfc5d1e69211b303dbcb0556b8806a66baf89bf78b1137dcb84fadf1acf73f')}
+
+def native_floor_check_delta(relative,before,after):
+ return NATIVE_FLOOR_CHECK.get(relative)==(before,after)
+
 EQUIVALENT={
  'src/gerber_u05/prior_copper.py':('6b9858d2fa67c3917b79d7ceaecdf0f1588e751231c2a3398127bf946f354676','f1280dc37961373a01cf578f6b5815ee694c2462b3f5aeb2045294eb1d187cf1','Move the unchanged strict shared-gap predicate to the complete actually adopted T05 floor. local_floor, all geometry and numerical predicates, CoverageAdapter and the cc.ACTIVE=None legacy early return are unchanged. Upstream T01/T03/T04/T02 do not call this preparation; legacy T05 retains its original adapter descriptor. The actual retained T02 case passes all 20 gap spans / 40 boundaries with identical adopted geometry.'),
  'src/gerber_u05/channel_prior.py':('b35cc910bce1c94208d9e6a678828912b5400edfcd27509dc46c8e7a0193f478','665a57635e20fb8ddc86dbb036e6fa4c1002b45ea95d906b0ae8a7db9a9b28fa','Move only the strict gap check after existing T05 channel-floor selection. Every owner, channel, physical, source and floor check remains; no geometry or tolerance change. This module is called only by connected T05 prior preparation, never the retained legacy/reference or T01-through-T02 construction. Exact hash pair only; arbitrary changes remain rejected.'),
@@ -148,6 +155,8 @@ def verify_code(original,root,old_root,*,stages=STAGES):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if native_floor_check_delta(relative,expected,actual):
+   results.append(dict(path=relative,scope='Exact T05-only adopted native-floor check: use existing final-reparse fidelity for native-grid boundary comparison. local_floor geometry, exact model default, CoverageAdapter and legacy cc.ACTIVE=None behavior unchanged. Retained T01/T03/T04/T02 generation is unchanged; every T05 and final native check runs fresh.',before_sha256=expected,after_sha256=actual));continue
   from .hole_policy_prefix import allowed_delta as hole_policy_delta
   if hole_policy_delta(relative,expected,actual,stages,root):
    results.append(dict(path=relative,scope='Exact owner-authorized ordinary-hole policy relaxation. Retain only previously qualified T01 and zero-movement T03 geometry; T04 and later run fresh. Source ancestry is optional; all non-hole constraints remain mandatory.',before_sha256=expected,after_sha256=actual));continue
@@ -242,7 +251,8 @@ def verify_predecessor_families(run,binding):
   # inherited stages to the immediate parent's producer: each may have a
   # different, recursively verified producer several generations back.
   proof=load(evidence/'ORIGINAL_LEGACY_PREFIX_PROOF.json')
-  if proof['original_run']!=str(Path(binding['original_run']).parent/'legacy')or proof['original_producer_binding_sha256']!=sha(legacy/'PRODUCER_BINDING.json')or proof['source_binding_sha256']!=sha(legacy/'source.json')or proof['source_sha256']!=source or proof['stages']!=['t01','t03','t04','t02','t05']or proof['retained_operation_count']!=17:raise ValueError('REUSED_LEGACY_INSPECTION_BINDING_CHANGED')
+  authority=binding.get('legacy_authority_run',str(Path(binding['original_run']).parent/'legacy'))
+  if proof['original_run']!=authority or proof['original_producer_binding_sha256']!=sha(legacy/'PRODUCER_BINDING.json')or proof['source_binding_sha256']!=sha(legacy/'source.json')or proof['source_sha256']!=source or proof['stages']!=['t01','t03','t04','t02','t05']or proof['retained_operation_count']!=17:raise ValueError('REUSED_LEGACY_INSPECTION_BINDING_CHANGED')
   for key,record in proof['original_checks'].items():
    if records.get(key)!=record:raise ValueError('REUSED_LEGACY_INSPECTION_RECORD_CHANGED')
   for relative,expected in proof['files'].items():

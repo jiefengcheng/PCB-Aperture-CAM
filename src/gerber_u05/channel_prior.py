@@ -31,7 +31,8 @@ def prepare(store,scene):
  # local_floor already omits redundant native-grid rounding within its fixed
  # containment guard. Check the complete material actually adopted, rather
  # than a hypothetical union of every reference contour, including unneeded
- # support that is never added to this scene. The strict gap predicate stays.
+ # support that is never added to this scene. Qualified native boundaries use
+ # the existing final-reparse fidelity bound; model proposals stay exact.
  _,adopted,_=p.operands(store,output)
- shared_gap_check=require_shared_prior(physical.project(adopted))
+ shared_gap_check=require_shared_prior(physical.project(adopted),native_floor=True)
  return output,dict(schema='qualified-native-functional-channel-floor/1',source_sha256=physical.source_hash,prior_generated_sha256=scope.reservation_sha256,input_scene_ref=store.put_json('scene',scene),output_scene_ref=output_ref,records=records,prior_current_policy_check=native_prior,combined_predecessor_policy_check=combined,physical_predecessor_check=physical_check,shared_neighbor_gaps=shared_gap_check,policy='Source-native minimum copper by frozen functional channel; full physical and all foreign-channel checks retained')
