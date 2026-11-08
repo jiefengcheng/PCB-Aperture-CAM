@@ -65,3 +65,15 @@ def test_direct_owner_union_proof_rejects_real_material_changes(defect):
             'foreign-bridge':region.union(box(2.2,.9,2.8,1.1)),
             'filled-cutout':region.union(box(.6,.6,1.4,1.4))}[defect]
  assert not e.owner_surface_equivalence(region,owner,candidate,1e-12)['passed']
+
+
+def test_direct_inclusions_share_one_material_error_budget():
+ # Each one-sided error fits the epsilon, but their symmetric material
+ # difference does not. Two inclusions cannot grant two area allowances.
+ region=box(0,0,2e-6,1e-6);owner=box(0,-1e-6,2e-6,0)
+ candidate=box(.75e-6,0,2.75e-6,1e-6)
+ proof=e.owner_surface_equivalence(region,owner,candidate,1e-12)
+ assert proof['qualified_region_missing_mm2']<1e-12
+ assert proof['new_material_outside_owner_mm2']<1e-12
+ assert proof['combined_material_error_bound_mm2']>1e-12
+ assert not proof['passed']

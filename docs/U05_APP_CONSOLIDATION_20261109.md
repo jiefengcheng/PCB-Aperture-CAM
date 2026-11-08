@@ -40,3 +40,16 @@ broad-suite findings remain DEFERRED_UNWAIVED; no broad suite rerun is claimed.
 The 10% performance target remains waived. Owner acceptance is pending;
 independent review is NOT_RUN and electrical/manufacturing acceptance is
 NOT_ESTABLISHED. Polarity flattening is separate and receives no bridge-fix credit.
+
+## One material-error budget
+
+The follow-up isolated correction `dd3aa4f` makes both direct inclusion errors
+share one existing `1e-12 mm²` allowance. It rejects the deliberate case where
+two individually small errors together exceed that allowance. Eighty-five
+installed tests and all 47 isolated native synthetic checks passed. The actual
+2868 encoding candidate remains byte-identical under the stronger predicate.
+Installed native qualification is recorded separately in
+`APP_SINGLE_EPSILON_NATIVE_01.log`; active frozen board jobs are unchanged.
+Before counting an older completed export against this stronger proof, inspect
+all its fallback-support receipts for the combined bound. This does not replace
+or relabel its original native checks. No geometry rule or tolerance is relaxed.

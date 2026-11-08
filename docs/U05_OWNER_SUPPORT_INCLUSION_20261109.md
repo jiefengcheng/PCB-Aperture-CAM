@@ -46,3 +46,21 @@ The normal app remains unchanged pending integration qualification. All failed
 evidence is immutable. The `.DS_Store` custody finding remains explicit,
 unwaived and unattributed. Six broad-suite findings remain deferred/unwaived;
 owner acceptance is pending and manufacturing acceptance is not established.
+
+## Single combined error allowance
+
+The two direct inclusions share one `1e-12 mm²` material-error budget. Their
+missing-region and outside-owner areas are added before comparison; they cannot
+each spend the full allowance. A negative control with two `0.75e-12 mm²` errors
+exposed the earlier helper's separate comparisons, and is now rejected because
+their combined error is `1.5e-12 mm²`. No tolerance is increased.
+
+Forty-one focused tests passed. The retained actual 2868 candidate remains
+byte-identical under the tighter predicate: its combined error is
+`2.740953079800262e-15 mm²`. Evidence is `OWNER_SINGLE_EPSILON_TESTS_01.log`,
+`OWNER_SINGLE_EPSILON_OLD_NEGATIVE_01.json` and
+`OWNER_SINGLE_EPSILON_ACTUAL_01.json` in the same external evidence directory.
+Active source snapshots and historical qualification remain unchanged. Before
+counting an older completed export under this stronger predicate, check every
+fallback-support receipt against the single combined budget; do not merely
+reinterpret the older proof as a fresh native evaluation.

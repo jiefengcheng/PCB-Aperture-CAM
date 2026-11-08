@@ -91,8 +91,10 @@ def owner_surface_equivalence(region,owner,candidate,epsilon):
     outside=candidate.difference(region).difference(owner).area
     valid=(not candidate.is_empty and candidate.is_valid
            and candidate.geom_type in('Polygon','MultiPolygon'))
-    return dict(passed=valid and all(math.isfinite(v)and v<=epsilon for v in(missing,outside)),
+    total=missing+outside
+    return dict(passed=valid and all(math.isfinite(v)for v in(missing,outside,total))and total<=epsilon,
                 qualified_region_missing_mm2=missing,new_material_outside_owner_mm2=outside,
+                combined_material_error_bound_mm2=total,
                 epsilon_mm2=epsilon,basis='TWO_DIRECT_SET_INCLUSIONS')
 
 
