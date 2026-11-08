@@ -32,8 +32,8 @@ checks remain unchanged. No continuous search or global optimum claim returns.
 The prepared hole index is charged to the existing 16 MiB dependency-cache
 budget, leaving less room for memo entries rather than raising the budget.
 Oversized indices halt explicitly. Updated source guards allow only exact known
-T04-only deltas when retaining T01 and zero-movement T03. Older width results are
-not retained under the new protection. Failed artifacts and native predicates
+T04-only deltas when retaining T01 and zero-movement T03. Older width results require fresh accepted-trial and complete-scene source-void
+revalidation before retention. The supplement never adopts an old rejected trial. Failed artifacts and native predicates
 are never resealed or promoted. Primary 3020212826 receives no full rerun.
 
 The render evidence label now supports the already-authorized 29-operation
@@ -41,8 +41,16 @@ T01/T03 checkpoint as well as the 35-operation T01/T03/T04/T02 checkpoint. Exact
 counts and stage identities remain checked; this only describes which later
 operations were freshly executed. Rendering remains mandatory after final export.
 
-Qualification is pending the synthetic controls, captured source cases and
-fresh native downstream route. Evidence begins at `out/lacie_work/evidence/`
+The original isolated guard passed 96 focused tests, all 47 native synthetic
+operations, and the captured 262-opening rejection case. The later read-only
+retention supplement passed four dedicated regressions within a 111-test focused
+set and all 47 native synthetic operations. Actual legacy-prefix inspection
+passed for 3020212868 (44.48 s) and 3020212849 (354.23 s), including original
+proof/artifact hashes, fresh accepted-trial checks in both ownership contexts,
+both complete scenes and unchanged nominal route bytes. These timings include
+inspection and are not whole-board benchmarks. Fresh native downstream
+qualification remains required; the separate 2868 aggregate export discrepancy
+is still unresolved. Evidence begins at `out/lacie_work/evidence/`
 `t02_qualified_entry_gaps_20261107/export_inclusive_identity_01/remaining_boards_01/`
 `shared_gap_entry_contour_01/width_prior_01/`; the diagnostic highlighted view is
 `visual_01/source_void_before_after.png`, not a qualified final result.
