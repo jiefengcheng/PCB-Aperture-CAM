@@ -6,6 +6,11 @@ from shapely import to_wkb
 
 
 def check(owner,candidate,remedy_rule,*,area_epsilon_mm2):
+ from src.hole_acceptance import required
+ if not required():
+  return dict(passed=True,new_resolvable_pockets=[],blocked_pockets=[],
+              ordinary_holes='ACCEPT_WITHOUT_SOURCE_ANCESTRY',
+              basis='Ordinary holes accepted; independent protected separation and complete-fill constraints remain mandatory')
  old=joined(holes(owner));records=[];failed=[]
  for hole in holes(candidate):
   if hole.intersection(old).area>area_epsilon_mm2:continue

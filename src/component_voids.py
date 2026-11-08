@@ -102,7 +102,8 @@ def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void
     else:carrier=support[0]
     envelope=carrier.union(patch);shortage=patch.difference(owner).area/envelope.area if envelope.area else 1.
     if shortage>contract.maximum_shortage:reasons.append('SHORTAGE_ABOVE_20_PERCENT')
-    source_void=joined(holes(original)) if source_void is None else source_void
+    from src.hole_acceptance import required as holes_required
+    source_void=(joined(holes(original)) if source_void is None else source_void) if holes_required() else empty()
     if patch.intersection(source_void).area>0:reasons.append('INHERITED_SOURCE_VOID')
     gaps=[]
     for index,g in foreign:
@@ -117,7 +118,7 @@ def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void
         prior_index=STRtree(prior_holes) if prior_index is None else prior_index
         assembled_holes=holes(assembled)
         if assembly_out is not None:assembly_out.append((assembled,assembled_holes))
-        for h in assembled_holes:
+        for h in (assembled_holes if holes_required() else []):
             if any(h.intersection(prior_holes[int(k)]).area>contract.area_epsilon_mm2 for k in prior_index.query(h)):continue
             if not h.buffer(-contract.file_uncertainty_mm).is_empty:
                 reasons.append('NEW_TRAPPED_VOID');break
@@ -160,7 +161,8 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
     memo=GeometryMemo(sha(source)+sha(current)+repr(contract))
     for index,(owner,j) in enumerate(zip(grown,mapping)):
         checkpoint(dict(component=index,total_components=len(grown),proposals_so_far=len(records),fills_so_far=len(accepted)))
-        original=originals[j];oldvoid=joined(holes(original));ownerholes=holes(owner)
+        from src.hole_acceptance import required as holes_required
+        original=originals[j];oldvoid=joined(holes(original))if holes_required()else empty();ownerholes=holes(owner)
         owner_void_context=(ownerholes,STRtree(ownerholes))
         context_owner=owner
         from src.component_hole_lineage import classify as hole_lineage
@@ -173,6 +175,8 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
                 records.append(dict(kind='hole',owner=index,source_component=j,patch_sha256=sha(hole),area_mm2=hole.area,status='KEEP_APPROVED_PARTIAL_OPENING',pocket_id=matching[0]['pocket_id'],bounds_mm=list(hole.bounds)));continue
             owned_specs=[s for s in partial_specs if s['source_component']==j]
             if owned_specs and hole.intersection(protected(owned_specs)).area>contract.area_epsilon_mm2:raise ValueError('FROZEN_PARTIAL_OPENING_CHANGED')
+            if not holes_required():
+                records.append(dict(kind='hole',owner=index,source_component=j,patch_sha256=sha(hole),area_mm2=hole.area,status='KEEP_ACCEPTED_ORDINARY_HOLE',bounds_mm=list(hole.bounds)));continue
             if sha(hole)in keeper_ids:
                 records.append(dict(kind='hole',owner=index,source_component=j,patch_sha256=sha(hole),area_mm2=hole.area,status='KEEP_SOURCE_VOID',bounds_mm=list(hole.bounds)))
             else:candidates.append(('hole',hole))

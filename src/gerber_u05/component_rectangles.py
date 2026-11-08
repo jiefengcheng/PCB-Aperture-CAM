@@ -84,7 +84,8 @@ class ComponentRectangleAdapter(FastRectangleAdapter):
        if logical_delta.is_empty or not g.intersects(window):continue
        measured=distance(logical_delta,g);passed=measured+contract.comparison_epsilon_mm>=contract.construction_gap_mm;functional_pairs.append(dict(foreign_source_channel_id=other,gap_mm=measured,passed=passed))
        if not passed:reasons.append('FUNCTIONAL_SOURCE_CHANNEL_CLEARANCE_FAILED')
-    if delta.intersection(joined(holes(original_void_core))).area>0:reasons.append('INHERITED_SOURCE_VOID')
+    from src.hole_acceptance import required as holes_required
+    if holes_required()and delta.intersection(joined(holes(original_void_core))).area>0:reasons.append('INHERITED_SOURCE_VOID')
     foreign={o:constraint(ctx,o,owned[o])for o in owned if o!=own}
     nearby=[dict(source_id='original-owner:'+o,original=ctx.cores[o],geometry=g,trace_width_mm=0.)for o,g in sorted(foreign.items())if g.intersects(rect.buffer(contract.construction_gap_mm+.001))]
     q=check_proposal(owner_span,rect,nearby,crop=crop,cap=rect,contract=contract)

@@ -1,0 +1,6 @@
+{
+  "schema": "pcb-ordinary-hole-acceptance/1",
+  "status": "PROVISIONAL",
+  "ordinary_holes": "ACCEPT_WITHOUT_SOURCE_ANCESTRY",
+  "protected_separation": "MANDATORY_UNCHANGED"
+}

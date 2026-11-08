@@ -45,22 +45,26 @@ def parsed_extra(shape,name):
  records=[];blocks=[];e.append_regions(shape,'negative_control',name,records,blocks,store);payload=body[:-5]+''.join(blocks).encode()+b'M02*\n';native=e.parse(payload);pieces=[p.affine_scale(p.source_profile.object_geometry(obj)[0],1,-1,origin=(0,0))for obj in native.objects[len(actual.objects):]];return joined(pieces),payload
 from src.component_hole_lineage import classify as hole_lineage,identity as hole_identity
 void_context=getattr(cc.ACTIVE,'functional',None)or cc.ACTIVE;void_groups=groups.channels if hasattr(groups,'channels')else groups
-for own,g in void_context.cores.items():
- keepers=set(hole_lineage(g,void_groups[own])['keeper_ids'])
- for hole in [h for h in holes(void_groups[own])if hole_identity(h)in keepers]:
-  empty=hole.difference(whole).buffer(-.00001)
-  if empty.is_empty:continue
-  pt=empty.representative_point();shape=box(pt.x-.000001,pt.y-.000001,pt.x+.000001,pt.y+.000001)
-  if not empty.covers(shape):continue
-  bad,payload=parsed_extra(shape,'SOURCE_VOID_FILLED');after=dict(groups);physical_owner=own;fill=dict(source_id='SOURCE_VOID_FILLED',original_owner_id=own,logical_patch_ref=p.geomref(store,bad),kind='hole')
-  if hasattr(groups,'channels'):
-   from src.source_channel_scope import physical_owner as resolve_physical_owner
-   physical_owner=resolve_physical_owner(void_context,own,cc.ACTIVE);channels=dict(groups.channels);channels[own]=channels[own].union(bad);after=NativeGroups(after,channels);fill.update(original_owner_id=physical_owner,original_channel_id=own)
-  after[physical_owner]=groups[physical_owner].union(bad);fake={'intra':{'fills':[fill]}}
-  expect('SOURCE_VOID_FILLED',lambda:completion(store,fake,{'SOURCE_VOID_FILLED':[bad]},groups,after),'NATIVE_INHERITED_SOURCE_VOID_FILLED',payload);break
- else:continue
- break
-else:raise ValueError('SOURCE_VOID_CONTROL_NOT_FOUND')
+from src.hole_acceptance import required as holes_required
+if holes_required():
+ for own,g in void_context.cores.items():
+  keepers=set(hole_lineage(g,void_groups[own])['keeper_ids'])
+  for hole in [h for h in holes(void_groups[own])if hole_identity(h)in keepers]:
+   empty=hole.difference(whole).buffer(-.00001)
+   if empty.is_empty:continue
+   pt=empty.representative_point();shape=box(pt.x-.000001,pt.y-.000001,pt.x+.000001,pt.y+.000001)
+   if not empty.covers(shape):continue
+   bad,payload=parsed_extra(shape,'SOURCE_VOID_FILLED');after=dict(groups);physical_owner=own;fill=dict(source_id='SOURCE_VOID_FILLED',original_owner_id=own,logical_patch_ref=p.geomref(store,bad),kind='hole')
+   if hasattr(groups,'channels'):
+    from src.source_channel_scope import physical_owner as resolve_physical_owner
+    physical_owner=resolve_physical_owner(void_context,own,cc.ACTIVE);channels=dict(groups.channels);channels[own]=channels[own].union(bad);after=NativeGroups(after,channels);fill.update(original_owner_id=physical_owner,original_channel_id=own)
+   after[physical_owner]=groups[physical_owner].union(bad);fake={'intra':{'fills':[fill]}}
+   expect('SOURCE_VOID_FILLED',lambda:completion(store,fake,{'SOURCE_VOID_FILLED':[bad]},groups,after),'NATIVE_INHERITED_SOURCE_VOID_FILLED',payload);break
+  else:continue
+  break
+ else:raise ValueError('SOURCE_VOID_CONTROL_NOT_FOUND')
+else:
+ results.append(dict(control='SOURCE_VOID_FILLED',status='NOT_REQUIRED_BY_CAPTURED_POLICY',policy='ACCEPT_WITHOUT_SOURCE_ANCESTRY',strict_control='Retained in strict-policy branch and regressions; no source ancestry lookup under current policy'))
 ids=list(groups);pairs=[]
 from shapely import STRtree
 tree=STRtree([groups[o]for o in ids])

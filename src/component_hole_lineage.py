@@ -12,6 +12,9 @@ def hole_polygons(shape):
 
 def classify(original,current,*,epsilon=1e-12):
  if epsilon!=1e-12:raise ValueError('SOURCE_HOLE_LINEAGE_EPSILON_CHANGED')
+ from src.hole_acceptance import required
+ if not required():
+  return dict(schema='source-hole-descendant-identities/1',keeper_ids=[],ancestry={},source_holes=[],basis='ACCEPT_WITHOUT_SOURCE_ANCESTRY')
  old=hole_polygons(original);now=hole_polygons(current);tree=STRtree(now);keepers=set();ancestry={identity(h):[]for h in now};records=[]
  for source_hole in sorted(old,key=identity):
   source_id=identity(source_hole);matches=[]
