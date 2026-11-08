@@ -56,10 +56,13 @@ The old file was not an input to generation: a separate validator compared it
 after construction. The observed construction time is about 31% lower than
 732.163 seconds, with different prefix ancestry and background work; this is
 not an uncontended end-to-end benchmark. Both native whole-board export
-evaluations are still running. Reference remedy, connected stages and final
+evaluations subsequently passed with exactly identical proofs, each taking
+1,414.72 seconds. They preserve 3,278 source objects and both clear operations,
+check all 11,738 appended regions, pass stage clearance, 441 attachment
+obligations, 245 junction checks and functional-channel checks. The physical
+floor remains 0.040 mm. Reference remedy, connected stages and final
 export/reparse, corruption, defect and rendering checks remain required before
-delivery. Byte equality cannot substitute for those checks or authorize
-integration.
+delivery. Byte equality did not substitute for the paired native checks.
 
 3020212866 is qualifying in a second isolated lane using the same frozen code,
 following the user's PCB-artwork-only scope confirmation. All three fresh
@@ -79,9 +82,17 @@ Record01 was an unexecuted constructor stop intent: that constructor had
 already passed and was never signaled. Record02 identifies the two evaluations
 actually stopped. Both records and all failed evidence remain preserved.
 
-Normal app code 5233e77 already includes qualified nested-enclosure preparation,
-T02 entry contours, bounded T05 memory and the approved 3020212866 source scope.
-This export-metric correction remains isolated. Primary 3020212826 must not
+The normal app now also includes this correction, fast-forwarded from 5233e77
+after the actual reference checks passed. Installed-path qualification passes
+72 focused regressions and all 47 native synthetic operations, with unchanged
+synthetic Gerber SHA-256
+`80594c00c5e58743d31d05c83087d3326e6fbadf53b5328b0666a0141e8121a6`.
+The four user-owned untracked files, source metadata backup and rollback branch
+are preserved. This is source integration and scoped qualification, not
+completion of either unfinished client board. Evidence is
+`ACTUAL_REFERENCE_QUALIFICATION_01.json` and
+`app_integration_01/QUALIFICATION_01.json` in the same evidence directory.
+Primary 3020212826 must not
 receive another full run. Six broad-suite findings remain deferred and unwaived;
 the 10% performance target is waived. Prior `.DS_Store` custody remains
 EXPLICIT_UNWAIVED_UNATTRIBUTED. Owner PENDING_USER, independent NOT_RUN,

@@ -1,15 +1,18 @@
 # Installed source/memory revisions and active batch — 2026-11-08
 
-Normal app `codex/u05-reproducible-batch` is at `5233e77`, pushed and qualified
-with 168 installed-path focused tests and all 47 installed native synthetic
-operations. It includes nested-enclosure preparation, qualified T02 entry
-contours, bounded T05 decoded operands and the approved 3020212866 PCB-only
-source scope. All four user-owned untracked files remain unchanged.
+Normal app `codex/u05-reproducible-batch` now includes the `b54b2fa` indexed
+export-metric correction, integrated after actual reference construction and
+both native export evaluations passed. Its installed path passes 72 focused
+regressions and all 47 native synthetic operations. Earlier qualification of
+nested-enclosure preparation, qualified T02 entry contours, bounded T05 decoded
+operands and the approved 3020212866 PCB-only scope remains preserved. All four
+user-owned untracked files remain unchanged, with metadata and rollback saved.
 
 Actual 3020212866 source preparation passed construction and both native
 evaluations: 20,212 drawing-sheet objects and 46 certified perimeter strokes
 were removed; all 5,238 retained native objects remain unchanged and ordered.
-Its full U05 growth has not started. This is not positive-only flattening.
+Its full U05 growth is now running in a second isolated frozen lane. This is
+not positive-only flattening.
 
 Primary 3020212826 is delivered and must not receive another full run. The
 3020212849 reference geometry has completed all 17 native operations through
@@ -17,22 +20,25 @@ T05. A separate immutable `b54b2fa` continuation retains those operations and
 freshly reconstructs source assembly and export. Its 79,876,839-byte reference
 Gerber is byte-identical to the preserved prior construction; native wall time
 was 505 versus 732 seconds. These are observed runs with different ancestry,
-not an uncontended end-to-end benchmark. Both fresh export evaluations remain
+not an uncontended end-to-end benchmark. Both fresh export evaluations passed
+with identical proofs, each taking 1,414.72 seconds. Reference remedy is now
 running; connected-copper stages and final delivery are still required.
 
 The export-metric candidate uses the already-qualified complete indexed native
 boundary metric without changing geometry, tolerances or budgets. It passes
 638 focused tests, all 47 candidate native synthetic operations and exact
-metric parity on the three largest actual export parents. It remains isolated
-pending actual export qualification. Its consolidated frozen release candidate
-is inactive; all 11 requested targets remain accounted for in queue09 and its
-source-admission matrix. The older generated-result target remains pending
+metric parity on the three largest actual export parents. Normal app integration
+is complete; consolidated release activation remains a separate receipt.
+All 11 requested targets remain accounted for in queue10 and the source-admission
+matrix. The older generated-result target remains pending
 source-intent clarification and cannot be silently grown twice.
 
 Evidence: `out/lacie_work/evidence/t02_qualified_entry_gaps_20261107/`
 `export_inclusive_identity_01/remaining_boards_01/shared_gap_entry_contour_01/`.
-See `CURRENT_ENGINEERING_HANDOFF_05.json`, `legacy_export_metric_01/LIVE_JOB_01.json`
-and [the export-metric correction](U05_EXPORT_BOUNDARY_METRIC_20261108.md).
+See `CURRENT_ENGINEERING_HANDOFF_07.json`, `legacy_export_metric_01/LIVE_JOB_03.json`,
+`legacy_export_metric_01/ACTUAL_REFERENCE_QUALIFICATION_01.json`,
+`legacy_export_metric_01/app_integration_01/QUALIFICATION_01.json` and
+[the export-metric correction](U05_EXPORT_BOUNDARY_METRIC_20261108.md).
 All prior failed/stopped jobs retain their original dispositions and custody
 manifests. Six broad-suite findings remain deferred and unwaived. The 10%
 performance target is waived. `.DS_Store` remains EXPLICIT_UNWAIVED_UNATTRIBUTED;
