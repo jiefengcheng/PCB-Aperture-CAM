@@ -14,6 +14,7 @@ from src.indexed_hausdorff import distance as image_hausdorff
 from src.native_boundary_metric import distance as boundary_distance
 from src.u05_board.export import export_region,actual_spindle_check
 from .export_absorption import compact_supported_region as supported_region
+from .native_spindle_operand import operand as native_spindle_operand
 from src.junction_spindle_stage import prepare_spindle_context
 from src.junction_spindle_blend import spindle_blend
 from src.u05_board.attachment_export import obligation_check
@@ -322,10 +323,11 @@ def check(run,body,ledger):
     adapter=p.CoverageAdapter(p.box(*prepared['viewport_mm']));preimage=p.unary_union(list(current.values()));patches=[]
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);declared_domain=declared_domains[d['source_id']];parts=by_stage['t05'][d['source_id']];addition=p.unary_union(parts).difference(preimage);patches.append(dict(id=d['source_id'],owner=owner,regions=parts,addition=addition,window=declared_domain.buffer(POLYGON_TOLERANCE_MM),foreign=foreign))
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);declared_domain=declared_domains[d['source_id']];parts=by_stage['t05'][d['source_id']];addition=native_spindle_operand(parts);patches.append(dict(id=d['source_id'],owner=owner,regions=parts,addition=addition,net_addition=addition.difference(preimage),window=declared_domain.buffer(POLYGON_TOLERANCE_MM),foreign=foreign))
     adapter.close();checks['t05']=[]
     for patch in patches:
         q=actual_spindle_check(patch['owner'],patch['regions'],patch['addition'],patch['window'],original_foreign(patch['id'],patch['foreign']+[(other['id'],other['addition'])for other in patches if other['id']!=patch['id']]))
+        q['additive_operand_basis']=dict(policy='ACTUAL_PARSED_POSITIVE_APPEND_REGIONS_INCLUDING_OWNER_ENCODING_SUPPORT',net_added_area_mm2=patch['net_addition'].area,positive_operand_area_mm2=patch['addition'].area,clearance_scope='Complete positive operand; conservative relative to net-only testing',delta_reassembly_tolerance_unchanged=True)
         p.save(run/'export'/('junction_'+sys.argv[2]+'_'+str(len(checks['t05']))+'.json'),dict(source_id=patch['id'],check=q)) if __name__=='__main__' else None
         if not q['passed']:raise ValueError('ACTUAL_GERBER_JUNCTION_CHECK_FAILED:'+patch['id']+':'+str(q['failures']))
         checks['t05'].append(dict(source_id=patch['id'],check=q))

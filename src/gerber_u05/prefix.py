@@ -107,10 +107,10 @@ def support_normalization_same(before,after):
  return dict(status='EXACT_QUALIFIED_SUPPORT_NORMALIZATION_DELTA',added_calls=3,unchanged_geometry_predicates=True)
 
 def legacy_export_encoding_same(before,after):
- qualified='3cf905d4b53fbb020469b36cff67983d1349b048b33bd35d593828ee84fc62b1'
- originals={'fae75a9de50cd6c824168e92f34e9ff195ce122c222398e34550ca53775b73b0','a97d41322b176d22d9d505bb3e6a5dc1021fcd063a4347dc70e0d30a53299abc'}
+ qualified='b4d505217f86e501b93493278a3ff3bea51069cf7cbdbf299ef5508b798337ac'
+ originals={'3cf905d4b53fbb020469b36cff67983d1349b048b33bd35d593828ee84fc62b1','fae75a9de50cd6c824168e92f34e9ff195ce122c222398e34550ca53775b73b0','a97d41322b176d22d9d505bb3e6a5dc1021fcd063a4347dc70e0d30a53299abc'}
  if hashlib.sha256(before.encode()).hexdigest()in originals and hashlib.sha256(after.encode()).hexdigest()==qualified:
-  return dict(status='EXACT_QUALIFIED_PREGRID_CONNECTION_ENCODING_DELTA',scope='Only legacy export construction/model support and one-grid connectivity encoding differ. Existing native reference bytes/ledger/paired proofs remain immutable. Parsing, source identity, stage geometry and numerical budgets unchanged.')
+  return dict(status='EXACT_QUALIFIED_NATIVE_POSITIVE_OPERAND_ENCODING_DELTA',scope='Only legacy export construction/model support, one-grid connectivity encoding and conservative parsed-positive spindle operands differ. Existing native reference bytes/ledger/paired proofs remain immutable. Parsing, source identity, stage geometry and numerical budgets unchanged.')
  dump=lambda node:ast.dump(node,include_attributes=False)
  old=ast.parse('from .export_absorption import supported_region').body[0]
  new=ast.parse('from .export_absorption import compact_supported_region as supported_region').body[0]
