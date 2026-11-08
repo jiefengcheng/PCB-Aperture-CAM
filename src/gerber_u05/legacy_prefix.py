@@ -52,6 +52,19 @@ def preparation_class_delta_only(before,after,kind):
   tree.body=nodes;return ast.dump(tree,include_attributes=False)
  if reduced(before)!=reduced(after):raise ValueError('LEGACY_PREPARATION_POLICY_OR_HELPER_CHANGED:'+kind)
 
+def export_metric_delta_only(before,after):
+ """Only substitute the already-qualified complete native boundary metric."""
+ class Indexed(ast.NodeTransformer):
+  def visit_Call(self,node):
+   self.generic_visit(node)
+   if isinstance(node.func,ast.Attribute)and node.func.attr=='hausdorff_distance'and len(node.args)==1 and not node.keywords:
+    return ast.Call(func=ast.Name(id='boundary_distance',ctx=ast.Load()),args=[node.func.value,*node.args],keywords=[])
+   return node
+ def reduced(text,convert):
+  tree=ast.parse(text);tree.body=[n for n in tree.body if not(isinstance(n,ast.ImportFrom)and n.module=='src.native_boundary_metric'and len(n.names)==1 and n.names[0].name=='distance'and n.names[0].asname=='boundary_distance')]
+  return ast.dump(Indexed().visit(tree)if convert else tree,include_attributes=False)
+ if reduced(before,True)!=reduced(after,False):raise ValueError('LEGACY_EXPORT_METRIC_POLICY_OR_GEOMETRY_CHANGED')
+
 def pipeline_same(before,after,through='t02'):
  def reduced(text):
   tree=ast.parse(text);tree.body=[n for n in tree.body if not(isinstance(n,ast.FunctionDef)and(n.name=='empty_t02'or(through=='t04'and n.name=='run_t02')))]
@@ -130,26 +143,29 @@ def inspect(old,through):
  if not old.is_absolute()or'..'in old.parts or old.name!='legacy'or not any(old.is_relative_to(work/'operator_routes'/namespace)for namespace in('gerber_u05','gerber_u05_incremental_legacy','gerber_u05_ladder_combined')):raise ValueError('EXPLICIT_NATIVE_LEGACY_PREFIX_REQUIRED')
  if through not in('t03','t04','t02','t05'):raise ValueError('LEGACY_PREFIX_BOUNDARY_UNSUPPORTED')
  stages=ORDER[:ORDER.index(through)+1];binding=load(old/'PRODUCER_BINDING.json');state=load(old.parent/'STATUS.current.json');producer_sha=sha(old/'PRODUCER_BINDING.json');original_root=Path(os.path.commonpath(list(binding['files'])))
- inherited=None;inherited_stages=[];records=dict(state['checks']);source_roots=[str(original_root)]
+ inherited=None;inherited_stages=[];inherited_producers={};records=dict(state['checks']);source_roots=[str(original_root)]
  if(old/'REUSED_LEGACY_BINDING.json').exists():
   if binding['job_inputs'].get(str(old/'REUSED_LEGACY_BINDING.json'))!=sha(old/'REUSED_LEGACY_BINDING.json'):raise ValueError('INHERITED_LEGACY_AUTHORITY_CHANGED')
   inherited=load(old/'REUSED_LEGACY_BINDING.json')['original'];fresh=inspect(inherited['original_run'],inherited['through'])
   if {k:fresh.get(k)for k in inherited if k!='code_dependency_changes'}!={k:v for k,v in inherited.items()if k!='code_dependency_changes'}:raise ValueError('INHERITED_LEGACY_PREFIX_CHANGED')
   for name,expected in inherited['files'].items():
    if sha(old/name)!=expected:raise ValueError('INHERITED_LEGACY_COPY_CHANGED')
+  inherited_producers=fresh['stage_producer_bindings']
   records=dict(inherited['original_checks'],**records);inherited_stages=inherited['stages'];source_roots.extend(fresh.get('original_source_roots',[fresh['original_source_root']]))
  source_namespace(Path(original_root),work)
  for name,expected in {**binding['files'],**binding['job_inputs']}.items():
   if sha(name)!=expected:raise ValueError('LEGACY_ORIGINAL_PRODUCER_OR_INPUT_CHANGED:'+name)
  if sha(old/'source.json')!=binding['source_binding_sha256']:raise ValueError('LEGACY_ORIGINAL_SOURCE_BINDING_CHANGED')
- keys=[];files={'source.json',*(stage+'.json'for stage in stages)}
+ keys=[];files={'source.json',*(stage+'.json'for stage in stages)};stage_producers={}
  if 't04'in stages:
   raw=load(old/'RAW_WIDTH_CHECKPOINT.json');final=load(old/'t04.json')
   if raw!={k:v for k,v in final.items()if k not in('t04_width_fence','pin_separation')}:raise ValueError('LEGACY_RAW_WIDTH_CHECKPOINT_CHANGED')
   files.add('RAW_WIDTH_CHECKPOINT.json')
  for stage in stages:
   proofs=[load(old/'audits'/stage/(m+'.json'))for m in('construct','1','2')]
-  if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]or proofs[0]['status']!='PASS'or proofs[0]['producer_binding_sha256']!=(inherited['original_producer_binding_sha256']if stage in inherited_stages else producer_sha) or proofs[0]['candidate_sha256']!=sha(old/(stage+'.json')):raise ValueError('LEGACY_PREFIX_STAGE_PROOF_CHANGED:'+stage)
+  expected_producer=inherited_producers[stage]if stage in inherited_stages else producer_sha
+  if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]or proofs[0]['status']!='PASS'or proofs[0]['producer_binding_sha256']!=expected_producer or proofs[0]['candidate_sha256']!=sha(old/(stage+'.json')):raise ValueError('LEGACY_PREFIX_STAGE_PROOF_CHANGED:'+stage)
+  stage_producers[stage]=expected_producer
   for mode in('construct','1','2'):
    key='legacy_'+stage+'_'+mode;record=records.get(key,{})
    if record.get('status')!='PASS'or record.get('returncode')!=0:raise ValueError('LEGACY_PREFIX_NATIVE_OPERATION_INCOMPLETE:'+key)
@@ -222,6 +238,11 @@ def inspect(old,through):
    # the SpatialQueries class itself is instantiated by T05 only.
    if through=='t05':raise ValueError('LEGACY_T05_SPATIAL_CHANGE_REQUIRES_FRESH_T05')
    preparation_class_delta_only(file.read_text(),current.read_text(),'spatial_queries')
+  elif relative in('src/pcb_data_abi/board_geometry.py','src/gerber_u05/exporter.py'):
+   # Gerber geometry stages retain no native encoding operation. Quantization,
+   # every contour, all tolerances and metric definitions stay identical; only
+   # the established all-vertex distance service evaluates export comparisons.
+   export_metric_delta_only(file.read_text(),current.read_text())
   elif relative=='src/t04_incremental.py'and through=='t03':
    # This module is first called by T04. Retain only T01/T03 after the exact
    # cache-accounting correction; no geometry/policy change receives reuse.
@@ -251,7 +272,7 @@ def inspect(old,through):
  if(old/'SOURCE_ASSEMBLY_BINDING.json').exists():allowed_extras.add('src/gerber_u05/pcb_artwork_scope.py')
  if through in('t03','t04'):allowed_extras.add('src/gerber_u05/width_stage_constraints.py')
  if extras-allowed_extras:raise ValueError('LEGACY_PREFIX_UNDECLARED_PRODUCER')
- return dict(schema='verified-legacy-native-prefix/1',through=through,stages=list(stages),retained_operation_count=len(keys),original_run=str(old),original_source_root=str(original_root),original_source_roots=sorted(set(source_roots)),original_producer_binding_sha256=producer_sha,source_binding_sha256=binding['source_binding_sha256'],source_sha256=source['source_ref']['sha256'],original_checks={key:records[key]for key in keys},files={name:sha(old/name)for name in sorted(files)},code_dependency_changes=changes,original_route_completion='NOT_CLAIMED; only completed prefix operations retained')
+ return dict(schema='verified-legacy-native-prefix/1',through=through,stages=list(stages),stage_producer_bindings=stage_producers,retained_operation_count=len(keys),original_run=str(old),original_source_root=str(original_root),original_source_roots=sorted(set(source_roots)),original_producer_binding_sha256=producer_sha,source_binding_sha256=binding['source_binding_sha256'],source_sha256=source['source_ref']['sha256'],original_checks={key:records[key]for key in keys},files={name:sha(old/name)for name in sorted(files)},code_dependency_changes=changes,original_route_completion='NOT_CLAIMED; only completed prefix operations retained')
 
 def verify(run):
  run=Path(run);path=run/'REUSED_LEGACY_BINDING.json'

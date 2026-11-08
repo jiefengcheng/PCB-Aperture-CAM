@@ -4,6 +4,7 @@ from shapely import set_precision,to_wkb,get_coordinates
 from shapely.geometry import Polygon,LineString,Point
 from shapely.geometry.polygon import orient
 from src.stage_abi.store import digest
+from src.native_boundary_metric import distance as boundary_distance
 from .geometry import GRID_MM,POLYGON_TOLERANCE_MM,CIRCLE_TOLERANCE_MM
 from .crop_quantization import export_reference as crop_reference
 
@@ -27,21 +28,21 @@ def quantize(shape):
     if q.geom_type!='Polygon'or q.is_empty or not q.is_valid:raise ValueError('BOARD_FILE_GRID_MULTIPART_NOT_SUPPORTED')
     area=shape.symmetric_difference(q).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
     if area>bound:raise ValueError('FILE_GRID_AREA_CHANGE_EXCEEDS_BOUND')
-    return q,dict(grid_mm=GRID_MM,mode='valid_output',raw_boundary_hausdorff_mm=shape.boundary.hausdorff_distance(q.boundary),raw_symmetric_difference_mm2=area,area_change_bound_mm2=bound,vertices_before=sum(len(p.exterior.coords)-1 for p in shape.geoms)if shape.geom_type=='MultiPolygon'else len(shape.exterior.coords)-1,vertices_after=len(q.exterior.coords)-1,subgrid_collapse_visible=shape.hausdorff_distance(q)>POLYGON_TOLERANCE_MM,holes_after=len(q.interiors))
+    return q,dict(grid_mm=GRID_MM,mode='valid_output',raw_boundary_hausdorff_mm=boundary_distance(shape.boundary,q.boundary),raw_symmetric_difference_mm2=area,area_change_bound_mm2=bound,vertices_before=sum(len(p.exterior.coords)-1 for p in shape.geoms)if shape.geom_type=='MultiPolygon'else len(shape.exterior.coords)-1,vertices_after=len(q.exterior.coords)-1,subgrid_collapse_visible=boundary_distance(shape,q)>POLYGON_TOLERANCE_MM,holes_after=len(q.interiors))
 
 def export_reference(shape):
     try:return crop_reference(shape)
     except ValueError as error:
         if str(error)not in('UNSUPPORTED_TARGET_POLYGON','UNSUPPORTED_RESOLVABLE_TARGET_HOLE'):raise
     q,metrics=quantize(shape)
-    proof=dict(policy='Existing 0.000001 mm valid_output normalization; unwrap a single grid component and preserve every resolvable hole with legal axial cut-ins',verified_geometry_sha256=digest(to_wkb(shape,byte_order=1)),export_reference_sha256=digest(to_wkb(q,byte_order=1)),normalized_geometry_sha256=digest(to_wkb(q,byte_order=1)),grid_mm=GRID_MM,raw_type=shape.geom_type,resolvable_holes_preserved=len(q.interiors),direct_normalization_equal=q.equals(set_precision(shape,GRID_MM,mode='valid_output')),raw_geometry_hausdorff_mm=shape.hausdorff_distance(q),raw_symmetric_difference_mm2=metrics['raw_symmetric_difference_mm2'],area_change_bound_mm2=metrics['area_change_bound_mm2'],ordinary_quantization=metrics,verified_geometry_unchanged=True)
+    proof=dict(policy='Existing 0.000001 mm valid_output normalization; unwrap a single grid component and preserve every resolvable hole with legal axial cut-ins',verified_geometry_sha256=digest(to_wkb(shape,byte_order=1)),export_reference_sha256=digest(to_wkb(q,byte_order=1)),normalized_geometry_sha256=digest(to_wkb(q,byte_order=1)),grid_mm=GRID_MM,raw_type=shape.geom_type,resolvable_holes_preserved=len(q.interiors),direct_normalization_equal=q.equals(set_precision(shape,GRID_MM,mode='valid_output')),raw_geometry_hausdorff_mm=boundary_distance(shape,q),raw_symmetric_difference_mm2=metrics['raw_symmetric_difference_mm2'],area_change_bound_mm2=metrics['area_change_bound_mm2'],ordinary_quantization=metrics,verified_geometry_unchanged=True)
     return q,proof
 
 def fidelity(reference,actual,*,native_circle=False):
     if actual.is_empty or not actual.is_valid:raise ValueError('REOPENED_GEOMETRY_INVALID')
     expected=reference if native_circle else quantize(reference)[0];observed=actual if native_circle else file_grid(actual);tol=CIRCLE_TOLERANCE_MM if native_circle else POLYGON_TOLERANCE_MM
     if expected.is_empty or observed.is_empty or not expected.is_valid or not observed.is_valid:raise ValueError('FILE_GRID_COMPARISON_GEOMETRY_INVALID')
-    distance=expected.hausdorff_distance(observed);area=expected.symmetric_difference(observed).area;bound=2*expected.length*tol+math.pi*tol**2
+    distance=boundary_distance(expected,observed);area=expected.symmetric_difference(observed).area;bound=2*expected.length*tol+math.pi*tol**2
     result=dict(passed=all(math.isfinite(v) for v in (distance,area,bound)) and distance<=tol and area<=bound,comparison='native analytic circle vs bounded source approximation'if native_circle else'file-grid verified contour, including preserved holes',hausdorff_mm=distance,symmetric_difference_mm2=area,tolerance_mm=tol,area_bound_mm2=bound)
     if not result['passed']:raise ValueError('CONTOUR_FIDELITY_FAILED:'+str(result))
     return result

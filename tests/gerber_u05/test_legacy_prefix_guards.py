@@ -41,6 +41,24 @@ def test_complete_prefix_retains_both_native_record_sets(tmp_path,monkeypatch):
  assert result['original_route_completion'].startswith('NOT_CLAIMED')
 
 
+def test_third_prefix_preserves_each_stages_actual_producer_not_its_immediate_parent(tmp_path,monkeypatch):
+ import shutil
+ old,_,_=binding_fixture(tmp_path,monkeypatch);first=q.inspect(old,'t02')
+ second=tmp_path/'operator_routes/gerber_u05/job2/legacy';second.parent.mkdir();shutil.copytree(old,second)
+ prefix=put(second/'REUSED_LEGACY_BINDING.json',dict(original=first));seal=json.loads((second/'PRODUCER_BINDING.json').read_bytes());seal['job_inputs']={str(prefix):q.sha(prefix)};put(second/'PRODUCER_BINDING.json',seal)
+ source=json.loads((second/'source.json').read_bytes());put(second/'t05.json',dict(stage='t05',output_scene_ref=source['scene_ref']))
+ records={};proof=dict(status='PASS',producer_binding_sha256=q.sha(second/'PRODUCER_BINDING.json'),candidate_sha256=q.sha(second/'t05.json'))
+ for i,mode in enumerate(('construct','1','2')):
+  put(second/'audits/t05'/(mode+'.json'),proof);records['legacy_t05_'+mode]=dict(status='PASS',returncode=0,pid=100+i)
+ put(second/'audits/t05/proof.json',proof);put(second.parent/'STATUS.current.json',dict(status='HALTED',checks=records));middle=q.inspect(second,'t05')
+ third=tmp_path/'operator_routes/gerber_u05/job3/legacy';third.parent.mkdir();shutil.copytree(second,third)
+ prefix=put(third/'REUSED_LEGACY_BINDING.json',dict(original=middle));seal=json.loads((third/'PRODUCER_BINDING.json').read_bytes());seal['job_inputs']={str(prefix):q.sha(prefix)};put(third/'PRODUCER_BINDING.json',seal);put(third.parent/'STATUS.current.json',dict(status='HALTED',checks={}))
+ final=q.inspect(third,'t05');assert final['retained_operation_count']==17
+ assert final['stage_producer_bindings']['t01']==q.sha(old/'PRODUCER_BINDING.json')
+ assert final['stage_producer_bindings']['t05']==q.sha(second/'PRODUCER_BINDING.json')
+ assert final['stage_producer_bindings']['t05']!=q.sha(third/'PRODUCER_BINDING.json')
+
+
 def test_frozen_release_requires_complete_hash_bound_manifest(tmp_path):
  root=tmp_path/'releases/release/source';file=root/'src/example.py';file.parent.mkdir(parents=True);file.write_text('# frozen\n')
  with pytest.raises(ValueError,match='MANIFEST_REQUIRED'):q.source_namespace(root,tmp_path)
@@ -93,6 +111,13 @@ def test_preparation_class_delta_cannot_change_a_shared_budget_or_geometry_helpe
  after=before.replace('class GeometrySnapshot: pass','class OperandView: pass\nclass GeometrySnapshot:\n def bounded(self): return True')
  q.preparation_class_delta_only(before,after,'loaded_geometry')
  with pytest.raises(ValueError,match='POLICY_OR_HELPER_CHANGED'):q.preparation_class_delta_only(before,after.replace('MEMO_BYTES=32','MEMO_BYTES=64'),'loaded_geometry')
+
+def test_export_metric_substitution_cannot_change_grid_tolerance_geometry_or_predicate():
+ before='GRID=0.000001\ndef fidelity(a,b):\n return a.hausdorff_distance(b)<=GRID\n'
+ after='from src.native_boundary_metric import distance as boundary_distance\nGRID=0.000001\ndef fidelity(a,b):\n return boundary_distance(a,b)<=GRID\n'
+ q.export_metric_delta_only(before,after)
+ for changed in [after.replace('GRID=0.000001','GRID=0.000002'),after.replace('<=GRID','<=GRID*2'),after.replace('boundary_distance(a,b)','boundary_distance(a.buffer(1),b)')]:
+  with pytest.raises(ValueError,match='METRIC_POLICY_OR_GEOMETRY_CHANGED'):q.export_metric_delta_only(before,changed)
 
 
 def test_t03_boundary_never_retains_a_failed_t04(tmp_path,monkeypatch):

@@ -11,6 +11,7 @@ from src.gerber_image import CompletionParser
 from src.pcb_data_abi.board_geometry import export_reference,bridge_contour,fidelity
 from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM,GRID_MM
 from src.indexed_hausdorff import distance as image_hausdorff
+from src.native_boundary_metric import distance as boundary_distance
 from src.u05_board.export import export_region,actual_spindle_check
 from .export_absorption import supported_region
 from src.junction_spindle_stage import prepare_spindle_context
@@ -99,7 +100,7 @@ def append_regions(shape,stage,sid,records,blocks,store,*,owner=None):
     if normalized.is_empty or not normalized.is_valid or normalized.geom_type not in('Polygon','MultiPolygon')or area>bound:raise ValueError('EXPORT_FILE_GRID_NORMALIZATION_FAILED')
     raw_ref=p.geomref(store,qualified);normalization=dict(encoding_guard_mm=encoding_guard,qualified_reference_unchanged=True,grid_mm=.000001,mode='valid_output',area_change_mm2=area,area_bound_mm2=bound,raw_type=shape.geom_type,normalized_type=normalized.geom_type,raw_components=1 if shape.geom_type=='Polygon'else len(shape.geoms),normalized_components=1 if normalized.geom_type=='Polygon'else len(normalized.geoms))
     if connectivity['connectivity_support'] is not None:normalization['connectivity_support']=connectivity['connectivity_support']
-    encoding_distance=qualified.hausdorff_distance(normalized);encoding_area=qualified.symmetric_difference(normalized).area;encoding_bound=2*qualified.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
+    encoding_distance=boundary_distance(qualified,normalized);encoding_area=qualified.symmetric_difference(normalized).area;encoding_bound=2*qualified.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
     # Isolated contribution normalization may collapse sub-grid tips already
     # covered by other original copper. Preserve these metrics; the unchanged
     # check() enforces 2 nm on the complete physical union, all stage clearance
@@ -136,7 +137,7 @@ def preserve_point_contacts(owner,pieces,sid,records,blocks,store):
         first=len(records);append_regions(cap,'t05',sid,records,blocks,store)
         proof=dict(reason='One-grid cap at minimum-grid component point contact; triangle retained, no topology/tolerance waiver',component_sha256=p.digest(p.to_wkb(part)),component_area_mm2=part.area,gap_to_encoded_owner_mm=gap,cap_radius_mm=grid)
         for row in records[first:]:row['encoding_support']=proof;caps.append(p.geometry(store,row['geometry_ref']))
-    after=owner.union(p.unary_union([*pieces,*caps]));distance=before.hausdorff_distance(after);area=before.symmetric_difference(after).area;bound=2*before.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
+    after=owner.union(p.unary_union([*pieces,*caps]));distance=boundary_distance(before,after);area=before.symmetric_difference(after).area;bound=2*before.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
     if after.geom_type!='Polygon' or not after.is_valid or not math.isfinite(distance)or distance>POLYGON_TOLERANCE_MM or area>bound:raise ValueError('EXPORT_POINT_CONTACT_SUPPORT_NOT_QUALIFIED')
     return caps
 
@@ -215,7 +216,7 @@ def check(run,body,ledger):
     source_shapes=[];reference_source_shapes=[];proofs=[]
     for i,(a,b)in enumerate(zip(original.objects,actual.objects[:n])):
         ga,_=p.source_profile.object_geometry(a);gb,_=p.source_profile.object_geometry(b)
-        if type(a)!=type(b)or a.polarity_dark!=b.polarity_dark or ga.hausdorff_distance(gb)>1e-8 or ga.symmetric_difference(gb).area>2*ga.length*1e-8:raise ValueError('ORIGINAL_PLOTTING_ATOM_CHANGED:'+str(i))
+        if type(a)!=type(b)or a.polarity_dark!=b.polarity_dark or boundary_distance(ga,gb)>1e-8 or ga.symmetric_difference(gb).area>2*ga.length*1e-8:raise ValueError('ORIGINAL_PLOTTING_ATOM_CHANGED:'+str(i))
         source_shapes.append((gb,b.polarity_dark));reference_source_shapes.append((ga,a.polarity_dark))
     before=p.affine_scale(p.source_profile.ordered(source_shapes),1,-1,origin=(0,0));by_stage=collections.defaultdict(dict);observed=[]
     for i,(obj,row)in enumerate(zip(actual.objects[n:],ledger['records'])):
