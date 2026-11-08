@@ -24,7 +24,7 @@ On the three largest actual retained export parents (122,094, 81,932 and 59,035
 vertices), the indexed metric produces exactly the original double values.
 Measured metric-only times are 0.624, 0.357 and 0.249 seconds. These are scoped
 diagnostics, not an end-to-end benchmark against the 732-second construction.
-The largest measured distance is about 0.956 µm: this existing isolated-support
+The largest measured distance is about 0.956 nm: this existing isolated-support
 metric was already recorded by the old exporter. It is not a new permission for
 physical error; complete physical-union and actual reparse checks retain their
 existing tighter bounds and all original-copper preservation requirements.
