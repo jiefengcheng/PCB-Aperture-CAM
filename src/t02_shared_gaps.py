@@ -17,13 +17,14 @@ from src.pcb_data_abi.geometry import POLYGON_TOLERANCE_MM
 from src.t02_gap_settings import capture as gap_settings
 
 EPS=TraceWidthContract().comparison_epsilon_mm
-POLICY=dict(schema='t02-shared-neighbor-gaps/4',source='ORIGINAL_RESOLVED_COPPER',
+POLICY=dict(schema='t02-shared-neighbor-gaps/5',source='ORIGINAL_RESOLVED_COPPER',
  recognition='REPEATED_COLLINEAR_FACES_WITH_EMPTY_STRAIGHT_CORRIDORS',
  minimum_side_overlap_fraction=.75,maximum_gap_width_multiple=2.,
  maximum_repeat_spacing_multiple=2.,projection='MINIMUM_SAFE_CENTERED_BANK_OFFSET',
  fixed_or_keep_member='ANCHOR_BANK_WITHOUT_REASSIGNMENT',
  fixed_wall_geometry='SOURCE_BOUND_QUALIFIED_ENTRY_CONTOUR; preceding copper retained',
- retained_entry_material='EXACT_ORIGINAL_ATTACHMENT_FOOTPRINT_WITHIN_NATIVE_WALL_FIDELITY_ONLY',
+ retained_entry_material='EXACT_QUALIFIED_ORIGINAL_ATTACHMENT_FOOTPRINT; NO_NEW_FILL_ALLOWANCE',
+ inherited_curved_wall='FULL_SINGLE_VALUED_CONTOUR; MATCH_COMPLETE_SPAN_MINIMUM_GAPS',
  inherited_wall_recognition_tolerance_mm=POLYGON_TOLERANCE_MM,
  fills='REJECT_ENTIRE_PROPOSAL_ON_PROTECTED_GAP_INTRUSION',
  comparison_epsilon_mm=EPS)
@@ -131,16 +132,30 @@ def entry_walls(groups,source,current):
     # End caps at lo/hi face along the other axis; they are not this wall.
     contour=unary_union([LineString([a,b])for line in lines(clipped)for a,b in zip(line.coords,list(line.coords)[1:])if abs(a[other]-b[other])>EPS])
     intervals=[(g.bounds[other],g.bounds[other+2])for g in lines(contour)]
-    if missing_length(intervals,lo,hi)>EPS or contour.hausdorff_distance(face(axis,nominal,lo,hi))>POLYGON_TOLERANCE_MM:raise ValueError('SHARED_GAP_FIXED_WALL_NOT_STRAIGHT')
+    curved=missing_length(intervals,lo,hi)>EPS or contour.hausdorff_distance(face(axis,nominal,lo,hi))>POLYGON_TOLERANCE_MM
+    extra={}
+    if curved:
+     # A qualified uniform trace end may bulge past its original straight
+     # support. Keep its actual contour, not a fictitious straight wall or a
+     # larger numerical tolerance. Require one wall value over the whole span.
+     a,b=(nominal-POLYGON_TOLERANCE_MM,group['right'])if bank==0 else(group['left'],nominal+POLYGON_TOLERANCE_MM)
+     clipped=boundary.intersection(corridor(axis,a,b,lo,hi))
+     contour=unary_union([LineString([a,b])for line in lines(clipped)for a,b in zip(line.coords,list(line.coords)[1:])if abs(a[other]-b[other])>EPS])
+     intervals=[(g.bounds[other],g.bounds[other+2])for g in lines(contour)]
+     if missing_length(intervals,lo,hi)>EPS or abs(sum(b-a for a,b in intervals)-(hi-lo))>EPS:raise ValueError('SHARED_GAP_FIXED_WALL_NOT_SINGLE_VALUED')
+     extreme=contour.bounds[axis+2 if bank==0 else axis]
+     intrusion=max(0.,(extreme-nominal)*(1 if bank==0 else-1))
+     if (extreme>=group['right']-EPS if bank==0 else extreme<=group['left']+EPS):raise ValueError('SHARED_GAP_FIXED_WALL_CROSSES_SOURCE_SLOT')
+     extra=dict(maximum_intrusion_mm=intrusion,measurement='MINIMUM_AXIS_GAP_OVER_COMPLETE_SOURCE_SPAN')
     offset=(nominal-plane)*(1 if bank==0 else-1)
     if offset<-EPS:raise ValueError('SHARED_GAP_FIXED_WALL_RECEDES')
     # Store only the exact already-present footprint on the gap side. This is
     # not a tolerance buffer or permission for later sub-grid growth. Everything
     # outside that frozen material remains subject to the strict area predicate.
-    a,b=(nominal,nominal+POLYGON_TOLERANCE_MM)if bank==0 else(nominal-POLYGON_TOLERANCE_MM,nominal)
+    a,b=(nominal,group['right']if curved else nominal+POLYGON_TOLERANCE_MM)if bank==0 else(group['left']if curved else nominal-POLYGON_TOLERANCE_MM,nominal)
     retained=unary_union(surfaces(material.intersection(corridor(axis,a,b,lo,hi))))
     witnesses=lambda values:[dict(source_id=s,original_sha256=hashlib.sha256(to_wkb(source[s])).hexdigest(),entry_sha256=hashlib.sha256(to_wkb(current[s])).hexdigest())for s in values]
-    walls.append(dict(group_id=group['group_id'],bank=bank,lo=lo,hi=hi,offset_mm=max(0.,offset),plane=nominal,contour_wkb_hex=to_wkb(contour).hex(),retained_material_wkb_hex=to_wkb(retained).hex(),supports=witnesses(supports),original_attachments=witnesses(attachments)))
+    walls.append(dict(group_id=group['group_id'],bank=bank,lo=lo,hi=hi,offset_mm=max(0.,offset),plane=nominal,contour_wkb_hex=to_wkb(contour).hex(),retained_material_wkb_hex=to_wkb(retained).hex(),supports=witnesses(supports),original_attachments=witnesses(attachments),**extra))
   # Earlier fixed walls may differ slightly. Their individual qualified planes
   # remain immutable; the registered tolerance compares the resulting gaps.
  return walls
@@ -162,7 +177,8 @@ def zone_rows(spec,group,left,right,current):
     inherited=[w for w in walls if w['bank']==bank]
     if len(inherited)!=1:raise ValueError('SHARED_GAP_SLOT_WALL_COVERAGE_CHANGED')
     planes[bank]=inherited[0]['plane']
-  yield dict(group_id=group['group_id'],axis=axis,left=planes[0],right=planes[1],lo=slot['lo'],hi=slot['hi'],gap_mm=planes[1]-planes[0],entry_walls=walls)
+  intrusion=sum(w.get('maximum_intrusion_mm',0.)for w in walls)
+  yield dict(group_id=group['group_id'],axis=axis,left=planes[0],right=planes[1],lo=slot['lo'],hi=slot['hi'],gap_mm=planes[1]-planes[0]-intrusion,entry_walls=walls)
 
 def records(scene,original,current):
  index=original_index(scene,original);source=index.geometries
@@ -254,20 +270,41 @@ def project(spec,original,current,proposed,*,factor_rows=None):
     _,_,g,factors,axis=max(choices,key=lambda v:v[:2]);factor_rows[sid]=factors
     guards.append(dict(source_id=sid,group_id=group['group_id'],axis=axis,factors=factors))
   proposed[sid]=g
- parents={};anchors=defaultdict(list)
+ parents={};weights={};anchors=defaultdict(list)
  def find(x):
-  parents.setdefault(x,x)
-  if parents[x]!=x:parents[x]=find(parents[x])
+  parents.setdefault(x,x);weights.setdefault(x,0.)
+  if parents[x]!=x:
+   old=parents[x];parents[x]=find(old);weights[x]+=weights[old]
   return parents[x]
- def join(a,b):
-  a,b=find(a),find(b)
-  if a!=b:parents[max(a,b)]=min(a,b)
+ def join(a,b,difference=0.):
+  ra,rb=find(a),find(b);wa,wb=weights[a],weights[b]
+  if ra==rb:
+   if abs(wa-wb-difference)>EPS:raise ValueError('SHARED_GAP_OFFSET_CONSTRAINT_INCONSISTENT')
+  elif ra<rb:parents[rb]=ra;weights[rb]=wa-wb-difference
+  else:parents[ra]=rb;weights[ra]=difference-wa+wb
  for group in spec['groups']:
   axis=group['axis']
+  curved=any(w.get('maximum_intrusion_mm',0.)>0 for w in spec['entry_walls']if w['group_id']==group['group_id'])
   for bank,ids in enumerate(group['banks']):
    variables=[(sid,axis)for sid in ids]
    for var in variables:find(var)
-   for var in variables[1:]:join(variables[0],var)
+   if curved and variables:
+    # Equal nearest spacing against an inherited curved wall requires unequal
+    # optional pad offsets. Weighted equalities solve these once, without
+    # search, clipping, added growth, or changing the preceding trace.
+    constraints=[]
+    for slot in group['slots']:
+     members=slot['bank_members'][bank]
+     if not members:continue
+     walls=[w for w in spec['entry_walls']if w['group_id']==group['group_id']and w['bank']==1-bank and w['lo']==slot['lo']and w['hi']==slot['hi']]
+     if len(walls)!=1:raise ValueError('SHARED_GAP_CURVED_OPPOSITE_WALL_REQUIRED')
+     wall=walls[0];fixed=wall['offset_mm']+wall.get('maximum_intrusion_mm',0.)
+     constraints.extend(((sid,axis),fixed)for sid in members)
+    if not constraints:raise ValueError('SHARED_GAP_CURVED_MEMBER_COVERAGE_CHANGED')
+    first,base=constraints[0]
+    for var,fixed in constraints[1:]:join(first,var,fixed-base)
+   else:
+    for var in variables[1:]:join(variables[0],var)
    anchor=bank_anchor(spec,group,bank)
    if anchor is not None:
     for var in variables:anchors[var].append(anchor)
@@ -280,11 +317,15 @@ def project(spec,original,current,proposed,*,factor_rows=None):
    core=current[sid];delta=(factor_rows[sid][axis]-1)*(core.bounds[axis+2]-core.bounds[axis])/2 if sid in proposed else 0.
    if delta<-EPS:raise ValueError('SHARED_GAP_PROJECTION_REMOVES_ENTRY')
    offered.append(max(0.,delta))
-  required=[value for v in variables for value in anchors[v]]
-  if required and min(required)>min(offered)+EPS:raise ValueError('SHARED_GAP_FIXED_ANCHOR_INFEASIBLE')
-  value=min(required)if required else min(offered)
-  for var in variables:offsets[var]=value
+  potentials=[weights[v]for v in sorted(variables)]
+  upper=min(o-p for o,p in zip(offered,potentials));lower=max(-p for p in potentials)
+  required=[value-weights[v]for v in variables for value in anchors[v]]
+  if required and min(required)>upper+EPS:raise ValueError('SHARED_GAP_FIXED_ANCHOR_INFEASIBLE')
+  value=min(required)if required else upper
+  if value<lower-EPS:raise ValueError('SHARED_GAP_OFFSET_COMPENSATION_INFEASIBLE')
+  for var in variables:offsets[var]=max(0.,value+weights[var])
   ledger.append(dict(variables=[list(v)for v in sorted(variables)],offered_offsets_mm=offered,common_offset_mm=value,fixed_wall_anchor=bool(required),fixed_anchor_offsets_mm=required))
+  if any(p!=0 for p in potentials):ledger[-1]['relative_offsets_mm']=potentials
  result=dict(proposed);result_factors={}
  for sid,g in proposed.items():
   core=current[sid];factors=[]
@@ -315,7 +356,7 @@ def check(proof,material,*,tolerance_mm=0.):
   intrusion=material.intersection(inner).difference(retained).area
   checks.append(dict(group_id=row['group_id'],gap_mm=row['gap_mm'],intrusion_mm2=intrusion,retained_entry_material_mm2=retained.area,passed=intrusion<=EPS))
  match=matching(proof,proof['zones'])
- return dict(passed=all(q['passed']for q in checks)and match['passed'],checks=checks,gap_matching=match,tolerance_mm=tolerance_mm,scope='Complete original straight slot spans; same-net and fill allowances do not override')
+ return dict(passed=all(q['passed']for q in checks)and match['passed'],checks=checks,gap_matching=match,tolerance_mm=tolerance_mm,scope='Complete source-qualified spans and exact inherited contours; minimum axis gaps compared between slots; same-net and fill allowances do not override')
 
 def require(proof,material,*,tolerance_mm=0.):
  q=check(proof,material,tolerance_mm=tolerance_mm)

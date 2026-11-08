@@ -41,6 +41,25 @@ def test_complete_prefix_retains_both_native_record_sets(tmp_path,monkeypatch):
  assert result['original_route_completion'].startswith('NOT_CLAIMED')
 
 
+def test_frozen_release_requires_complete_hash_bound_manifest(tmp_path):
+ root=tmp_path/'releases/release/source';file=root/'src/example.py';file.parent.mkdir(parents=True);file.write_text('# frozen\n')
+ with pytest.raises(ValueError,match='MANIFEST_REQUIRED'):q.source_namespace(root,tmp_path)
+ put(root.parent/'SOURCE_MANIFEST.json',dict(root=str(root),files={'src/example.py':q.sha(file)}))
+ q.source_namespace(root,tmp_path)
+ file.write_text('# changed\n')
+ with pytest.raises(ValueError,match='RELEASE_SOURCE_CHANGED'):q.source_namespace(root,tmp_path)
+ with pytest.raises(ValueError,match='NAMESPACE_INVALID'):q.source_namespace(tmp_path/'other/source',tmp_path)
+
+
+def test_shared_gap_correction_never_adopts_a_completed_t02_or_its_frozen_state(tmp_path,monkeypatch):
+ old,_,_=binding_fixture(tmp_path,monkeypatch)
+ q.t02_only_before_stage(['t01','t03','t04'],old)
+ with pytest.raises(ValueError,match='REQUIRES_FRESH_T02_T05'):q.t02_only_before_stage(['t01','t03','t04','t02'],old)
+ value=json.loads((old/'t04.json').read_bytes());scene=dict(objects=[],lineage=[dict(stage='t02')]);body=json.dumps(scene).encode();h=hashlib.sha256(body).hexdigest();(old/'runtime/artifacts'/('scene:'+h)).write_bytes(body)
+ value['output_scene_ref']=dict(artifact_id='scene:'+h,sha256=h);put(old/'t04.json',value)
+ with pytest.raises(ValueError,match='HAS_SHARED_GAP_STATE'):q.t02_only_before_stage(['t04'],old)
+
+
 def test_t03_boundary_never_retains_a_failed_t04(tmp_path,monkeypatch):
  old,_,_=binding_fixture(tmp_path,monkeypatch)
  path=old.parent/'STATUS.current.json';state=json.loads(path.read_bytes())

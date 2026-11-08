@@ -11,6 +11,32 @@ load=lambda f:json.loads(Path(f).read_bytes())
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/run.py','src/gerber_u05/render.py','src/gerber_u05/legacy_export.py','src/gerber_u05/reference_recipe.py','src/u05_board/coverage.py','src/gerber_u05/legacy_prefix.py'}
 CONNECTED_COMPLETION={'src/component_clearance.py','src/component_voids.py','src/growth_void_remedy_v09.py','src/partial_pocket_remedy.py','src/gerber_u05/component_finish.py','src/gerber_u05/component_policy.py','src/gerber_u05/component_stages.py','src/gerber_u05/native_component_checks_final.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/prior_copper.py','contracts/component_remedy/settings.json','contracts/growth_void/settings.json','src/u05_board/attachment_export.py','src/gerber_u05/width_adoption.py'}
 
+def source_namespace(root,work):
+ """A frozen app release has the same source authority as an evidence snapshot.
+
+ The original native producer still hash-binds every executable dependency.
+ This additionally checks the complete release manifest, including assets.
+ """
+ if '..'in root.parts:raise ValueError('LEGACY_ORIGINAL_SOURCE_NAMESPACE_INVALID')
+ if root.is_relative_to(work/'evidence'):return
+ if root.name!='source'or root.parent.parent!=work/'releases':raise ValueError('LEGACY_ORIGINAL_SOURCE_NAMESPACE_INVALID')
+ manifest=root.parent/'SOURCE_MANIFEST.json'
+ if not manifest.is_file():raise ValueError('LEGACY_RELEASE_MANIFEST_REQUIRED')
+ value=load(manifest)
+ if value.get('root')!=str(root)or not value.get('files'):raise ValueError('LEGACY_RELEASE_MANIFEST_CHANGED')
+ for name,expected in value['files'].items():
+  relative=Path(name)
+  if relative.is_absolute()or'..'in relative.parts or sha(root/relative)!=expected:raise ValueError('LEGACY_RELEASE_SOURCE_CHANGED:'+name)
+
+def t02_only_before_stage(stages,old):
+ """Shared-gap geometry is first used by T02, never an adopted T02 result."""
+ if any(stage in('t02','t05')for stage in stages):raise ValueError('SHARED_GAP_CHANGE_REQUIRES_FRESH_T02_T05')
+ for stage in stages:
+  ref=load(old/(stage+'.json'))['output_scene_ref'];file=old/'runtime/artifacts'/ref['artifact_id']
+  if sha(file)!=ref['sha256']:raise ValueError('LEGACY_PRE_T02_SCENE_CHANGED')
+  scene=load(file)
+  if any(row.get('stage')=='t02'or row.get('shared_gap_state_ref')is not None for row in scene.get('lineage',[])):raise ValueError('LEGACY_PRE_T02_HAS_SHARED_GAP_STATE')
+
 def pipeline_same(before,after,through='t02'):
  def reduced(text):
   tree=ast.parse(text);tree.body=[n for n in tree.body if not(isinstance(n,ast.FunctionDef)and(n.name=='empty_t02'or(through=='t04'and n.name=='run_t02')))]
@@ -97,7 +123,7 @@ def inspect(old,through):
   for name,expected in inherited['files'].items():
    if sha(old/name)!=expected:raise ValueError('INHERITED_LEGACY_COPY_CHANGED')
   records=dict(inherited['original_checks'],**records);inherited_stages=inherited['stages'];source_roots.extend(fresh.get('original_source_roots',[fresh['original_source_root']]))
- if not original_root.is_relative_to(work/'evidence')or'..'in original_root.parts:raise ValueError('LEGACY_ORIGINAL_SOURCE_NAMESPACE_INVALID')
+ source_namespace(Path(original_root),work)
  for name,expected in {**binding['files'],**binding['job_inputs']}.items():
   if sha(name)!=expected:raise ValueError('LEGACY_ORIGINAL_PRODUCER_OR_INPUT_CHANGED:'+name)
  if sha(old/'source.json')!=binding['source_binding_sha256']:raise ValueError('LEGACY_ORIGINAL_SOURCE_BINDING_CHANGED')
@@ -152,6 +178,12 @@ def inspect(old,through):
   if relative=='src/gerber_u05/pipeline.py':
    pipeline_same(file.read_text(),current.read_text(),through=through)
    if through=='t02'and not any(r['kind']=='rectangle'for r in scene['objects']):raise ValueError('EMPTY_T02_REQUIRES_FRESH_T02_VERIFICATION')
+  elif relative=='src/t02_shared_gaps.py':
+   t02_only_before_stage(stages,old)
+  elif relative=='src/gerber_u05/source_assembly.py':
+   # Assembly runs fresh in three workers before prepare() compares the exact
+   # prepared source and its complete native build to this retained prefix.
+   if not(old/'SOURCE_ASSEMBLY_BINDING.json').exists():raise ValueError('LEGACY_SOURCE_ASSEMBLY_AUTHORITY_REQUIRED')
   elif relative=='src/source_junction_paths.py':
    if original_routes(file,scene['objects'])!=original_routes(current,scene['objects']):raise ValueError('LEGACY_PREFIX_SOURCE_ROUTES_CHANGED')
   elif relative=='src/gerber_u05/worker.py':
@@ -240,7 +272,7 @@ def main():
  parser=argparse.ArgumentParser();parser.add_argument('--input-dir',required=True,type=Path);parser.add_argument('--gerber',required=True);parser.add_argument('--retained-legacy-run',required=True,type=Path);parser.add_argument('--through',required=True,choices=['t03','t04','t02','t05']);args=parser.parse_args()
  if not args.input_dir.is_absolute():parser.error('explicit absolute input directory required')
  prefix=inspect(args.retained_legacy_run,args.through)
- if load(args.retained_legacy_run.parent/'STATUS.current.json')['status']=='HALTED'and not any(row['path']in{'src/gerber_u05/pipeline.py','src/source_junction_paths.py','src/u05_board/coverage.py','src/gerber_u05/reference_recipe.py','src/gerber_u05/legacy_export.py','src/component_clearance.py','src/t04_incremental.py','src/gerber_u05/worker.py'}for row in prefix['code_dependency_changes']):raise ValueError('SAME_IMPLEMENTATION_FAILED_JOB_CANNOT_RETRY')
+ if load(args.retained_legacy_run.parent/'STATUS.current.json')['status']=='HALTED'and not any(row['path']in{'src/gerber_u05/pipeline.py','src/source_junction_paths.py','src/u05_board/coverage.py','src/gerber_u05/reference_recipe.py','src/gerber_u05/legacy_export.py','src/component_clearance.py','src/t04_incremental.py','src/gerber_u05/worker.py','src/t02_shared_gaps.py'}for row in prefix['code_dependency_changes']):raise ValueError('SAME_IMPLEMENTATION_FAILED_JOB_CANNOT_RETRY')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental_legacy';parent.mkdir(exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=IncrementalCoordinator(job,args.retained_legacy_run,args.through)
  try:coordinator.generate(args.input_dir,args.gerber)
  except BaseException as error:
