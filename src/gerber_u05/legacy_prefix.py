@@ -269,6 +269,10 @@ def inspect(old,through):
   if relative=='SOURCE_REVISION.json':continue
   current=ROOT/relative;actual=sha(current)
   if actual==expected:continue
+  if relative=='src/gerber_u05/component_stages.py':
+   from .t01_delta_compat import known,prove
+   if known(expected,actual):
+    changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,proof=prove(file.read_text(),current.read_text())));continue
   if relative=='src/indexed_hausdorff.py' and (expected,actual)==('f8f06b867f79b2b9d270058698c5d1da80a43fafabf490a9e617687445b9c373','f2416ca81633d247f5bf8cc65bd4085dbf5e02dd7897d09eb157b975118935ee'):
    changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_COMPLETE_NATIVE_IDENTITY_ONLY; unchanged geometry,tolerances and resource ceilings'));continue
   from .prefix import source_void_t04_delta

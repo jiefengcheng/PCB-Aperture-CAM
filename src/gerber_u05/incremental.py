@@ -63,11 +63,17 @@ def completed_records(old_job,old_root):
  return records,log_roots,proof
 
 
+def stages_before(through):
+ if through=='reference':return retained_stages(())
+ if through not in('t03','t02'):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
+ return retained_stages(ORDER[:ORDER.index(through)+1])
+
+
 def prepare(prefix,job,coordinator=None,*,through='t02'):
  from src.pcb_data_abi.input_directory import collect_raw
  prefix=Path(prefix);old_job=prefix.parent;original=load(prefix/'PRODUCER_BINDING.json');state=load(old_job/'STATUS.current.json');inventory=load(prefix/'input_inventory.json')
  if original['profile']!=CONNECTED:raise ValueError('CONNECTED_PREFIX_PROFILE_REQUIRED')
- stages=retained_stages(ORDER[:ORDER.index(through)+1])
+ stages=stages_before(through)
  if stages==('t01','t03'):require_retained_t03(prefix)
  old_root=Path(os.path.commonpath(list(original['files'])));code=verify_code(original,p.ROOT,old_root,stages=stages)
  records,log_roots,legacy_proof=completed_records(old_job,old_root);family_job=source_family_job(prefix);producers=stage_producers(prefix,stages)
@@ -137,8 +143,8 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
  if family_job!=old_job:binding['legacy_authority_run']=str(family_job/'legacy')
  binding['stage_producer_bindings']=producers
  from .hole_policy_prefix import enabled as hole_transition_enabled,transition_remedy_snapshot
- if stages==('t01','t03')and hole_transition_enabled():
-  binding['hole_acceptance_transition']=transition_remedy_snapshot(run)
+ if stages in((),('t01','t03'))and hole_transition_enabled():
+  binding['hole_acceptance_transition']=transition_remedy_snapshot(run,retained=stages)
  files=[*evidence.rglob('*'),*[run/(stage+'.json')for stage in stages],*(run/'audits').rglob('*.json')]
  if(run/'RAW_WIDTH_CHECKPOINT.json').exists():files.append(run/'RAW_WIDTH_CHECKPOINT.json')
  if(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json').exists():files.append(run/'T04_PRIOR_WIDTH_COMPATIBILITY.json')
@@ -156,8 +162,8 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
 
 
 def continue_stages(coordinator,run,through):
- retained_stages(ORDER[:ORDER.index(through)+1])
- for stage in ORDER[ORDER.index(through)+1:]:
+ stages=stages_before(through)
+ for stage in ORDER[len(stages):]:
   coordinator.execute(run,stage,['construct']);coordinator.execute(run,stage,['1','2'])
   proofs=[p.load(run/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
   if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]or proofs[0]['status']!='PASS':raise ValueError('FRESH_PAIRED_STAGE_PROOFS_DIFFER:'+stage)
@@ -166,7 +172,7 @@ def continue_stages(coordinator,run,through):
    verify(coordinator.job/'legacy',run)
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('t03','t02'),default='t02');args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('reference','t03','t02'),default='t02');args=parser.parse_args()
  if not args.prefix_run.is_absolute():parser.error('prefix run must be an explicit absolute path')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental';parent.mkdir(parents=True,exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=Coordinator(job);coordinator.state.update(source_only=False,qualification_mode='INCREMENTAL_REUSED_NATIVE_PREFIX')
  try:

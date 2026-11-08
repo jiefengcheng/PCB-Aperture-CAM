@@ -20,7 +20,7 @@ CONNECTED_PREPARATION={'src/gerber_u05/channel_finish.py':('9eb20e39363b8eeea25f
 
 def retained_stages(stages):
  stages=tuple(stages)
- if stages not in (('t01','t03'),STAGES):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
+ if stages not in ((),('t01','t03'),STAGES):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
  return stages
 
 def operation_keys(stages):
@@ -35,6 +35,8 @@ def connected_visual_evidence(binding):
  stages=retained_stages(binding['reused_stages'])
  count=len(operation_keys(stages))
  if binding['retained_operation_count']!=count:raise ValueError('VISUAL_REUSED_EVIDENCE_SCOPE_CHANGED')
+ if stages==():
+  return 'Incremental qualification: 23 source/reference operations are retained with original native proofs and hashes. T01, T03, T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
  if stages==('t01','t03'):
   return 'Incremental qualification: 29 unchanged source/reference/T01/T03 operations are retained with original native proofs and hashes. T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
  return 'Incremental qualification: 35 unchanged source/reference/T01/T03/T04/T02 operations are retained with original native proofs and hashes. T05 is newly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
@@ -53,6 +55,8 @@ STAGE_ENTRY_T05_ONLY={'src/gerber_u05/prior_copper.py': ('5bcd448cb7e231c518ad73
 def stage_entry_delta(relative,before,after):
  known=STAGE_ENTRY_T05_ONLY.get(relative);native=NATIVE_FLOOR_CHECK.get(relative)
  return known is not None and native is not None and before in(native[0],known[0])and after==known[1]and native[1]==known[0]
+
+REFERENCE_BOUNDARY_COORDINATOR={'src/gerber_u05/hole_policy_prefix.py': ('a0b7226c83fea9cb035ca0801eda224a1b5470b414aff724c1480275bf6b0600', 'b83b92a5f3f82af03e18dd9c48092c072fc86df9745dfd5638de5b7e1d59eccf')}
 
 def native_floor_check_delta(relative,before,after):
  return NATIVE_FLOOR_CHECK.get(relative)==(before,after)
@@ -161,13 +165,19 @@ def verify_code(original,root,old_root,*,stages=STAGES):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if REFERENCE_BOUNDARY_COORDINATOR.get(relative)==(expected,actual):
+   results.append(dict(path=relative,scope='Exact proof-only reference boundary extension; existing T01/T03 policy transition and all geometry code unchanged.',before_sha256=expected,after_sha256=actual));continue
+  if relative=='src/gerber_u05/component_stages.py':
+   from .t01_delta_compat import known,prove
+   if known(expected,actual):
+    results.append(dict(path=relative,proof=prove(path.read_text(),current.read_text()),scope='Retained PASS geometry unchanged; corrected positive-material predicate runs for fresh connected T01 only.'));continue
   if stage_entry_delta(relative,expected,actual):
    results.append(dict(path=relative,scope='Exact T05-only qualified T02 entry authority. Upstream stages unchanged; T05 and export run fresh.',before_sha256=expected,after_sha256=actual));continue
   if native_floor_check_delta(relative,expected,actual):
    results.append(dict(path=relative,scope='Exact T05-only adopted native-floor check: use existing final-reparse fidelity for native-grid boundary comparison. local_floor geometry, exact model default, CoverageAdapter and legacy cc.ACTIVE=None behavior unchanged. Retained T01/T03/T04/T02 generation is unchanged; every T05 and final native check runs fresh.',before_sha256=expected,after_sha256=actual));continue
   from .hole_policy_prefix import allowed_delta as hole_policy_delta
   if hole_policy_delta(relative,expected,actual,stages,root):
-   results.append(dict(path=relative,scope='Exact owner-authorized ordinary-hole policy relaxation. Retain only previously qualified T01 and zero-movement T03 geometry; T04 and later run fresh. Source ancestry is optional; all non-hole constraints remain mandatory.',before_sha256=expected,after_sha256=actual));continue
+   results.append(dict(path=relative,scope=('Exact owner-authorized ordinary-hole policy relaxation. Retain only previously qualified T01 and zero-movement T03 geometry; T04 and later run fresh. Source ancestry is optional; all non-hole constraints remain mandatory.'if stages else'Exact owner-authorized ordinary-hole policy relaxation. Only verified source/legacy/reference evidence is retained; every connected stage runs fresh. Source ancestry is optional; all non-hole constraints remain mandatory.'),before_sha256=expected,after_sha256=actual));continue
   if relative=='src/gerber_u05/legacy_export.py':
    results.append(dict(path=relative,proof=legacy_export_encoding_same(path.read_text(),current.read_text())));continue
   if stages==('t01','t03')and WIDTH_CORRECTION.get(relative)==(expected,actual):

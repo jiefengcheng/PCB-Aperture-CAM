@@ -29,3 +29,20 @@ def test_actual_grid_point_contacts_join_using_existing_owner_only(tmp_path):
 def test_encoding_overlap_rejects_copper_outside_domain():
  with pytest.raises(ValueError,match='EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER'):
   e.owner_encoding_overlap(box(0,0,1,1),box(-1,-1,2,2),box(0,0,.5,.5))
+
+
+def test_optional_zero_area_owner_overlap_rejected_as_a_whole():
+ region=box(0,.2,.2,.4);owner=box(-.1,0,0,1);domain=box(0,0,1,1)
+ selected,proof=e.owner_encoding_overlap(region,owner,domain)
+ assert not proof['accepted']
+ assert proof['attempted_candidate_type']=='GeometryCollection'
+ assert selected.wkb==region.wkb
+ assert proof['selected_geometry_unchanged']
+ assert proof['epsilon_mm2']==1e-12
+
+
+def test_invalid_original_region_is_not_salvaged_by_fallback():
+ from shapely.geometry import Polygon
+ region=Polygon()
+ with pytest.raises(ValueError,match='EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER'):
+  e.owner_encoding_overlap(region,box(-1,-1,2,2),box(0,0,1,1))

@@ -62,10 +62,22 @@ def owner_encoding_overlap(region,owner,domain):
                  region_missing_mm2=region.difference(candidate).area,
                  physical_delta_mm2=owner.union(candidate).symmetric_difference(owner.union(region)).area,
                  outside_domain_mm2=candidate.difference(domain).area)
-    if (candidate.is_empty or not candidate.is_valid or candidate.geom_type not in('Polygon','MultiPolygon')
-        or any(not math.isfinite(v)or v>CONTRACT.area_epsilon_mm2 for v in metrics.values())):
-        raise ValueError('EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER')
-    return candidate,dict(mode='ENCODING_ONLY_EXISTING_OWNER_OVERLAP',radius_mm=radius,
+    accepted=(not candidate.is_empty and candidate.is_valid and candidate.geom_type in('Polygon','MultiPolygon')
+              and all(math.isfinite(v)and v<=CONTRACT.area_epsilon_mm2 for v in metrics.values()))
+    if not accepted:
+        # Redundant owner overlap is an optional representation proposal. Reject
+        # the whole proposal; retain the already-qualified addition, never a
+        # clipped fragment. Its scope/validity and every later native encoding,
+        # fidelity, clearance, connectivity and corruption gate remain required.
+        outside=region.difference(domain).area
+        if (region.is_empty or not region.is_valid or region.geom_type not in('Polygon','MultiPolygon')
+            or not math.isfinite(outside)or outside>CONTRACT.area_epsilon_mm2):
+            raise ValueError('EXPORT_OWNER_OVERLAP_CHANGES_QUALIFIED_COPPER')
+        return region,dict(mode='ORIGINAL_QUALIFIED_REGION_OPTIONAL_OWNER_OVERLAP_REJECTED',
+                           accepted=False,radius_mm=radius,epsilon_mm2=CONTRACT.area_epsilon_mm2,
+                           attempted_candidate_type=candidate.geom_type,metrics=metrics,
+                           selected_geometry_unchanged=True,selected_outside_domain_mm2=outside)
+    return candidate,dict(mode='ENCODING_ONLY_EXISTING_OWNER_OVERLAP',accepted=True,radius_mm=radius,
                           epsilon_mm2=CONTRACT.area_epsilon_mm2,metrics=metrics)
 
 def bounded_owner_surface(region,owner,domain):
