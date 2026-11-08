@@ -36,3 +36,23 @@ the numerical correction to that distinct conflict. The normal app remains at
 DEFERRED_UNWAIVED; the performance target remains waived. No further full primary
 3020212826 run. Owner PENDING_USER; independent NOT_RUN;
 electrical/manufacturing NOT_ESTABLISHED.
+
+## Nested producer accounting follow-up
+
+The first client continuation stopped at REUSED_STAGE_PROOF_CHANGED:t01 before
+T05. Its copied T01/T03 proofs correctly identified their earlier producer;
+the wrapper had incorrectly expected the immediate parent's producer for every
+stage. Per-stage producer bindings now preserve and verify that mixed ancestry.
+108 focused regressions pass, including rejection of a reassigned producer.
+A nested preparation test passes all 35 retained operations and three fresh
+native assembly checks. The initial continuation remains failed and unchanged.
+An additional synthetic incremental run passed all 12 fresh native operations
+with 35 retained; its final copy was correctly blocked because its raw fixture
+was inside historical evidence. That harness failure remains unaccepted; no
+read-fence exception was added. The earlier full 47-operation synthetic delivery
+qualification above is separate and remains valid.
+
+2849's read-only provenance mapping attributes its larger conflicting strips to
+older T02 pad bodies. They contain no original source copper. The existing
+prior-positive retention and newer shared-gap predicates conflict at that intake;
+neither check has been bypassed. A separate reconciliation is still required.

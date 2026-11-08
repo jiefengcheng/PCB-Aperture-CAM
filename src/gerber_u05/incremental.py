@@ -26,6 +26,19 @@ def source_family_job(prefix):
  return prefix.parent
 
 
+def stage_producers(prefix,stages):
+ """Keep each native stage bound to its actual verified producer."""
+ prefix=Path(prefix);own=sha(prefix/'PRODUCER_BINDING.json');inherited=verify_native_prefix(prefix);result={}
+ for stage in stages:
+  producer=own
+  if inherited is not None and stage in inherited['reused_stages']:
+   producer=inherited.get('stage_producer_bindings',{}).get(stage,inherited['original_producer_binding_sha256'])
+  proofs=[load(prefix/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
+  if any(proof!=proofs[0]for proof in proofs)or proofs[0]['status']!='PASS'or proofs[0]['candidate_sha256']!=sha(prefix/(stage+'.json'))or proofs[0]['producer_binding_sha256']!=producer:raise ValueError('REUSED_STAGE_PRODUCER_ANCESTRY_CHANGED:'+stage)
+  result[stage]=producer
+ return result
+
+
 def completed_records(old_job,old_root):
  """Re-evaluate the existing frozen legacy-prefix verifier before adoption."""
  state=load(old_job/'STATUS.current.json');records=dict(state['checks']);log_roots=[old_job];prefix=old_job/'connected';legacy=old_job/'legacy';proof=None
@@ -57,7 +70,7 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
  stages=retained_stages(ORDER[:ORDER.index(through)+1])
  if stages==('t01','t03'):require_retained_t03(prefix)
  old_root=Path(os.path.commonpath(list(original['files'])));code=verify_code(original,p.ROOT,old_root,stages=stages)
- records,log_roots,legacy_proof=completed_records(old_job,old_root);family_job=source_family_job(prefix)
+ records,log_roots,legacy_proof=completed_records(old_job,old_root);family_job=source_family_job(prefix);producers=stage_producers(prefix,stages)
  required=operation_keys(stages)
  if any(key not in records or records[key]['status']!='PASS'or records[key]['returncode']!=0 for key in required):raise ValueError('REUSED_SOURCE_OR_PREFIX_CHECK_INCOMPLETE')
  root,blobs,ignored=collect_raw(inventory['input_directory'])
@@ -122,6 +135,7 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
   checked_legacy={str(f.relative_to(legacy)):sha(f)for f in legacy.rglob('*')if f.is_file()}
  binding=dict(schema='incremental-native-prefix/1',source_sha256=source['source_ref']['sha256'],original_source_root=str(old_root),original_run=str(prefix),original_job_status=state['status'],original_route_completion='NOT_CLAIMED; original failed/boundary status preserved',original_producer_binding_sha256=sha(prefix/'PRODUCER_BINDING.json'),original_checks={key:records[key]for key in required},retained_operation_count=len(required),reused_stages=list(stages),code_dependency_checks=code,fresh_assembly_operations=fresh_assembly,checked_legacy_files=checked_legacy,legacy_support_identity=support_identity,files={})
  if family_job!=old_job:binding['legacy_authority_run']=str(family_job/'legacy')
+ binding['stage_producer_bindings']=producers
  from .hole_policy_prefix import enabled as hole_transition_enabled,transition_remedy_snapshot
  if stages==('t01','t03')and hole_transition_enabled():
   binding['hole_acceptance_transition']=transition_remedy_snapshot(run)

@@ -71,3 +71,21 @@ def test_nested_legacy_inspection_uses_its_hash_bound_producer(tmp_path,monkeypa
  else:
   inc.completed_records(run.parent,tmp_path/'wrong')
   assert seen==[frozen]
+
+
+@pytest.mark.parametrize('tamper',[False,True])
+def test_stage_producers_preserve_mixed_native_ancestry(tmp_path,monkeypatch,tamper):
+ run=tmp_path/'connected';run.mkdir();(run/'PRODUCER_BINDING.json').write_text('current producer')
+ current=hashlib.sha256((run/'PRODUCER_BINDING.json').read_bytes()).hexdigest()
+ inherited=dict(reused_stages=['t01','t03'],original_producer_binding_sha256='a'*64,stage_producer_bindings=dict(t01='a'*64,t03='b'*64))
+ monkeypatch.setattr(inc,'verify_native_prefix',lambda path:inherited)
+ expected=dict(t01='a'*64,t03='b'*64,t04=current,t02=current)
+ for stage,producer in expected.items():
+  (run/(stage+'.json')).write_text(json.dumps(dict(stage=stage)))
+  folder=run/'audits'/stage;folder.mkdir(parents=True)
+  proof=dict(status='PASS',candidate_sha256=hashlib.sha256((run/(stage+'.json')).read_bytes()).hexdigest(),producer_binding_sha256=producer)
+  if tamper and stage=='t01':proof['producer_binding_sha256']=current
+  for mode in ('construct','1','2'):(folder/(mode+'.json')).write_text(json.dumps(proof))
+ if tamper:
+  with pytest.raises(ValueError,match='STAGE_PRODUCER_ANCESTRY_CHANGED:t01'):inc.stage_producers(run,tuple(expected))
+ else:assert inc.stage_producers(run,tuple(expected))==expected

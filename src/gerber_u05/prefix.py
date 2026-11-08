@@ -293,10 +293,13 @@ def verify(run):
   file=run/relative
   if not file.is_relative_to(run)or sha(file)!=expected:raise ValueError('REUSED_PREFIX_EVIDENCE_CHANGED:'+relative)
  verify_predecessor_families(run,binding)
+ producers=binding.get('stage_producer_bindings')
+ if producers is not None and set(producers)!=set(stages):raise ValueError('REUSED_STAGE_PRODUCER_INVENTORY_CHANGED')
  for stage in stages:
   candidate=sha(run/(stage+'.json'));proofs=[load(run/'audits'/stage/(mode+'.json'))for mode in('construct','1','2')]
   if proofs[0]!=proofs[1]or proofs[0]!=proofs[2]:raise ValueError('REUSED_PAIRED_PROOFS_DIFFER:'+stage)
-  if proofs[0]['status']!='PASS'or proofs[0]['candidate_sha256']!=candidate or proofs[0]['producer_binding_sha256']!=binding['original_producer_binding_sha256']:raise ValueError('REUSED_STAGE_PROOF_CHANGED:'+stage)
+  producer=binding['original_producer_binding_sha256']if producers is None else producers[stage]
+  if proofs[0]['status']!='PASS'or proofs[0]['candidate_sha256']!=candidate or proofs[0]['producer_binding_sha256']!=producer:raise ValueError('REUSED_STAGE_PROOF_CHANGED:'+stage)
   for mode in('construct','1','2'):
    key='connected_'+stage+'_'+mode;record=binding['original_checks'][key]
    if record['status']!='PASS'or record['returncode']!=0:raise ValueError('REUSED_NATIVE_PROCESS_DID_NOT_PASS:'+key)
