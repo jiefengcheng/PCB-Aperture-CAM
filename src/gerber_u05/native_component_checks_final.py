@@ -65,11 +65,13 @@ def completion(store,stage_result,observed,before,after):
   from src.component_hole_lineage import classify as hole_lineage,identity as hole_identity
   source_lineage=hole_lineage(lineage_ctx.cores[lineage_owner],lineage_before[lineage_owner]);keepers=set(source_lineage['keeper_ids'])
   protected=joined([h for h in holes(lineage_before[lineage_owner])if hole_identity(h)in keepers]).buffer(-.000002)
-  if added.intersection(protected).area>1e-12:raise ValueError('NATIVE_INHERITED_SOURCE_VOID_FILLED')
+  from src.hole_acceptance import required as holes_required
+  if holes_required()and added.intersection(protected).area>1e-12:raise ValueError('NATIVE_INHERITED_SOURCE_VOID_FILLED')
   records.append(dict(source_id=sid,original_owner_id=own,kind=row['kind'],native_added_area_mm2=added.area,**({}if pin_check is None else{'pin_separation':pin_check})))
  return dict(passed=True,records=records,physical_clearance=clearance(before,after))
 
 def _inventory(source,actual,ctx,owner_key):
+ from src.hole_acceptance import required as holes_required
  whole=joined(list(actual.values()));groups=cc.OriginalOwners(whole);mapping=[];new=[];inherited=[];partial_checks=[];matched_partials=[]
  from src.partial_pocket_remedy import corresponds
  for key,value in sorted(ctx.approved_partial_pockets.items()):
@@ -80,7 +82,6 @@ def _inventory(source,actual,ctx,owner_key):
   ids=ctx.index.membership(g)
   if len(ids)!=1:raise ValueError('NATIVE_ORIGINAL_COMPONENT_MERGED_OR_UNBOUND')
   mapping.append(ids[0])
-  oldholes=joined(holes(ctx.cores[ids[0]]))
   from src.component_hole_lineage import classify as hole_lineage,identity as hole_identity
   lineage=hole_lineage(ctx.cores[ids[0]],g);keeper_ids=set(lineage['keeper_ids'])
   for h in holes(g):
@@ -89,6 +90,8 @@ def _inventory(source,actual,ctx,owner_key):
    if approved:
     if len(approved)!=1:raise ValueError('NATIVE_PARTIAL_POCKET_REMAINDER_AMBIGUOUS')
     matched_partials.extend(approved);new.append(dict(owner=ids[0],status='APPROVED_SMOOTH_RIM_RETAINED_OPENING',pocket_id=approved[0],bounds_mm=list(h.bounds),area_mm2=h.area));continue
+   if not holes_required():
+    new.append(dict(owner=ids[0],status='ACCEPTED_ORDINARY_HOLE_WITHOUT_SOURCE_ANCESTRY',bounds_mm=list(h.bounds),area_mm2=h.area));continue
    foreign=[o for o,v in actual.items()if o!=ids[0]and h.intersection(v).area>0]
    if foreign:
     new.append(dict(owner=ids[0],status='PROTECTED_FOREIGN_CLEARANCE_CAVITY',foreign_original_owners=foreign,bounds_mm=list(h.bounds),area_mm2=h.area));continue
@@ -98,7 +101,7 @@ def _inventory(source,actual,ctx,owner_key):
  if len(mapping)!=len(ctx.index.ids)or set(mapping)!=set(ctx.index.ids):raise ValueError('NATIVE_ORIGINAL_COPPER_PARTITION_CHANGED')
  if sorted(matched_partials)!=sorted(ctx.approved_partial_pockets):raise ValueError('NATIVE_PARTIAL_POCKET_REMAINDER_MISSING')
  survival=[]
- for own,g in ctx.cores.items():
+ for own,g in (ctx.cores.items()if holes_required()else []):
   for hole in holes(g):
    raw_empty=hole.difference(source)
    if raw_empty.is_empty:continue
@@ -109,6 +112,7 @@ def _inventory(source,actual,ctx,owner_key):
    survival.append(dict(owner=own,bounds_mm=list(hole.bounds),protected_source_empty_area_mm2=empty.area,remaining_empty_area_mm2=remaining.area))
  result=dict(passed=True,original_components_preserved=len(mapping),inherited_holes=len(inherited),source_hole_survival=survival,new_resolvable_empty_pockets=0,remaining_cavities=new,source_missing_overlay_diagnostic_mm2=source.difference(whole).area,source_preservation_authority='Verified original plotting command prefix plus exclusively positive appended native regions')
  if partial_checks:result['approved_partial_pocket_remainders']=partial_checks
+ if not holes_required():result.update(ordinary_holes='ACCEPT_WITHOUT_SOURCE_ANCESTRY',new_resolvable_empty_pockets='NOT_REQUIRED')
  return result
 
 

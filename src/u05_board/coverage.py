@@ -169,6 +169,13 @@ class CoverageAdapter(NativeSpindleAdapter):
             import itertools
             proof=pin.ACTIVE.growth_parts(material(),itertools.chain(material(),[candidate]))
             if not proof['passed']:result=dict(result,passed=False,failures=[*result.get('failures',[]),'PROTECTED_PIN_SEPARATION'],pin_separation=proof)
+        if result['passed']:
+            from src.t05_trapped_voids import check as closure_check
+            from src.growth_remedy_constraints import remedy as whole_fill_rule
+            closure=closure_check(owner,candidate,whole_fill_rule,area_epsilon_mm2=EPS)
+            result=dict(result,trapped_void_closure=closure)
+            if not closure['passed']:
+                result=dict(result,passed=False,failures=[*result.get('failures',[]),'TRAPPED_VOID_FILL_CONFLICTS_WITH_FROZEN_RULES'])
         return result
     def plan(self,store,scene,policy,selection,bounds):
         from .junctions import parameters

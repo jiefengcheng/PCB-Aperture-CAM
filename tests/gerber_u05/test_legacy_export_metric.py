@@ -24,4 +24,13 @@ def test_large_legacy_normalization_records_the_original_all_vertex_distance(tmp
     export.append_regions(shape,'t05','synthetic',records,blocks,p.Store(tmp_path/'runtime'))
     assert records and blocks
     assert all(r['normalization']['qualified_hausdorff_mm']==pytest.approx(expected,abs=1e-15,rel=1e-13)for r in records)
-    assert sum(len(p.geometry(p.Store(tmp_path/'runtime'),r['geometry_ref']).interiors)for r in records)==int(hole)
+    # A valid positive partition can encode a hole between simple faces.
+    # Verify the actual file and exact material parent, not holes per face.
+    from src.gerber_u05.native_assembly import weld
+    reference,_=export.export_reference(normalized)
+    body=b'%FSLAX46Y46*%\n%MOMM*%\n%ADD10C,0.100000*%\n'+''.join(blocks).encode()+b'M02*\n'
+    actual=[p.affine_scale(p.source_profile.object_geometry(o)[0],1,-1,origin=(0,0))for o in export.parse(body).objects]
+    identity=('t05','synthetic',p.digest(p.to_wkb(reference)))
+    material,proof=weld(records,actual,[(identity,reference)],grid_mm=GRID_MM)
+    assert proof['parsed_regions']==len(records) and not proof['tolerance_allowance']
+    assert len(material)==1 and len(material[0][1].interiors)==int(hole)

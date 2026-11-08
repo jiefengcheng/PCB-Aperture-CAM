@@ -49,5 +49,8 @@ result=dict(status='PASS',generated_sha256=p.digest(body),eligible=[],required_r
  native_file_uncertainty_mm=contracts[0].file_uncertainty_mm,nominal_clearance_mm=contracts[0].hard_gap_mm,
  code_binding_sha256=p.digest((run/'PRODUCER_BINDING.json').read_bytes()),integration='NOT_INTEGRATED',
  historical_failed_findings='Preserved; no historical failure is relabelled or waived')
+from src.hole_acceptance import required as holes_required
+if not holes_required():
+ result.update(source_voids='ACCEPT_WITHOUT_SOURCE_ANCESTRY',policy_scope='Selected frozen remedies, protected pin/channel separation, source copper cores, clearance, 20% cumulative budgets and native fidelity verified; ordinary holes accepted without ancestry tracing')
 store.verify_reads();e.verify_sources(run);p.save(run/'REMAINING_DEFECT_AUDIT.json',result)
 print(json.dumps(dict(status='PASS',required_surface_updates=coverage['planned_owner_surface_updates'],new_resolvable_empty_pockets=inventory['new_resolvable_empty_pockets'],optional_proposals=optional.get('proposals','NOT_REOPENED'))),flush=True)

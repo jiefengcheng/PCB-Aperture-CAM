@@ -5,6 +5,7 @@ alone cannot detect a source hole disappearing while a new pocket is formed.
 Other topology events assemble one source owner, never the board.
 """
 import math
+from src.hole_acceptance import required as holes_required
 from shapely import STRtree,to_wkb
 from shapely.ops import unary_union
 from src.component_clearance import surfaces
@@ -20,7 +21,7 @@ class SourceVoids:
  """Prepared source-hole operands, charged to the existing dependency budget."""
  def __init__(self,dependencies,limit):
   self.d=dependencies;self.records=[];self.bytes=0
-  for own in sorted(set(dependencies.owners.values())):
+  for own in (sorted(set(dependencies.owners.values())) if holes_required() else []):
    for hole in sorted(hole_polygons(dependencies.context.cores[own]),key=identity):
     opening=hole.difference(dependencies.before[own])
     if not opening.is_valid or not math.isfinite(opening.area)or opening.area<=0:
@@ -60,6 +61,9 @@ class SourceVoids:
 
 
 def check(dependencies,sid,factor,candidate,current,versions):
+ if not holes_required():
+  return dict(passed=True,failures=[],ordinary_holes='ACCEPT_WITHOUT_SOURCE_ANCESTRY',
+              scope='Ordinary-hole topology only; clearance, pin/channel separation, source cores and width checks remain external mandatory predicates')
  d=dependencies;own=d.owners[sid]
  relevant=[s for i in sorted(map(int,d.route_tree.query(candidate.envelope)))
            if(s:=d.route_ids[i])!=sid and d.owners[s]==own and versions[s]!=1]

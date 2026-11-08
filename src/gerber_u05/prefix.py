@@ -148,6 +148,9 @@ def verify_code(original,root,old_root,*,stages=STAGES):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  from .hole_policy_prefix import allowed_delta as hole_policy_delta
+  if hole_policy_delta(relative,expected,actual,stages,root):
+   results.append(dict(path=relative,scope='Exact owner-authorized ordinary-hole policy relaxation. Retain only previously qualified T01 and zero-movement T03 geometry; T04 and later run fresh. Source ancestry is optional; all non-hole constraints remain mandatory.',before_sha256=expected,after_sha256=actual));continue
   if relative=='src/gerber_u05/legacy_export.py':
    results.append(dict(path=relative,proof=legacy_export_encoding_same(path.read_text(),current.read_text())));continue
   if stages==('t01','t03')and WIDTH_CORRECTION.get(relative)==(expected,actual):

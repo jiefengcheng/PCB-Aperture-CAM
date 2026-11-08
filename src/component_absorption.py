@@ -4,7 +4,8 @@ from shapely.geometry import Polygon
 from src.component_voids import parts,holes,joined,proposal_check
 
 def absorb(region,physical_owner,original,foreign,contract):
- protected=joined(holes(original));pieces=[];records=[]
+ from src.hole_acceptance import required
+ protected=joined(holes(original))if required()else Polygon();pieces=[];records=[]
  for piece in parts(region):
   retained=[]
   for ring in piece.interiors:

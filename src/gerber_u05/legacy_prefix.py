@@ -269,6 +269,8 @@ def inspect(old,through):
   if relative=='SOURCE_REVISION.json':continue
   current=ROOT/relative;actual=sha(current)
   if actual==expected:continue
+  if relative=='src/indexed_hausdorff.py' and (expected,actual)==('f8f06b867f79b2b9d270058698c5d1da80a43fafabf490a9e617687445b9c373','f2416ca81633d247f5bf8cc65bd4085dbf5e02dd7897d09eb157b975118935ee'):
+   changes.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='EXACT_COMPLETE_NATIVE_IDENTITY_ONLY; unchanged geometry,tolerances and resource ceilings'));continue
   from .prefix import source_void_t04_delta
   if source_void_t04_delta(relative,expected,actual):
    supplement=None if through=='t03'else source_void_supplement(old)
@@ -351,6 +353,7 @@ def inspect(old,through):
  # comparison in prepare() still precede adoption of the old native prefix.
  if(old/'SOURCE_ASSEMBLY_BINDING.json').exists():allowed_extras.add('src/gerber_u05/pcb_artwork_scope.py')
  if through in('t03','t04'):allowed_extras.add('src/gerber_u05/width_stage_constraints.py')
+ if through!='t05':allowed_extras.add('src/t05_trapped_voids.py')
  if extras-allowed_extras:raise ValueError('LEGACY_PREFIX_UNDECLARED_PRODUCER')
  return dict(schema='verified-legacy-native-prefix/1',through=through,stages=list(stages),stage_producer_bindings=stage_producers,retained_operation_count=len(keys),original_run=str(old),original_source_root=str(original_root),original_source_roots=sorted(set(source_roots)),original_producer_binding_sha256=producer_sha,source_binding_sha256=binding['source_binding_sha256'],source_sha256=source['source_ref']['sha256'],original_checks={key:records[key]for key in keys},files={name:sha(old/name)for name in sorted(files)},code_dependency_changes=changes,original_route_completion='NOT_CLAIMED; only completed prefix operations retained')
 

@@ -14,7 +14,7 @@
   "native_uncertainty_mm": 2e-06,
   "area_epsilon_mm2": 1e-12,
   "ownership": "FROZEN_ORIGINAL_CONNECTED_COPPER",
-  "source_voids": "PRESERVE_INHERITED_SOURCE_VOIDS",
+  "source_voids": "FOLLOW_CAPTURED_HOLE_ACCEPTANCE_POLICY",
   "ordering": "FROZEN_CONSECUTIVE_COMPONENTS_NO_REVISIT",
   "representation": "ABSORB_INTO_ORIGINAL_OWNER_SURFACE",
   "microscopic_holes": "ABSORB_NEW_GRID_COLLAPSING_HOLES_BEFORE_STORAGE",

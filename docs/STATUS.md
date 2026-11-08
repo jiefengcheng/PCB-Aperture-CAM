@@ -1,3 +1,12 @@
+# U05 installed policy checkpoint — 2026-11-08
+
+The normal-app source includes isolated revision 3e24dff and the provisional
+ordinary-hole acceptance policy. 115 installed regressions and a fresh 47-operation
+synthetic native route pass, with byte-identical Gerber/render to the isolated
+qualification. Affected-client qualification remains running; batch dispatch is
+HELD and remaining deliveries are pending. See [installed checkpoint](U05_APP_POLICY_INTEGRATION_20261108.md).
+Historical findings and acceptance limits below remain preserved.
+
 # Installed source/memory revisions and active batch — 2026-11-08
 
 Normal app `codex/u05-reproducible-batch` now includes the `b54b2fa` indexed

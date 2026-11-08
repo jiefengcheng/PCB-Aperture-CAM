@@ -22,7 +22,7 @@ def read_job(run):
  if settings.get('large_pocket_strategy')not in(None,STRATEGY):raise ValueError('PARTIAL_POCKET_POLICY_UNSUPPORTED')
  if settings.get('large_pocket_budget')not in(None,'ONE_CUMULATIVE_ALLOWANCE_PER_FROZEN_POCKET_ACROSS_ALL_LATER_RADII_AND_STAGES'):raise ValueError('PARTIAL_POCKET_CUMULATIVE_BUDGET_POLICY_REQUIRED')
  if p.canonical(settings)!=p.canonical(__import__('json').loads(value['registry_json'])):raise ValueError('COMPONENT_REGISTRY_BINDING_CHANGED')
- if settings['schema']!='original-copper-component-remedy-settings/1'or settings['ownership']!='FROZEN_ORIGINAL_CONNECTED_COPPER'or settings['source_voids']!='PRESERVE_INHERITED_SOURCE_VOIDS'or settings['ordering']!='FROZEN_CONSECUTIVE_COMPONENTS_NO_REVISIT':raise ValueError('COMPONENT_REMEDY_POLICY_UNSUPPORTED')
+ if settings['schema']!='original-copper-component-remedy-settings/1'or settings['ownership']!='FROZEN_ORIGINAL_CONNECTED_COPPER'or settings['source_voids']not in('PRESERVE_INHERITED_SOURCE_VOIDS','FOLLOW_CAPTURED_HOLE_ACCEPTANCE_POLICY')or settings['ordering']!='FROZEN_CONSECUTIVE_COMPONENTS_NO_REVISIT':raise ValueError('COMPONENT_REMEDY_POLICY_UNSUPPORTED')
  radii=settings['radii_mm']
  if not radii or radii!=sorted(set(radii)):raise ValueError('ORDERED_UNIQUE_RADII_REQUIRED')
  if (p.HARD_GAP_MM,p.CONSTRUCTION_GAP_MM,p.CONTACT_BUFFER_MM)!=(clearance.nominal_mm,clearance.construction_gap_mm,clearance.contact_buffer_mm):raise ValueError('LEGACY_ALLOCATION_AND_CAPTURED_CLEARANCE_DISAGREE')

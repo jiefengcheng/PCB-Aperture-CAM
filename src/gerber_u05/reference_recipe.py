@@ -4,6 +4,7 @@ This is a versioned legacy geometry recipe, never a saved-result input. Its
 original contour, source, clearance, topology and corrupt-output checks remain.
 """
 import math,collections,time,json,os,sys
+from src.hole_acceptance import required as holes_required
 from pathlib import Path
 from . import pipeline as p,legacy_export as e
 from .guard import verify_sources,install_read_fence
@@ -149,13 +150,13 @@ def compute(run):
   for shape,row in zip(actual_shapes,ledger['records']):grouped[row['owner']].append(shape)
   checks=[];tree=STRtree(owners);effective={};inherited_kept=0
   for owner,j in enumerate(mapping):
-   old_void=joined(holes(originals[j]));inherited=[h for h in holes(owners[owner])if h.intersection(old_void).area>contract.area_epsilon_mm2];inherited_kept+=len(inherited)
+   old_void=joined(holes(originals[j]))if holes_required()else p.Polygon();inherited=[h for h in holes(owners[owner])if h.intersection(old_void).area>contract.area_epsilon_mm2];inherited_kept+=len(inherited)
    added=joined(grouped[owner]).difference(owners[owner]);effective[owner]=added
    missing_owner=owners[owner].difference(owners[owner].union(joined(grouped[owner]))).area
    if missing_owner>contract.area_epsilon_mm2:raise ValueError('NATIVE_CORE_REMOVED')
    protected=joined(inherited).buffer(-contract.file_uncertainty_mm)
    changed_source_void=added.intersection(protected).area
-   if changed_source_void>contract.area_epsilon_mm2:raise ValueError('NATIVE_INHERITED_VOID_FILLED')
+   if holes_required()and changed_source_void>contract.area_epsilon_mm2:raise ValueError('NATIVE_INHERITED_VOID_FILLED')
    gaps=[]
    if not added.is_empty and added.area>contract.area_epsilon_mm2:
     for other in sorted(map(int,tree.query(added.buffer(contract.hard_gap_mm+.001)))):
@@ -224,18 +225,19 @@ def compute(run):
   if pin.ACTIVE is not None:
    pin.ACTIVE.require(after,finished=True,scope='reference_native')
    if functional_sidecar is not None:functional_sidecar['pin_separation_state']=pin.ACTIVE.state(store)
-  src,final_parts,mapping=components(source,after,contract);new_holes=[];subresolution=0;retained_partial=[]
+  src,final_parts,mapping=components(source,after,contract);new_holes=[];accepted_holes=[];subresolution=0;retained_partial=[]
   inventory_parts=final_parts;inventory_sources=src;inventory_mapping=mapping
   if 'scope'in functional_state:
    inventory_sources=parts(functional_state['scope'].channels.analytic_source);inventory_parts=parts(joined(list(owned.values())));_,_,inventory_mapping=components(joined(inventory_sources),joined(inventory_parts),contract)
   for part,j in zip(inventory_parts,inventory_mapping):
-   old_void=joined(holes(inventory_sources[j]))
+   old_void=joined(holes(inventory_sources[j]))if holes_required()else p.Polygon()
    for h in holes(part):
     if h.intersection(old_void).area>contract.area_epsilon_mm2:continue
     matched=[s for s in partials if s['source_component']==j and corresponds(h,s,contract)]
     if matched:
      if len(matched)!=1:raise ValueError('NATIVE_PARTIAL_POCKET_REMAINDER_AMBIGUOUS')
      retained_partial.append(matched[0]['pocket_id']);continue
+    if not holes_required():accepted_holes.append(dict(bounds_mm=list(h.bounds),area_mm2=h.area));continue
     if h.buffer(-contract.file_uncertainty_mm).is_empty:subresolution+=1
     else:new_holes.append(dict(bounds_mm=list(h.bounds),area_mm2=h.area))
   if new_holes:raise ValueError('REMEDY_NEW_RESOLVABLE_TRAPPED_VOID:'+str(new_holes[:3]))
@@ -244,6 +246,7 @@ def compute(run):
 
   result['checking_envelope_clearance']=checking_proof
   result['inherited_growth_constraints']=functional_state['inherited_constraints']
+  if not holes_required():result.update(ordinary_holes='ACCEPT_WITHOUT_SOURCE_ANCESTRY',accepted_ordinary_holes=accepted_holes)
   if functional_sidecar is not None:result['functional_channels']=functional_sidecar
   return result
 
