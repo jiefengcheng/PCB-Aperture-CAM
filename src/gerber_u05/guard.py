@@ -65,7 +65,8 @@ def checked_legacy_reference(run,legacy,seal_value):
  for relative,h in expected.items():
   if sha(legacy/relative)!=h:raise ValueError('REUSED_CHECKING_ENVELOPE_EVIDENCE_CHANGED')
  scope=json.loads((legacy/'SCOPE.json').read_bytes())
- if scope!=dict(role='HASH_BOUND_CHECKING_ENVELOPE_INPUTS_ONLY',original_run=str(Path(binding['original_run']).parent/'legacy'),native_job_resumed=False):raise ValueError('REUSED_CHECKING_ROLE_CHANGED')
+ authority=binding.get('legacy_authority_run',str(Path(binding['original_run']).parent/'legacy'))
+ if scope!=dict(role='HASH_BOUND_CHECKING_ENVELOPE_INPUTS_ONLY',original_run=authority,native_job_resumed=False):raise ValueError('REUSED_CHECKING_ROLE_CHANGED')
  if json.loads((legacy/'source.json').read_bytes())['source_ref']!=json.loads((run/'source.json').read_bytes())['source_ref']:raise ValueError('LOCAL_REFERENCE_ROLE_OR_SOURCE_CHANGED')
  return True
 

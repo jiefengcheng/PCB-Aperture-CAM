@@ -22,6 +22,16 @@ def test_exact_copied_role_requires_qualified_prefix_and_source(tmp_path,monkeyp
  assert guard.checked_legacy_reference(run,legacy,seal)
 
 
+def test_nested_role_uses_verified_original_legacy_authority(tmp_path,monkeypatch):
+ run,legacy,seal,binding=fixture(tmp_path,monkeypatch)
+ binding['original_run']='/newer/job/connected'
+ binding['legacy_authority_run']='/retained/job/legacy'
+ assert guard.checked_legacy_reference(run,legacy,seal)
+ binding['legacy_authority_run']='/different/job/legacy'
+ with pytest.raises(ValueError,match='ROLE_CHANGED'):
+  guard.checked_legacy_reference(run,legacy,seal)
+
+
 def test_fresh_role_keeps_existing_full_verification_path(tmp_path):
  assert guard.checked_legacy_reference(tmp_path/'connected',tmp_path/'legacy',{})is False
 

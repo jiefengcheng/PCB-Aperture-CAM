@@ -56,3 +56,16 @@ qualification above is separate and remains valid.
 older T02 pad bodies. They contain no original source copper. The existing
 prior-positive retention and newer shared-gap predicates conflict at that intake;
 neither check has been bypassed. A separate reconciliation is still required.
+
+## Worker read authority follow-up
+
+The next client continuation passed prefix preparation, then stopped before
+geometry at REUSED_CHECKING_ROLE_CHANGED. The worker read fence now checks the
+same hash-bound original legacy authority as prefix verification. Same-job
+location, complete namespace, source identity, symlink rejection and every file
+hash remain mandatory. 132 focused regressions pass. The scoped nested test
+passes 35 retained operations, three fresh native assembly checks and a separate
+child exercising worker read-fence installation plus source verification.
+The stopped client job and diagnostic harness failures remain preserved. One
+harness correctly denied a controller report written outside its worker role;
+the corrected harness reports through its parent process. No guard was relaxed.
