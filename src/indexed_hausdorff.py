@@ -6,7 +6,7 @@ A result at the acceptance boundary falls back to the original native metric.
 """
 import math
 import numpy as np
-from shapely import STRtree,get_coordinates,linestrings,points,box,hausdorff_distance
+from shapely import STRtree,get_coordinates,linestrings,points,box,hausdorff_distance,get_num_coordinates,to_wkb
 
 
 def _paths(g):
@@ -65,6 +65,18 @@ def _directed(source,target,*,budget_bytes,batch):
 def distance(a,b,*,tolerance=None,budget_bytes=256*1024**2,batch=8192):
     if type(budget_bytes)is not int or budget_bytes<=0 or type(batch)is not int or not 1<=batch<=65536:raise ValueError('HAUSDORFF_RESOURCE_BOUNDS_INVALID')
     if a.is_empty or b.is_empty or not a.is_valid or not b.is_valid:raise ValueError('HAUSDORFF_GEOMETRY_INVALID')
+    # Exact complete native bytes prove zero distance without a segment index.
+    # Charge a conservative bound before allocating either byte string; the
+    # existing index/query path and its budget still apply to every difference.
+    if a.geom_type in ('Polygon','MultiPolygon') and b.geom_type in ('Polygon','MultiPolygon'):
+        na,nb=int(get_num_coordinates(a)),int(get_num_coordinates(b))
+        charged=(na+nb)*32+4096
+        if na==nb and charged<=budget_bytes:
+            one,two=to_wkb(a),to_wkb(b)
+            if one==two:
+                return 0.,dict(method='Exact complete native WKB identity',vertices=na+nb,
+                               charged_identity_bytes=charged,budget_bytes=budget_bytes,
+                               tolerance_unchanged=True,native_boundary_fallback=False)
     first,pa=_directed(a,b,budget_bytes=budget_bytes,batch=batch);second,pb=_directed(b,a,budget_bytes=budget_bytes,batch=batch);result=max(first,second)
     magnitude=max(1.,*(abs(x)for x in (*a.bounds,*b.bounds)));guard=float(max(1e-12,256*np.finfo(float).eps*magnitude));fallback=False
     if tolerance is not None and abs(result-tolerance)<=guard and len(get_coordinates(a))+len(get_coordinates(b))<=2048:
