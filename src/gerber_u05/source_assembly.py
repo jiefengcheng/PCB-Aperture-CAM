@@ -25,29 +25,53 @@ def prove_atoms(raw,assembled,removed_ordinals):
 
 def reconstruct(raw,store):
  from src.source_common_frame import discover
- binding=p.build_source(store,raw);scene=store.get_json(binding['scene_ref'],kind='scene')
  original,parser,oracle=p.source_profile.parse_source(raw)
- source=p.affine_scale(p.source_profile.ordered((p.source_profile.object_geometry(o)[0],o.polarity_dark)for o in original.objects),1,-1,origin=(0,0))
- frame,certificate=discover(source,p.digest(raw),scene,store)
- ids={s for row in certificate.get('frame_source_rows',[])for s in row['source_ids']}
- spans={tuple(map(int,re.search(r':bytes:(\d+):(\d+)$',s).groups())):s for s in ids}
- if len(spans)!=len(ids):raise ValueError('ASSEMBLY_DUPLICATE_SOURCE_SPAN')
- body=bytearray(raw);removed=[]
- for i,obj in enumerate(original.objects):
-  a,b=parser.spans[i]
-  if (a,b)not in spans:continue
-  if not obj.polarity_dark or not isinstance(obj,(p.go.Line,p.go.Arc)):raise ValueError('ASSEMBLY_POSITIVE_NATIVE_STROKE_REQUIRED')
-  command=raw[a:b];matches=list(re.finditer(rb'D(0?)1\*',command))
-  if len(matches)!=1:raise ValueError('ASSEMBLY_EXPLICIT_DRAW_REQUIRED')
-  m=matches[0];replacement=b'D'+m[1]+b'2*'
-  if len(replacement)!=m.end()-m.start():raise ValueError('ASSEMBLY_OPERATION_LENGTH_CHANGED')
-  body[a+m.start():a+m.end()]=replacement
-  removed.append(dict(original_ordinal=i,source_id=spans[(a,b)],source_span=[a,b],original_command_sha256=p.digest(command),replacement_command_sha256=p.digest(bytes(body[a:b]))))
- if len(removed)!=len(ids):raise ValueError('ASSEMBLY_ENCLOSURE_OCCURRENCE_MISSING')
- assembled=bytes(body)
+ originals={tuple(span):i for i,span in parser.spans.items()}
+ current=raw;removed=[];removed_spans=set();rounds=[];certificate=None
+ while True:
+  # Removing a drawing rectangle may expose another complete enclosing trace.
+  # Reapply the unchanged whole-source predicate; never choose an inner ROI.
+  binding=p.build_source(store,current);scene=store.get_json(binding['scene_ref'],kind='scene')
+  native,current_parser,_=p.source_profile.parse_source(current)
+  source=p.affine_scale(p.source_profile.ordered((p.source_profile.object_geometry(o)[0],o.polarity_dark)for o in native.objects),1,-1,origin=(0,0))
+  frame,found=discover(source,p.digest(current),scene,store)
+  if certificate is None:certificate=found
+  ids={s for row in found.get('frame_source_rows',[])for s in row['source_ids']}
+  if frame is None:
+   if ids:raise ValueError('ASSEMBLY_FRAME_CERTIFICATE_WITHOUT_FRAME')
+   break
+  if not ids:raise ValueError('ASSEMBLY_ENCLOSURE_REMOVAL_MUST_PROGRESS')
+  spans={tuple(map(int,re.search(r':bytes:(\d+):(\d+)$',s).groups())):s for s in ids}
+  if len(spans)!=len(ids):raise ValueError('ASSEMBLY_DUPLICATE_SOURCE_SPAN')
+  if removed_spans.intersection(spans):raise ValueError('ASSEMBLY_ENCLOSURE_REMOVAL_MUST_PROGRESS')
+  body=bytearray(current);changes=[]
+  for i,obj in enumerate(native.objects):
+   a,b=current_parser.spans[i]
+   if (a,b)not in spans:continue
+   if (a,b)not in originals:raise ValueError('ASSEMBLY_ORIGINAL_SOURCE_SPAN_MISSING')
+   if not obj.polarity_dark or not isinstance(obj,(p.go.Line,p.go.Arc)):raise ValueError('ASSEMBLY_POSITIVE_NATIVE_STROKE_REQUIRED')
+   command=current[a:b];matches=list(re.finditer(rb'D(0?)1\*',command))
+   if len(matches)!=1:raise ValueError('ASSEMBLY_EXPLICIT_DRAW_REQUIRED')
+   m=matches[0];replacement=b'D'+m[1]+b'2*'
+   if len(replacement)!=m.end()-m.start():raise ValueError('ASSEMBLY_OPERATION_LENGTH_CHANGED')
+   body[a+m.start():a+m.end()]=replacement
+   changes.append(dict(original_ordinal=originals[(a,b)],source_id=f'{p.digest(raw)}:bytes:{a}:{b}',source_span=[a,b],original_command_sha256=p.digest(raw[a:b]),replacement_command_sha256=p.digest(bytes(body[a:b]))))
+  if len(changes)!=len(ids):raise ValueError('ASSEMBLY_ENCLOSURE_OCCURRENCE_MISSING')
+  following=bytes(body)
+  if len(following)!=len(raw):raise ValueError('ASSEMBLY_FILE_LENGTH_CHANGED')
+  # Each round consumes previously unremoved original native occurrences.
+  # Thus the original occurrence count bounds the process without a search.
+  removed.extend(changes);removed_spans.update(spans)
+  if len(removed)>len(original.objects):raise ValueError('ASSEMBLY_ENCLOSURE_REMOVAL_MUST_PROGRESS')
+  rounds.append(dict(input_source_sha256=p.digest(current),output_source_sha256=p.digest(following),removed_original_ordinals=sorted(r['original_ordinal']for r in changes),enclosure_certificate=found))
+  current=following
+ assembled=current;removed.sort(key=lambda r:r['original_ordinal'])
  if len(assembled)!=len(raw):raise ValueError('ASSEMBLY_FILE_LENGTH_CHANGED')
  retained=prove_atoms(raw,assembled,{r['original_ordinal']for r in removed})
  proof=dict(schema='original-to-assembled-gerber/1',status='PASS',policy=POLICY,raw_source_sha256=p.digest(raw),assembled_source_sha256=p.digest(assembled),source_objects=len(original.objects),removed_objects=len(removed),retained_objects=len(retained),removed=removed,retained_atom_proofs=retained,enclosure_certificate=certificate,disposition='CONFIRMED_ENCLOSURE_REMOVED'if removed else'NO_UNAMBIGUOUS_ENCLOSURE_UNCHANGED',method='Only certified positive outer-stroke D01 draws become D02 moves; all other bytes unchanged and all retained native atoms identical',raw_input_modified=False)
+ # Preserve the existing single/no-frame receipt exactly. Nested cases also
+ # bind every intermediate source and the final absence of a certified frame.
+ if len(rounds)>1:proof.update(enclosure_rounds=rounds,final_enclosure_certificate=found)
  return assembled,proof
 
 def verify_payload(raw,assembled,receipt,store):
