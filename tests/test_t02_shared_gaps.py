@@ -106,6 +106,17 @@ def test_fixed_t04_copper_holds_two_pad_gap_without_removing_width(tmp_path):
   gaps.complete(proof,unary_union(list(dict(after,trace=original['trace']).values())))
  assert not gaps.check(proof,box(1.02,.03,1.03,.04))['passed']
 
+def test_fixed_wall_slot_also_keeps_unaccounted_entry_trace(tmp_path):
+ original,scene,_=fixture(tmp_path)
+ original['trace']=box(.9,-.2,1,0)
+ scene['objects'].append(dict(source_id='trace',kind='trace',metadata={}))
+ current=dict(original,trace=box(.875,-.2,1.025,.025))
+ spec=gaps.records(scene,original,current)
+ assert spec['fixed_entry_holds'] and len(spec['occupied_entry_slots'])==1
+ result,proof=gaps.project(spec,original,current,{'a':scale(original['a'],1.1,1.1)})
+ assert proof['factors']['a']==pytest.approx([1.,1.1])
+ assert gaps.complete(proof,unary_union(list(dict(current,**result).values())))['passed']
+
 def test_nonshared_or_obstructed_and_integral_joint_faces_are_not_grouped(tmp_path):
  original,scene,store=fixture(tmp_path)
  # Separate wall fragments are different source components, not a shared wall.

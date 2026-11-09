@@ -192,23 +192,29 @@ def zone_rows(spec,group,left,right,current):
 def slot_key(group,slot):
  return hashlib.sha256(canonical([group['group_id'],slot['lo'],slot['hi']])).hexdigest()
 
-def fixed_entry_holds(groups,current):
- """Hold the gap-facing pad axis when a two-pad source slot is occupied."""
- if not groups:return {},{}
+def fixed_entry_holds(spec,current):
+ """Hold the gap-facing pad axis for copper outside known entry wall footprints."""
+ if not spec['groups']:return {},{}
  ids=sorted(current);tree=STRtree([current[s]for s in ids]);occupied={};holds={}
  empty=to_wkb(Polygon()).hex()
- for group in groups:
-  axis=group['axis'];left,right=group['left'],group['right'];gid=group['group_id']
-  for slot in group['slots']:
-   if not all(slot['bank_members']):continue
-   lo,hi=slot['lo'],slot['hi'];zone=corridor(axis,left,right,lo,hi)
+ for group in spec['groups']:
+  axis=group['axis'];gid=group['group_id']
+  for slot in zone_rows(spec,group,group['left'],group['right'],current):
+   lo,hi=slot['lo'],slot['hi'];left,right=slot['left'],slot['right']
+   zone=corridor(axis,left,right,lo,hi)
+   retained=unary_union([from_wkb(bytes.fromhex(w['retained_material_wkb_hex']))for w in slot['entry_walls']])
    nearby=[ids[int(i)]for i in sorted(tree.query(zone,predicate='intersects'))]
-   intruders=[s for s in nearby if current[s].intersection(zone).area>EPS]
+   intruders=[s for s in nearby if current[s].intersection(zone).difference(retained).area>EPS]
    if not intruders:continue
    margin=POLYGON_TOLERANCE_MM
    window=corridor(axis,left-4*margin,right+4*margin,lo-4*margin,hi+4*margin)
    material=unary_union([current[ids[int(i)]].intersection(window)for i in sorted(tree.query(window,predicate='intersects'))])
-   copper=to_wkb(unary_union(surfaces(material.intersection(zone)))).hex()
+   pieces=surfaces(material.intersection(zone))
+   bank_faces=[face(axis,plane,lo,hi)for plane in (left,right)]
+   # A connected bridge between both walls remains a failed slot. Only
+   # existing copper that leaves the walls separated can become a witness.
+   if any(all(piece.intersects(edge)for edge in bank_faces)for piece in pieces):continue
+   copper=to_wkb(unary_union(pieces)).hex()
    walls=[]
    for bank,plane in enumerate((left,right)):
     clipped=material.boundary.intersection(corridor(axis,plane-margin,plane+margin,lo,hi))
@@ -287,7 +293,7 @@ def records(scene,original,current):
   for bank in group['banks']:
    if any(s not in current or not current[s].equals(source[s])for s in bank):raise ValueError('SHARED_GAP_STAGE_ENTRY_INTRUSION:T02_MEMBER_CHANGED:'+group['group_id'])
  spec=dict(policy=policy(),source_sha256=scene['source_sha256'],groups=groups,entry_walls=entry_walls(groups,source,current))
- occupied,holds=fixed_entry_holds(groups,current)
+ occupied,holds=fixed_entry_holds(spec,current)
  if holds:spec.update(fixed_entry_holds=holds,occupied_entry_slots=occupied)
  return spec
 
