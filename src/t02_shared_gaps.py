@@ -229,19 +229,38 @@ def fixed_entry_holds(spec,current):
    holds[gid]='FIXED_STAGE_ENTRY_COPPER_IN_SOURCE_SLOT'
  return occupied,holds
 
+def measure_entry_spans(spec,current):
+ """Keep source group identity and cut each measuring span around accepted copper."""
+ material=list(current.values());tree=STRtree(material)
+ measured=[]
+ for group in spec['groups']:
+  axis=group['axis'];other=1-axis;slots=[]
+  entry=list(zone_rows(spec,group,group['left'],group['right'],current))
+  for original_slot,row in zip(group['slots'],entry):
+   lo,hi=row['lo'],row['hi'];left,right=row['left'],row['right']
+   zone=corridor(axis,left,right,lo,hi)
+   occupied=[]
+   for i in tree.query(zone,predicate='intersects'):
+    for piece in surfaces(material[int(i)].intersection(zone)):
+     if piece.area>EPS:occupied.append((piece.bounds[other],piece.bounds[other+2]))
+   start=lo
+   for a,b in sorted(occupied)+[(hi,hi)]:
+    if a-start>EPS:
+     slots.append(dict(original_slot,lo=start,hi=a,entry_left=left,entry_right=right))
+    start=max(start,b)
+  if slots:measured.append(dict(group,slots=slots))
+ return measured
+
 def records(scene,original,current,*,from_stage_entry=None):
  index=original_index(scene,original);source=index.geometries
  if from_stage_entry is None:
   from_stage_entry=any(row['stage']=='t04'for row in scene.get('lineage',()))
- reference=current if from_stage_entry else source
- rects={r['source_id']:reference[r['source_id']]for r in scene['objects']if r['kind']=='rectangle'and r['source_id']in source}
- if from_stage_entry and any(not shape.equals(source[sid])for sid,shape in rects.items()):
-  raise ValueError('SHARED_GAP_STAGE_ENTRY_INTRUSION:T02_MEMBER_CHANGED')
+ rects={r['source_id']:source[r['source_id']]for r in scene['objects']if r['kind']=='rectangle'and r['source_id']in source}
  # Exact source aliases cannot manufacture a repeated slot or an extra variable.
  unique={}
  for sid,g in sorted(rects.items()):
   if not any(g.equals(v)for v in unique.values()):unique[sid]=g
- rects=unique;material=unary_union([reference[s]for s in sorted(reference)]);parts=surfaces(material);tree=STRtree(parts);edges=interval_edges(material);boundary=material.boundary;found=[]
+ rects=unique;material=unary_union([source[s]for s in sorted(source)]);parts=surfaces(material);tree=STRtree(parts);edges=interval_edges(material);boundary=material.boundary;found=[]
  for sid,g in sorted(rects.items()):
   if not g.equals(box(*g.bounds)):continue
   owners=[int(i)for i in tree.query(g,predicate='intersects')if parts[int(i)].intersection(g).area>EPS]
@@ -297,9 +316,12 @@ def records(scene,original,current,*,from_stage_entry=None):
  for group in groups:
   for bank in group['banks']:
    if any(s not in current or not current[s].equals(source[s])for s in bank):raise ValueError('SHARED_GAP_STAGE_ENTRY_INTRUSION:T02_MEMBER_CHANGED:'+group['group_id'])
- spec=dict(policy=policy(),source_sha256=scene['source_sha256'],groups=groups,entry_walls=entry_walls(groups,reference,current))
+ spec=dict(policy=policy(),source_sha256=scene['source_sha256'],groups=groups,entry_walls=entry_walls(groups,source,current))
  if from_stage_entry:
-  spec['discovery_geometry']='ACCEPTED_T04_STAGE_ENTRY'
+  measured=measure_entry_spans(spec,current)
+  spec.update(discovery_geometry='SOURCE_GROUPS_WITH_ACCEPTED_T04_OPENINGS',
+              source_groups=groups,groups=measured,
+              entry_walls=entry_walls(measured,source,current))
   return spec
  occupied,holds=fixed_entry_holds(spec,current)
  if holds:spec.update(fixed_entry_holds=holds,occupied_entry_slots=occupied)
@@ -324,7 +346,7 @@ def project(spec,original,current,proposed,*,factor_rows=None):
   for group in spec['groups']:
    if any(sid in bank for bank in group['banks']):continue
    for slot in group['slots']:
-    zone=corridor(group['axis'],group['left'],group['right'],slot['lo'],slot['hi'])
+    zone=corridor(group['axis'],slot.get('entry_left',group['left']),slot.get('entry_right',group['right']),slot['lo'],slot['hi'])
     if g.intersection(zone).area<=EPS:continue
     choices=[]
     for axis in (0,1):
@@ -416,7 +438,9 @@ def project(spec,original,current,proposed,*,factor_rows=None):
  match=matching(spec,zones)
  if not match['passed']:raise ValueError('SHARED_GAP_MATCHING_TOLERANCE_EXCEEDED:'+canonical(match).decode())
  proof=dict(policy=spec['policy'],source_sha256=spec['source_sha256'],banks=ledger,zones=zones,factors=result_factors,approaching_proposal_limits=guards)
- if 'discovery_geometry' in spec:proof['discovery_geometry']=spec['discovery_geometry']
+ if 'discovery_geometry' in spec:
+  proof['discovery_geometry']=spec['discovery_geometry']
+  proof['source_group_ids']=[g['group_id']for g in spec['source_groups']]
  if held:proof['fixed_entry_holds']=held
  return result,proof
 
@@ -507,11 +531,12 @@ def restore(store,scene,*,project_parts=False):
   # Actual post-projection widths are carried with immutable source identities.
   from src.stage_abi.runtime import operands
   _,now,_=operands(store,scene);before_scene=store.get_json(plan['scene_ref'],kind='scene');_,before,original=operands(store,before_scene)
-  from_entry=spec.get('discovery_geometry')=='ACCEPTED_T04_STAGE_ENTRY'
+  from_entry=spec.get('discovery_geometry')=='SOURCE_GROUPS_WITH_ACCEPTED_T04_OPENINGS'
   if records(before_scene,original,before,from_stage_entry=from_entry)!=spec:raise ValueError('SHARED_GAP_RESTORED_SOURCE_CHANGED')
   if 'shared_gap_state_ref'not in entry:raise ValueError('SHARED_GAP_FROZEN_STATE_MISSING')
   state=store.get_json(entry['shared_gap_state_ref'],kind='shared-gap-state')
   if state.get('source_sha256')!=scene['source_sha256']or state.get('policy')!=policy()or state.get('discovery_geometry')!=spec.get('discovery_geometry'):raise ValueError('SHARED_GAP_FROZEN_STATE_CHANGED')
+  if from_entry and state.get('source_group_ids')!=[g['group_id']for g in spec['source_groups']]:raise ValueError('SHARED_GAP_FROZEN_SOURCE_GROUP_CHANGED')
   expected={(g['group_id'],s['lo'],s['hi'])for g in spec['groups']for s in g['slots']}
   actual={(s['group_id'],s['lo'],s['hi'])for s in state['zones']}
   if expected!=actual or len(state['zones'])!=len(expected):raise ValueError('SHARED_GAP_FROZEN_COVERAGE_CHANGED')

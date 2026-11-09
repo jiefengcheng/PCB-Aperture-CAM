@@ -124,10 +124,13 @@ def test_t02_discovers_only_the_open_span_in_accepted_t04(tmp_path):
  current=dict(original,trace=box(.8,.01,1.03,.08))
  scene['lineage']=[dict(stage='t04')]
  spec=gaps.records(scene,original,current)
- assert spec['discovery_geometry']=='ACCEPTED_T04_STAGE_ENTRY'
+ assert spec['discovery_geometry']=='SOURCE_GROUPS_WITH_ACCEPTED_T04_OPENINGS'
  assert 'fixed_entry_holds' not in spec
  group,=spec['groups']
- assert group['slots'][0]['lo']==pytest.approx(.08)
+ source_group,=spec['source_groups']
+ assert (group['group_id'],group['banks'])==(source_group['group_id'],source_group['banks'])
+ assert any(slot['lo']==pytest.approx(.08)for slot in group['slots'])
+ assert group['slots']!=source_group['slots']
  proposed={s:scale(current[s],1.1,1.1,origin=current[s].centroid)for s in ('a','b')}
  result,proof=gaps.project(spec,original,current,proposed)
  after=unary_union(list(dict(current,**result).values()))
