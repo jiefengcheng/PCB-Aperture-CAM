@@ -7,7 +7,7 @@ KEEP member pins its bank. Complete fill proposals cannot invade frozen gaps.
 import hashlib
 from collections import defaultdict
 from shapely import STRtree,to_wkb,from_wkb
-from shapely.geometry import box,LineString
+from shapely.geometry import box,LineString,Polygon
 from shapely.affinity import scale
 from shapely.ops import unary_union
 from src.trace_width_clearance import TraceWidthContract
@@ -36,7 +36,8 @@ def matching(spec,zones):
  """Compare complete accepted slot widths, never refresh a later fill budget."""
  fraction=spec['policy']['gap_matching']['maximum_relative_gap_difference']
  groups=defaultdict(list)
- for row in zones:groups[row['group_id']].append(row['gap_mm'])
+ for row in zones:
+  if not row.get('held_for_fixed_entry'):groups[row['group_id']].append(row['gap_mm'])
  checks=[]
  for gid,widths in sorted(groups.items()):
   low,high=min(widths),max(widths)
@@ -165,6 +166,7 @@ def bank_anchor(spec,group,bank):
  return min(values)if values else None
 
 def zone_rows(spec,group,left,right,current):
+ held=group['group_id'] in spec.get('fixed_entry_holds',{})
  for slot in group['slots']:
   walls=[w for w in spec['entry_walls']if w['group_id']==group['group_id']and w['lo']==slot['lo']and w['hi']==slot['hi']]
   planes=[left,right];axis=group['axis']
@@ -178,7 +180,53 @@ def zone_rows(spec,group,left,right,current):
     if len(inherited)!=1:raise ValueError('SHARED_GAP_SLOT_WALL_COVERAGE_CHANGED')
     planes[bank]=inherited[0]['plane']
   intrusion=sum(w.get('maximum_intrusion_mm',0.)for w in walls)
-  yield dict(group_id=group['group_id'],axis=axis,left=planes[0],right=planes[1],lo=slot['lo'],hi=slot['hi'],gap_mm=planes[1]-planes[0]-intrusion,entry_walls=walls)
+  row=dict(group_id=group['group_id'],axis=axis,left=planes[0],right=planes[1],lo=slot['lo'],hi=slot['hi'],gap_mm=planes[1]-planes[0]-intrusion,entry_walls=walls)
+  if held:
+   row['held_for_fixed_entry']=True
+   witness=spec.get('occupied_entry_slots',{}).get(slot_key(group,slot))
+   if witness is not None:
+    row['fixed_entry_copper']=witness['copper']
+    row['entry_walls']=witness['walls']
+  yield row
+
+def slot_key(group,slot):
+ return hashlib.sha256(canonical([group['group_id'],slot['lo'],slot['hi']])).hexdigest()
+
+def fixed_entry_holds(groups,current):
+ """Keep whole pad proposals when a two-pad source slot is already occupied."""
+ if not groups:return {},{}
+ ids=sorted(current);tree=STRtree([current[s]for s in ids]);occupied={};holds={}
+ empty=to_wkb(Polygon()).hex()
+ members={g['group_id']:{s for bank in g['banks']for s in bank}for g in groups}
+ for group in groups:
+  axis=group['axis'];left,right=group['left'],group['right'];gid=group['group_id']
+  for slot in group['slots']:
+   if not all(slot['bank_members']):continue
+   lo,hi=slot['lo'],slot['hi'];zone=corridor(axis,left,right,lo,hi)
+   nearby=[ids[int(i)]for i in sorted(tree.query(zone,predicate='intersects'))]
+   intruders=[s for s in nearby if current[s].intersection(zone).area>EPS]
+   if not intruders:continue
+   margin=POLYGON_TOLERANCE_MM
+   window=corridor(axis,left-4*margin,right+4*margin,lo-4*margin,hi+4*margin)
+   material=unary_union([current[ids[int(i)]].intersection(window)for i in sorted(tree.query(window,predicate='intersects'))])
+   copper=to_wkb(unary_union(surfaces(material.intersection(zone)))).hex()
+   walls=[]
+   for bank,plane in enumerate((left,right)):
+    contour=unary_union(lines(material.boundary.intersection(corridor(axis,plane-margin,plane+margin,lo,hi))))
+    walls.append(dict(bank=bank,contour_wkb_hex=to_wkb(contour).hex(),
+                      retained_material_wkb_hex=copper if bank==0 else empty,
+                      supports=intruders))
+   occupied[slot_key(group,slot)]=dict(copper=copper,walls=walls,source_ids=intruders)
+   holds[gid]='FIXED_STAGE_ENTRY_COPPER_IN_SOURCE_SLOT'
+ # A shared pad cannot move for another group after its complete proposal is held.
+ held_members=set().union(*(members[g]for g in holds))
+ while True:
+  linked=[g for g in members if g not in holds and members[g]&held_members]
+  if not linked:break
+  for gid in linked:
+   holds[gid]='SHARES_PAD_WITH_FIXED_ENTRY_HOLD'
+   held_members.update(members[gid])
+ return occupied,holds
 
 def records(scene,original,current):
  index=original_index(scene,original);source=index.geometries
@@ -243,7 +291,10 @@ def records(scene,original,current):
  for group in groups:
   for bank in group['banks']:
    if any(s not in current or not current[s].equals(source[s])for s in bank):raise ValueError('SHARED_GAP_STAGE_ENTRY_INTRUSION:T02_MEMBER_CHANGED:'+group['group_id'])
- return dict(policy=policy(),source_sha256=scene['source_sha256'],groups=groups,entry_walls=entry_walls(groups,source,current))
+ spec=dict(policy=policy(),source_sha256=scene['source_sha256'],groups=groups,entry_walls=entry_walls(groups,source,current))
+ occupied,holds=fixed_entry_holds(groups,current)
+ if holds:spec.update(fixed_entry_holds=holds,occupied_entry_slots=occupied)
+ return spec
 
 def project(spec,original,current,proposed,*,factor_rows=None):
  """Intersect bank equalities by union-find; no search, offset compounding or additions."""
@@ -252,6 +303,11 @@ def project(spec,original,current,proposed,*,factor_rows=None):
  # coordinated slots are subsets of these source corridors, so the reductions
  # remain safe after projection and require no iterative geometry search.
  proposed=dict(proposed);factor_rows={s:list(factor_rows[s])if factor_rows is not None else[(g.bounds[a+2]-g.bounds[a])/(current[s].bounds[a+2]-current[s].bounds[a])for a in (0,1)]for s,g in proposed.items()};guards=[]
+ held=spec.get('fixed_entry_holds',{})
+ for group in spec['groups']:
+  if group['group_id'] in held:
+   for sid in {s for bank in group['banks']for s in bank}&proposed.keys():
+    proposed[sid]=current[sid];factor_rows[sid]=[1.,1.]
  for sid,g in sorted(proposed.items()):
   core=current[sid]
   for group in spec['groups']:
@@ -283,6 +339,7 @@ def project(spec,original,current,proposed,*,factor_rows=None):
   elif ra<rb:parents[rb]=ra;weights[rb]=wa-wb-difference
   else:parents[ra]=rb;weights[ra]=difference-wa+wb
  for group in spec['groups']:
+  if group['group_id'] in held:continue
   axis=group['axis']
   curved=any(w.get('maximum_intrusion_mm',0.)>0 for w in spec['entry_walls']if w['group_id']==group['group_id'])
   for bank,ids in enumerate(group['banks']):
@@ -340,12 +397,15 @@ def project(spec,original,current,proposed,*,factor_rows=None):
   result_factors[sid]=factors
  zones=[]
  for group in spec['groups']:
+  if group['group_id'] in held:
+   zones.extend(zone_rows(spec,group,group['left'],group['right'],current));continue
   axis=group['axis'];bank_offsets=[min([offsets[(sid,axis)]for sid in ids],default=bank_anchor(spec,group,bank)or 0.)for bank,ids in enumerate(group['banks'])];left=group['left']+bank_offsets[0];right=group['right']-bank_offsets[1]
   if right-left<=0:raise ValueError('SHARED_GAP_COLLAPSED')
   zones.extend(zone_rows(spec,group,left,right,dict(current,**result)))
  match=matching(spec,zones)
  if not match['passed']:raise ValueError('SHARED_GAP_MATCHING_TOLERANCE_EXCEEDED:'+canonical(match).decode())
  proof=dict(policy=spec['policy'],source_sha256=spec['source_sha256'],banks=ledger,zones=zones,factors=result_factors,approaching_proposal_limits=guards)
+ if held:proof['fixed_entry_holds']=held
  return result,proof
 
 def check(proof,material,*,tolerance_mm=0.):
@@ -387,6 +447,11 @@ def frozen(spec,current):
 def complete(proof,material,*,tolerance_mm=0.):
  q=check(proof,material,tolerance_mm=tolerance_mm);edges=[];boundary=interval_edges(material);epsilon=max(tolerance_mm,EPS);outline=material.boundary
  for row in proof['zones']:
+  if 'fixed_entry_copper' in row:
+   retained=from_wkb(bytes.fromhex(row['fixed_entry_copper']))
+   nearby=material.intersection(retained.envelope.buffer(4*max(tolerance_mm,EPS),join_style=2))
+   observed=nearby.buffer(tolerance_mm) if tolerance_mm else nearby
+   if retained.difference(observed).area>EPS:raise ValueError('T02_FIXED_STAGE_ENTRY_COPPER_REMOVED')
   for bank,plane in enumerate((row['left'],row['right'])):
    inherited=[w for w in row['entry_walls']if w['bank']==bank]
    if inherited:
@@ -437,6 +502,11 @@ def restore(store,scene,*,project_parts=False):
   expected={(g['group_id'],s['lo'],s['hi'])for g in spec['groups']for s in g['slots']}
   actual={(s['group_id'],s['lo'],s['hi'])for s in state['zones']}
   if expected!=actual or len(state['zones'])!=len(expected):raise ValueError('SHARED_GAP_FROZEN_COVERAGE_CHANGED')
+  held=spec.get('fixed_entry_holds',{})
+  expected_holds=[row for g in spec['groups']if g['group_id'] in held
+                  for row in zone_rows(spec,g,g['left'],g['right'],before)]
+  if state.get('fixed_entry_holds',{})!=held or [r for r in state['zones']if r.get('held_for_fixed_entry')]!=expected_holds:
+   raise ValueError('SHARED_GAP_FROZEN_ENTRY_HOLD_CHANGED')
   ACTIVE=state
   if project_parts:
    from src.shared_gap_projection import complete_parts

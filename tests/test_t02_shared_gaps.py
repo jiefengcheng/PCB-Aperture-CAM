@@ -81,6 +81,30 @@ def test_actual_material_intrusion_and_missing_face_fail_even_when_min_clearance
  with pytest.raises(ValueError,match='UNIFORMITY'):gaps.complete(proof,whole.difference(box(.99,.2,1.01,.8)))
  with pytest.raises(ValueError,match='STAGE_ENTRY_INTRUSION'):gaps.records(scene,original,dict(original,a=scale(original['a'],1.1,1.,origin=original['a'].centroid)))
 
+def test_fixed_t04_copper_holds_two_pad_gap_without_removing_width(tmp_path):
+ original,scene,_=fixture(tmp_path)
+ original.pop('wall');scene['objects'].pop()
+ extra=dict(c=box(2,0,3,1),d=box(2,2,3,3),spine=box(2.9,0,3.1,3),
+            trace=box(.9,-.2,1,0),unrelated=box(8,8,9,9))
+ original.update(extra)
+ scene['objects'].extend(dict(source_id=s,kind='fixed'if s in ('spine','trace')else'rectangle',metadata={})for s in extra)
+ trace=box(.875,-.2,1.025,.025)
+ current=dict(original,trace=trace)
+ spec=gaps.records(scene,original,current)
+ assert spec['fixed_entry_holds'] and len(spec['occupied_entry_slots'])==1
+ proposed={s:scale(current[s],1.1,1.1,origin=current[s].centroid)for s in ('a','b','c','d','unrelated')}
+ selected,proof=gaps.project(spec,original,current,proposed)
+ assert all(selected[s].equals(original[s])for s in ('a','b','c','d'))
+ assert selected['unrelated'].equals(proposed['unrelated'])
+ assert proof['fixed_entry_holds']==spec['fixed_entry_holds']
+ after=dict(current,**selected);material=unary_union(list(after.values()))
+ assert gaps.complete(proof,material)['passed']
+ from src.shared_gap_projection import complete_parts
+ assert complete_parts(proof,after.values())['passed']
+ with pytest.raises(ValueError,match='FIXED_STAGE_ENTRY_COPPER_REMOVED'):
+  gaps.complete(proof,unary_union(list(dict(after,trace=original['trace']).values())))
+ assert not gaps.check(proof,box(1.02,.03,1.03,.04))['passed']
+
 def test_nonshared_or_obstructed_and_integral_joint_faces_are_not_grouped(tmp_path):
  original,scene,store=fixture(tmp_path)
  # Separate wall fragments are different source components, not a shared wall.
