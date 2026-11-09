@@ -94,7 +94,8 @@ def test_fixed_t04_copper_holds_two_pad_gap_without_removing_width(tmp_path):
  assert spec['fixed_entry_holds'] and len(spec['occupied_entry_slots'])==1
  proposed={s:scale(current[s],1.1,1.1,origin=current[s].centroid)for s in ('a','b','c','d','unrelated')}
  selected,proof=gaps.project(spec,original,current,proposed)
- assert all(selected[s].equals(original[s])for s in ('a','b','c','d'))
+ assert all(selected[s].bounds[0::2]==original[s].bounds[0::2]for s in ('a','b','c','d'))
+ assert all(selected[s].area>original[s].area for s in ('a','b','c','d'))
  assert selected['unrelated'].equals(proposed['unrelated'])
  assert proof['fixed_entry_holds']==spec['fixed_entry_holds']
  after=dict(current,**selected);material=unary_union(list(after.values()))

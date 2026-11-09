@@ -193,11 +193,10 @@ def slot_key(group,slot):
  return hashlib.sha256(canonical([group['group_id'],slot['lo'],slot['hi']])).hexdigest()
 
 def fixed_entry_holds(groups,current):
- """Keep whole pad proposals when a two-pad source slot is already occupied."""
+ """Hold the gap-facing pad axis when a two-pad source slot is occupied."""
  if not groups:return {},{}
  ids=sorted(current);tree=STRtree([current[s]for s in ids]);occupied={};holds={}
  empty=to_wkb(Polygon()).hex()
- members={g['group_id']:{s for bank in g['banks']for s in bank}for g in groups}
  for group in groups:
   axis=group['axis'];left,right=group['left'],group['right'];gid=group['group_id']
   for slot in group['slots']:
@@ -212,20 +211,16 @@ def fixed_entry_holds(groups,current):
    copper=to_wkb(unary_union(surfaces(material.intersection(zone)))).hex()
    walls=[]
    for bank,plane in enumerate((left,right)):
-    contour=unary_union(lines(material.boundary.intersection(corridor(axis,plane-margin,plane+margin,lo,hi))))
+    clipped=material.boundary.intersection(corridor(axis,plane-margin,plane+margin,lo,hi))
+    other=1-axis
+    contour=unary_union([LineString([a,b])for line in lines(clipped)
+                         for a,b in zip(line.coords,list(line.coords)[1:])
+                         if abs(a[other]-b[other])>EPS])
     walls.append(dict(bank=bank,contour_wkb_hex=to_wkb(contour).hex(),
                       retained_material_wkb_hex=copper if bank==0 else empty,
                       supports=intruders))
    occupied[slot_key(group,slot)]=dict(copper=copper,walls=walls,source_ids=intruders)
    holds[gid]='FIXED_STAGE_ENTRY_COPPER_IN_SOURCE_SLOT'
- # A shared pad cannot move for another group after its complete proposal is held.
- held_members=set().union(*(members[g]for g in holds))
- while True:
-  linked=[g for g in members if g not in holds and members[g]&held_members]
-  if not linked:break
-  for gid in linked:
-   holds[gid]='SHARES_PAD_WITH_FIXED_ENTRY_HOLD'
-   held_members.update(members[gid])
  return occupied,holds
 
 def records(scene,original,current):
@@ -307,7 +302,9 @@ def project(spec,original,current,proposed,*,factor_rows=None):
  for group in spec['groups']:
   if group['group_id'] in held:
    for sid in {s for bank in group['banks']for s in bank}&proposed.keys():
-    proposed[sid]=current[sid];factor_rows[sid]=[1.,1.]
+    factor_rows[sid][group['axis']]=1.
+    core=current[sid]
+    proposed[sid]=core if factor_rows[sid]==[1.,1.]else scale(core,*factor_rows[sid],origin=core.centroid)
  for sid,g in sorted(proposed.items()):
   core=current[sid]
   for group in spec['groups']:
