@@ -19,3 +19,19 @@ def test_same_vertex_count_and_area_cannot_hide_a_different_boundary():
 def test_identity_cannot_bypass_its_own_memory_budget():
  g=Point(0,0).buffer(1,quad_segs=150)
  with pytest.raises(ValueError,match='BUDGET_EXCEEDED'):distance(g,g,budget_bytes=100)
+
+
+def test_sharded_query_retains_exact_metric_with_same_memory_ceiling():
+ g=Point(0,0).buffer(1,quad_segs=150)
+ shifted=translate(g,xoff=.001,yoff=-.0007)
+ limit=195000
+ with pytest.raises(ValueError,match='QUERY_BUDGET_EXCEEDED'):
+  distance(g,shifted,budget_bytes=limit,batch=16)
+ observed,proof=distance(g,shifted,budget_bytes=limit,batch=16,shard_queries=True)
+ exact,_=distance(g,shifted,batch=16)
+ assert observed==exact==g.hausdorff_distance(shifted)
+ for direction in ('forward','reverse'):
+  p=proof[direction]
+  assert p['vertices']==len(g.exterior.coords)
+  assert p['target_index_shards']>1
+  assert p['charged_index_bytes']+p['vertices']*16+p['batch_vertices']*p['maximum_shard_targets']*32<=limit

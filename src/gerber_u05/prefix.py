@@ -46,6 +46,10 @@ def require_retained_t03(run):
  if summary.get('moved')!=0 or summary.get('disposition')!='NO_CHANGE_REQUIRED':raise ValueError('REUSED_T03_MOVEMENT_REQUIRES_FRESH_QUALIFICATION')
 DOWNSTREAM={'src/gerber_u05/guard.py','src/gerber_u05/contours.py','src/gerber_u05/exporter.py','src/gerber_u05/render.py','src/gerber_u05/remaining_defects.py','src/gerber_u05/controls.py','src/gerber_u05/delivery.py'}
 DOWNSTREAM.update({'src/gerber_u05/incremental.py','src/gerber_u05/prefix.py','src/gerber_u05/tail.py','src/gerber_u05/qualification_tail.py','src/gerber_u05/legacy_prefix.py'})
+RAW_OVERLAY_QUERY_DELTA=(
+ 'f2416ca81633d247f5bf8cc65bd4085dbf5e02dd7897d09eb157b975118935ee',
+ 'e7fc68d32a64652e406cc4758c3f3a983b8dbba8bf7e9ba752c466216fd711af')
+RAW_OVERLAY_QUERY_SCOPE='Exact bounded query sharding, enabled only for the raw overlay diagnostic. Default qualification retains its existing metric and budget.'
 NATIVE_FLOOR_CHECK={
  'src/gerber_u05/prior_copper.py':('f1280dc37961373a01cf578f6b5815ee694c2462b3f5aeb2045294eb1d187cf1','5bcd448cb7e231c518ad737072d5feccacb489dd7bab1dc797c29cd9e46743bf'),
  'src/gerber_u05/channel_prior.py':('665a57635e20fb8ddc86dbb036e6fa4c1002b45ea95d906b0ae8a7db9a9b28fa','cdbfc5d1e69211b303dbcb0556b8806a66baf89bf78b1137dcb84fadf1acf73f')}
@@ -165,6 +169,8 @@ def verify_code(original,root,old_root,*,stages=STAGES):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if relative=='src/indexed_hausdorff.py' and (expected,actual)==RAW_OVERLAY_QUERY_DELTA:
+   results.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope=RAW_OVERLAY_QUERY_SCOPE));continue
   if REFERENCE_BOUNDARY_COORDINATOR.get(relative)==(expected,actual):
    results.append(dict(path=relative,scope='Exact proof-only reference boundary extension; existing T01/T03 policy transition and all geometry code unchanged.',before_sha256=expected,after_sha256=actual));continue
   if relative=='src/gerber_u05/component_stages.py':

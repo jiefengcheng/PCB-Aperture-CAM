@@ -74,3 +74,16 @@ def test_single_surface_is_returned_unchanged():
     shape=box(0,0,1,1)
     actual,proof=e.bounded_owner_surface(shape,shape,shape)
     assert actual is shape and proof is None
+
+
+def test_disjoint_owner_support_respects_the_region_budget_and_domain(tmp_path):
+    owner=box(0,0,1,.1)
+    domain=box(0,0,1,.2)
+    region=union_all([box(i*.08+.01,.09,i*.08+.012,.102)for i in range(11)])
+    compact,proof=e.disjoint_owner_surface(region,owner,domain)
+    assert proof['accepted'] and proof['direct_set_inclusion']['passed']
+    actual,records=encode(p.Store(tmp_path/'native'),owner,compact)
+    assert require_budget(len(records),1,8)['passed']
+    assert e.fidelity(owner.union(region),actual)['passed']
+    rejected,proof=e.disjoint_owner_surface(region,owner,box(0,0,1,.101))
+    assert rejected is region and not proof['accepted']

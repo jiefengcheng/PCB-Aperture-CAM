@@ -163,6 +163,39 @@ def prepare_export_region(store,value,adapter,owner,domain,decision,foreign):
     if proof is not None:receipt=dict(receipt,bounded_owner_surface=proof)
     return region,receipt
 
+def disjoint_owner_surface(region,owner,domain):
+    """Assemble the full addition and the owner's nonoverlapping support."""
+    from src.junction_spindle_stage import CONTRACT
+    epsilon=CONTRACT.area_epsilon_mm2
+    margin=NATIVE_OWNER_OVERLAP_MM
+    x,y,x1,y1=region.bounds
+    window=p.box(x-margin,y-margin,x1+margin,y1+margin).intersection(domain)
+    support=owner.intersection(window)
+    candidate=region.union(support.difference(region))
+    inclusion=owner_surface_equivalence(region,owner,candidate,epsilon)
+    support_outside=support.difference(owner).area
+    outside_domain=candidate.difference(domain).area
+    before=len(region.geoms)
+    after=1 if candidate.geom_type=='Polygon' else len(candidate.geoms)
+    accepted=(inclusion['passed'] and after<before and
+              all(math.isfinite(a) and a<=epsilon for a in (support_outside,outside_domain)))
+    proof=dict(mode='DISJOINT_EXISTING_OWNER_SUPPORT_ENCODING_ONLY',accepted=accepted,
+               input_components=before,output_components=after,fixed_margin_mm=margin,
+               support_outside_owner_mm2=support_outside,outside_domain_mm2=outside_domain,
+               direct_set_inclusion=inclusion)
+    return (candidate if accepted else region),proof
+
+
+def prepare_serialized_region(store,value,adapter,owner,domain,decision,foreign):
+    region,receipt=prepare_export_region(store,value,adapter,owner,domain,decision,foreign)
+    bounded=receipt.get('bounded_owner_surface')
+    if bounded is not None and not bounded['accepted']:
+        region,proof=disjoint_owner_surface(region,owner,domain)
+        if proof['accepted']:
+            receipt=dict(receipt,bounded_owner_surface=dict(proof,previous_rejection=bounded))
+    return region,receipt
+
+
 def canonical_base(raw):
     text,_,oracle=p.source_profile.normalize(raw);out=[];fields=0
     if oracle.get('source_format')=='MM_L46_ABSOLUTE':
@@ -265,7 +298,7 @@ def construct(run):
     joint_policy=p.load(run/'REMEDY_POLICY_SNAPSHOT.json').get('t05_joint_profiles',{})
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_export_region(store,value,adapter,owner,domain,d,foreign);first=len(records);parents=append_regions(region,'t05',d['source_id'],records,blocks,store)
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support=prepare_serialized_region(store,value,adapter,owner,domain,d,foreign);first=len(records);parents=append_regions(region,'t05',d['source_id'],records,blocks,store)
         if isinstance(support,dict)and support.get('bounded_owner_surface')is not None:
             for row in records[first:]:row['encoding_owner_surface']=support['bounded_owner_surface']
         own=adapter.owner_for_route(d['source_id']);encoded_owner=adapter._integral_context.project(encoded_current)[own];preserve_point_contacts(encoded_owner,parents,d['source_id'],records,blocks,store)
@@ -319,7 +352,7 @@ def native_model_reference(run,store,before,*,include_parents=False):
     try:
         for d in value['candidate']['decisions']:
             if d['status']!='GROWN':continue
-            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_=prepare_export_region(store,value,adapter,owner,domain,d,foreign);prepare(region,d['source_id'],'t05')
+            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_=prepare_serialized_region(store,value,adapter,owner,domain,d,foreign);prepare(region,d['source_id'],'t05')
     finally:adapter.close()
     final_rows={row['source_id']:row for row in final['objects']}
     for fill in value['intra']['fills']:
@@ -555,7 +588,9 @@ def check(run,body,ledger):
     after=before.union(p.unary_union(observed));actual_grid=assemble_native_material(before,observed,grid_mm=GRID_MM);distance,metric=image_hausdorff(actual_grid,expected,tolerance=POLYGON_TOLERANCE_MM);area=actual_grid.symmetric_difference(expected).area;bound=2*expected.length*POLYGON_TOLERANCE_MM
     from src import t02_shared_gaps as shared_gaps
     if shared_gaps.ACTIVE is not None:checks['shared_neighbor_gaps']=native_shared_gap_complete(shared_gaps.ACTIVE,actual_grid)
-    raw_grid=union_all([before,*raw_observed],grid_size=GRID_MM);raw_distance,raw_metric=image_hausdorff(raw_grid,expected,tolerance=POLYGON_TOLERANCE_MM);raw_overlay_diagnostic=dict(status='DIAGNOSTIC_ONLY_NOT_PHYSICAL_MATERIAL',hausdorff_mm=raw_distance,symmetric_difference_mm2=raw_grid.symmetric_difference(expected).area,metric=raw_metric,basis='Unwelded triangle overlays can create numerical seams; physical qualification uses exact parsed integer-material proofs before assembly')
+    raw_grid=union_all([before,*raw_observed],grid_size=GRID_MM)
+    raw_distance,raw_metric=image_hausdorff(raw_grid,expected,tolerance=POLYGON_TOLERANCE_MM,shard_queries=True)
+    raw_overlay_diagnostic=dict(status='DIAGNOSTIC_ONLY_NOT_PHYSICAL_MATERIAL',hausdorff_mm=raw_distance,symmetric_difference_mm2=raw_grid.symmetric_difference(expected).area,metric=raw_metric,basis='Unwelded triangle overlays can create numerical seams; physical qualification uses exact parsed integer-material proofs before assembly')
     raw_decision_image=p.from_wkb(store.get(value['intra']['after_native_ref'],kind='geometry'));raw_area=after.symmetric_difference(raw_decision_image).area;raw_area_bound=2*raw_decision_image.length*POLYGON_TOLERANCE_MM
     if not raw_decision_image.is_valid or raw_area>raw_area_bound:raise ValueError('RAW_MODEL_IMAGE_AREA_FIDELITY_FAILED')
     if not all(math.isfinite(v) for v in (distance,area,bound)) or distance>POLYGON_TOLERANCE_MM or area>bound or before.difference(after).area>1e-12:raise ValueError('ACTUAL_FINAL_COPPER_FIDELITY_OR_PRESERVATION_FAILED')
