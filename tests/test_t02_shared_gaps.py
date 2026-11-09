@@ -117,6 +117,23 @@ def test_fixed_wall_slot_also_keeps_unaccounted_entry_trace(tmp_path):
  assert proof['factors']['a']==pytest.approx([1.,1.1])
  assert gaps.complete(proof,unary_union(list(dict(current,**result).values())))['passed']
 
+def test_t02_discovers_only_the_open_span_in_accepted_t04(tmp_path):
+ original,scene,_=fixture(tmp_path)
+ original['trace']=box(.8,.01,1.,.02)
+ scene['objects'].append(dict(source_id='trace',kind='trace',metadata={}))
+ current=dict(original,trace=box(.8,.01,1.03,.08))
+ scene['lineage']=[dict(stage='t04')]
+ spec=gaps.records(scene,original,current)
+ assert spec['discovery_geometry']=='ACCEPTED_T04_STAGE_ENTRY'
+ assert 'fixed_entry_holds' not in spec
+ group,=spec['groups']
+ assert group['slots'][0]['lo']==pytest.approx(.08)
+ proposed={s:scale(current[s],1.1,1.1,origin=current[s].centroid)for s in ('a','b')}
+ result,proof=gaps.project(spec,original,current,proposed)
+ after=unary_union(list(dict(current,**result).values()))
+ assert gaps.complete(proof,after)['passed']
+ assert unary_union(list(current.values())).difference(after).is_empty
+
 def test_nonshared_or_obstructed_and_integral_joint_faces_are_not_grouped(tmp_path):
  original,scene,store=fixture(tmp_path)
  # Separate wall fragments are different source components, not a shared wall.
