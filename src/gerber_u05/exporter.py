@@ -52,6 +52,26 @@ from src.u05_board.attachment_export import obligation_check
 
 ORDER=['t01','t03','t04','t02','t05']
 
+def native_shared_gap_complete(proof,material):
+    """Apply existing file fidelity to inherited copper as well as gap walls.
+
+    Nominal growth/remedy predicates remain exact. This export-only comparison
+    follows per-region native fidelity proofs and complete model reconstruction.
+    """
+    from src import t02_shared_gaps as shared_gaps
+    native=copy.deepcopy(proof);areas=[]
+    for row in native['zones']:
+        area=0.
+        for wall in row['entry_walls']:
+            inherited=p.from_wkb(bytes.fromhex(wall['retained_material_wkb_hex']))
+            area+=inherited.area
+            if not inherited.is_empty:
+                wall['retained_material_wkb_hex']=p.to_wkb(inherited.buffer(POLYGON_TOLERANCE_MM,quad_segs=16)).hex()
+        areas.append(area)
+    result=shared_gaps.complete(native,material,tolerance_mm=POLYGON_TOLERANCE_MM)
+    result['inherited_entry_file_fidelity']=dict(tolerance_mm=POLYGON_TOLERANCE_MM,nominal_proof_unchanged=True,original_retained_areas_mm2=areas,basis='Existing native contour tolerance applied to both inherited copper and complete wall comparison; nominal growth and remedy remain exact')
+    return result
+
 def owner_encoding_overlap(region,owner,domain):
     """Duplicate existing copper only; preserve the qualified physical union."""
     from src.junction_spindle_stage import CONTRACT
@@ -534,7 +554,7 @@ def check(run,body,ledger):
     actual_owner_groups=decoded_groups(before,all_observed);checks['whole_board_owner_clearance']=native_clearance(source_groups,actual_owner_groups);checks['whole_board_void_inventory']=final_inventory(before,actual_owner_groups)
     after=before.union(p.unary_union(observed));actual_grid=assemble_native_material(before,observed,grid_mm=GRID_MM);distance,metric=image_hausdorff(actual_grid,expected,tolerance=POLYGON_TOLERANCE_MM);area=actual_grid.symmetric_difference(expected).area;bound=2*expected.length*POLYGON_TOLERANCE_MM
     from src import t02_shared_gaps as shared_gaps
-    if shared_gaps.ACTIVE is not None:checks['shared_neighbor_gaps']=shared_gaps.complete(shared_gaps.ACTIVE,actual_grid,tolerance_mm=POLYGON_TOLERANCE_MM)
+    if shared_gaps.ACTIVE is not None:checks['shared_neighbor_gaps']=native_shared_gap_complete(shared_gaps.ACTIVE,actual_grid)
     raw_grid=union_all([before,*raw_observed],grid_size=GRID_MM);raw_distance,raw_metric=image_hausdorff(raw_grid,expected,tolerance=POLYGON_TOLERANCE_MM);raw_overlay_diagnostic=dict(status='DIAGNOSTIC_ONLY_NOT_PHYSICAL_MATERIAL',hausdorff_mm=raw_distance,symmetric_difference_mm2=raw_grid.symmetric_difference(expected).area,metric=raw_metric,basis='Unwelded triangle overlays can create numerical seams; physical qualification uses exact parsed integer-material proofs before assembly')
     raw_decision_image=p.from_wkb(store.get(value['intra']['after_native_ref'],kind='geometry'));raw_area=after.symmetric_difference(raw_decision_image).area;raw_area_bound=2*raw_decision_image.length*POLYGON_TOLERANCE_MM
     if not raw_decision_image.is_valid or raw_area>raw_area_bound:raise ValueError('RAW_MODEL_IMAGE_AREA_FIDELITY_FAILED')
