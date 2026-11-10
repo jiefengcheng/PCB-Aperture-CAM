@@ -50,6 +50,17 @@ def parse(raw):
     if not parser.eof_found or parser.current_region is not None or parser.block_frame is not None or parser.file_settings.unit!=MM or parser.file_settings.number_format!=(4,6)or parser.file_settings.notation!='absolute'or parser.inventory['MO']!=1 or parser.inventory['FS']!=1:raise ValueError('GENERATED_GERBER_FORMAT_OR_COMPLETENESS_FAILED')
     return g
 
+def connected_native_envelope(shape,nearest_parts):
+    from src.native_boundary_metric import distance as boundary_distance
+    supported=set_precision(shape.buffer(GRID_MM,quad_segs=16),GRID_MM,mode='valid_output')
+    gap=boundary_distance(shape,supported)
+    area=shape.symmetric_difference(supported).area
+    bound=2*shape.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
+    if supported.geom_type!='Polygon' or not supported.is_valid or not supported.covers(shape) or not math.isfinite(gap) or gap>POLYGON_TOLERANCE_MM or not math.isfinite(area) or area>bound:
+        raise ValueError('EXPORT_CONNECTED_CONTRIBUTION_NOT_FILE_GRID_REPRESENTABLE')
+    return supported,dict(encoding_guard_mm=GRID_MM,connectivity_support=dict(reason='Preserve a connected qualified contribution during native-grid conversion',nearest_grid_components=nearest_parts,all_qualified_copper_covered=True,hausdorff_mm=gap,tolerance_mm=POLYGON_TOLERANCE_MM,area_mm2=area,area_bound_mm2=bound))
+
+
 def connected_native_normalization(shape):
     """Keep a connected contribution connected within the existing file budget.
 
@@ -60,18 +71,34 @@ def connected_native_normalization(shape):
     and area bounds. Actual stage and foreign-owner checks remain mandatory.
     """
     normalized=set_precision(shape,GRID_MM,mode='valid_output')
-    proof=dict(encoding_guard_mm=0.,connectivity_support=None)
     if shape.geom_type=='Polygon' and normalized.geom_type=='MultiPolygon':
-        from src.native_boundary_metric import distance as boundary_distance
-        supported=set_precision(shape.buffer(GRID_MM,quad_segs=16),GRID_MM,mode='valid_output')
-        gap=boundary_distance(shape,supported)
-        area=shape.symmetric_difference(supported).area
-        bound=2*shape.length*POLYGON_TOLERANCE_MM+math.pi*POLYGON_TOLERANCE_MM**2
-        if supported.geom_type!='Polygon' or not supported.is_valid or not supported.covers(shape) or not math.isfinite(gap) or gap>POLYGON_TOLERANCE_MM or not math.isfinite(area) or area>bound:
-            raise ValueError('EXPORT_CONNECTED_CONTRIBUTION_NOT_FILE_GRID_REPRESENTABLE')
-        proof=dict(encoding_guard_mm=GRID_MM,connectivity_support=dict(reason='Preserve a connected qualified contribution during native-grid conversion',nearest_grid_components=len(normalized.geoms),all_qualified_copper_covered=True,hausdorff_mm=gap,tolerance_mm=POLYGON_TOLERANCE_MM,area_mm2=area,area_bound_mm2=bound))
-        normalized=supported
-    return normalized,proof
+        return connected_native_envelope(shape,len(normalized.geoms))
+    return normalized,dict(encoding_guard_mm=0.,connectivity_support=None)
+
+
+def t05_native_operand(addition,owner,domain):
+    region,_,_=supported_region(addition,owner,domain)
+    try:
+        return region,connected_native_normalization(region)
+    except ValueError as error:
+        if str(error)!='EXPORT_CONNECTED_CONTRIBUTION_NOT_FILE_GRID_REPRESENTABLE':raise
+        from .exporter import owner_surface_equivalence,NATIVE_OWNER_OVERLAP_MM
+        from src.junction_spindle_stage import CONTRACT
+        margin=NATIVE_OWNER_OVERLAP_MM
+        x,y,x1,y1=region.bounds
+        window=p.box(x-margin,y-margin,x1+margin,y1+margin).intersection(domain)
+        target=owner.union(region)
+        candidate=target.intersection(window).union(region)
+        inclusion=owner_surface_equivalence(region,owner,candidate,CONTRACT.area_epsilon_mm2)
+        if candidate.geom_type!='Polygon' or not inclusion['passed'] or candidate.difference(domain).area>CONTRACT.area_epsilon_mm2:
+            raise
+        nearest=set_precision(region,GRID_MM,mode='valid_output')
+        normalized,proof=connected_native_envelope(candidate,len(nearest.geoms))
+        if not normalized.covers(region):raise
+        proof['connectivity_support']['existing_owner_support']=dict(
+            direct_set_inclusion=inclusion,fixed_margin_mm=margin,
+            raw_original_sha256=p.digest(p.to_wkb(region)),qualified_copper_retained=True)
+        return candidate,(normalized,proof)
 
 def owned_grid_holes(shape,owner):
     """Omit microscopic holes in redundant support already covered by its owner.
@@ -97,12 +124,13 @@ def owned_grid_holes(shape,owner):
     return result,absorbed
 
 
-def append_regions(shape,stage,sid,records,blocks,store,*,owner=None):
+def append_regions(shape,stage,sid,records,blocks,store,*,owner=None,normalization=None):
     qualified=shape;parents=[]
     # Nominal nearest-grid contours: inward padding changes overlap topology.
     # Construction margins remain in the source-stage proofs; actual native
     # clearance is checked separately against the production hard floor.
-    normalized,connectivity=connected_native_normalization(shape);encoding_guard=connectivity['encoding_guard_mm'];area=shape.symmetric_difference(normalized).area;bound=2*shape.length*.000001+3.141592653589793e-12
+    normalized,connectivity=connected_native_normalization(shape) if normalization is None else normalization
+    encoding_guard=connectivity['encoding_guard_mm'];area=shape.symmetric_difference(normalized).area;bound=2*shape.length*.000001+3.141592653589793e-12
     if normalized.is_empty or not normalized.is_valid or normalized.geom_type not in('Polygon','MultiPolygon')or area>bound:raise ValueError('EXPORT_FILE_GRID_NORMALIZATION_FAILED')
     raw_ref=p.geomref(store,qualified);normalization=dict(encoding_guard_mm=encoding_guard,qualified_reference_unchanged=True,grid_mm=.000001,mode='valid_output',area_change_mm2=area,area_bound_mm2=bound,raw_type=shape.geom_type,normalized_type=normalized.geom_type,raw_components=1 if shape.geom_type=='Polygon'else len(shape.geoms),normalized_components=1 if normalized.geom_type=='Polygon'else len(normalized.geoms))
     if connectivity['connectivity_support'] is not None:normalization['connectivity_support']=connectivity['connectivity_support']
@@ -190,7 +218,9 @@ def construct(run):
     objects={row['source_id']:row for row in prepared['objects']}
     for d in value['candidate']['decisions']:
         if d['status']!='GROWN':continue
-        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);addition=p.geometry(store,d['patch_ref']);region,support,_support_mode=supported_region(addition,owner,domain);pieces=append_regions(region,'t05',d['source_id'],records,blocks,store,owner=owner)
+        owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d)
+        region,normalization=t05_native_operand(p.geometry(store,d['patch_ref']),owner,domain)
+        pieces=append_regions(region,'t05',d['source_id'],records,blocks,store,owner=owner,normalization=normalization)
         members=objects[d['source_id']]['metadata']['reference_source_ids'];encoded_owner=encoded_route_owner(encoded_current,members,d['land_ids'],d['source_id']);preserve_point_contacts(encoded_owner,pieces,d['source_id'],records,blocks,store,pregrid=(owner,region))
     adapter.close();body=(base+'\n'+''.join(blocks)+'M02*\n').encode('ascii');store.verify_reads();verify_sources(run)
     return body,dict(source_sha256=binding['source_ref']['sha256'],coordinate_oracle=oracle,records=records,generated_sha256=p.digest(body),producer_sha256=p.digest(Path(__file__).read_bytes()),profile='GERBER_SOURCE_ONLY; KiCad source/write/plot N/A; positive appended contours, original ordered clear operations retained')
@@ -206,8 +236,9 @@ def original_contact_port(overlap,width,contact):
 
 def native_model_reference(run,store,before,*,include_parents=False):
     binding=p.load(run/'source.json');source=store.get_json(binding['scene_ref'],kind='scene');source_rows={r['source_id']:r for r in source['objects']};value=p.load(run/'t05.json');final=store.get_json(value['output_scene_ref'],kind='scene');references=[];inventory=[];parents=[]
-    def prepare(shape,sid,stage,owner=None):
-        normalized,_connectivity=connected_native_normalization(shape);area=shape.symmetric_difference(normalized).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
+    def prepare(shape,sid,stage,owner=None,normalization=None):
+        normalized,_connectivity=connected_native_normalization(shape) if normalization is None else normalization
+        area=shape.symmetric_difference(normalized).area;bound=2*shape.length*GRID_MM+math.pi*GRID_MM**2
         if normalized.is_empty or not normalized.is_valid or normalized.geom_type not in('Polygon','MultiPolygon')or area>bound:raise ValueError('NATIVE_MODEL_REFERENCE_NORMALIZATION_FAILED:'+sid)
         parts=[normalized]if normalized.geom_type=='Polygon'else list(normalized.geoms)
         material=[]
@@ -230,7 +261,9 @@ def native_model_reference(run,store,before,*,include_parents=False):
     try:
         for d in value['candidate']['decisions']:
             if d['status']!='GROWN':continue
-            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d);region,_,_support_mode=supported_region(p.geometry(store,d['patch_ref']),owner,domain);parts=prepare(region,d['source_id'],'t05',owner)
+            owner,radius,domain,foreign=adapter._operands(store,prepared,policy,value['plan']['details'],d)
+            region,normalization=t05_native_operand(p.geometry(store,d['patch_ref']),owner,domain)
+            parts=prepare(region,d['source_id'],'t05',owner,normalization)
             # Reconstruct bounded encoding support from immutable models, not
             # the generated ledger. The constructor and reference must account
             # for the same legal one-grid material before global assembly.

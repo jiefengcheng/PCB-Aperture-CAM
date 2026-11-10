@@ -285,7 +285,7 @@ def run_t02(store,scene,*,recorded=None):
     finally:ownership.ACTIVE=previous_context
 
 def run_t05(store,scene,t04):
-    from src import source_channel_scope
+    from src import component_clearance, source_channel_scope
     functional=source_channel_scope.ACTIVE
     from .prior_copper import prepare as prepare_prior
     scene,prior_floor=prepare_prior(store,scene)
@@ -306,7 +306,20 @@ def run_t05(store,scene,t04):
             contacts.append(dict(route=sid,lands=ids,T04_disposition=record['disposition'],t05_disposition='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME',source_contacts_retained_unchanged=True));continue
         metadata=dict(native_route_ref=store.put_json('gerber-route',p),reference_source_ids=members,land_ids=ids,attachments=attachments,reference_id=p['path_id'],reference_status='GERBER_SOURCE_CONTACTS_NO_HISTORICAL_REFERENCE')
         objects.append(dict(source_id=sid,kind='trace',original_ref=geomref(store,old),geometry_ref=geomref(store,now),metadata=metadata));targets.append(sid);contacts.append(dict(route=sid,lands=ids,T04_disposition=record['disposition']))
-    prepared=dict(scene,objects=objects);scene_ref=store.put_json('scene',prepared);policy=dict(stage='t05',parameters=spindle_parameters());adapter=CoverageAdapter(box(*scene['viewport_mm']));details=adapter.plan(store,prepared,policy,dict(stage='t05',scene_ref=scene_ref,source_ids=targets),bounds(prepared));plan=dict(stage='t05',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details);candidate=adapter.run(store,prepared,policy,plan,lambda _:None);check=adapter.verify(store,prepared,policy,plan,candidate,dict(scope='complete-source-and-all-patches'),lambda _:None);adapter.close()
+    prepared=dict(scene,objects=objects);scene_ref=store.put_json('scene',prepared);policy=dict(stage='t05',parameters=spindle_parameters())
+    viewport=box(*scene['viewport_mm'])
+    if functional is None or component_clearance.ACTIVE is None:
+        adapter=CoverageAdapter(viewport)
+    else:
+        from .t05_grid_selection import NativeGridCoverageAdapter
+        adapter=NativeGridCoverageAdapter(viewport,store,scene,load(store.root.parent/'source.json'))
+    try:
+        details=adapter.plan(store,prepared,policy,dict(stage='t05',scene_ref=scene_ref,source_ids=targets),bounds(prepared))
+        plan=dict(stage='t05',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details)
+        candidate=adapter.run(store,prepared,policy,plan,lambda _:None)
+        check=adapter.verify(store,prepared,policy,plan,candidate,dict(scope='complete-source-and-all-patches'),lambda _:None)
+    finally:
+        adapter.close()
     if not check['passed']:raise ValueError('T05_COMPLETE_ATTACHMENT_RECONSTRUCTION_FAILED')
     return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,**({}if prior_floor is None else{'prior_positive_floor':prior_floor}),summary=dict(routes=len(targets),**(dict(protected_frame_routes=sum(c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'for c in contacts),protected_frame_source_contacts=sum(len(c['lands'])for c in contacts if c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'))if functional is not None else{}),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
 

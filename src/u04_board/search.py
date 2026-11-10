@@ -11,7 +11,7 @@ from src.stage_abi.runtime import Budget,output_scene,operands
 from src.stage_abi.scene import composed
 from src.stage_abi.store import digest,canonical
 from src.stage_abi.contracts import fail
-from src.stage_abi.journal import journalled
+from src.stage_abi.journal import ACTIVE as EXECUTION_JOURNAL, journalled
 from src.joint_rectangle_growth import fit_joint_rectangle
 from src.crop_stage_growth import check_proposal,GrowthContract
 from src.stage_abi.preparation import prepared_tree as STRtree
@@ -63,8 +63,27 @@ class FastRectangleAdapter(LandAdapter):
   details=plan['details'];rows,current,original,checker,crop=self._context(store,scene,policy,details);ids=details['targets'];selected={s:current[s] for s in ids};budget=Budget(details['bounds']);decisions=[];source_ids=list(current);tree=STRtree([current[s] for s in source_ids])
   for ordinal,sid in enumerate(ids):
    core=current[sid];covered=details['containment'][sid]['contained'];attempts=[]
+   # Both axis orders revisit identical candidates. The other lands are
+   # fixed during this search, so their complete trial proof remains valid.
+   trial_cache={};trial_cache_bytes=0
+   cache_trials=self.stage=='t02' and EXECUTION_JOURNAL.get() is None
    def feasible(candidate):
-    budget.evaluation();trial=dict(selected,**{sid:candidate});q=self._trial_check(checker,current,trial,ids);cap_ok=self.stage!='t02' or scale(original[sid],1.25,1.25,origin=original[sid].centroid).covers(candidate);passed=q['passed'] and candidate.covers(core) and cap_ok and candidate.difference(crop).area<=1e-12;attempts.append(dict(candidate_sha256=hashlib.sha256(to_wkb(candidate)).hexdigest(),passed=passed,failures=q['failures']+([] if cap_ok else [dict(reason='ORIGINAL_RECTANGLE_CEILING_EXCEEDED')])));return passed
+    nonlocal trial_cache_bytes
+    budget.evaluation()
+    candidate_sha=digest(to_wkb(candidate))
+    if candidate_sha in trial_cache:
+     scene_passed,failures=trial_cache[candidate_sha]
+    else:
+     trial=dict(selected,**{sid:candidate});q=self._trial_check(checker,current,trial,ids)
+     scene_passed,failures=q['passed'],q['failures']
+     if cache_trials:
+      size=len(canonical(failures))+256
+      if trial_cache_bytes+size<=1024**2:
+       trial_cache[candidate_sha]=(scene_passed,failures);trial_cache_bytes+=size
+    cap_ok=self.stage!='t02' or scale(original[sid],1.25,1.25,origin=original[sid].centroid).covers(candidate)
+    passed=scene_passed and candidate.covers(core) and cap_ok and candidate.difference(crop).area<=1e-12
+    attempts.append(dict(candidate_sha256=candidate_sha,passed=passed,failures=failures+([] if cap_ok else [dict(reason='ORIGINAL_RECTANGLE_CEILING_EXCEEDED')])))
+    return passed
    candidate=core;shape={}
    if not covered and self.stage=='t01':
     p=details['parameters'][sid]

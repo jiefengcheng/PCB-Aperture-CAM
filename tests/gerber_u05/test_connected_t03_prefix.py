@@ -10,7 +10,8 @@ def test_only_explicit_retention_boundaries_are_supported():
  assert not any(k.startswith('connected_t04')for k in prefix.operation_keys(('t01','t03')))
  assert len(prefix.operation_keys(()))==23
  assert len(prefix.operation_keys(incremental.stages_before('t05')))==38
- for stages in [('t01',),('t01','t04'),('t01','t03','t04'),(*prefix.EXPORT_PREFIX,'export')]:
+ assert len(prefix.operation_keys(incremental.stages_before('t04')))==32
+ for stages in [('t01',),('t01','t04'),(*prefix.EXPORT_PREFIX,'export')]:
   with pytest.raises(ValueError,match='BOUNDARY_UNSUPPORTED'):prefix.operation_keys(stages)
 
 
@@ -114,7 +115,7 @@ def test_source_void_t04_delta_cannot_retain_old_width_stages(tmp_path,monkeypat
  with pytest.raises(ValueError,match='UPSTREAM_DEPENDENCY_CHANGED'):prefix.verify_code(original,new,old,stages=('t01','t03'))
 
 
-@pytest.mark.parametrize('stages,count,fresh',[(('t01','t03'),29,'T04, T02 and T05'),(prefix.STAGES,35,'T05 is newly'),(prefix.EXPORT_PREFIX,38,'both actual-file evaluations')])
+@pytest.mark.parametrize('stages,count,fresh',[(('t01','t03'),29,'T04, T02 and T05'),(prefix.STAGES[:3],32,'T02 and T05 are freshly'),(prefix.STAGES,35,'T05 is newly'),(prefix.EXPORT_PREFIX,38,'both actual-file evaluations')])
 def test_connected_visual_reports_the_actual_retained_boundary(stages,count,fresh):
  value={'reused_stages':list(stages),'retained_operation_count':count};text=prefix.connected_visual_evidence(value)
  assert str(count)in text and fresh in text

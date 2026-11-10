@@ -25,7 +25,7 @@ CONNECTED_PREPARATION={'src/gerber_u05/channel_finish.py':('9eb20e39363b8eeea25f
 
 def retained_stages(stages):
  stages=tuple(stages)
- if stages not in ((),('t01','t03'),STAGES,EXPORT_PREFIX):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
+ if stages not in ((),STAGES[:2],STAGES[:3],STAGES,EXPORT_PREFIX):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
  return stages
 
 def operation_keys(stages):
@@ -44,6 +44,8 @@ def connected_visual_evidence(binding):
   return 'Incremental qualification: 23 source/reference operations are retained with original native proofs and hashes. T01, T03, T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
  if stages==('t01','t03'):
   return 'Incremental qualification: 29 unchanged source/reference/T01/T03 operations are retained with original native proofs and hashes. T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
+ if stages==STAGES[:3]:
+  return 'Incremental qualification: 32 source/reference/T01/T03/T04 operations retain their original native proofs and hashes. T02 and T05 are freshly constructed and reconstructed twice. Final export/reparse, controls, remaining-defect audit and rendering are new.'
  if stages==EXPORT_PREFIX:
   return 'Incremental export qualification: 38 source/reference and connected growth operations retain their original native proofs and hashes. Export construction, both actual-file evaluations, controls, remaining-defect audit and rendering are new.'
  return 'Incremental qualification: 35 unchanged source/reference/T01/T03/T04/T02 operations are retained with original native proofs and hashes. T05 is newly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
@@ -176,6 +178,10 @@ def verify_code(original,root,old_root,*,stages=STAGES):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current)
   if actual==expected:continue
+  if (stages==STAGES[:3] and relative=='src/u04_board/search.py' and (expected,actual)==(
+      'd167df45391eed64adf9b17db0bbee760c20e48d8158e5766b1fd7c6e7794129',
+      '89f1333a99e015979bdecd8601e920d799880c61cbd95bd63d324270bdffcaed')):
+   results.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='Bounded reuse of byte-identical T02 trial results within one fixed pad search. Retain complete legacy proofs and connected proofs through T04. Reconstruct T02 and T05 fresh.'));continue
   if relative=='src/indexed_hausdorff.py' and (expected,actual)==RAW_OVERLAY_QUERY_DELTA:
    results.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope=RAW_OVERLAY_QUERY_SCOPE));continue
   if REFERENCE_BOUNDARY_COORDINATOR.get(relative)==(expected,actual):

@@ -1,4 +1,4 @@
-"""Incremental qualification from an audited T03 or T02 prefix in a new job."""
+"""Incremental qualification from audited predecessor stages in a new job."""
 import argparse,datetime,json,os,shutil,subprocess,sys,uuid
 from pathlib import Path
 from . import pipeline as p
@@ -66,7 +66,7 @@ def completed_records(old_job,old_root):
 def stages_before(through):
  if through=='reference':return retained_stages(())
  if through=='t05':return retained_stages(EXPORT_PREFIX)
- if through not in('t03','t02'):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
+ if through not in('t03','t04','t02'):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
  return retained_stages(ORDER[:ORDER.index(through)+1])
 
 
@@ -175,7 +175,7 @@ def continue_stages(coordinator,run,through):
    verify(coordinator.job/'legacy',run)
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('reference','t03','t02','t05'),default='t02');args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('reference','t03','t04','t02','t05'),default='t02');args=parser.parse_args()
  if not args.prefix_run.is_absolute():parser.error('prefix run must be an explicit absolute path')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental';parent.mkdir(parents=True,exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=Coordinator(job);coordinator.state.update(source_only=False,qualification_mode='INCREMENTAL_REUSED_NATIVE_PREFIX')
  try:

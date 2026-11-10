@@ -23,6 +23,27 @@ def constructed(tmp_path,implementation=FastRectangleAdapter):
     return scene,store,policy,plan,dict(candidate=candidate,plan=plan)
 
 
+def test_identical_rectangle_trials_keep_the_complete_candidate_and_budget(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    from src.u04_board import search
+
+    check=FastRectangleAdapter._trial_check
+    calls=[]
+
+    def counted(self,*args,**kwargs):
+        calls.append(None)
+        return check(self,*args,**kwargs)
+
+    monkeypatch.setattr(FastRectangleAdapter,'_trial_check',counted)
+    cached=constructed(tmp_path/'cached')[-1]['candidate']
+    cached_checks=len(calls)
+    calls.clear()
+    monkeypatch.setattr(search,'EXECUTION_JOURNAL',SimpleNamespace(get=lambda:object()))
+    uncached=constructed(tmp_path/'uncached')[-1]['candidate']
+    assert canonical(cached)==canonical(uncached)
+    assert 0<cached_checks<len(calls)
+
+
 @pytest.mark.parametrize('implementation',[FastRectangleAdapter,ComponentRectangleAdapter])
 def test_fresh_worker_reconstructs_same_candidate_and_verifies_without_search(tmp_path,monkeypatch,implementation):
     scene,store,policy,plan,recorded=constructed(tmp_path,implementation)

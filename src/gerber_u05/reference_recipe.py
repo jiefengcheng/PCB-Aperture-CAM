@@ -25,7 +25,9 @@ def initialize_reference_constraints(store,binding,source,original,predecessor):
  width.restore(store,predecessor)
  if width.ACTIVE is None:raise ValueError('REFERENCE_FROZEN_T04_WIDTH_RULE_REQUIRED')
  from src import t02_shared_gaps as shared_gaps
- shared_gaps.restore(store,predecessor)
+ # Check each full slot from all its local contributors. The board-wide
+ # overlay can introduce spurious edges from unrelated T05 additions.
+ shared_gaps.restore(store,predecessor,project_parts=True)
  from .pin_policy import initialize as initialize_pin
  initialize_pin(store,binding,source,original,predecessor)
  return dict(schema='reference-inherited-growth-constraints/2',
