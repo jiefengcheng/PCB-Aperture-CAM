@@ -35,3 +35,20 @@ def test_sharded_query_retains_exact_metric_with_same_memory_ceiling():
   assert p['vertices']==len(g.exterior.coords)
   assert p['target_index_shards']>1
   assert p['charged_index_bytes']+p['vertices']*16+p['batch_vertices']*p['maximum_shard_targets']*32<=limit
+
+
+def test_target_index_streams_without_changing_full_distance():
+ from shapely.geometry import GeometryCollection, LineString
+ a=GeometryCollection([Point(0,0).buffer(1,quad_segs=150),Point(8,4)])
+ b=GeometryCollection([translate(a.geoms[0],xoff=.001),LineString([(8,4),(8.25,4)])])
+ limit=85000
+ with pytest.raises(ValueError,match='INDEX_BUDGET_EXCEEDED'):
+  distance(a,b,budget_bytes=limit,batch=16)
+ observed,proof=distance(a,b,budget_bytes=limit,batch=16,shard_queries=True)
+ exact,_=distance(a,b,batch=16)
+ assert observed==pytest.approx(exact,abs=1e-12)
+ assert observed==pytest.approx(a.hausdorff_distance(b),abs=1e-12)
+ for direction in ('forward','reverse'):
+  assert proof[direction]['target_index_shards']>1
+  assert proof[direction]['charged_index_bytes']<=limit
+  assert proof[direction]['target_index_mode']=='ONE_RESIDENT_SHARD_COMPLETE_GEOS_NEAREST_REDUCTION'

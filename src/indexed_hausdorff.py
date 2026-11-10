@@ -19,6 +19,76 @@ def _paths(g):
     else:raise ValueError('UNSUPPORTED_HAUSDORFF_GEOMETRY')
 
 
+def _directed_streamed(source, target, *, budget_bytes, batch):
+    """Reduce exact GEOS nearest distances across one resident index at a time."""
+    vertices = int(get_num_coordinates(source))
+    segments = singletons = path_bytes = longest_path = 0
+    for path in _paths(target):
+        segments += max(0, len(path) - 1)
+        singletons += int(len(path) == 1)
+        path_bytes += path.nbytes
+        longest_path = max(longest_path, path.nbytes)
+    if not segments + singletons:
+        raise ValueError('EMPTY_HAUSDORFF_TARGET')
+    index_charge = (segments + singletons) * 256 + path_bytes + batch * 256
+    if index_charge <= budget_bytes:
+        return _directed(source, target, budget_bytes=budget_bytes, batch=batch, shard_queries=True)
+
+    # Source coordinates and a running nearest distance for every vertex are
+    # resident. Reserve two ring arrays, the query batch and one index shard.
+    fixed = vertices * 32 + 2 * longest_path + batch * 256 + 4096
+    capacity = (budget_bytes - fixed) // 512
+    if capacity < 1:
+        raise ValueError('HAUSDORFF_STREAMING_BUDGET_EXCEEDED')
+    capacity = min(capacity, segments + singletons)
+    coords = get_coordinates(source)
+    if len(coords) != vertices or not np.isfinite(coords).all():
+        raise ValueError('INCOMPLETE_HAUSDORFF_VERTEX_COVERAGE')
+    nearest = np.full(vertices, np.inf)
+    endpoints = np.empty((capacity, 2, 2))
+    is_point = np.empty(capacity, dtype=bool)
+    shards = 0
+
+    def accumulate(size):
+        nonlocal shards
+        selected = is_point[:size]
+        geometries = np.empty(size, dtype=object)
+        geometries[selected] = points(endpoints[:size][selected, 0])
+        geometries[~selected] = linestrings(endpoints[:size][~selected])
+        tree = STRtree(geometries)
+        for i in range(0, vertices, batch):
+            chunk = coords[i:i + batch]
+            indices, distances = tree.query_nearest(points(chunk), all_matches=False,
+                                                    return_distance=True)
+            if len(distances) != len(chunk) or not np.isfinite(distances).all():
+                raise ValueError('INCOMPLETE_HAUSDORFF_VERTEX_COVERAGE')
+            np.minimum.at(nearest[i:i + batch], indices[0], distances)
+        shards += 1
+
+    used = processed = 0
+    for path in _paths(target):
+        point = len(path) == 1
+        count = 1 if point else len(path) - 1
+        for start in range(0, count):
+            if used == capacity:
+                accumulate(used)
+                used = 0
+            endpoints[used] = (path[start], path[start if point else start + 1])
+            is_point[used] = point
+            used += 1
+            processed += 1
+    if used:
+        accumulate(used)
+    if processed != segments + singletons or not np.isfinite(nearest).all():
+        raise ValueError('INCOMPLETE_HAUSDORFF_NEAREST_SEGMENT_COVERAGE')
+    return float(nearest.max()), dict(
+        vertices=vertices, target_segments=segments, target_points=singletons,
+        charged_index_bytes=fixed + capacity * 512, batch_vertices=batch,
+        target_index_shards=shards, maximum_shard_targets=capacity,
+        target_index_mode='ONE_RESIDENT_SHARD_COMPLETE_GEOS_NEAREST_REDUCTION',
+    )
+
+
 def _directed(source,target,*,budget_bytes,batch,shard_queries=False):
     paths=list(_paths(target));segments=sum(max(0,len(a)-1)for a in paths);singletons=sum(len(a)==1 for a in paths)
     charged=(segments+singletons)*256+sum(a.nbytes for a in paths)+batch*256
@@ -101,9 +171,12 @@ def distance(a,b,*,tolerance=None,budget_bytes=256*1024**2,batch=8192,shard_quer
                 return 0.,dict(method='Exact complete native WKB identity',vertices=na+nb,
                                charged_identity_bytes=charged,budget_bytes=budget_bytes,
                                tolerance_unchanged=True,native_boundary_fallback=False)
-    first,pa=_directed(a,b,budget_bytes=budget_bytes,batch=batch,shard_queries=shard_queries);second,pb=_directed(b,a,budget_bytes=budget_bytes,batch=batch,shard_queries=shard_queries);result=max(first,second)
+    directed = _directed_streamed if shard_queries else _directed
+    first,pa=directed(a,b,budget_bytes=budget_bytes,batch=batch)
+    second,pb=directed(b,a,budget_bytes=budget_bytes,batch=batch)
+    result=max(first,second)
     magnitude=max(1.,*(abs(x)for x in (*a.bounds,*b.bounds)));guard=float(max(1e-12,256*np.finfo(float).eps*magnitude));fallback=False
-    if tolerance is not None and abs(result-tolerance)<=guard and len(get_coordinates(a))+len(get_coordinates(b))<=2048:
+    if tolerance is not None and abs(result-tolerance)<=guard and get_num_coordinates(a)+get_num_coordinates(b)<=2048:
         result=a.hausdorff_distance(b);fallback=True
     if not math.isfinite(result):raise ValueError('HAUSDORFF_METRIC_NONFINITE')
     return result,dict(method='All vertices; spatial candidate index; exact native GEOS three-vertex point/segment Hausdorff probes; symmetric maximum',forward=pa,reverse=pb,native_boundary_fallback=fallback,roundoff_fallback_guard_mm=guard,tolerance_unchanged=True)

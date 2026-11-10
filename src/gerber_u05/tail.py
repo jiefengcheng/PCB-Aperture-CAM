@@ -8,7 +8,7 @@ import argparse,datetime,json,os,subprocess,uuid
 from pathlib import Path
 from . import pipeline as p
 from .guard import ROOT,seal,verify_sources,install_read_fence
-from .prefix import sha,load,verify as verify_prefix,shared_gap_restore_same,RAW_OVERLAY_QUERY_DELTA,RAW_OVERLAY_QUERY_SCOPE
+from .prefix import sha,load,verify as verify_prefix,shared_gap_restore_same,RAW_OVERLAY_QUERY_DELTAS,RAW_OVERLAY_QUERY_SCOPE
 from .incremental import copy_file
 from .run import Coordinator,CONNECTED
 from .workspace import configure
@@ -34,7 +34,7 @@ def verify_code(original,current,old_root):
   if relative=='SOURCE_REVISION.json':continue
   actual=sha(current/relative)
   if actual!=expected:
-   if relative=='src/indexed_hausdorff.py' and (expected,actual)==RAW_OVERLAY_QUERY_DELTA:
+   if relative=='src/indexed_hausdorff.py' and (expected,actual) in RAW_OVERLAY_QUERY_DELTAS:
     changed.append(dict(path=relative,before_sha256=expected,after_sha256=actual,
                         proof=RAW_OVERLAY_QUERY_SCOPE))
     continue
@@ -96,6 +96,12 @@ def prepare(old,job,*,qualification_mode='INCREMENTAL_REUSED_NATIVE_T05',seal_jo
   if any(sha(name)!=expected for name,expected in authority['files'].items()):raise ValueError('REUSED_T05_ORIGINAL_ASSEMBLY_CHANGED')
   assembly=job/'assembly';assembly.mkdir()
   copy_file(assembly_source/'original.gbr',assembly/'original.gbr');copy_file(assembly_source/'INPUT_INVENTORY.json',assembly/'INPUT_INVENTORY.json')
+  scope_names=('PCB_SCOPE.json','pcb_outline.gbr')
+  if any((assembly_source/name).exists() for name in scope_names):
+   for name in scope_names:
+    source=assembly_source/name
+    if str(source) not in authority['files']:raise ValueError('REUSED_T05_SCOPE_INPUT_NOT_BOUND:'+name)
+    copy_file(source,assembly/name)
   p.save(assembly/'ASSEMBLY_PRODUCER.json',source_assembly._producer(assembly))
   coordinator=Coordinator(job)if coordinator is None else coordinator
   coordinator.execute(assembly,'source_assembly',['construct'],module='source_assembly');coordinator.execute(assembly,'source_assembly',['1','2'],module='source_assembly')
