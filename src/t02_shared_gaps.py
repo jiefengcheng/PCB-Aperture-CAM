@@ -5,6 +5,7 @@ joints and all ordinary finite predicates remain authoritative. A missing or
 KEEP member pins its bank. Complete fill proposals cannot invade frozen gaps.
 """
 import hashlib
+import math
 from collections import defaultdict
 from shapely import STRtree,to_wkb,from_wkb
 from shapely.geometry import box,LineString,Polygon
@@ -480,7 +481,7 @@ def frozen(spec,current):
  if not match['passed']:raise ValueError('SHARED_GAP_MATCHING_TOLERANCE_EXCEEDED:'+canonical(match).decode())
  return dict(policy=spec['policy'],source_sha256=spec['source_sha256'],zones=zones)
 
-def complete(proof,material,*,tolerance_mm=0.):
+def complete(proof,material,*,tolerance_mm=0.,native_endpoint_rounding=False):
  q=check(proof,material,tolerance_mm=tolerance_mm);edges=[];boundary=interval_edges(material);epsilon=max(tolerance_mm,EPS);outline=material.boundary
  for row in proof['zones']:
   if 'fixed_entry_copper' in row:
@@ -506,8 +507,19 @@ def complete(proof,material,*,tolerance_mm=0.):
     continue
    # Compare straight boundary intervals directly: no nearly-zero GEOS buffers,
    # and no repeated whole-board offsets. Existing numerical tolerance only.
-   intervals=sorted((max(row['lo'],e['lo']),min(row['hi'],e['hi']))for e in boundary if e['axis']==row['axis']and abs(e['plane']-plane)<=epsilon and e['hi']>=row['lo']and e['lo']<=row['hi'])
-   missing=missing_length(intervals,row['lo'],row['hi'])
+   axis,lo,hi=row['axis'],row['lo'],row['hi']
+   intervals=[(max(lo,e['lo']),min(hi,e['hi']),abs(e['plane']-plane)) for e in boundary
+              if e['axis']==axis and abs(e['plane']-plane)<=epsilon and min(hi,e['hi'])>max(lo,e['lo'])]
+   if native_endpoint_rounding and intervals:
+    # Only the outermost observed endpoints may move within file fidelity.
+    # Interior interruptions remain visible, even near the ends of the span.
+    first=min(intervals,key=lambda edge:(edge[0],edge[2]))
+    last=max(intervals,key=lambda edge:(edge[1],-edge[2]))
+    if math.hypot(first[0]-lo,first[2])<=tolerance_mm:
+     intervals.append((lo,first[0],0.))
+    if math.hypot(hi-last[1],last[2])<=tolerance_mm:
+     intervals.append((last[1],hi,0.))
+   missing=missing_length([(a,b)for a,b,_ in intervals],lo,hi)
    edges.append(dict(group_id=row['group_id'],missing_boundary_mm=missing,passed=missing<=EPS))
  q.update(boundaries=edges,passed=q['passed']and all(v['passed']for v in edges))
  if not q['passed']:

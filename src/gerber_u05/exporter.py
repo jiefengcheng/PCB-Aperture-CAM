@@ -68,7 +68,7 @@ def native_shared_gap_complete(proof,material):
             if not inherited.is_empty:
                 wall['retained_material_wkb_hex']=p.to_wkb(inherited.buffer(POLYGON_TOLERANCE_MM,quad_segs=16)).hex()
         areas.append(area)
-    result=shared_gaps.complete(native,material,tolerance_mm=POLYGON_TOLERANCE_MM)
+    result=shared_gaps.complete(native,material,tolerance_mm=POLYGON_TOLERANCE_MM,native_endpoint_rounding=True)
     result['inherited_entry_file_fidelity']=dict(tolerance_mm=POLYGON_TOLERANCE_MM,nominal_proof_unchanged=True,original_retained_areas_mm2=areas,basis='Existing native contour tolerance applied to both inherited copper and complete wall comparison; nominal growth and remedy remain exact')
     return result
 

@@ -3,7 +3,7 @@ import argparse,datetime,json,os,shutil,subprocess,sys,uuid
 from pathlib import Path
 from . import pipeline as p
 from .guard import seal,verify_sources,install_read_fence
-from .prefix import STAGES,sha,load,verify_code,retained_stages,operation_keys,require_retained_t03,verify as verify_native_prefix
+from .prefix import EXPORT_PREFIX,STAGES,sha,load,verify_code,retained_stages,operation_keys,require_retained_t03,verify as verify_native_prefix
 from .run import Coordinator,CONNECTED,ORDER
 from .workspace import configure
 
@@ -65,6 +65,7 @@ def completed_records(old_job,old_root):
 
 def stages_before(through):
  if through=='reference':return retained_stages(())
+ if through=='t05':return retained_stages(EXPORT_PREFIX)
  if through not in('t03','t02'):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
  return retained_stages(ORDER[:ORDER.index(through)+1])
 
@@ -74,6 +75,7 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
  prefix=Path(prefix);old_job=prefix.parent;original=load(prefix/'PRODUCER_BINDING.json');state=load(old_job/'STATUS.current.json');inventory=load(prefix/'input_inventory.json')
  if original['profile']!=CONNECTED:raise ValueError('CONNECTED_PREFIX_PROFILE_REQUIRED')
  stages=stages_before(through)
+ if stages==EXPORT_PREFIX and state['status'] not in ('HALTED','U05_EXPORT_REPARSE_CONTROLS_RENDER_PASSED'):raise ValueError('REUSED_T05_ROUTE_NOT_TERMINAL')
  if stages==('t01','t03'):require_retained_t03(prefix)
  old_root=Path(os.path.commonpath(list(original['files'])));code=verify_code(original,p.ROOT,old_root,stages=stages)
  records,log_roots,legacy_proof=completed_records(old_job,old_root);family_job=source_family_job(prefix);producers=stage_producers(prefix,stages)
@@ -94,6 +96,7 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
  if p.digest(raw)!=source['source_ref']['sha256']:raise ValueError('REUSED_SELECTED_SOURCE_CHANGED')
  run=job/'connected';run.mkdir();subprocess.run(['cp','-cR',str(prefix/'runtime'),str(run/'runtime')],check=True)
  names=['source.json','CLEARANCE_SNAPSHOT.json','REMEDY_POLICY_SNAPSHOT.json','REFERENCE_BINDING.json','REFERENCE_CHANNELS.json','T04_SETTINGS_SNAPSHOT.json','PIN_SEPARATION_POLICY.json','STORAGE_ENCODING.json']
+ if stages==EXPORT_PREFIX:names+=['HOLE_ACCEPTANCE_SNAPSHOT.json']
  if 't04'in stages:names+=['RAW_WIDTH_CHECKPOINT.json','T04_PRIOR_WIDTH_COMPATIBILITY.json']
  for name in names:
   if(prefix/name).exists():copy_file(prefix/name,run/name)
@@ -172,7 +175,7 @@ def continue_stages(coordinator,run,through):
    verify(coordinator.job/'legacy',run)
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('reference','t03','t02'),default='t02');args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('reference','t03','t02','t05'),default='t02');args=parser.parse_args()
  if not args.prefix_run.is_absolute():parser.error('prefix run must be an explicit absolute path')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental';parent.mkdir(parents=True,exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=Coordinator(job);coordinator.state.update(source_only=False,qualification_mode='INCREMENTAL_REUSED_NATIVE_PREFIX')
  try:

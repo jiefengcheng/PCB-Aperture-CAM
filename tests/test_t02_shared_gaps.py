@@ -348,3 +348,20 @@ def test_retained_prior_cannot_bridge_or_narrow_an_accepted_shared_gap(tmp_path,
  assert require_shared_prior(original)['passed']
  for patch in (box(.9,.2,1.001,.8),box(.9,.2,2.1,.8)):
   with pytest.raises(ValueError,match='UNIFORMITY'):require_shared_prior(dict(original,a=original['a'].union(patch)))
+
+
+def test_native_straight_wall_endpoint_rounding_keeps_interior_coverage():
+    from src.gerber_u05.exporter import native_shared_gap_complete
+
+    proof = dict(policy=gaps.policy(), zones=[
+        dict(axis=0, left=1., right=2., lo=0.0000004, hi=1.0000004,
+             gap_mm=1., group_id='native-endpoint', entry_walls=[]),
+    ])
+    material = unary_union([box(0., 0.000001, 1., 1.), box(2., 0., 3., 1.1)])
+    assert native_shared_gap_complete(proof, material)['passed']
+    with pytest.raises(ValueError, match='UNIFORMITY'):
+        gaps.complete(proof, material)
+    with pytest.raises(ValueError, match='UNIFORMITY'):
+        native_shared_gap_complete(proof, material.difference(box(.9, .5, 1.1, .500001)))
+    with pytest.raises(ValueError, match='UNIFORMITY'):
+        native_shared_gap_complete(proof, material.difference(box(.9, 0., 1.1, .000004)))

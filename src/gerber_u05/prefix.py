@@ -2,6 +2,11 @@
 import ast,hashlib,json
 from pathlib import Path
 STAGES=('t01','t03','t04','t02')
+EXPORT_PREFIX=(*STAGES,'t05')
+NATIVE_GAP_ENDPOINT_DELTA=(
+ 'b8b29720d76273d21c562bab69e64326d77ead3272031ff8c97250a24b25217f',
+ '73ff237cfc1898bdaaad63fdb09efbb9736e03616680c0fd41ab5dae08f94633',
+)
 WIDTH_CORRECTION={
  'src/component_clearance.py':('957f90407b119660bffd6946320b0af398b3ee1d6402a1cfb8b1a9694dd0b904','8a705db3911686d2bb760cde74c484a16243487013e2798148bdf038886fb72d'),
  'src/prepared_width_scene.py':('6ed21e7cebd6395f8a7e29215282832a81bdbb8dd16386202e58fe019bd4ce2d','6c3f5a1d8f3ab2eb2e5482e7227af14339a4cd57fcae488d5d6b3acefd516782')}
@@ -20,7 +25,7 @@ CONNECTED_PREPARATION={'src/gerber_u05/channel_finish.py':('9eb20e39363b8eeea25f
 
 def retained_stages(stages):
  stages=tuple(stages)
- if stages not in ((),('t01','t03'),STAGES):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
+ if stages not in ((),('t01','t03'),STAGES,EXPORT_PREFIX):raise ValueError('REUSED_CONNECTED_PREFIX_BOUNDARY_UNSUPPORTED')
  return stages
 
 def operation_keys(stages):
@@ -39,6 +44,8 @@ def connected_visual_evidence(binding):
   return 'Incremental qualification: 23 source/reference operations are retained with original native proofs and hashes. T01, T03, T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
  if stages==('t01','t03'):
   return 'Incremental qualification: 29 unchanged source/reference/T01/T03 operations are retained with original native proofs and hashes. T04, T02 and T05 are freshly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
+ if stages==EXPORT_PREFIX:
+  return 'Incremental export qualification: 38 source/reference and connected growth operations retain their original native proofs and hashes. Export construction, both actual-file evaluations, controls, remaining-defect audit and rendering are new.'
  return 'Incremental qualification: 35 unchanged source/reference/T01/T03/T04/T02 operations are retained with original native proofs and hashes. T05 is newly constructed and reconstructed twice; final export/reparse, controls, remaining-defect audit and rendering are new.'
 
 def require_retained_t03(run):
@@ -192,6 +199,8 @@ def verify_code(original,root,old_root,*,stages=STAGES):
    results.append(dict(path=relative,scope='Exact source-void T04-only correction. Retain only T01/zero-movement T03; every T04 attempt and complete scene runs fresh.',before_sha256=expected,after_sha256=actual));continue
   if stages==('t01','t03')and CONNECTED_PREPARATION.get(relative)==(expected,actual):
    results.append(dict(path=relative,scope='Exact coordinate-preserving native precision-metadata reset inside connected T04/T05 completion only. Retain T01 and zero-movement T03; no connected T04/T02 completion reused.',before_sha256=expected,after_sha256=actual));continue
+  if stages==EXPORT_PREFIX and relative=='src/t02_shared_gaps.py' and (expected,actual)==NATIVE_GAP_ENDPOINT_DELTA:
+   results.append(dict(path=relative,before_sha256=expected,after_sha256=actual,scope='Exact default-off native straight-wall endpoint comparison. Retain growth proofs; run all export and report checks fresh.'));continue
   if relative=='src/t02_shared_gaps.py':
    results.append(dict(path=relative,proof=shared_gap_restore_same(path.read_text(),current.read_text())));continue
   if relative=='src/gerber_u05/pipeline.py':
