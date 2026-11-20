@@ -51,7 +51,7 @@ def frame(points,*,extra_stations=()):
     return p,normals,stations,length
 
 
-def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,interior_width=None,plateau=None,maximum_extra_reach_mm=.11):
+def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,interior_width=None,plateau=None,maximum_extra_reach_mm=.11,direct_transition=False):
     p,normals,stations,length=frame(points,extra_stations=()if plateau is None else(plateau['first_mm'],plateau['last_mm']))
     desired=max(0.,((target_width if interior_width is None else interior_width)-width)/2)
     faces=[];oriented=[]
@@ -72,15 +72,18 @@ def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,in
     delta=maximum_side_slope*length/3;middle=[];bounds=[]
     for side,(a,b)in enumerate(zip(*faces)):
         lo=max(0.,max(a,b)-delta);hi=min(a,b)+delta
-        if lo>hi+1e-12:raise ValueError('FROZEN_JOINT_TRANSITION_TOO_SHORT')
-        middle.append(min(hi,max(lo,desired_faces[side])));bounds.append(lo)
+        if not direct_transition and lo>hi+1e-12:raise ValueError('FROZEN_JOINT_TRANSITION_TOO_SHORT')
+        middle.append((a+b)/2 if direct_transition else min(hi,max(lo,desired_faces[side])));bounds.append(lo)
     cap=max(0.,target_width-width)
     if sum(faces[0])>cap+1e-9 or sum(faces[1])>cap+1e-9:raise ValueError('FROZEN_JOINT_EXCEEDS_SOURCE_WIDTH_CAP')
     excess=max(0.,sum(middle)-cap)
     for i in sorted(range(2),key=lambda i:-(middle[i]-bounds[i])):
         take=min(excess,middle[i]-bounds[i]);middle[i]-=take;excess-=take
     if excess>1e-12:raise ValueError('FROZEN_JOINT_WIDTH_BUDGET_INFEASIBLE')
-    if plateau is None:
+    if direct_transition:
+        if plateau is not None:raise ValueError('DIRECT_RESIDUAL_CANNOT_CHANGE_GROUP_PLATEAU')
+        intervals=[(0.,length,faces[0],faces[1])]
+    elif plateau is None:
         intervals=[(0.,length/2,faces[0],middle),(length/2,length,middle,faces[1])]
     else:
         middle=[plateau['negative_growth_mm'],plateau['positive_growth_mm']]
@@ -121,3 +124,68 @@ def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,in
         maximum_width_mm=actual,target_width_mm=target_width,length_mm=length,
         maximum_extra_reach_mm=reach,transition_extra_reach_limit_mm=maximum_extra_reach_mm,
         exact_frozen_sections_retained=True,source_path_changed=False,clearance_certified=False)
+
+
+def match_ends(points,width,target_width,*,ends,deviation=.1,maximum_side_slope=.25,face_budgets=None,free_unmatched_ends=False):
+    """Independent narrower end matching, reusing the full-span cubic ribbon.
+
+    End i may lie in [(1-deviation) * treated_width_i, treated_width_i], intersected
+    with nominal/growth caps. A full-span monotone cubic has no artificial
+    midpoint plateau. Width matching is not a foreign-copper certificate.
+
+    Optional ``face_budgets`` are precomputed per-side reach caps in mm. They
+    enable the constrained endpoint allocator; without them the original
+    reference allocator remains in use. ``free_unmatched_ends`` lets a true
+    free end grow within its cap, while the default preserves nominal width.
+    """
+    if not 0<=deviation<1:raise ValueError('VALID_RESIDUAL_END_DEVIATION_REQUIRED')
+    if not any(e is not None for e in ends):raise ValueError('TREATED_RESIDUAL_END_REQUIRED')
+    from .member_allocation import maximum_pair_packing
+    p,n,_,length=frame(points);sections=[];limits=[];treated=[];caps={};pairs=[]
+    for i,end in enumerate(ends):
+        j=0 if i==0 else-1;normal=n[j]/np.linalg.norm(n[j]);center=p[j]
+        if end is None:
+            half=target_width/2 if free_unmatched_ends else width/2
+            low,high=-half,half;tw=None;minimum=width;maximum=target_width if free_unmatched_ends else width
+        else:
+            same=float(normal@np.asarray(end['normal']))>=0
+            lower=np.asarray(end['lower_mm']if same else end['upper_mm']);upper=np.asarray(end['upper_mm']if same else end['lower_mm'])
+            vector=upper-lower;tw=float(np.linalg.norm(vector));normal=vector/tw
+            low=float((lower-center)@normal);high=float((upper-center)@normal)
+            minimum=max(width,(1-deviation)*tw);maximum=min(target_width,tw)
+            if minimum>maximum+1e-12:raise ValueError('RESIDUAL_END_MATCH_EXCEEDS_CAP_OR_10_PERCENT')
+            if low>-width/2+1e-9 or high<width/2-1e-9:
+                raise ValueError('RESIDUAL_MATCH_CANNOT_CONTAIN_NOMINAL_CORE')
+        caps[f'{i}:negative']=max(0.,-low-width/2);caps[f'{i}:positive']=max(0.,high-width/2)
+        if face_budgets is not None:
+            for side in('negative','positive'):caps[f'{i}:'+side]=min(caps[f'{i}:'+side],face_budgets[side])
+        limits.append((minimum,maximum));treated.append(tw);sections.append(dict(center=center,normal=normal))
+        pairs.append((f'{i}:negative',f'{i}:positive',max(0.,maximum-width)))
+    allowance=maximum_side_slope*length/1.5
+    # The same existing face budget solver selects optional growth only.
+    # Propagate the full-span side-slope bound before and after allocation.
+    for side in('negative','positive'):
+        a,b=caps['0:'+side],caps['1:'+side]
+        caps['0:'+side]=min(a,b+allowance);caps['1:'+side]=min(b,a+allowance)
+    if face_budgets is None:allocation=maximum_pair_packing(caps,pairs)
+    else:
+        from .endpoint_budget import allocate
+        allocation=allocate(caps,[(max(0.,low-width),max(0.,high-width))for low,high in limits],allowance)
+    growth=dict(allocation['growth_mm'])
+    for side in('negative','positive'):
+        a,b=growth['0:'+side],growth['1:'+side]
+        growth['0:'+side]=min(a,b+allowance);growth['1:'+side]=min(b,a+allowance)
+    chosen=[width+growth[f'{i}:negative']+growth[f'{i}:positive']for i in(0,1)]
+    if any(v<bound[0]-1e-12 for v,bound in zip(chosen,limits)):
+        raise ValueError('RESIDUAL_10_PERCENT_FACE_BUDGETS_NEED_LONGER_CONTINUATION')
+    matched=[dict(normal=v['normal'].tolist(),
+        lower_mm=(v['center']-v['normal']*(width/2+growth[f'{i}:negative'])).tolist(),
+        upper_mm=(v['center']+v['normal']*(width/2+growth[f'{i}:positive'])).tolist())for i,v in enumerate(sections)]
+    body,recipe=build(points,width,target_width,ends=matched,maximum_side_slope=maximum_side_slope,direct_transition=True)
+    recipe.update(schema='t04-independent-residual-end-match/1',end_deviation=deviation,
+        adjoining_treated_widths_mm=treated,selected_end_widths_mm=chosen,
+        independent_end_intervals_mm=[list(v)for v in limits],ends_required_identical=False,
+        exact_frozen_sections_retained=False,group_interiors_changed=False,
+        optional_face_allocation=allocation,selected_face_growth_mm=growth,
+        transition_policy='ONE_FULL_SPAN_CUBIC; ZERO_END_WIDTH_DERIVATIVES')
+    return body,recipe

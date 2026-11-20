@@ -13,8 +13,23 @@ from .group_boundaries import SourceBoundaries
 from .group_profile import plan, transition_guard, route_join_plan
 
 
+def native_board_selection(native):
+    ids={v['path_id']for v in native['admitted']}
+    dispositions=[(d['path']['path_id'],d.get('disposition'))for d in native['paths']]
+    if (len(ids)!=len(native['admitted'])or len({k for k,_ in dispositions})!=len(dispositions)or
+            any(v not in('KEEP_FULLY_COVERED','ADMIT_COMPLETE_GERBER_ROUTE')for _,v in dispositions)or
+            {k for k,v in dispositions if v=='ADMIT_COMPLETE_GERBER_ROUTE'}!=ids):
+        raise ValueError('T04_GROUP_BOARD_DIAGNOSTIC_NATIVE_INVENTORY_UNACCOUNTED')
+    if not ids:raise ValueError('T04_GROUP_BOARD_DIAGNOSTIC_EMPTY_NATIVE_INVENTORY')
+    return sorted(ids),dispositions
+
+
 def run(store, scene, *, route_ids, settings, rule):
-    if rule['scope'] != 'BOUNDED' or not route_ids:
+    board_diagnostic=(rule['scope']=='FULL_BOARD_DIAGNOSTIC' and rule.get('full_board_diagnostic')is True)
+    if board_diagnostic:
+        if route_ids is not None or not rule.get('hybrid_components'):
+            raise ValueError('T04_GROUP_BOARD_DIAGNOSTIC_COMPLETE_NATIVE_SELECTION_REQUIRED')
+    elif rule['scope'] != 'BOUNDED' or not route_ids:
         raise ValueError('T04_GROUP_INCREMENT_BOUNDED_ONLY')
     started = perf_counter();loaded = p.operands(store, scene)
     rows, current, original = loaded
@@ -23,6 +38,8 @@ def run(store, scene, *, route_ids, settings, rule):
     roles, native, source_binding = prepare_or_load(rule['source_preparation'], store, scene, loaded, context.index)
     admission = project(native, roles)
     native_ids = {v['path_id'] for v in native['admitted']}
+    if board_diagnostic:
+        route_ids,dispositions=native_board_selection(native)
     if len(set(route_ids)) != len(route_ids) or not set(route_ids) <= native_ids:
         raise ValueError('T04_NATIVE_REQUESTED_PATH_CHANGED')
     native_paths = {v['path_id']: v['source_ids'] for v in admission['admitted'] if v['path_id'] in route_ids}
@@ -93,8 +110,22 @@ def run(store, scene, *, route_ids, settings, rule):
         result['phase_order']=['STRAIGHT_GROUPS','ARC_GROUPS','DEFAULT_SEARCH_AND_VERIFY']
         result['straight_priority']='FROZEN_BEFORE_ARC_AND_DEFAULT_GROWTH; NO_REVERSE_CAP_REDUCTION'
         result['corner_smoothing']=True
+        if rule.get('residual_end_matching'):
+            # Both flags are explicit opt-ins. Chain matching extends the old
+            # nominal-only reference path; it does not enable itself merely
+            # because a caller supplies residual_chain_matching alone.
+            result['residual_end_matching']=dict(deviation=rule.get('residual_end_deviation',.1))
+            if rule.get('residual_chain_matching'):result['residual_end_matching']['chain_matching']=True
+        if rule.get('wide_end_trimming'):result['wide_end_trimming']=True
         result['hybrid_components']=components(rows,current,original,roles,paths,result,settings,context,
                                                progress=rule.get('progress'),continuous=True,coherent_pose=True)
         result['continuous_source_profiles']=source_profiles(rows,paths,result)
         result['stage_construction_wall_s']=perf_counter()-started
+    if board_diagnostic:
+        result.update(scope='FULL_BOARD_DIAGNOSTIC',full_board_run=True,
+                      complete_native_route_inventory=True,
+                      native_route_dispositions=[dict(route_id=k,disposition=v,
+                          source_role=admission['source_role_dispositions'].get(k,'COVERED_NATIVE_KEEP'))
+                          for k,v in dispositions])
+        result['hybrid_components']['full_board_run']=True
     return result

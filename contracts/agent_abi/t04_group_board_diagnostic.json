@@ -1,0 +1,19 @@
+{
+  "schema": "t04-group-board-diagnostic-entry/1",
+  "entrypoint": "python -m src.gerber_u05.group_board_job",
+  "authorization": "Explicit owner request for full-board T04 testing",
+  "algorithm": "Accepted parallel-group construction and residual component treatment",
+  "qualification": "Fresh code-bound five and 64-route native components, exact copper and non-timing report/proof parity, tests and input hashes",
+  "selection": "All admitted native routes, with every covered KEEP and bulk-only disposition accounted for",
+  "route_filter_allowed": false,
+  "bounded_route_limit_applies": false,
+  "constructed_groups_audited": 0,
+  "failure": "Stop and retain the exclusive attempt; no retry or resume",
+  "output_scope": "FULL_BOARD_DIAGNOSTIC",
+  "full_board_run": true,
+  "publication_ready": false,
+  "output_scene_ref": null,
+  "complete_t04": false,
+  "replay": false,
+  "export": false
+}

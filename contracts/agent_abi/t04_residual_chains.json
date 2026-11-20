@@ -1,0 +1,86 @@
+{
+  "schema": "t04-residual-chain-capability/1",
+  "kind": "existing-python-capability-descriptor",
+  "entrypoint": "src.gerber_u05.group_stage.run",
+  "arguments": {
+    "store": "Existing accepted-T03 bound store",
+    "scene": "Hash-verified accepted-T03 scene",
+    "route_ids": "Explicit bounded qualified native route IDs",
+    "settings": "Existing verified T04 settings snapshot",
+    "rule": "Existing preparation paths and input binding plus explicit opt-in fields"
+  },
+  "opt_in": {
+    "scope": "BOUNDED",
+    "hybrid_components": true,
+    "residual_end_matching": true,
+    "residual_chain_matching": true,
+    "residual_end_deviation": 0.1
+  },
+  "compatibility": {
+    "default_enabled": false,
+    "new_cli": false,
+    "chain_flag_alone_enables_matching": false,
+    "end_matching_without_chain_flag": "Existing nominal-only per-occurrence reference",
+    "units": "mm",
+    "deviation_semantics": "Each registered end independently matches 90 to 100 percent of adjoining treated width at the default 0.1, intersected with source caps",
+    "unmatched_end": "May grow within its existing cap on the chain path",
+    "schedule": [1, 1, 1, 1, 2, 2, 2]
+  },
+  "sequence": [
+    "Existing straight groups",
+    "Existing arc groups",
+    "Existing default growth ladder",
+    "Maximal native residual chains, including already-grown sources",
+    "Original-rail fixed-neighbor and future-chain budgets",
+    "Integer width allocation and full-span cubic profiles",
+    "Exact grown-floor assembly, existing residual-addition and differential-pocket checks",
+    "Atomic source-recipe admission and accepted-operand update",
+    "Existing joint finishing and component checks"
+  ],
+  "report_path": "hybrid_components.residual_end_matching",
+  "report_schemas": [
+    "t04-residual-chain-end-match/1",
+    "t04-budgeted-endpoint-allocation/1",
+    "t04-component-pair-budget-packing/1"
+  ],
+  "shared_body_scope": "MAXIMAL_RESIDUAL_CHAIN_SHARED_CONTOUR",
+  "counter_semantics": {
+    "constructed_sources": "Sources assigned an admitted shared profile, including floor-only profiles",
+    "new_copper_sources": "Sources on admitted chains with positive added area",
+    "constructed_chains": "Admitted chains with positive added area",
+    "profiled_chains": "New-copper chains plus floor-only transition extensions"
+  },
+  "statuses": [
+    "CONSTRUCTED_FROM_MATCHED_CHAIN_ENDS",
+    "MATCHED_CHAIN_FLOOR; TRANSITIONS_EXTENDED",
+    "KEEP_PRECEDING_RESULT; CONSTRUCTION_LIMIT",
+    "KEEP_PRECEDING_RESULT; RESIDUAL_ADDITION_CONFLICT",
+    "KEEP_PRECEDING_RESULT; NEW_RESIDUAL_POCKET"
+  ],
+  "invariants": {
+    "group_interiors_fixed": true,
+    "constructed_groups_audited": 0,
+    "centerlines_changed_by_chain_matching": false,
+    "pre_joint_grown_floor_retained": true,
+    "optional_old_final_joint_patches_may_be_rebuilt": true,
+    "workspace_limits_control_batching_only": true,
+    "rejected_proposals_reserve_future_copper": false,
+    "r_tree_queries_in_chain_phase": 0,
+    "clearance_caps_and_existing_checks_weakened": false
+  },
+  "evidence_required": [
+    "Accepted-T03 source, scene, settings, schedule and audit hashes",
+    "T04-only source inventory and source-bound regression receipt",
+    "Fresh hard/five/64 actual-caller artifacts and complete timing",
+    "Exact source04 copper, allocation and non-timing decision/proof parity with declared source-binding exclusions",
+    "Unchanged raw group contours, coverage and schedule",
+    "Five-case and hard-joint visuals with group references and retained EDIT comparison",
+    "Existing component checks and unresolved diagnostic records reported separately",
+    "Owned temporary-file cleanup receipt"
+  ],
+  "acceptance_scope": "BOUNDED_COMPONENT_DIAGNOSTIC; NOT_COMPLETE_T04",
+  "full_board_run_authorized_by_descriptor": false,
+  "replay": false,
+  "export": false,
+  "manufacturing_acceptance": "NOT_ESTABLISHED"
+}

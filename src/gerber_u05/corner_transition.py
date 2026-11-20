@@ -11,6 +11,7 @@ import numpy as np
 from shapely import STRtree,to_wkb
 from shapely.geometry import LineString,Polygon,Point
 from shapely.ops import unary_union
+from shapely.errors import GEOSException
 from .ribbon_profile import frame
 from .smooth_transition import controls,value,tessellate
 from .finite_profile_union import polygonal
@@ -41,7 +42,12 @@ def oriented(desc,endpoint):
 
 
 def describe(rows,paths,straight_fields,frozen_straights,ribbons,arc_cores,*,supports=None):
-    """Reuse recorded fields, retaining maximal-arc true-end identities."""
+    """Reuse recorded fields and true ends of maximal arcs/residual chains.
+
+    Shared members expose their complete native span to joint construction.
+    Individual source occurrences still own custody intervals, but an internal
+    source seam cannot restart a taper or create a new corner treatment.
+    """
     result={}
     for s in sorted({s for ss in paths.values()for s in ss}):
         md=rows[s]['metadata'];w=md['minimum_caliper_mm']
@@ -57,8 +63,15 @@ def describe(rows,paths,straight_fields,frozen_straights,ribbons,arc_cores,*,sup
             d['real_endpoints']=[abs(t)<1e-10 or abs(t-v['member_length_mm'])<1e-10 for t in stations]
         elif s in frozen_straights:d['fields']=straight_fields[s]['pieces']
         elif s in ribbons:
+            recipe=ribbons[s]
+            if recipe.get('shared_residual_chain_id'):
+                forward=recipe['source_interval_mm']['forward'];d['points']=recipe['shared_chain_points_mm']if forward else recipe['shared_chain_points_mm'][::-1]
+                d['member_id']=recipe['shared_residual_chain_id'];d['real_endpoints']=recipe['real_endpoints']
+                proofs=recipe['shared_chain_side_field_proofs']
+                if not forward:proofs=[dict(q,controls=[c[::-1]for c in q['controls'][::-1]])for q in proofs[::-1]]
+            else:proofs=recipe['side_field_proofs']
             fields=[];first=0.
-            for proof in ribbons[s]['side_field_proofs']:
+            for proof in proofs:
                 length=proof['length_mm'];negative,positive=proof['controls']
                 fields.append(dict(first_mm=first,last_mm=first+length,
                                    controls=[[-w/2-v for v in negative],[w/2+v for v in positive]]));first+=length
@@ -179,7 +192,18 @@ def skin_fill(support,path,window,face_radius,*,radius=.05,maximum_depth=.005):
     This additive mask treats the two shoulders together, including a notch
     displaced slightly from the native endpoint. It never erodes a support.
     """
-    addition=spindle_addition(support,radius,window)
+    try:
+        addition=spindle_addition(support,radius,window)
+    except GEOSException:
+        # A valid source skin can produce a closing with an invalid boundary
+        # outside this joint's window. Restrict the generated mask before
+        # subtraction: (closed - support) & window == (closed & window) - support.
+        # Never repair, snap or subtract from the immutable support itself.
+        closed=support.buffer(radius,quad_segs=64).buffer(-radius,quad_segs=64)
+        local=polygonal(closed.intersection(window))
+        if not local.is_valid:raise
+        addition=polygonal(local.difference(support))
+        if not addition.is_valid:raise
     if support.interiors:
         addition=addition.difference(unary_union([Polygon(r)for r in support.interiors]))
     corridor=path.buffer(face_radius+ERROR_MM,quad_segs=128)

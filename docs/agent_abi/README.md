@@ -22,6 +22,19 @@ The [component workspace contract](T04_COMPONENT_WORKSPACE.md) documents shared
 strip reservations and accepted residual-scene updates for the qualified bounded
 caller, with exact accepted-copper parity and budget-safe candidate discovery.
 
+The opt-in [residual-chain extension](T04_RESIDUAL_CHAINS.md) includes
+already-grown residuals, shared source-rail budgets, atomic chain updates and
+longer joint transitions while leaving constructed group interiors fixed.
+Its [agent handoff](T04_RESIDUAL_CHAIN_HANDOFF.md) explains the mental model,
+qualification limits and safe continuation; the
+[capability descriptor](../../contracts/agent_abi/t04_residual_chains.json)
+records the existing Python boundary, flags and report semantics.
+
+The separately authorized [full-board construction diagnostic](T04_GROUP_BOARD_DIAGNOSTIC.md)
+uses that group caller after fresh code-bound five/64 readiness. It accounts for
+the complete native inventory, keeps construction and residual conditions, and
+does not publish a completed scene or enable replay/export.
+
 ## Historical CAM Agent ABI v0.1
 
 This is a project-local JSON boundary around the current CAM evidence. It gives a future coordinator a small, typed vocabulary for describing available capabilities, inspecting hash-bound records, composing a deterministic plan, comparing registered runs, and retrieving saved review evidence.

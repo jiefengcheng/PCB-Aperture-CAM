@@ -14,12 +14,90 @@ from shapely.ops import unary_union
 from shapely import to_wkb
 from .arc_membership import tangent
 from .corner_transition import oriented,new_pocket_regions
-from .finite_profile_union import polygonal,certified_union
+from .finite_profile_union import polygonal,certified_union,difference_for_window
 from .limiting_math import MARGIN
 from src.native_inventory import ERROR_MM
 from src.stage_abi.store import digest
 from src.component_voids import parts,holes
 from src.original_copper_owners import OriginalOwners
+
+
+def trim_wider_ends(rows,paths,bodies,descriptors,*,covered=(),source_cores=None,sites=None):
+    """Existing tangent cutter with optional wider shoulders released.
+
+    Only nominal source cores and covered copper are fixed in the native end
+    window. The old larger width is not an admission predicate. The mask is
+    applied to every same-route alias, including shared maximal arc bodies;
+    raw catalogue/group operands remain immutable construction evidence.
+    """
+    from .corner_transition import corners
+    from shapely.errors import GEOSException
+    started=perf_counter();covered=set(covered);working=dict(bodies);nodes=defaultdict(list)
+    reports=[];cuts={};targets=[];subtraction_methods={};protected_by_route={}
+    for route,sources in sorted(paths.items()):
+        for s in sources:
+            if s not in descriptors:continue
+            pts=rows[s]['metadata']['route_points_mm']
+            for end,pt in enumerate((pts[0],pts[-1])):
+                key=route,tuple(round(v,10)for v in pt)
+                if sites is not None and key not in sites:continue
+                if descriptors[s].get('real_endpoints',[True,True])[end]:nodes[key].append((s,end))
+    def subtract(s,mask):
+        candidate=polygonal(working[s].difference(mask));method='DIFFERENCE'
+        if not bodies[s].covers(candidate):
+            for left,right in ((candidate,bodies[s]),(bodies[s],candidate)):
+                clipped=polygonal(left.intersection(right))
+                if bodies[s].covers(clipped):candidate=clipped;method='DIFFERENCE_THEN_ORIGINAL_INTERSECTION';break
+        if not bodies[s].covers(candidate):raise ValueError('TRIM_SUBTRACTION_NOT_CONTAINED_IN_ORIGINAL')
+        subtraction_methods[s]=method
+        return candidate
+    for (route,pt),ends in sorted(nodes.items()):
+        if len(ends)!=2:continue
+        (a,ae),(b,be)=ends
+        if descriptors[a].get('member_id')is not None and descriptors[a].get('member_id')==descriptors[b].get('member_id'):continue
+        sources=paths[route]
+        if route not in protected_by_route:
+            nominal=[(source_cores or {}).get(s,LineString(descriptors[s]['points']).buffer(descriptors[s]['source_width_mm']/2+MARGIN,quad_segs=128))for s in sources if s in descriptors]
+            protected_by_route[route]=polygonal(unary_union([*nominal,*[bodies[s]for s in sources if s in covered]]))
+        protected=protected_by_route[route]
+        support=polygonal(unary_union([working[s]for s,_ in ends]))
+        widths={s:float(np.linalg.norm(np.subtract(*corners(dict(descriptors[s],support=working[s]),end)[0])))for s,end in ends}
+        narrow,ne=min(ends,key=lambda v:(widths[v[0]],v[0]));u=tangent(oriented(descriptors[narrow],ne),False)
+        window=Point(pt).buffer(max(.04,max(descriptors[s]['source_width_mm']for s,_ in ends)),quad_segs=64)
+        record=dict(route_id=route,endpoint_mm=list(pt),continuation_source_id=narrow,attempts=[])
+        try:
+            mask=face_cut(support,pt,u,window,protected)
+            if mask.is_empty:record['status']='NO_TANGENT_PROTRUSION';reports.append(record);continue
+            before=polygonal(unary_union([working[s]for s in sources]))
+            changed={s:subtract(s,mask)for s in sources if s not in covered and working[s].intersects(mask)}
+            after=polygonal(unary_union([changed.get(s,working[s])for s in sources]))
+            # Reuse the optional-tip treatment, including point-attached
+            # teeth. Never remove pre-existing islands or nominal material.
+            prior=parts(before);attached=unary_union([g for g in prior if g.intersection(protected).area>ERROR_MM**2])
+            tips=[g for g in parts(after)if g.intersection(protected).area<=ERROR_MM**2 and g.intersects(attached)]
+            if tips and all(g.area<=.005**2 and window.buffer(ERROR_MM).covers(g)for g in tips):
+                mask=polygonal(unary_union([mask,unary_union(tips).buffer(2*ERROR_MM,quad_segs=32).difference(protected)]))
+                changed={s:subtract(s,mask)for s in sources if s not in covered and working[s].intersects(mask)}
+                after=polygonal(unary_union([changed.get(s,working[s])for s in sources]))
+            pockets=new_pocket_regions(before,after)
+            passed=len(parts(after))<=len(parts(before))and len(OriginalOwners(after).owners)<=len(OriginalOwners(before).owners)and not pockets
+            record.update(status='TRIMMED'if passed else'KEEP_ROUTE; CONNECTION_OR_POCKET_LIMIT',new_pockets=len(pockets),
+                components_before=len(OriginalOwners(before).owners),components_after=len(OriginalOwners(after).owners))
+            if passed:
+                for s,g in changed.items():cuts[s]=polygonal(unary_union([cuts.get(s,Polygon()),mask]));working[s]=g
+                target=dict(route_id=route,endpoint_mm=list(pt),continuation_source_id=narrow,
+                    policy='EXISTING_FACE_TANGENT_OPENING; NO_OLD_LARGER_WIDTH_OBLIGATION',radius_mm=.05,maximum_depth_mm=.005)
+                targets.append(target)
+                record.update(removed_area_mm2=before.difference(after).area,cut_sha256=digest(to_wkb(mask)),cut_wkb_hex=to_wkb(mask).hex(),
+                    detached_optional_tips_removed=len(tips))
+        except (GEOSException,ValueError)as error:
+            record.update(status='KEEP_ROUTE; NUMERICAL_CONSTRUCTION_LIMIT',error=repr(error))
+        reports.append(record)
+    return working,cuts,dict(schema='t04-wider-end-subtractive-transition/1',reports=reports,targets=targets,
+        trimmed_joints=sum(r['status']=='TRIMMED'for r in reports),wall_s=perf_counter()-started,
+        old_larger_endpoint_is_target=False,wider_shoulder_is_fixed=False,
+        nominal_cores_protected=True,covered_copper_protected=True,group_interiors_outside_transition_unchanged=True,
+        subtraction_methods=subtraction_methods,constructed_groups_audited=0)
 
 
 def face_cut(support,center,u,window,protected,*,radius=.05,maximum_depth=.005):
@@ -34,9 +112,9 @@ def face_cut(support,center,u,window,protected,*,radius=.05,maximum_depth=.005):
         backing=Polygon([center+u*x+normal*y for x,y in[(-scale,-scale),(scale,-scale),(scale,0),(-scale,0)]])
         padded=unary_union([support.intersection(prep),backing])
         opened=padded.buffer(-radius,quad_segs=64).buffer(radius,quad_segs=64)
-        cut=polygonal(support.difference(opened).intersection(window).difference(protected))
+        cut=polygonal(difference_for_window(support,opened,window).intersection(window).difference(protected))
         # Deep shape changes and thinning are outside a finishing operation.
-        skin=support.difference(support.buffer(-maximum_depth,quad_segs=64))
+        skin=difference_for_window(support,support.buffer(-maximum_depth,quad_segs=64),window)
         cut=polygonal(cut.intersection(skin))
         # Ignore overlay slivers below the source kernel's reliable depth.
         # They can otherwise mint tiny disconnected faces and trigger a slow

@@ -18,6 +18,22 @@ def polygonal(g):
     return unary_union(parts) if parts else Polygon()
 
 
+def difference_for_window(left,right,window):
+    """Keep the original overlay; on GEOS failure solve only the declared domain.
+
+    Callers consume the result inside window. Buffer-generated masks can have
+    invalid boundaries elsewhere. Never snap/repair either operand or invent
+    an empty result: both restricted operands and the result must be valid.
+    """
+    try:return left.difference(right)
+    except GEOSException:
+        a=polygonal(left.intersection(window));b=polygonal(right.intersection(window))
+        if not a.is_valid or not b.is_valid:raise
+        result=polygonal(a.difference(b))
+        if not result.is_valid:raise
+        return result
+
+
 def certified_union(floor,extension):
     """Try exact ordered overlays; fallback is the entire unchanged saved floor."""
     from .profile_refinement import contains_floor

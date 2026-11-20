@@ -507,6 +507,23 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
     residual_wall=perf_counter()-tick
     material.close()
     if phase_started is not None:phases[-1]['wall_s']=perf_counter()-phase_started
+    end_match_report=None
+    if anchored and construction.get('residual_end_matching'):
+        match_options={}
+        if construction['residual_end_matching'].get('chain_matching'):
+            from .residual_chain_match import run as match_residual_ends
+            match_options['route_supports']={r:[g for lane,g in strips if lane.get('route_id')==r or set(lane['source_ids']).intersection(ss)]for r,ss in paths.items()}
+        else:
+            from .residual_end_match import run as match_residual_ends
+        matched,end_match_report=match_residual_ends(rows,material,paths,reports,endpoint_sections,
+            construction['source_width_targets_mm'],direct_straight|set(arc_cores),owner,
+            deviation=construction['residual_end_matching']['deviation'],
+            source_cores=references,
+            protected_domains=[]if pin.ACTIVE is None else[s.domain for s in pin.ACTIVE.slots],**match_options)
+        accepted_ribbons.update(matched)
+        phases.append(dict(phase='RESIDUAL_INDEPENDENT_END_MATCH',wall_s=end_match_report['wall_s']))
+        if progress:progress(dict(event='residual_end_match',constructed=end_match_report['constructed_sources'],
+            eligible=end_match_report['eligible_sources'],wall_s=end_match_report['wall_s']))
     corner_patches=[];corner_report=None;resolved_joint_sites=set()
     native_paths=construction.get('native_trace_source_ids_by_route',paths)
     if anchored and construction.get('corner_smoothing'):
@@ -552,35 +569,113 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
         finish_report['attachment']=attachment
         finish_report['wall_s']+=perf_counter()-floor_started
         phases[-1]['wall_s']=finish_report['wall_s']
-    tick=perf_counter();connections=[]
-    for r,ss in sorted(native_paths.items()):
-        baseline=unary_union([original[s] for s in ss])
-        attached=[g for lane,g in strips if lane.get('route_id')==r or set(lane['source_ids']).intersection(ss)]
-        assembled=unary_union([material[s]for s in ss if s in material]+attached+[v['geometry']for v in finished_patches if v['route_id']==r])
-        old_count=len(OriginalOwners(baseline).owners)
-        new_count=len(OriginalOwners(assembled).owners)
-        connections.append(dict(route_id=r,source_components=old_count,assembled_components=new_count,
-                                passed=new_count<=old_count))
-    connection_wall=perf_counter()-tick
-    final_material=dict(material)
-    for i,v in enumerate(finished_patches):final_material['joint:'+str(i)]=v['geometry']
-    functional_checks=changed_owner_checks(reference_material,final_material) if coherent_pose else None
-    bodies={}
+    # Connection custody must consume the exact per-source contours that are
+    # serialized below. Re-unioning a different grouping of raw operands can
+    # produce a different finite GEOS topology from the declared copper.
+    bodies={};source_bodies={}
+    def source_body(s):
+        attached=[g for lane,g in strips if s in lane['source_ids']]
+        return unary_union(([material[s]] if s in material else [])+attached+
+                           [v['geometry']for v in finished_patches if v['source_id']==s])
     if continuous:
         for s in sorted(used):
-            attached=[g for lane,g in strips if s in lane['source_ids']]
-            body=unary_union(([material[s]] if s in material else [])+attached+[v['geometry']for v in finished_patches if v['source_id']==s])
+            body=source_body(s);source_bodies[s]=body
             bodies[s]=dict(wkb_hex=to_wkb(body).hex(),source_segment_split=False,
                            connected_components=len(OriginalOwners(body).owners))
             if s in arc_cores and arc_cores[s].get('complete_member'):
                 bodies[s].update(body_scope='MAXIMAL_MEMBER_SHARED_CONTOUR',
                                  shared_arc_member_id=arc_cores[s]['member_id'],
                                  member_source_ids=arc_cores[s]['member_source_ids'])
+            if s in accepted_ribbons and accepted_ribbons[s].get('shared_residual_chain_id'):
+                recipe=accepted_ribbons[s]
+                bodies[s].update(body_scope='MAXIMAL_RESIDUAL_CHAIN_SHARED_CONTOUR',shared_residual_chain_id=recipe['shared_residual_chain_id'],member_source_ids=recipe['member_source_ids'])
             added_joints=sum(v['source_id']==s for v in corner_patches)
             if added_joints:
                 bodies[s]['joint_additions']=added_joints
                 if s in arc_cores and arc_cores[s].get('complete_member'):
                     bodies[s]['body_scope']='MAXIMAL_MEMBER_SHARED_CONTOUR_PLUS_JOINT_ADDITIONS'
+    tick=perf_counter();connections=[];contact_recovery=[]
+    for r,ss in sorted(native_paths.items()):
+        baseline=unary_union([original[s] for s in ss])
+        def assemble():
+            if continuous:
+                from .native_contact_support import assemble as declared_route
+                return declared_route(ss,source_bodies,material)
+            attached=[g for lane,g in strips if lane.get('route_id')==r or set(lane['source_ids']).intersection(ss)]
+            return unary_union([material[s]for s in ss if s in material]+attached+[v['geometry']for v in finished_patches if v['route_id']==r])
+        assembled=assemble();old_count=len(OriginalOwners(baseline).owners)
+        new_count=len(OriginalOwners(assembled).owners)
+        if anchored and continuous and new_count>old_count:
+            from .native_contact_support import proposals as native_contacts
+            from .corner_transition import new_pocket_regions
+            from itertools import chain
+            translations={s:profiles['segments'][s]['route_translation_mm']for s in ss if s in profiles['segments']}
+            # Unequal native ends retain their existing recovery order. A
+            # shared-end cap is considered only if the declared route still
+            # has an extra component, and must retain its entire source body.
+            candidates=chain(native_contacts(rows,ss,references,used,translations),
+                             native_contacts(rows,ss,references,used,translations,shared=True))
+            for proposal in candidates:
+                s=proposal['source_id'];cap=proposal['geometry']
+                if source_bodies[s].covers(cap):continue
+                joined=None
+                if proposal.get('shared_endpoint'):
+                    joined,_=certified_union(source_bodies[s],cap)
+                    if not joined.covers(source_bodies[s]):continue
+                    from .native_contact_support import assemble as declared_route
+                    trial=declared_route(ss,dict(source_bodies,**{s:joined}),material)
+                    if len(OriginalOwners(trial).owners)>=new_count:continue
+                q,_=additions_check(s,source_bodies[s],cap)
+                record={k:v for k,v in proposal.items()if k!='geometry'}
+                record.update(route_id=r,passed=q['passed'],failures=q['failures'],
+                              policy='EXACT_NATIVE_END_CAP; RESIDUAL_ADDITIONS_CHECKED',constructed_groups_audited=0)
+                contact_recovery.append(record)
+                if not q['passed']:continue
+                if joined is None:trial=unary_union([assembled,cap])
+                if new_pocket_regions(assembled,trial):
+                    record.update(passed=False,failures=[dict(reason='NATIVE_CONTACT_WOULD_ENCLOSE_NEW_POCKET')]);continue
+                patch=dict(source_id=s,route_id=r,endpoint_mm=proposal['endpoint_mm'],side='native_cap',
+                           geometry=cap,recipe=dict(policy=record['policy'],contact_sources=proposal['contact_sources']))
+                if finished_patches is corner_patches:finished_patches=list(finished_patches)
+                corner_patches.append(patch);finished_patches.append(patch)
+                key='joint:'+str(len(corner_patches)-1);joint_owners[key]=scope.ids[s];material[key]=cap
+                source_bodies[s]=source_body(s)if joined is None else joined
+                bodies[s].update(wkb_hex=to_wkb(source_bodies[s]).hex(),
+                                 connected_components=len(OriginalOwners(source_bodies[s]).owners),
+                                 joint_additions=sum(v['source_id']==s for v in corner_patches))
+                assembled=assemble();new_count=len(OriginalOwners(assembled).owners)
+                if new_count<=old_count:break
+        connections.append(dict(route_id=r,source_components=old_count,assembled_components=new_count,
+                                passed=new_count<=old_count))
+    connection_wall=perf_counter()-tick
+    if contact_recovery and corner_report is not None:corner_report['native_contact_recovery']=contact_recovery
+    final_material=dict(material)
+    for i,v in enumerate(finished_patches):final_material['joint:'+str(i)]=v['geometry']
+    wide_end_report=None;wide_end_cuts={}
+    if continuous and anchored and construction.get('wide_end_trimming'):
+        from .tangent_finish import trim_wider_ends
+        declared={s:source_bodies[s]if s in source_bodies else material[s]for ss in native_paths.values()for s in ss}
+        refined,wide_end_cuts,wide_end_report=trim_wider_ends(rows,native_paths,declared,descriptors,
+            covered=construction.get('covered_trace_projection',{}).get('covered_source_ids',[]),source_cores=references)
+        for s in wide_end_cuts:
+            source_bodies[s]=refined[s]
+            bodies[s].update(wkb_hex=to_wkb(refined[s]).hex(),connected_components=len(OriginalOwners(refined[s]).owners),
+                             wider_end_refined=True)
+        # Publish/check the exact refined contours. Raw strips and raw joint
+        # additions remain immutable construction evidence, not extra output
+        # operands that could restore a deliberately removed shoulder.
+        final_material={s:g for s,g in material.items()if s not in declared and not s.startswith(('group:','joint:'))}
+        final_material.update(refined)
+        from .native_contact_support import assemble as declared_route
+        for record in connections:
+            ss=native_paths[record['route_id']]
+            if not set(ss).intersection(wide_end_cuts):continue
+            joined=declared_route(ss,refined,material)
+            record.update(assembled_components=len(OriginalOwners(joined).owners))
+            record['passed']=record['assembled_components']<=record['source_components']
+        phases.append(dict(phase='WIDER_END_TRIM_TO_NARROWER_CONTINUATION',wall_s=wide_end_report['wall_s']))
+        if progress:progress(dict(event='wider_end_trimming',trimmed=wide_end_report['trimmed_joints'],wall_s=wide_end_report['wall_s']))
+    functional_checks=changed_owner_checks(reference_material,final_material) if coherent_pose else None
     # A rejected default joint cannot quietly remain a narrow KEEP next to a
     # widened frozen end. This is an interface/custody gate on defaults, not a
     # clearance audit of the constructed group.
@@ -620,8 +715,13 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                 covered_trace_copper_preserved=True,covered_trace_sources=covered_ids,
                 assembly_overlap_mm=2*ERROR_MM if anchored else 0.,
                 inherited_sided_ribbons=accepted_ribbons,
+                **(dict(residual_end_matching=end_match_report)if end_match_report is not None else{}),
                 corner_smoothing=corner_report,
                 tangent_finishing=finish_report,
+                **(dict(wider_end_trimming=wide_end_report,
+                    wider_end_cut_shapes={s:dict(wkb_hex=to_wkb(cut).hex())for s,cut in wide_end_cuts.items()},
+                    group_preservation_scope='RAW_CONSTRUCTION_OPERANDS; EMITTED_ENDS_REFINED_BY_EXPLICIT_SUBTRACTION',
+                    endpoint_obligation_scope='LEGACY_LARGER_END_RECORDS_ONLY; NOT_TRIMMING_ADMISSION')if wide_end_report is not None else{}),
                 tangent_cut_shapes={s:dict(wkb_hex=to_wkb(cut).hex())for s,cut in assembly_cuts.items()},
                 corner_fill_shapes=[dict(source_id=v['source_id'],route_id=v['route_id'],endpoint_mm=v['endpoint_mm'],side=v['side'],wkb_hex=to_wkb(v['geometry']).hex(),recipe=v['recipe'])for v in corner_patches],
                 finished_corner_fill_shapes=[dict(source_id=v['source_id'],route_id=v['route_id'],wkb_hex=to_wkb(v['geometry']).hex())for v in finished_patches],
