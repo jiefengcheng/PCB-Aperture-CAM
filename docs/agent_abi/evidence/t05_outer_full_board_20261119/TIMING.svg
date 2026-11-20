@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="550" viewBox="0 0 1040 550">
+<rect width="100%" height="100%" fill="#f6f8fb"/>
+<style>text{font-family:Arial,sans-serif;fill:#152739}.title{font-size:22px;font-weight:bold}.small{font-size:12px}</style>
+<text x="22" y="33" class="title">Full-board T05: one construction, certificate readers, no rebuilds</text>
+<text x="22" y="55" class="small">Disjoint wall-time allocation; setup and read-only qualification included. No fresh A/B reference arm.</text>
+<text x="22" y="90" class="small">Prepared setup / custody / copy / source freeze</text>
+<rect x="475" y="78" width="15.02" height="19" rx="3" fill="#5b718c"/>
+<text x="954" y="92" class="small">86.298s</text>
+<text x="22" y="133" class="small">Source construction body, including physical checks</text>
+<rect x="475" y="121" width="465.00" height="19" rx="3" fill="#186c8a"/>
+<text x="954" y="135" class="small">2672.084s</text>
+<text x="22" y="176" class="small">Inner completed-construction seal</text>
+<rect x="475" y="164" width="4.89" height="19" rx="3" fill="#6e5fa2"/>
+<text x="954" y="178" class="small">28.088s</text>
+<text x="22" y="219" class="small">Inner local-certificate verification</text>
+<rect x="475" y="207" width="2.52" height="19" rx="3" fill="#805a91"/>
+<text x="954" y="221" class="small">14.475s</text>
+<text x="22" y="262" class="small">Other worker setup, planning, source and closing guards</text>
+<rect x="475" y="250" width="60.55" height="19" rx="3" fill="#6e879b"/>
+<text x="954" y="264" class="small">347.959s</text>
+<text x="22" y="305" class="small">Outer completion publication / signing</text>
+<rect x="475" y="293" width="3.17" height="19" rx="3" fill="#b47d26"/>
+<text x="954" y="307" class="small">18.220s</text>
+<text x="22" y="348" class="small">Other constructor startup, source guards, I/O / shutdown</text>
+<rect x="475" y="336" width="0.65" height="19" rx="3" fill="#7e8b9a"/>
+<text x="954" y="350" class="small">3.722s</text>
+<text x="22" y="391" class="small">Two public readers in parallel, including startup / output</text>
+<rect x="475" y="379" width="3.22" height="19" rx="3" fill="#00847b"/>
+<text x="954" y="393" class="small">18.528s</text>
+<text x="22" y="434" class="small">Other coordinator startup, key / input checks, output / shutdown</text>
+<rect x="475" y="422" width="0.50" height="19" rx="3" fill="#8898a9"/>
+<text x="954" y="436" class="small">2.542s</text>
+<text x="22" y="477" class="small">Additional read-only proof / artifact / geometry qualification</text>
+<rect x="475" y="465" width="7.36" height="19" rx="3" fill="#b47d26"/>
+<text x="954" y="479" class="small">42.287s</text>
+<text x="22" y="528" font-size="16" font-weight="bold">Complete including read-only qualification: 3234.202s (53.903 minutes)</text>
+</svg>

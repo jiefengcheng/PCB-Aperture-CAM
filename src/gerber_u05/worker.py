@@ -46,6 +46,8 @@ def compute(run,name):
   if name=='t05':
    from .t05_pin_check import require_parts
   value=dict(value,output_scene_ref=store.put_json('scene',scene),pin_separation=(require_parts(pin.ACTIVE,material.values(),scope=name+'_complete')if name=='t05'else pin.ACTIVE.require(p.unary_union(list(material.values())),scope=name+'_complete')))
+ from src.t05_outer_observer import worker_completed
+ worker_completed(run,name,value)
  return value
 
 def main():

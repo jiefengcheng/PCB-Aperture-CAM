@@ -8,7 +8,7 @@ from src.u05_board.coverage import CoverageAdapter
 from src.u05_board.junctions import parameters
 from src.u05_board.attachment_export import obligation_check
 
-def fixture(tmp_path):
+def fixture(tmp_path, *, max_seconds=120):
     from src.u05_board.store import OverlayStore
     old=ArtifactStore(tmp_path/'old');store=OverlayStore(tmp_path/'runtime',old.root);rows=[]
     def add(sid,kind,g,**metadata):
@@ -19,7 +19,7 @@ def fixture(tmp_path):
     attachments=[dict(id='J:attachment:'+str(i),land_id=l,reference_land_id=l,required_reference=True) for i,l in enumerate(['left','right'])]
     add('view','trace',trace,native_route_ref={'qualified':True},reference_source_ids=['physical'],land_ids=['left','right'],attachments=attachments,reference_id='J',reference_status='GROWN')
     scene=dict(source_sha256='a'*64,frame='native-kicad-mm',units='mm',layer='F.Cu',viewport_mm=[-3,-3,3,3],objects=rows,lineage=[],findings=[],acceptance={'owner':'PENDING_USER'})
-    adapter=CoverageAdapter(box(-2,-2,2,2));policy=dict(stage='t05',parameters=parameters());bounds=dict(max_source_objects=20,max_targets=2,max_evaluations=8,max_output_bytes=10000000,max_seconds=120)
+    adapter=CoverageAdapter(box(-2,-2,2,2));policy=dict(stage='t05',parameters=parameters());bounds=dict(max_source_objects=20,max_targets=2,max_evaluations=8,max_output_bytes=10000000,max_seconds=max_seconds)
     details=adapter.plan(store,scene,policy,dict(stage='t05',scene_ref=store.put_json('scene',scene),source_ids=['view']),bounds)
     plan=dict(stage='t05',scene_ref=store.put_json('scene',scene),policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details)
     return store,scene,policy,plan,adapter
@@ -32,8 +32,9 @@ def test_every_attachment_has_full_exported_extent_not_some_nearby_copper():
     with pytest.raises(ValueError,match='EXTENT_MISSING'):obligation_check(required,before,[],already=True)
     assert obligation_check(box(.9,.2,1,.8),before,[],already=True)['passed']
 
-def test_local_t05_views_preserve_complete_land_set_and_treat_both(tmp_path):
-    store,scene,policy,plan,a=fixture(tmp_path);assert plan['details']['routes'][0]['land_ids']==['left','right']
+@pytest.mark.parametrize("max_seconds", [120, None])
+def test_local_t05_views_preserve_complete_land_set_and_treat_both(tmp_path,max_seconds):
+    store,scene,policy,plan,a=fixture(tmp_path,max_seconds=max_seconds);assert plan['details']['routes'][0]['land_ids']==['left','right']
     c=a.run(store,scene,policy,plan,lambda _:None)
     assert c['coverage']['grown']==1 and len(c['decisions'][0]['attachment_outcomes'])==2
     assert all(o['status']=='TREATED_VERIFIED' for o in c['decisions'][0]['attachment_outcomes'])

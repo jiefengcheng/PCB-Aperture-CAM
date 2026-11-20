@@ -1,0 +1,17 @@
+{
+  "schema": "pcb-cam/t05-outer-certified-acceptance/1",
+  "activation": "EXPLICIT_OPT_IN_LEGACY_T05_CHECKPOINT; client full-board qualification pending terminal receipt",
+  "scope": "one fresh completed legacy T05 worker; connected and post-junction completion excluded",
+  "issuer": "original source constructor, original physical checker and all final worker guards",
+  "authority": "coordinator-created ephemeral P-256 private capability by anonymous inherited FD to constructor only",
+  "public_anchor": "caller/coordinator pinned, never certificate supplied",
+  "signature": "ECDSA_P256_SHA256_NATIVE/1",
+  "inner_authentication": "actual live process-local HMAC checked before public root signing; inner keys never exported",
+  "acceptance": ["signed completed-worker binding", "frozen source, producer and policy hashes", "all actual worker-read dependencies", "actual stored stage and output artifacts", "exact patch-in-region containment", "authenticated original window witness at unchanged 1e-12 mm2 policy", "complete ordered accepted-prefix chain", "complete decisions including KEEP", "original source/attachment/scope/pin/void/assembly guards at issuance"],
+  "outer_forbidden": ["construction", "route or curve fitting", "source reparse", "physical clearance checking", "whole-scene composition"],
+  "memo_limit_bytes": 536870912,
+  "outer_journal_reserve_bytes": 1048576,
+  "read_only_consumer_metadata_limit_bytes": 67108864,
+  "reconstruction": "NOT_PERFORMED; repeated-build determinism is a separate audit mode",
+  "not_established": ["independent implementation review", "unseen-source or client full-board outer acceptance qualification", "electrical or manufacturing acceptance", "connected finishing", "portable acceptance of old unsigned/HMAC-only artifacts"]
+}

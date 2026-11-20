@@ -1,0 +1,50 @@
+{
+  "complete_execution_including_prepared_setup_seconds": 3191.91561283404,
+  "complete_with_readonly_qualification_seconds": 3234.2024890840985,
+  "construction_process_wall_seconds": 3084.547226749826,
+  "disjoint_rows": [
+    {
+      "phase": "Prepared setup / custody / copy / source freeze",
+      "seconds": 86.29820983391255
+    },
+    {
+      "phase": "Source construction body, including physical checks",
+      "seconds": 2672.0840645000003
+    },
+    {
+      "phase": "Inner completed-construction seal",
+      "seconds": 28.087978458032012
+    },
+    {
+      "phase": "Inner local-certificate verification",
+      "seconds": 14.474709291011095
+    },
+    {
+      "phase": "Other worker setup, planning, source and closing guards",
+      "seconds": 347.95850179295667
+    },
+    {
+      "phase": "Outer completion publication / signing",
+      "seconds": 18.220169541891664
+    },
+    {
+      "phase": "Other constructor startup, source guards, I/O / shutdown",
+      "seconds": 3.721803165934489
+    },
+    {
+      "phase": "Two public readers in parallel, including startup / output",
+      "seconds": 18.528234458062798
+    },
+    {
+      "phase": "Other coordinator startup, key / input checks, output / shutdown",
+      "seconds": 2.5419417922385037
+    },
+    {
+      "phase": "Additional read-only proof / artifact / geometry qualification",
+      "seconds": 42.28687625005841
+    }
+  ],
+  "extra_readonly_qualification_wall_seconds": 42.28687625005841,
+  "note": "Profiled worker subphases are inclusive observations allocated once; nested blend/check/ledger timings must not be added again.",
+  "paired_public_reader_wall_seconds": 18.528234458062798
+}

@@ -6,7 +6,7 @@ from src.growth_void_remedy_v09 import surface_parts
 from shapely import STRtree
 from .checking_envelopes import constraint
 
-def initialize(store,binding,scene=None):
+def initialize(store,binding,scene=None,*,parsed_cache=None):
  from src.t04_width_fence import restore as restore_width_fence
  restore_width_fence(store,scene)
  from src.t02_shared_gaps import restore as restore_shared_gaps
@@ -27,7 +27,9 @@ def initialize(store,binding,scene=None):
  if scene is not None:
   context.register_scene(store,scene)
   if functional is not None:functional.register_scene(store,scene)
-  if len(scene['lineage'])>1:reserve_prior(context,store)
+  if len(scene['lineage'])>1:
+   if parsed_cache is None:reserve_prior(context,store)
+   else:reserve_prior(context,store,parsed_cache=parsed_cache)
  from .checking_envelopes import initialize as initialize_checking
  initialize_checking(store,binding,scene,physical=context,functional=functional)
  return context
@@ -144,14 +146,16 @@ def run_t03(store,scene,binding,t01):
  return dict(output_scene_ref=store.put_json('scene',scene),records=records,full_source_clearance=proof,summary=dict(trace_occurrences=len(records),pairs=len(proof['pairs']),moved=0,disposition='NO_CHANGE_REQUIRED'))
 
 
-def reserve_prior(ctx,store):
+def reserve_prior(ctx,store,*,parsed_cache=None):
  if ctx.reservation_sha256 is not None:return
  from pathlib import Path
  from . import legacy_export as e
  run=store.root.parent;reference=p.load(run/'REFERENCE_BINDING.json');path=run/'reference/top.art.gbr';body=path.read_bytes()
  if p.digest(body)!=reference['generated_sha256']or reference['source_sha256']!=p.load(run/'source.json')['source_ref']['sha256']:raise ValueError('FRESH_REFERENCE_BINDING_CHANGED')
- parsed=e.parse(body);source_objects=p.load(run/'source.json')['source_objects']
- pieces=[p.affine_scale(p.source_profile.object_geometry(o)[0],1,-1,origin=(0,0))for o in parsed.objects[source_objects:]]
+ # Reuse only decoded plotting commands; all downstream geometry and checks run.
+ objects=e.parse(body).objects if parsed_cache is None else parsed_cache.objects(body,e.parse)
+ source_objects=p.load(run/'source.json')['source_objects']
+ pieces=[p.affine_scale(p.source_profile.object_geometry(o)[0],1,-1,origin=(0,0))for o in objects[source_objects:]]
  whole=ctx.index.source.union(p.unary_union(pieces))
  from src.pin_separation import require as require_pin
  require_pin(whole,finished=True,scope='retained_prior')

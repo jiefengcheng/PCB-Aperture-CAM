@@ -92,6 +92,8 @@ class ArtifactStore:
     data=stream.read()
   except OSError as error:raise StageABIError('ARTIFACT_MISSING_OR_UNSAFE',aid) from error
   if digest(data)!=reference['sha256']:raise StageABIError('ARTIFACT_CORRUPTED',aid)
+  from src.t05_outer_observer import read_observed
+  read_observed(self.root,reference)
   return data
  def get_json(self, reference, *, kind=None):
   try:result=json.loads(self.get(reference,kind=kind))

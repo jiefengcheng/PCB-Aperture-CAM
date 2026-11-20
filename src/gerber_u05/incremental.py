@@ -70,7 +70,10 @@ def stages_before(through):
  return retained_stages(ORDER[:ORDER.index(through)+1])
 
 
-def prepare(prefix,job,coordinator=None,*,through='t02'):
+def prepare(prefix,job,coordinator=None,*,through='t02',shared_performance=False,t05_certificates=False):
+ if shared_performance and through!='t04':
+  raise ValueError('SHARED_PERFORMANCE_REQUIRES_FRESH_T02_AND_T05')
+ if t05_certificates and through!='t04':raise ValueError('T05_CERTIFICATES_REQUIRE_T04_PREFIX')
  from src.pcb_data_abi.input_directory import collect_raw
  prefix=Path(prefix);old_job=prefix.parent;original=load(prefix/'PRODUCER_BINDING.json');state=load(old_job/'STATUS.current.json');inventory=load(prefix/'input_inventory.json')
  if original['profile']!=CONNECTED:raise ValueError('CONNECTED_PREFIX_PROFILE_REQUIRED')
@@ -158,6 +161,12 @@ def prepare(prefix,job,coordinator=None,*,through='t02'):
  p.save(run/'input_inventory.json',inventory);p.save(job/'INPUT_INVENTORY.json',inventory)
  if fresh_assembly:
   source_assembly.attach(run,job/'assembly')
+ if shared_performance:
+  from .performance import capture
+  capture(run)
+ if t05_certificates:
+  from .performance import capture_t05
+  capture_t05(run)
  seal(run,CONNECTED)
  from .prefix import verify
  verify(run)
@@ -175,8 +184,10 @@ def continue_stages(coordinator,run,through):
    verify(coordinator.job/'legacy',run)
 
 def main():
- parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('reference','t03','t04','t02','t05'),default='t02');args=parser.parse_args()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--prefix-run',required=True,type=Path);parser.add_argument('--through-stage',choices=('reference','t03','t04','t02','t05'),default='t02');parser.add_argument('--shared-performance',action='store_true',help='Share the parsed reference across fresh T02 and T05 after a qualified T04 prefix');parser.add_argument('--t05-certificates',action='store_true',help='Opt in to fresh T05 physical issuance and dedicated consumption (512 MiB)');args=parser.parse_args()
  if not args.prefix_run.is_absolute():parser.error('prefix run must be an explicit absolute path')
+ if args.shared_performance and args.through_stage!='t04':parser.error('--shared-performance requires --through-stage t04')
+ if args.t05_certificates and args.through_stage!='t04':parser.error('--t05-certificates requires --through-stage t04')
  work=configure();parent=work/'operator_routes/gerber_u05_incremental';parent.mkdir(parents=True,exist_ok=True);job=parent/(datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex);job.mkdir();coordinator=Coordinator(job);coordinator.state.update(source_only=False,qualification_mode='INCREMENTAL_REUSED_NATIVE_PREFIX')
  try:
   from tools.preflight import verify_manifest
@@ -184,7 +195,7 @@ def main():
   for name,expected in manifest.items():
    if sha(p.ROOT/'assets/starter'/name)!=expected:raise ValueError('IMMUTABLE_ASSET_HASH_CHANGED:'+name)
   p.save(job/'ASSET_MANIFEST_PROOF.json',dict(status='PASS',files=count,starter_files=len(manifest)))
-  run,binding=prepare(args.prefix_run,job,coordinator,through=args.through_stage);coordinator.state['reused_prefix']=dict(operations=binding['retained_operation_count'],stages=binding['reused_stages'],binding_sha256=sha(run/'REUSED_PREFIX_BINDING.json'));install_read_fence(job);verify_sources(run)
+  run,binding=prepare(args.prefix_run,job,coordinator,through=args.through_stage,shared_performance=args.shared_performance,t05_certificates=args.t05_certificates);coordinator.state['reused_prefix']=dict(operations=binding['retained_operation_count'],stages=binding['reused_stages'],binding_sha256=sha(run/'REUSED_PREFIX_BINDING.json'));install_read_fence(job);verify_sources(run)
   continue_stages(coordinator,run,args.through_stage)
   coordinator.execute(run,'export',['construct'],module='exporter');coordinator.execute(run,'export',['1','2'],module='exporter')
   coordinator.execute(run,'controls',['all'],module='controls');coordinator.execute(run,'remaining_defects',['all'],module='remaining_defects');coordinator.execute(run,'render',['all'],module='render')

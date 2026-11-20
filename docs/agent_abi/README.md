@@ -88,3 +88,7 @@ are added; existing v0.1 run/verify availability is unchanged.
 | [T05](../crop_dynamic_tasks/t05_architecture_notes/T05_AGENT_ABI_PROPOSAL.md) | Local additive junction/spindle treatment | Design only |
 
 The [common composition design](../crop_dynamic_tasks/AGENT_STAGE_COMPOSITION.md) separates module ownership and explicit scene handoffs. These proposals did not extend the v0.1 dispatcher. Their version-1 implementation now lives in `src/stage_abi/` and is documented above; the historical proposal envelopes are not the implemented schemas.
+
+## T05 certificate-consuming acceptance
+
+See [T05 source construction and public certificate consumption](T05_OUTER_ACCEPTANCE.md) for the isolated opt-in path and [retained full-board receipts](evidence/t05_outer_full_board_20261119/README.md). Developing T04 and its future joined qualification remain separate.

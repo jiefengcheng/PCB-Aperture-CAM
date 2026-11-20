@@ -21,6 +21,7 @@ SNAPSHOT_BYTES = 192 * 1024**2
 MEMO_BYTES = 32 * 1024**2
 MEMO_ENTRIES = 8192
 SIGNATURE_ENTRIES = 32768
+MEASUREMENT_ENTRIES = 65536
 
 
 def geometry_checksum(shape):
@@ -229,12 +230,31 @@ class GeometryEntry:
     value: object
     sha256: str
     weight: int
+    # Optional proof for a Shapely 2 immutable output, established only after
+    # hashing its complete WKB/SRID/precision. Weak identity cannot keep a dead
+    # object alive or confuse a later object that reuses its Python address.
+    identity: object = None
+    identity_proof: str = None
 
 
 @dataclass(frozen=True)
 class MeasurementEntry:
     value: bool
     sha256: str
+    weight: int
+
+
+@dataclass(frozen=True)
+class DistanceEntry:
+    value: float
+    sha256: str
+    weight: int
+
+
+@dataclass(frozen=True)
+class IndexedGeometryEntry:
+    value: tuple
+    checksums: tuple
     weight: int
 
 
@@ -246,16 +266,32 @@ class GeometryMemo:
     count is bounded independently. Eviction means recomputation, never a waiver.
     """
     def __init__(self, binding, *, limit=MEMO_BYTES, entries=MEMO_ENTRIES,
-                 signatures=SIGNATURE_ENTRIES):
+                 signatures=SIGNATURE_ENTRIES, reuse_immutable_outputs=False,
+                 measurement_bytes=0, measurement_entries=MEASUREMENT_ENTRIES):
         self.binding = binding
         self.limit = budget(limit, 'memo')
+        # Optional fixed partition of the SAME total memo budget. Large blend
+        # polygons cannot evict these small exact owner/obstacle measurements,
+        # and a scan of scalar pairs cannot evict expensive blend geometry.
+        # Zero preserves the original single-LRU behavior for other callers.
+        self.measurement_limit = budget(measurement_bytes, 'measurement')
+        if self.measurement_limit > self.limit:
+            raise ValueError('LOADED_GEOMETRY_MEASUREMENT_BUDGET')
+        self.geometry_limit = self.limit - self.measurement_limit
+        self.max_measurements = budget(measurement_entries, 'measurement-entries')
         self.max_entries = budget(entries, 'entries')
         self.max_signatures = budget(signatures, 'signatures')
         self.values = OrderedDict()
+        self.measurements = OrderedDict()
         self.signatures = OrderedDict()
         self.weight = 0
+        self.measurement_weight = 0
+        self.measurement_peak = 0
         self.peak = 0
         self.stats = Counter()
+        if type(reuse_immutable_outputs) is not bool:
+            raise ValueError('LOADED_GEOMETRY_INVALID_IDENTITY_REUSE')
+        self.reuse_immutable_outputs = reuse_immutable_outputs
 
     def token(self, shape):
         sid = id(shape)
@@ -280,7 +316,25 @@ class GeometryMemo:
         old = self.values.get(key)
         self.stats['requests'] += 1
         if old is not None:
-            if geometry_checksum(old.value) != old.sha256:
+            # This opt-in path reuses only an output's content fingerprint,
+            # never a safety verdict. Shapely 2 geometry/precision/SRID are
+            # immutable: the same live object still has the bytes hashed at
+            # insertion. A replaced object takes the original full-WKB check,
+            # including when its geometry appears equal. Expected-hash damage
+            # is detected independently before trusting an identity hit.
+            identity = getattr(old, 'identity', None)
+            if getattr(self, 'reuse_immutable_outputs', False) and identity is not None:
+                if digest(old.sha256.encode()) != old.identity_proof:
+                    raise ValueError('LOADED_GEOMETRY_CACHE_CORRUPTED')
+                if identity() is old.value:
+                    actual = old.sha256
+                    self.stats['output_identity_hits'] += 1
+                else:
+                    actual = geometry_checksum(old.value)
+                    self.stats['output_identity_fallbacks'] += 1
+            else:
+                actual = geometry_checksum(old.value)
+            if actual != old.sha256:
                 raise ValueError('LOADED_GEOMETRY_CACHE_CORRUPTED')
             self.values.move_to_end(key)
             self.stats['hits'] += 1
@@ -291,15 +345,61 @@ class GeometryMemo:
         self.stats['builds_' + name] += 1
         blob = to_wkb(value)
         weight = 2 * len(blob) + 512 + len(repr(key))
-        if weight <= self.limit and self.max_entries:
-            while self.values and (self.weight + weight > self.limit or
+        if weight <= self.geometry_limit and self.max_entries:
+            while self.values and (self.weight + weight > self.geometry_limit or
                                    len(self.values) >= self.max_entries):
                 _, entry = self.values.popitem(last=False)
                 self.weight -= entry.weight
                 self.stats['evictions'] += 1
-            self.values[key] = GeometryEntry(value, geometry_checksum(value), weight)
+            checksum = geometry_checksum(value)
+            # The existing conservative per-entry overhead covers these two
+            # small proof fields; no second cache or larger byte cap is added.
+            self.values[key] = GeometryEntry(value, checksum, weight,
+                weakref.ref(value) if getattr(self, 'reuse_immutable_outputs', False) else None,
+                digest(checksum.encode()) if getattr(self, 'reuse_immutable_outputs', False) else None)
             self.weight += weight
-            self.peak = max(self.peak, self.weight)
+            self.peak = max(self.peak, self.weight + self.measurement_weight)
+        else:
+            self.stats['not_retained'] += 1
+        return value
+
+    def construct_indexed(self, name, operands, parameters, fn):
+        """Reuse an ordered sparse tuple of (index, geometry) constructions.
+
+        Keep the individual geometries intact: packing them into a collection
+        and extracting them can alter precision/SRID metadata. The caller binds
+        its index/domain context in parameters. Each hit rechecks every index
+        and geometry checksum; this stores neither predicates nor verdicts.
+        Tuples share the existing LRU's byte and entry limits with other shapes.
+        """
+        key = (self.binding, 'indexed:' + name,
+               tuple(self.token(g) for g in operands), parameters)
+        old = self.values.get(key)
+        self.stats['requests'] += 1
+        if old is not None:
+            if (not isinstance(old, IndexedGeometryEntry)
+                    or tuple((i, geometry_checksum(g)) for i, g in old.value) != old.checksums):
+                raise ValueError('LOADED_GEOMETRY_INDEXED_CACHE_CORRUPTED')
+            self.values.move_to_end(key)
+            self.stats['hits'] += 1
+            self.stats['hits_' + name] += 1
+            return old.value
+        value = tuple(fn())
+        if any(type(i) is not int or i < 0 for i, _ in value):
+            raise ValueError('LOADED_GEOMETRY_INVALID_INDEX')
+        self.stats['builds'] += 1
+        self.stats['builds_' + name] += 1
+        weight = 512 + len(repr(key)) + sum(2 * len(to_wkb(g)) + 640 for _, g in value)
+        if weight <= self.geometry_limit and self.max_entries:
+            while self.values and (self.weight + weight > self.geometry_limit or
+                                   len(self.values) >= self.max_entries):
+                _, entry = self.values.popitem(last=False)
+                self.weight -= entry.weight
+                self.stats['evictions'] += 1
+            checksums = tuple((i, geometry_checksum(g)) for i, g in value)
+            self.values[key] = IndexedGeometryEntry(value, checksums, weight)
+            self.weight += weight
+            self.peak = max(self.peak, self.weight + self.measurement_weight)
         else:
             self.stats['not_retained'] += 1
         return value
@@ -309,27 +409,83 @@ class GeometryMemo:
         # Retain its scalar witness instead of a large, otherwise unused polygon.
         key = (self.binding, 'measurement:difference_empty',
                (self.token(left), self.token(right)), ())
-        old = self.values.get(key)
+        # Keys contain BOTH ordered immutable WKB/SRID/precision fingerprints
+        # and the execution binding. Changed copper therefore takes a new key.
+        # Retain only the exact Boolean measurement, never clearance, ownership
+        # permission, connectivity or stage PASS/FAIL. The caller still applies
+        # its current rule and emits the complete ordered proof for every pair.
+        separate = bool(self.measurement_limit)
+        values = self.measurements if separate else self.values
+        old = values.get(key)
         self.stats['measurement_requests'] += 1
         if old is not None:
             if not isinstance(old, MeasurementEntry) or type(old.value) is not bool or digest(str(old.value).encode()) != old.sha256:
                 raise ValueError('LOADED_GEOMETRY_MEASUREMENT_CORRUPTED')
-            self.values.move_to_end(key)
+            values.move_to_end(key)
             self.stats['measurement_hits'] += 1
             return old.value
-        value = bool(left.difference(right).is_empty)
+        # GEOS returns the nonempty left operand for strictly separated
+        # floating-precision envelopes. For this Boolean measurement we can
+        # prove that without cloning its polygon. A touching, empty, or
+        # fixed-grid operand still uses the original overlay path.
+        lx0, ly0, lx1, ly1 = left.bounds
+        rx0, ry0, rx1, ry1 = right.bounds
+        separated = lx1 < rx0 or rx1 < lx0 or ly1 < ry0 or ry1 < ly0
+        if (separated and get_precision(left) == 0 and get_precision(right) == 0
+                and left.geom_type in ('Polygon', 'MultiPolygon')
+                and right.geom_type in ('Polygon', 'MultiPolygon')):
+            value = False
+            self.stats['measurement_disjoint_bounds'] += 1
+        else:
+            value = bool(left.difference(right).is_empty)
         self.stats['measurement_builds'] += 1
         weight = 512 + len(repr(key))
-        if weight <= self.limit and self.max_entries:
-            while self.values and (self.weight + weight > self.limit or len(self.values) >= self.max_entries):
-                _, entry = self.values.popitem(last=False)
-                self.weight -= entry.weight
-                self.stats['evictions'] += 1
-            self.values[key] = MeasurementEntry(value, digest(str(value).encode()), weight)
-            self.weight += weight
-            self.peak = max(self.peak, self.weight)
+        limit = self.measurement_limit if separate else self.geometry_limit
+        entries = self.max_measurements if separate else self.max_entries
+        retained = self.measurement_weight if separate else self.weight
+        if weight <= limit and entries:
+            while values and (retained + weight > limit or len(values) >= entries):
+                _, entry = values.popitem(last=False)
+                retained -= entry.weight
+                self.stats['measurement_evictions' if separate else 'evictions'] += 1
+            values[key] = MeasurementEntry(value, digest(str(value).encode()), weight)
+            retained += weight
+            if separate:
+                self.measurement_weight = retained
+                self.measurement_peak = max(self.measurement_peak, retained)
+            else:
+                self.weight = retained
+            self.peak = max(self.peak, self.weight + self.measurement_weight)
         else:
             self.stats['not_retained'] += 1
+        return value
+
+    def exact_distance(self, left, right):
+        """Reuse an exact GEOS scalar, never a clearance verdict or threshold.
+
+        The ordered operands use the same WKB/SRID/precision/context tokens as
+        geometry entries. IEEE-754 bytes authenticate the finite scalar. Shared
+        byte/entry limits and the normal eviction/close lifetime remain in force.
+        Callers must still emit every witness and compare the current policy.
+        """
+        import math
+        key=(self.binding,'measurement:geos-distance/1',(self.token(left),self.token(right)),())
+        old=self.values.get(key)
+        if old is not None:
+            if (not isinstance(old,DistanceEntry)or type(old.value)is not float
+                or not math.isfinite(old.value)or old.value<0
+                or digest(struct.pack('!d',old.value))!=old.sha256):
+                raise ValueError('LOADED_GEOMETRY_DISTANCE_CORRUPTED')
+            self.values.move_to_end(key);self.stats['distance_measurement_hits']+=1
+            return old.value
+        value=left.distance(right);self.stats['distance_measurement_builds']+=1
+        if type(value)is not float or not math.isfinite(value)or value<0:return value
+        weight=512+len(repr(key))
+        if weight<=self.geometry_limit and self.max_entries:
+            while self.values and(self.weight+weight>self.geometry_limit or len(self.values)>=self.max_entries):
+                _,entry=self.values.popitem(last=False);self.weight-=entry.weight;self.stats['evictions']+=1
+            self.values[key]=DistanceEntry(value,digest(struct.pack('!d',value)),weight)
+            self.weight+=weight;self.peak=max(self.peak,self.weight+self.measurement_weight)
         return value
 
     def buffer(self, shape, radius, *, quad_segs=64):
@@ -349,12 +505,20 @@ class GeometryMemo:
         return self.construct('symmetric_difference', [left, right], (), lambda: left.symmetric_difference(right))
 
     def diagnostics(self):
-        return dict(self.stats, resident_estimated_bytes=self.weight,
+        return dict(self.stats, resident_estimated_bytes=self.weight + self.measurement_weight,
                     peak_estimated_bytes=self.peak, limit_bytes=self.limit,
                     resident_entries=len(self.values), entry_limit=self.max_entries,
+                    geometry_limit_bytes=self.geometry_limit,
+                    measurement_limit_bytes=self.measurement_limit,
+                    measurement_resident_entries=len(self.measurements),
+                    measurement_entry_limit=self.max_measurements,
+                    measurement_resident_estimated_bytes=self.measurement_weight,
+                    measurement_peak_estimated_bytes=self.measurement_peak,
                     signature_entries=len(self.signatures), signature_limit=self.max_signatures)
 
     def close(self):
         self.values.clear()
+        self.measurements.clear()
         self.signatures.clear()
         self.weight = 0
+        self.measurement_weight = 0

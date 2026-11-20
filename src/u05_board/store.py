@@ -26,6 +26,8 @@ class ReadOnlyStore(ArtifactStore):
                 body=stream.read()
         except OSError as error:raise StageABIError('ARTIFACT_MISSING_OR_UNSAFE',aid) from error
         if digest(body)!=reference['sha256']:raise StageABIError('ARTIFACT_CORRUPTED',aid)
+        from src.t05_outer_observer import read_observed
+        read_observed(self.root,reference)
         return body
 
 class OverlayStore(ArtifactStore):

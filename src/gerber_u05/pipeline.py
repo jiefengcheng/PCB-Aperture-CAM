@@ -313,8 +313,10 @@ def run_t05(store,scene,t04):
     else:
         from .t05_grid_selection import NativeGridCoverageAdapter
         adapter=NativeGridCoverageAdapter(viewport,store,scene,load(store.root.parent/'source.json'))
+    from .performance import configure_t05_adapter
+    configure_t05_adapter(store.root.parent,adapter)
     try:
-        details=adapter.plan(store,prepared,policy,dict(stage='t05',scene_ref=scene_ref,source_ids=targets),bounds(prepared))
+        details=adapter.plan(store,prepared,policy,dict(stage='t05',scene_ref=scene_ref,source_ids=targets),dict(bounds(prepared),max_seconds=None))
         plan=dict(stage='t05',scene_ref=scene_ref,policy_ref=store.put_json('policy',policy),implementation=adapter.describe()['implementation'],details=details)
         candidate=adapter.run(store,prepared,policy,plan,lambda _:None)
         check=adapter.verify(store,prepared,policy,plan,candidate,dict(scope='complete-source-and-all-patches'),lambda _:None)
@@ -326,7 +328,12 @@ def run_t05(store,scene,t04):
 def stage(run,name,*,recorded=None):
     if recorded is not None and name!='t02':raise ValueError('FIXED_CANDIDATE_RECONSTRUCTION_STAGE_UNSUPPORTED')
     store=Store(run/'runtime');binding=load(run/'source.json');order=['t01','t03','t04','t02','t05'];index=order.index(name);scene_ref=binding['scene_ref']if index==0 else load(run/(order[index-1]+'.json'))['output_scene_ref'];scene=validate_scene(store,scene_ref)
-    initialize(store,binding,scene)
+    from .performance import parsed_reference_cache
+    parsed_cache=parsed_reference_cache(run,name)
+    if parsed_cache is None:
+        initialize(store,binding,scene)
+    else:
+        initialize(store,binding,scene,parsed_cache=parsed_cache)
     source=store.get(binding['source_ref'],kind='gerber-source')
     if (run/'source_snapshot/top.art.gbr').read_bytes()!=source or canonical(build_source(store,source))!=canonical(binding):raise ValueError('GERBER_SOURCE_BINDING_OR_CALIPER_CHANGED')
     if name=='t01':result=run_t01(store,scene,binding)

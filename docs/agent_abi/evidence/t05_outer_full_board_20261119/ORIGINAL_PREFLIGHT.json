@@ -1,0 +1,42 @@
+{
+  "inputs": {
+    "contracts/agent_abi/performance_v5/t05_outer_acceptance.json": "ca33665edf493598854dd06b12648dfcbd085abe3d651ee30bbbd0bbbe3e8126",
+    "docs/agent_abi/T05_OUTER_ACCEPTANCE.md": "46908ace48aba6f77e0fadd97c4b3c9ff898e0298545a3d769a3d08b0d9ce8a3",
+    "src/gerber_u05/guard.py": "a1b5719e9eebac85172bc92d21b8c826db8d43995a9d6c20889158699ab0eead",
+    "src/gerber_u05/worker.py": "753e7f26a92648217f62d2ecbe235ba80fa7101ef128bb7176f78bc6e9596b1b",
+    "src/stage_abi/store.py": "f1a77155065e94a4c75b269514f011e2018e4deb25b57385113b453758861be9",
+    "src/t05_outer_acceptance.py": "dcee058316101c541dee24af4d0817b7ab4f477caadeb0a5453ffbde89582fd4",
+    "src/t05_outer_crypto.py": "b6be2d8859e7f82d82460e1ccedeb865c8976af01c14e5a0bd7876545f2804c3",
+    "src/t05_outer_observer.py": "43e4ff4bbab93cafd42687112c7ea80b55901360bd7240315cd467f7607df157",
+    "src/t05_stage_certificate_consumer.py": "1c619466a7c899db9b95d280b339339297e59f7c1f4bdf809d96f0c8a9c3c2eb",
+    "src/u05_board/coverage.py": "2a4fdf5e2fd133329651012c065621b46ad66bef83bdbd41a575530ca6098e6a",
+    "src/u05_board/store.py": "a9fcf5ee77f03e3088e2bda4bfc5a49ca7b7414f8a08abfd77b5a9c4620459ac",
+    "tests/test_t05_outer_acceptance.py": "f76a71fcaf9d127126b3c923ec735a581993d02c195ca80fbe4d667f3a3eff7c",
+    "tests/test_t05_outer_checkpoint.py": "9520870dd82e72ece0d4c32e0fb7101055e2b0e5adf4bf97663afebc27b5c721",
+    "tools/Run_T05_Certified_Checkpoint.command": "d6d0750283875f1dcbe91b6bd315edd736d27cc6b68852f9b0e06046a446d424",
+    "tools/t05_certified_checkpoint.py": "0254f39a5b55e6e484cb8a12916132a4d6cb49ef6925c555b74a6dd5d059f8c5",
+    "tools/t05_outer_acceptance.py": "9e8efdfb73d001ba30431c0781a8bbd4d2786655bb7ff91187c98958bd496f01"
+  },
+  "logs": {
+    "PREFLIGHT.junit.xml": "920ee8759dc31cd797bd99cc071957f90a9d6fc25dfd0801a6f246c52298e0e6",
+    "PREFLIGHT.log": "5cdd31a827299d817d1a43a7f03473859836f2412e332d9c3719654ec04529a0"
+  },
+  "memo_bytes": 536870912,
+  "qualification": "same160 bounded proof + separate bank-independent kernel; full-board pending",
+  "qualified_components_byte_identical": {
+    "src/gerber_u05/worker.py": true,
+    "src/stage_abi/store.py": true,
+    "src/t05_outer_acceptance.py": true,
+    "src/t05_outer_crypto.py": true,
+    "src/t05_outer_observer.py": true,
+    "src/t05_stage_certificate_consumer.py": true,
+    "src/u05_board/coverage.py": true,
+    "src/u05_board/store.py": true,
+    "tests/test_t05_outer_acceptance.py": true,
+    "tools/t05_outer_acceptance.py": true
+  },
+  "safety": "all original issuance/final guards retained; no reader reconstruction",
+  "seconds": 16.086,
+  "status": "PASS_INTEGRATED_PREFLIGHT",
+  "tests": 133
+}

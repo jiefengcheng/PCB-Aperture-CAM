@@ -4,12 +4,12 @@ import gc
 import weakref
 
 import pytest
-from shapely import to_wkb
-from shapely.geometry import box, Point, LineString
+from shapely import set_precision, to_wkb
+from shapely.geometry import box, Point, LineString, Polygon
 
 from src.stage_abi.loaded_geometry import GeometryMemo, GeometrySnapshot
 from src.stage_abi.store import ArtifactStore
-from src.junction_spindle_blend import spindle_blend, check_spindle
+from src.junction_spindle_blend import spindle_addition, spindle_blend, check_spindle
 
 
 def test_constructed_geometry_is_exact_and_operand_order_is_preserved():
@@ -46,6 +46,37 @@ def test_measurement_uses_both_current_operands_and_is_not_a_permission():
     assert memo.difference_empty(a, b)
     assert not memo.difference_empty(a, box(0, 0, .5, .5))
     assert not memo.difference_empty(b, a)
+
+
+def test_disjoint_bounds_measurement_keeps_touching_and_fixed_grid_overlay():
+    memo = GeometryMemo('floating and fixed copper')
+    left = Point(0, 0).buffer(1, quad_segs=128)
+    right = box(1.000001, -1, 2, 1)
+    touching = box(1, -1, 2, 1)
+    fixed = set_precision(right, .0000001)
+    rest = [touching, fixed, Polygon(), box(-1, -1, 1, 1)]
+    assert memo.difference_empty(left, right) is False
+    assert memo.difference_empty(left, right) is False
+    assert memo.stats['measurement_hits'] == 1
+    for a, b in [(left, g) for g in rest] + [(Polygon(), left)]:
+        assert memo.difference_empty(a, b) == a.difference(b).is_empty
+    assert memo.stats['measurement_disjoint_bounds'] == 1
+
+
+def test_spindle_addition_reuse_rechecks_changed_window_and_radius():
+    owner = Point(0, 0).buffer(.2).union(LineString([(0, 0), (1, 0)]).buffer(.025))
+    window = box(-1, -1, 2, 1)
+    smaller_window = box(.15, 0, .23, .3)
+    memo = GeometryMemo('spindle')
+    cases = [(owner, .15, window), (owner, .15, window),
+             (owner, .10, window), (owner, .15, smaller_window),
+             (owner.buffer(.001), .15, window)]
+    for copper, radius, scope in cases:
+        expected = (copper.buffer(radius, quad_segs=64)
+                    .buffer(-radius, quad_segs=64).difference(copper).intersection(scope))
+        actual = spindle_addition(copper, radius, scope, geometry=memo)
+        assert to_wkb(actual) == to_wkb(expected)
+    assert memo.stats['hits_spindle-addition'] == 1
 
 
 def test_geometry_and_scalar_cache_corruption_reject_without_recomputation():
