@@ -6,7 +6,31 @@ from src.bounded_route_geometry import VersionedGeometry
 from . import pipeline as p
 
 
-def run(store,scene,*,route_ids=None,settings=None):
+def run(store,scene,*,route_ids=None,settings=None,edge_restore_ids=None,edge_policy=None,limiting_rule=None):
+    """Apply requested edge preparation once, before admission and indexing.
+
+    The integrated entry is qualified only for explicit bounded route probes.
+    Its receipt travels with the output; additive export/replay is not allowed
+    to silently restore authorized removed source copper.
+    """
+    if limiting_rule is not None:
+        if edge_restore_ids is not None or edge_policy is not None:
+            raise ValueError('T04_PROFILE_EDGE_MODES_MUST_BE_SEPARATE')
+        from .constructed_width import run as constructed
+        return constructed(store,scene,route_ids=route_ids,settings=settings,rule=limiting_rule)
+    from .t04_edge_entry import prepared, reject_unqualified_predecessor
+    reject_unqualified_predecessor(scene)
+    if edge_restore_ids is None:
+        if edge_policy is not None:raise ValueError('T04_EDGE_POLICY_WITHOUT_FEATURE_REQUEST')
+        return _run(store,scene,route_ids=route_ids,settings=settings)
+    if not route_ids:raise ValueError('T04_EDGE_ENTRY_BOUNDED_ROUTE_IDS_REQUIRED')
+    if settings is None:settings=read_snapshot(store.root.parent/SNAPSHOT_NAME)
+    with prepared(store,scene,edge_restore_ids,settings,policy=edge_policy) as (entry,receipt):
+        result=_run(store,entry,route_ids=route_ids,settings=settings)
+        return dict(result,edge_preparation=receipt)
+
+
+def _run(store,scene,*,route_ids=None,settings=None):
     rows,current,original=p.operands(store,scene);admission=p.width_admission(store,scene)
     all_paths={v['path_id']:v for v in admission['admitted']}
     if route_ids is not None and (len(set(route_ids))!=len(route_ids) or not set(route_ids)<=set(all_paths)):

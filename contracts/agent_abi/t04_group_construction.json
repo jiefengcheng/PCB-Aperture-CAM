@@ -1,0 +1,53 @@
+{
+  "schema": "t04-direct-group-construction-entry/1",
+  "implementation_status": "BOUNDED_GROUP_INTERIOR_INCREMENT; HYBRID_ASSEMBLY_PENDING",
+  "entrypoint": "tools/Run_T04_Profile.command construct-groups",
+  "prepared_algorithm": "parallel-groups",
+  "input": "Accepted T03 with original source, scene, policies, native source-role projection and catalogue bindings",
+  "saved_t04_copper_dependency": false,
+  "objective": "Maximum summed width growth within the supplied face and position bounds; no proportional fairness objective",
+  "allocation_certificate": "Integer bounded-flow feasibility and equal generalized minimum-cut capacity",
+  "parameters": {
+    "minimum_shared_length_mm": 0.05,
+    "required_construction_gap_mm": 0.040128,
+    "maximum_source_width_factor": 1.5,
+    "maximum_total_width_increase_mm": 0.03,
+    "maximum_group_profile_midline_shift_mm": 0.025,
+    "width_deviation_between_consecutive_segments": 0.25,
+    "whole_route_width_deviation_limit": null,
+    "provisional_transition_length_mm": 0.05,
+    "transition_outlier_extra_reach_mm": 0.11,
+    "allocation_quantum_mm": 0.000000001
+  },
+  "maximal_members": {
+    "noise_fraction": 0.01,
+    "straight_metric": "Whole-member transverse direction span, abs(sin(angle difference))",
+    "unequal_lengths_allowed": true,
+    "overlap_is_member_domain": false,
+    "source_seam_restarts_transition": false,
+    "reference_refit": false,
+    "selection": "Existing primary-cohort selector, descending summed full-member length",
+    "extended_member_clearance_authority": "Pending category-specific corridor construction"
+  },
+  "smooth_fields": {
+    "interpolation": "Cubic Bernstein side fields; use the available free interval",
+    "provisional_maximum_side_slope": 0.25,
+    "internal_source_seams": "Exact polynomial restriction preserves values and tangents",
+    "paired_corridor_certificate": "All degree-elevated affine gap control budgets satisfied",
+    "smoothness_implies_clearance": false
+  },
+  "source_edges": "Fresh ideal straight boundaries; immutable source identity retained separately",
+  "neighbours": "Source supports compiled before allocation; other mutable occurrences reserve their possible displacement/growth",
+  "source_framing_reuse": "Instance-bound exact input key, at most 256 tables; an eviction recomputes, never omits work",
+  "current_output": ["Group-interior strip recipes", "Local consecutive-segment width caps", "Explicit junction/residual work items"],
+  "geometry_candidate_search": false,
+  "final_native_geometry_audit": "NOT_RUN_BY_DESIGN",
+  "engineering_verification": "Input hashes, numeric constraints, flow/cut certificates and bounded regression tests",
+  "output_scene_ref": null,
+  "publication_ready": false,
+  "full_board": false,
+  "replay": false,
+  "export": false,
+  "pending": ["Cross-group and route-join assembly", "Editable bulk with protected connections", "Existing growth/verification on unresolved portions"],
+  "historical_checked_profile": "Retained separately; its native reports and qualification do not qualify this entry"
+}

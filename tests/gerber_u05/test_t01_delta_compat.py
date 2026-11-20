@@ -1,11 +1,11 @@
-from pathlib import Path
+from tests.gerber_u05.producer_fixture import historical_source, T01_REVISION
 import hashlib
 import pytest
 from src.gerber_u05.t01_delta_compat import BEFORE,AFTER,known,prove
 
 
 def sources():
- after=(Path(__file__).resolve().parents[2]/'src/gerber_u05/component_stages.py').read_text()
+ after=historical_source('src/gerber_u05/component_stages.py', T01_REVISION).decode()
  start=after.index('def t01_land_checker(');end=after.index('def run_t01(',start)
  before=(after[:start]+after[end:]).replace(' checker=t01_land_checker(lands,fixed)\n',' checker=p.PreparedLandScene(lands,fixed)\n')
  return before,after

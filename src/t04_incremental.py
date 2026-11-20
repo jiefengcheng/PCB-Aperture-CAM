@@ -15,8 +15,9 @@ from src.u03_board.assembly import CandidateTrace, CandidateSnapshot
 
 
 class OwnerDependencies:
-    def __init__(self, parent, context, route_ids, maximum_padding, scope):
+    def __init__(self, parent, context, route_ids, maximum_padding, scope, route_bounds=None):
         self.context = context; self.binding = context.binding; self.scope = scope
+        self.original_route_geometries={s:parent.original[s] for s in route_ids}
         self.before = context.project(parent.original)
         self.owners = {s:context.owner(s,parent.original[s]) for s in route_ids}
         self.ids = sorted(self.before)
@@ -24,7 +25,8 @@ class OwnerDependencies:
         self.foreign = {o:constraint(context,o,self.before[o]) for o in self.ids}
         self.tree = STRtree([self.foreign[o] for o in self.ids])
         self.route_ids = list(route_ids)
-        self.route_tree = STRtree([box(*parent.original[s].bounds).buffer(maximum_padding[s]).envelope
+        self.route_tree = STRtree([box(*route_bounds[s]) if route_bounds is not None else
+                                  box(*parent.original[s].bounds).buffer(maximum_padding[s]).envelope
                                   for s in route_ids])
         self.gap = parent.required_new_copper_gap()
         self.epsilon = parent.contract.comparison_epsilon_mm
@@ -91,7 +93,8 @@ class OwnerDependencies:
 
 
 class IncrementalRoutes:
-    def __init__(self,baseline,fixed,build,settings,source_widths,*,checking_headroom_mm=0.):
+    def __init__(self,baseline,fixed,build,settings,source_widths,*,checking_headroom_mm=0.,resume=False,
+                 prepare_single_route=False,retained_union_bytes=0,reuse_accepted_pairs=False,route_bounds=None):
         from src.prepared_width_scene import PreparedWidthScene
         from src import component_clearance as cc, source_channel_scope as functional, pin_separation as pin
         self.parent=PreparedWidthScene(baseline,fixed);self.build=build
@@ -99,33 +102,65 @@ class IncrementalRoutes:
         self.current={r['id']:r['original']for r in baseline};self.versions=dict.fromkeys(self.order,1.)
         self.rows=[CandidateTrace(s,self.current[s],self.current[s],self.parent.widths[s])for s in self.order]
         self.pending=None;self.constructed_routes=self.accepted_updates=0
+        self.prepare_single_route = prepare_single_route
+        self.route_bounds=route_bounds
+        if route_bounds is not None and (set(route_bounds)!=set(self.order) or any(not box(*route_bounds[r]).covers(self.current[r].envelope) for r in self.order)):
+            raise ValueError('T04_COMPLETE_PROFILE_ROUTE_BOUNDS_REQUIRED')
         self.owner_checks=[];self.pin=pin.Prepared(self.parent,pin.ACTIVE)if pin.ACTIVE is not None else None
         from src.native_inventory import ERROR_MM
         padding={s:float(source_widths[s]*(settings.maximum_factor-1)/2)+ERROR_MM+checking_headroom_mm+self.parent.contract.comparison_epsilon_mm for s in self.order}
         if cc.ACTIVE is not None:
-            self.owner_checks.append(OwnerDependencies(self.parent,cc.ACTIVE,self.order,padding,'PHYSICAL_ORIGINAL_OWNER'))
+            self.owner_checks.append(OwnerDependencies(self.parent,cc.ACTIVE,self.order,padding,'PHYSICAL_ORIGINAL_OWNER',route_bounds))
         if functional.ACTIVE is not None:
-            self.owner_checks.append(OwnerDependencies(self.parent,functional.ACTIVE,self.order,padding,'FUNCTIONAL_SOURCE_CHANNEL'))
+            self.owner_checks.append(OwnerDependencies(self.parent,functional.ACTIVE,self.order,padding,'FUNCTIONAL_SOURCE_CHANNEL',route_bounds))
         # A functional owner proof supplements the legacy primitive predicate;
         # it cannot replace it when the physical-owner profile is inactive.
         self.fallback=None
+        if resume or retained_union_bytes:raise ValueError('T04_INCREMENTAL_FRESH_ENTRY_REQUIRED')
         if cc.ACTIVE is None:
             from src.u03_board.dependency import DependencyWidthScene
-            self.fallback=DependencyWidthScene(baseline,fixed)
-        self.baseline_check=self.parent.check(CandidateSnapshot(tuple(self.rows)),fail_fast=True)
-        if not self.baseline_check['passed']:raise ValueError('T04_QUALIFIED_STAGE_ENTRY_REQUIRED')
+            self.fallback=DependencyWidthScene(baseline,fixed,reuse_accepted_pairs=reuse_accepted_pairs)
+        if not resume:
+            self.baseline_check=self.parent.check(CandidateSnapshot(tuple(self.rows)),fail_fast=True)
+            if not self.baseline_check['passed']:raise ValueError('T04_QUALIFIED_STAGE_ENTRY_REQUIRED')
+            if reuse_accepted_pairs:self.seed_fallback(self.baseline_check)
+
+    def seed_fallback(self, report):
+        if self.fallback is not None:
+            self.fallback.seed_from_full_check(self.rows, report)
+            # These caches contain geometry used by the same physical predicate.
+            self.fallback.visible_cache.update(self.parent.fixed_visibility)
+            self.fallback.visible_cache.update(self.parent.trace_visibility)
+            self.fallback.added_cache.update(self.parent.addition_visibility)
+            self.fallback.incremental_ports.update({key:value[0] for key,value in self.parent.ports.items()})
 
     def evaluate(self,sid,factor):
+        """Evaluate a trial without publishing its provisional clearance state."""
+        self.pending=None
         candidate=self.build(sid,factor,True);self.constructed_routes+=1
         self.parent.valid_geometry(candidate)
+        if self.route_bounds is not None and not box(*self.route_bounds[sid]).covers(candidate.envelope):
+            raise ValueError('T04_PROFILE_CANDIDATE_OUTSIDE_PREPARED_BOUNDS')
         if not candidate.covers(self.parent.original[sid]):
             return dict(passed=False,failures=[dict(trace_id=sid,reason='ORIGINAL_TRACE_CORE_REMOVED')])
-        rows=list(self.rows);rows[self.positions[sid]]=CandidateTrace(sid,self.parent.original[sid],candidate,self.parent.widths[sid])
+        proposal=CandidateTrace(sid,self.parent.original[sid],candidate,self.parent.widths[sid])
+        rows=list(self.rows);rows[self.positions[sid]]=proposal
         snapshot=CandidateSnapshot(tuple(rows));checks=[]
         for check in self.owner_checks:
             checks.append(check.check(sid,factor,candidate,self.current,self.versions))
             if not checks[-1]['passed']:break
-        if self.fallback is not None:checks.append(self.fallback.check(snapshot,fail_fast=True))
+        fallback_state=None
+        if self.fallback is not None:
+            prior=self.fallback.proof_state()
+            try:
+                if self.prepare_single_route:
+                    checks.append(self.fallback._check_single_route(snapshot, proposal))
+                else:
+                    checks.append(self.fallback.check(snapshot,fail_fast=True))
+                fallback_state=self.fallback.proof_state()
+            finally:
+                # A physical pass is provisional until every T04 gate passes.
+                self.fallback.restore_proof_state(prior)
         if self.owner_checks and all(q['passed']for q in checks):
             from src.t04_topology import check as topology_check
             checks.append(topology_check(self.owner_checks[-1],sid,factor,candidate,self.current,self.versions))
@@ -135,12 +170,15 @@ class IncrementalRoutes:
             if not q['passed'] and not q.get('failures'):
                 failures.extend(dict(reason='PIN_SEPARATION',pin_check=r)for r in q.get('checks',[])if not r['passed'])
         result=dict(passed=all(q['passed']for q in checks),failures=failures,checks=checks)
-        self.pending=(sid,factor,candidate,rows)if result['passed']else None
+        self.pending=(sid,factor,candidate,rows,fallback_state)if result['passed']else None
         return result
 
     def accept(self,sid,factor):
+        """Publish the exact trial only after all proposal gates have passed."""
         if self.pending is None or self.pending[:2]!=(sid,factor):raise ValueError('T04_CHECKED_ROUTE_PROPOSAL_REQUIRED')
-        _,_,candidate,rows=self.pending;self.current[sid]=candidate;self.versions[sid]=factor
+        _,_,candidate,rows,fallback_state=self.pending
+        if self.fallback is not None:self.fallback.restore_proof_state(fallback_state)
+        self.current[sid]=candidate;self.versions[sid]=factor
         self.rows=rows;self.pending=None;self.accepted_updates+=1
 
     def diagnostics(self):

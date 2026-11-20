@@ -59,14 +59,22 @@ def save(path,value):
     if not write_new(path,body):path.write_bytes(body)
 def load(path):return json.loads(Path(path).read_bytes())
 def bounds(scene):return dict(max_source_objects=max(10000,len(scene['objects'])*3),max_targets=max(10000,len(scene['objects'])*3),max_evaluations=200000,max_output_bytes=1024**3,max_seconds=3600)
-def offset_part(core,minimum_width,factor,envelope=False,*,extra_envelope_mm=0.):
+def offset_part(core,minimum_width,factor,envelope=False,*,extra_envelope_mm=0.,memo=None):
     if type(factor)not in(float,int)or not math.isfinite(factor)or not 1<=factor<=1.5 or not math.isfinite(minimum_width)or minimum_width<=0:raise ValueError('SOURCE_OFFSET_SCALAR_OR_WIDTH_INVALID')
     if extra_envelope_mm not in(0.,2*POLYGON_TOLERANCE_MM)or(extra_envelope_mm and not envelope):raise ValueError('CHECKING_ONLY_NATIVE_HEADROOM_REQUIRED')
     delta=minimum_width*(factor-1)/2;q=2*steps(minimum_width*.5/2)
-    g=core if factor==1 else core.buffer(delta+(ERROR_MM+extra_envelope_mm if envelope else 0.),quad_segs=q)
+    radius=delta+(ERROR_MM+extra_envelope_mm if envelope else 0.)
+    build=lambda:core.buffer(radius,quad_segs=q)
+    g=core if factor==1 else (build()if memo is None else memo.construct('source-width-offset',[core],(radius,q),build))
     if not g.is_valid or not g.covers(core):raise ValueError('SOURCE_OFFSET_CORE_OR_GEOMETRY_CHANGED')
     return g
 def operands(store,scene):
+    if any('translated_route_alias' in r['metadata'] for r in scene['objects']):
+        from .translated_profile import resolve_operands
+        return resolve_operands(store,scene)
+    if any('removed_bulk_source' in r['metadata'] for r in scene['objects']):
+        from .source_tombstones import operands as removed_operands
+        return removed_operands(store,scene)
     rows={r['source_id']:r for r in scene['objects']};current={s:geometry(store,r['geometry_ref'])for s,r in rows.items()};original={s:geometry(store,r['original_ref'])for s,r in rows.items()};return rows,current,original
 def artifact_scene(store,scene,current,stage,metadata=None,additions=()):
     objects=[]
@@ -108,7 +116,7 @@ def build_source(store,raw):
             if not effective[i].equals(all_shapes[i]):raise ValueError('CLEAR_CLIPPED_TRACE_NEEDS_SEPARATE_FAMILY')
             kind='stroke';ends=[[o.x1,-o.y1],[o.x2,-o.y2]]
             if isinstance(o,go.Arc):
-                points,_=source_profile.arc_points((o.x1,o.y1),(o.x2,o.y2),(o.x1+o.cx,o.y1+o.cy),o.clockwise);points=[[x,-y]for x,y in points]
+                points,_=source_profile.arc_points((o.x1,o.y1),(o.x2,o.y2),(o.x1+o.cx,o.y1+o.cy),o.clockwise,grid=source_profile.source_arc_grid(o));points=[[x,-y]for x,y in points]
             else:points=ends
             md.update(route_points_mm=points,endpoints_decimal_mm=[[format(x,'.12f'),format(y,'.12f')]for x,y in ends],minimum_caliper_mm=minimum,source_port_width_mm=width,aperture_family=family,route_kind='arc'if isinstance(o,go.Arc)else'segment')
             from .rectangle_terminals import qualify as qualify_rectangle_terminal
@@ -212,8 +220,9 @@ def run_t03(store,scene,binding,t01):
     if any(not p['passed']or not p['original_contact_preserved']for r in records for p in r['pairs']):raise ValueError('GERBER_T03_MOVEMENT_NOT_QUALIFIED')
     return dict(output_scene_ref=store.put_json('scene',scene),records=records,summary=dict(trace_occurrences=len(records),pairs=sum(len(r['pairs'])for r in records),moved=0,disposition='NO_CHANGE_REQUIRED'))
 
-def width_admission(store,scene):
-    rows,current,original=operands(store,scene);native=[];families=collections.defaultdict(list)
+def width_admission(store,scene,*,loaded=None):
+    rows,current,original=operands(store,scene) if loaded is None else loaded
+    native=[];families=collections.defaultdict(list)
     from src import source_channel_scope
     frame_ids=source_channel_scope.ACTIVE.frame_ids if source_channel_scope.ACTIVE is not None else frozenset()
     for sid,r in rows.items():
@@ -244,9 +253,9 @@ def width_admission(store,scene):
     if sorted(all_members)!=sorted(n['source_id']for n in native)or len(set(all_members))!=len(all_members):raise ValueError('GERBER_TRACE_PARTITION_INCOMPLETE')
     return dict(paths=decisions,admitted=admitted,groups=groups,relations=relations,blocked_relations=blocked,trace_occurrences=len(native))
 
-def run_t04(store,scene):
+def run_t04(store,scene,*,route_ids=None,edge_restore_ids=None,edge_policy=None,limiting_rule=None):
     from .ladder_width import run
-    return run(store,scene)
+    return run(store,scene,route_ids=route_ids,edge_restore_ids=edge_restore_ids,edge_policy=edge_policy,limiting_rule=limiting_rule)
 
 
 def empty_t02(store,scene):
@@ -261,6 +270,8 @@ def empty_t02(store,scene):
     return dict(output_scene_ref=scene_ref,candidate=candidate,plan=plan,verification=proof,summary=dict(rectangles=0,grown=0,contained_keep=0,inclusive=0))
 
 def run_t02(store,scene,*,recorded=None):
+    from .t04_edge_entry import reject_unqualified_predecessor
+    reject_unqualified_predecessor(scene)
     ids=[r['source_id']for r in scene['objects']if t02_land(r)]
     if not ids:return empty_t02(store,scene)
     from src import component_clearance as ownership
@@ -285,6 +296,8 @@ def run_t02(store,scene,*,recorded=None):
     finally:ownership.ACTIVE=previous_context
 
 def run_t05(store,scene,t04):
+    from .t04_edge_entry import reject_unqualified_predecessor
+    reject_unqualified_predecessor(scene)
     from src import component_clearance, source_channel_scope
     functional=source_channel_scope.ACTIVE
     from .prior_copper import prepare as prepare_prior
@@ -340,4 +353,4 @@ def stage(run,name,*,recorded=None):
 
 legacy_run_t01=run_t01
 legacy_run_t03=run_t03
-from .component_stages import initialize,run_t01,run_t03
+from .component_stages import initialize,initialize_t04,run_t01,run_t03

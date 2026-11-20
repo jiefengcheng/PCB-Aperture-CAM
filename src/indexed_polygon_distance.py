@@ -45,6 +45,8 @@ def clear():
         if ENGINE is not None:ENGINE.close();ENGINE=None
         STATS.clear();CHUNKS.clear();CHUNK_WEIGHT=0;MEASUREMENTS.clear();MEASURE_WEIGHT=0;SIGNATURES.clear();VALUES.clear();VALUE_WEIGHT=0
 
+
+
 def legacy_value(left,right):
     """Retain exact fallback witnesses only for byte-identical ordered operands."""
     global MEASURE_WEIGHT
@@ -71,8 +73,13 @@ class Engine:
         self.api=ctypes.CDLL(str(library));void=ctypes.c_void_p
         declarations=[('GEOS_init_r',[],void),('GEOS_finish_r',[void],None),('GEOSWKBReader_create_r',[void],void),('GEOSWKBReader_destroy_r',[void,void],None),('GEOSWKBReader_read_r',[void,void,void,ctypes.c_size_t],void),('GEOSGeom_destroy_r',[void,void],None),('GEOSDistanceIndexed_r',[void,void,void,ctypes.POINTER(ctypes.c_double)],ctypes.c_int)]
         for name,args,result in declarations:fn=getattr(self.api,name);fn.argtypes=args;fn.restype=result
-        self.context=self.api.GEOS_init_r();self.reader=self.api.GEOSWKBReader_create_r(self.context);self.handles=OrderedDict();self.weight=0;self.lock=threading.RLock();self.closed=False
-        if not self.context or not self.reader:raise RuntimeError('INDEXED_GEOS_CONTEXT_FAILED')
+        self.context=self.api.GEOS_init_r()
+        if not self.context:raise RuntimeError('INDEXED_GEOS_CONTEXT_FAILED')
+        self.reader=self.api.GEOSWKBReader_create_r(self.context)
+        if not self.reader:
+            self.api.GEOS_finish_r(self.context)
+            raise RuntimeError('INDEXED_GEOS_CONTEXT_FAILED')
+        self.handles=OrderedDict();self.weight=0;self.lock=threading.RLock();self.closed=False
     def handle(self,shape):
         key=signature(shape);old=self.handles.get(key)
         if old is not None:self.handles.move_to_end(key);STATS['geometry_hits']+=1;return old[0],False
@@ -86,19 +93,27 @@ class Engine:
         return handle,True
     def measure(self,left,right):
         with self.lock:
-            a,free_a=self.handle(left);b,free_b=self.handle(right)
+            if self.closed:
+                raise RuntimeError('INDEXED_GEOS_CONTEXT_CLOSED')
+            a,free_a=self.handle(left)
             try:
-                result=ctypes.c_double();status=self.api.GEOSDistanceIndexed_r(self.context,a,b,ctypes.byref(result))
-                if status!=1:raise RuntimeError('INDEXED_GEOS_DISTANCE_FAILED')
-                return result.value
+                # Initializing the second operand can fail too. Keep the first
+                # ephemeral handle in the cleanup region from its acquisition.
+                b,free_b=self.handle(right)
+                try:
+                    result=ctypes.c_double()
+                    status=self.api.GEOSDistanceIndexed_r(self.context,a,b,ctypes.byref(result))
+                    if status!=1:raise RuntimeError('INDEXED_GEOS_DISTANCE_FAILED')
+                    return result.value
+                finally:
+                    if free_b:self.api.GEOSGeom_destroy_r(self.context,b)
             finally:
                 if free_a:self.api.GEOSGeom_destroy_r(self.context,a)
-                if free_b:self.api.GEOSGeom_destroy_r(self.context,b)
                 while self.handles and(self.weight>LIMIT//4 or len(self.handles)>256):
                     _,(handle,weight)=self.handles.popitem(last=False);self.api.GEOSGeom_destroy_r(self.context,handle);self.weight-=weight;STATS['evictions']+=1
     def close(self):
-        if self.closed:return
         with self.lock:
+            if self.closed:return
             for handle,_ in self.handles.values():self.api.GEOSGeom_destroy_r(self.context,handle)
             self.handles.clear();self.weight=0;self.api.GEOSWKBReader_destroy_r(self.context,self.reader);self.api.GEOS_finish_r(self.context);self.closed=True
 
@@ -113,6 +128,40 @@ def chunks(shape):
             if segments%32:result.append(np.asarray([shapely.linestrings(coords[full*32:])],dtype=object))
     return np.concatenate(result)
 
+def boundary_index(shape):
+    """Reuse every ordered edge chunk, on either side of a distance query.
+
+    This cache holds geometry/index preparation only. Every neighbour query,
+    original-oriented segment distance, tie fallback and boundary comparison
+    still executes. Complete operand bytes, SRID and precision bind each entry;
+    changed copper misses naturally. Both operands share the existing bounded
+    chunk budget, so admitting small shapes does not increase the memory cap.
+    The 8192-entry ceiling separately bounds Python/index overhead.
+    """
+    global CHUNK_WEIGHT
+    key=(signature(shape),int(shapely.get_srid(shape)),float(get_precision(shape)))
+    entry=CHUNKS.get(key)
+    if entry is not None:
+        tree,parts,weight,checksum=entry
+        # Geometry objects are immutable, but their NumPy container is not.
+        # Check its exact ordered bytes before using a retained spatial index.
+        if hashlib.sha256(b''.join(shapely.to_wkb(parts,include_srid=True))).hexdigest()!=checksum:
+            raise ValueError('INDEXED_DISTANCE_BOUNDARY_CACHE_CHANGED')
+        if len(tree.geometries)!=len(parts) or any(a is not b for a,b in zip(tree.geometries,parts)):
+            raise ValueError('INDEXED_DISTANCE_BOUNDARY_INDEX_CHANGED')
+        CHUNKS.move_to_end(key);STATS['chunk_hits']+=1
+        return tree,parts
+    parts=chunks(shape);tree=STRtree(parts)
+    weight=6*len(to_wkb(shape))+int(get_num_coordinates(shape))*64+len(parts)*1024+1024
+    if weight<=chunk_budget():
+        checksum=hashlib.sha256(b''.join(shapely.to_wkb(parts,include_srid=True))).hexdigest()
+        parts.flags.writeable=False
+        while CHUNKS and(CHUNK_WEIGHT+weight>chunk_budget() or len(CHUNKS)>=8192):
+            _,old=CHUNKS.popitem(last=False);CHUNK_WEIGHT-=old[2];STATS['chunk_evictions']+=1
+        CHUNKS[key]=(tree,parts,weight,checksum);CHUNK_WEIGHT+=weight
+    STATS['chunk_builds']+=1
+    return tree,parts
+
 def legacy_minimum(left,right,upper):
     """Use the indexed upper bound only to enumerate a conservative superset.
 
@@ -120,18 +169,8 @@ def legacy_minimum(left,right,upper):
     orientation. This retains the legacy floating witness and report hashes.
     The padding expands candidates only; it never changes a clearance verdict.
     """
-    global CHUNK_WEIGHT
-    key=signature(right);entry=CHUNKS.get(key)
-    if entry is None:
-        blob=to_wkb(right)
-        parts=chunks(right);tree=STRtree(parts);weight=6*len(blob)+int(get_num_coordinates(right))*64+len(parts)*1024+1024;entry=(tree,parts,weight)
-        if weight<=chunk_budget() and int(get_num_coordinates(right))>=32768:
-            while CHUNKS and(CHUNK_WEIGHT+weight>chunk_budget() or len(CHUNKS)>=64):
-                _,old=CHUNKS.popitem(last=False);CHUNK_WEIGHT-=old[2];STATS['chunk_evictions']+=1
-            CHUNKS[key]=entry;CHUNK_WEIGHT+=weight
-        STATS['chunk_builds']+=1
-    else:CHUNKS.move_to_end(key);STATS['chunk_hits']+=1
-    tree,parts,_=entry;queries=chunks(left);magnitude=max(1.,*(abs(x)for x in(*left.bounds,*right.bounds)))
+    tree,parts=boundary_index(right);_,queries=boundary_index(left)
+    magnitude=max(1.,*(abs(x)for x in(*left.bounds,*right.bounds)))
     padding=max(128*math.ulp(magnitude),128*math.ulp(upper));indices=tree.query(queries,predicate='dwithin',distance=upper+padding)
     if indices.shape[1]==0:raise ValueError('INDEXED_DISTANCE_WITNESS_CANDIDATES_MISSING')
     values=shapely.distance(queries[indices[0]],parts[indices[1]]);STATS['exact_chunk_pairs']+=len(values)

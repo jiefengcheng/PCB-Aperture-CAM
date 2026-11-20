@@ -1,0 +1,34 @@
+# Bounded T04 marked-joint refinement
+
+This extends the existing direct-group component caller; it does not enable a completed T04 scene, full-board execution, replay or export. The durable source catalogue, native source identities, accepted T03 binding, growth caps and seven-pass schedule remain the inputs. See `T04_DIRECT_GROUP_CONSTRUCTION.md` for the parent contract.
+
+The implementation keeps the existing boundaries between grouping, allocation, source profiles, joints, residual verification and reporting:
+
+1. `covered_traces.prepare` projects independent growth eligibility before allocation. Exact coverage is reported separately from a source-boundary fringe (default 1% of input width) and witnessed overlapping fill strokes/connectors. A fringe is diagnostic only: partial exposure remains eligible and the group-fit noise allowance cannot prove coverage. Exact aliases and meaningful exposed tails remain eligible. Excluded occurrences remain exact fixed copper in native custody; the durable catalogue is not rewritten. A short fill connector requires its entire centerline inside an independently witnessed pair of long overlapping fill strokes. This is not a clearance exemption.
+2. In the source-anchored straight-first caller, `SourceBoundaries` reserves actual source copper. Later residual proposals must respect frozen straight strips. An endpoint interaction becomes a local free-span obligation rather than a negative cap over the entire maximal member. Other caller modes retain their prior future-growth reservation. `MaximalGroups` freezes only implicated infeasible lanes and constrains the actual constructed intervals, preserving maximal members and their source IDs.
+3. `straight_shoulders.localize` refines a rejected free span using the existing cubic side-field constructor. It changes width stations on the same native source body, retains every constructed interior constraint, and submits only residual additions to the existing verifier. It creates no short source occurrences or new group boundaries. Accepted fields retain their C1 interpolation certificate.
+4. Existing straight, maximal-arc, default, corner, skin and differential-pocket treatments run in their established order. Constructed groups stay fixed support, never checked trace candidates.
+5. `tangent_finish` removes shallow protrusions from optional joint copper using face-wise rolling-disc opening. Its current processing constants are a 0.05 mm disc radius and 0.005 mm maximum depth. Source bodies, constructed strips, source cores and original voids are protected. A local trim cannot change native centerlines or segment caps. Accepted source/group operands are never subjected to a subtractive overlay merely to implement a joint trim.
+6. Overlapping joint trims are assembled against the unchanged native-route floor. Newly detached small optional tips are removed from all redundant joint operands; a support/large-lobe conflict keeps the original joint. Newly enclosed trim pockets are restored only from the original, previously admitted joint operands. Existing voids and pre-existing separate contributions stay unchanged. These are topology conditions of subtractive joint construction, not a clearance audit of group copper.
+7. Existing connection, reference and residual functional checks remain. Positive-copper deltas use the existing polygonal normalizer before distance calculations, excluding overlay-only zero-area lines/points. No positive areal copper is discarded by that normalization. The report retains `constructed_groups_audited=0` and `COMPONENT_DIAGNOSTIC; NOT_COMPLETE_T04`.
+
+At arc-to-arc joints, the corner field reuses the catalogue's interior tangent instead of a noisy plotting-end chord. The blend affects only the new joint field; maximal arc contours, native points and straight interfaces stay unchanged. Native short straight connectors (at most 0.1 mm) may reuse the existing 1:1 hard joint slope when the usual 0.25 slope cannot join both inherited sections. Width and reach caps remain unchanged.
+
+A short default connector rejected by clearance can reuse the existing local barrier clipping of its inherited ribbon. Only the new copper is checked. Its actual clipped skin replaces any claim that the unmodified ribbon's endpoint recipe survived; endpoint obligations remain explicit. If strict floor union fails, a 10 nm source-skin overlap can be proposed and freshly checked with the same clearance contract. It is actual candidate copper, not a containment or clearance epsilon. No constructed group is trimmed, rebuilt, or clearance-audited for this treatment.
+
+If new joint additions enclose a pocket that cannot be filled inside the admitted caps, the constructor withdraws the whole implicated joint-site proposals. It re-evaluates the same differential-pocket predicate against the unchanged floor. Withdrawal is accepted only if every new enclosure disappears; otherwise the pocket gate remains failed. Withheld proposals retain their hashes, original status and reason, and remain unresolved joint sites. This does not enlarge a cap, fill an old void, or modify constructed copper.
+
+The input-cap domain for a joint pocket includes both native members at that route endpoint, using the original recorded radius on each path. The receiving source is the storage owner of the joint addition; it is not the entire input domain. No unrelated same-owner route or larger radius may be borrowed. Pocket additions still require the existing foreign-copper and protected-pin checks.
+
+The retained experiment package is `out/lacie_work/t04_review_fixes_20261120/`. It contains separate source snapshots, failed attempts, bounded caller timings, tests and reproducible visual comparisons against the previous bounded result and EDIT. A passing bounded connection/clearance result does not resolve the separate remaining endpoint obligations or establish completed-scene/export/manufacturing acceptance.
+
+The subsequent bend-regression investigation is retained separately in `out/lacie_work/t04_bend_continuity_20261120/`. Experimental arc-body subtraction and whole-field realignment were set aside; their failed source snapshots and results remain evidence, not active construction policy.
+
+The owner accepted the five-case result in `attempt_10`. The subsequent
+[component workspace consolidation](T04_COMPONENT_WORKSPACE.md) preserves its
+exact copper and all non-timing report/proof fields. It shares immutable strip
+reservation operands and the existing updated residual index within one caller,
+and removes redundant source-line construction during joint width sampling.
+It changes preparation cost rather than growth policy, group auditing or the
+remaining endpoint obligations. The separate bounded A/B evidence is retained
+under `out/lacie_work/t04_joint_performance_20261120/`.

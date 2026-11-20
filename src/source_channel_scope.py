@@ -7,13 +7,14 @@ from src.source_channel_guard import SourceChannels,POLICY
 ACTIVE=None
 
 class Scope:
- def __init__(self,channels,certificate,source_objects):
+ def __init__(self,channels,certificate,source_objects,*,prepare_membership=False):
   self.channels=channels;self.certificate=certificate;self.index=channels.index;self.cores=channels.original;self.source_hash=channels.source_sha256
-  self.frame_ids=frozenset(s for row in certificate['frame_source_rows']for s in row['source_ids']);self.source_objects=dict(source_objects);self.originals={s:g for s,g in source_objects.items()if s not in self.frame_ids};self.ids={s:tuple(self.index.membership(g))for s,g in self.originals.items()};self.ids.update({s:()for s in self.frame_ids})
+  self._membership=self.index.prepared_membership if prepare_membership else self.index.membership
+  self.frame_ids=frozenset(s for row in certificate['frame_source_rows']for s in row['source_ids']);self.source_objects=dict(source_objects);self.originals={s:g for s,g in source_objects.items()if s not in self.frame_ids};self.ids={s:tuple(ids)for s,ids in ({s:self._membership(g) for s,g in self.originals.items()} if prepare_membership else self.index.memberships(self.originals)).items()};self.ids.update({s:()for s in self.frame_ids})
   if any(len(self.ids[s])!=1 for s in self.originals):raise ValueError('FUNCTIONAL_SOURCE_OCCURRENCE_NOT_ONE_CHANNEL')
   self.reserved={};self.reservation_sha256=None;self.approved_partial_pockets={};self.binding=digest(canonical(certificate));self.ownership_policy=dict(schema='functional-source-channels/1',policy=certificate['policy'],internal_clearance='NOT_APPLICABLE_WITHIN_ONE_FUNCTIONAL_CHANNEL',foreign_clearance='ALL_CURRENT_AND_RESERVED_OTHER_SOURCE_CHANNELS',ownership='FROZEN_NON_FRAME_SOURCE_OCCURRENCES',source_ports='Source pad and trace remain integral; remote frame ties grant no exemption')
  def assign(self,sid,g,owners=None):
-  selected=tuple(self.index.membership(g)if owners is None else owners)
+  selected=tuple(self._membership(g)if owners is None else owners)
   if not selected or any(o not in self.cores for o in selected):raise ValueError('FUNCTIONAL_DERIVED_CHANNEL_UNBOUND:'+sid)
   if sid in self.ids and self.ids[sid]!=selected:raise ValueError('FROZEN_FUNCTIONAL_CHANNEL_CHANGED:'+sid)
   self.ids[sid]=selected;return selected
@@ -81,7 +82,7 @@ class Scope:
   if set(reserved)!=set(self.cores):raise ValueError('PRIOR_FUNCTIONAL_CHANNEL_MISSING')
   self.reserved=reserved;self.reservation_sha256=generated_sha256;self.binding=digest(canonical([self.certificate,generated_sha256]));return check
 
-def bind(source,source_sha256,scene,store,*,integral=False):
+def bind(source,source_sha256,scene,store,*,integral=False,prepare_membership=False):
  global ACTIVE
  ACTIVE=None;frame,certificate=discover(source,source_sha256,scene,store)
  if integral:
@@ -90,7 +91,7 @@ def bind(source,source_sha256,scene,store,*,integral=False):
   from src.source_channel_guard import ASSEMBLED_POLICY
   frame=Polygon();certificate=dict(status='INTEGRAL_ASSEMBLED_SOURCE_CHANNELS',policy=ASSEMBLED_POLICY,source_sha256=source_sha256,source_geometry_sha256=digest(to_wkb(source)),frame_geometry_sha256=digest(to_wkb(frame)),frame_source_rows=[],material_edit=False)
  elif frame is None:return None
- channels=SourceChannels(source,source_sha256,frame,certificate,store=store);objects={r['source_id']:from_wkb(store.get(r['original_ref'],kind='geometry'))for r in scene['objects']};ACTIVE=Scope(channels,certificate,objects);return ACTIVE
+ channels=SourceChannels(source,source_sha256,frame,certificate,store=store);objects={r['source_id']:from_wkb(store.get(r['original_ref'],kind='geometry'))for r in scene['objects']};ACTIVE=Scope(channels,certificate,objects,prepare_membership=prepare_membership);return ACTIVE
 
 def physical_owner(scope,channel,physical):
  owners={o for sid in scope.originals if channel in scope.ids[sid]for o in physical.ids[sid]}

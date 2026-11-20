@@ -4,6 +4,24 @@ The executable [stage runtime version 1](STAGE_RUNTIME.md) provides all 35 T01/T
 
 The [independent five-suite audit](audits/20261031_06c146e/README.md) passed all 313 tests plus 2 subtests and exercised all 35 CLI operations at commit `06c146e`. Its PASS_FOR_NEXT_SLICE applies to code/contracts/model scope. Exact-runtime saved native verification remains NOT_ESTABLISHED; historical C02/C03 qualifications and frozen acceptance are unchanged.
 
+## Source-built T04 profile entry
+
+The explicit [source-built T04 profile entry](T04_PROFILE_ENTRY.md) constructs
+the 25% baseline from accepted T03, then checks side-specific additions over its
+accepted copper. Its [operation ABI](../../contracts/agent_abi/t04_profile_entry.json)
+keeps preparation, bounded qualification and whole-board execution explicit.
+The ordinary pipeline defaults and downstream replay/export qualification are
+separate.
+
+The incremental [direct parallel-group constructor](T04_DIRECT_GROUP_CONSTRUCTION.md)
+reuses that intake with an explicit bounded algorithm selection. Its
+[construction ABI](../../contracts/agent_abi/t04_group_construction.json) publishes
+group interiors and local width caps; hybrid assembly remains pending.
+
+The [component workspace contract](T04_COMPONENT_WORKSPACE.md) documents shared
+strip reservations and accepted residual-scene updates for the qualified bounded
+caller, with exact accepted-copper parity and budget-safe candidate discovery.
+
 ## Historical CAM Agent ABI v0.1
 
 This is a project-local JSON boundary around the current CAM evidence. It gives a future coordinator a small, typed vocabulary for describing available capabilities, inspecting hash-bound records, composing a deterministic plan, comparing registered runs, and retrieving saved review evidence.

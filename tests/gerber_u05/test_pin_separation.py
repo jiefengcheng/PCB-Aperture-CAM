@@ -121,3 +121,26 @@ def test_incremental_width_search_checks_pin_dependencies_before_accepting(monke
   assert incremental['passed']==complete['passed']
   assert incremental['pin_separation']['passed']==complete['pin_separation']['passed']
   if amount==.035:assert incremental['passing_state_sha256']is None
+
+
+def test_joint_guard_shares_delta_without_sharing_rejection_verdict(monkeypatch):
+ from src import t04_width_fence as width
+ from src.growth_remedy_constraints import remedy
+
+ pin_rule,slot,source,*_=fixture(monkeypatch)
+ width_rule=width.Rule(slot.domain,source,'test')
+ monkeypatch.setattr(width,'ACTIVE',width_rule)
+ proposal=box(.28,.9,.42,1.0)
+ first=remedy(proposal,source)
+ assert not first['passed']
+ assert pin_rule.rejected_count==1
+ assert width_rule._overlays.stats['hits_difference']==1
+ again=remedy(proposal,source)
+ assert not again['passed']
+ assert pin_rule.rejected_count==2
+ assert any(row['reason']=='PREVIOUSLY_REJECTED_LOGICAL_FILL_FRAGMENT'
+            for row in again['pin_separation']['reasons'])
+ changed=source.union(box(.30,.9,.32,1.0))
+ observed=remedy(proposal,changed)
+ cold=width.Rule(slot.domain,source,'test').remedy(proposal,changed)
+ assert observed['t04_width_decision']==cold

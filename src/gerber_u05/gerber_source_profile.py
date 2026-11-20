@@ -71,11 +71,22 @@ class SourceParser(CompletionParser):
 def parse_source(raw):
     normalized,tokens,proof=normalize(raw);g=GerberFile();p=SourceParser(g,tokens,raw);p.parse(normalized,filename='source:'+digest(raw))
     if not p.eof_found or p.current_region is not None or p.block_frame is not None:raise ValueError('INCOMPLETE_GERBER_SOURCE')
-    expected=((4,6),'leading')if proof.get('source_format')=='MM_L46_ABSOLUTE'else((3,5),'trailing')
+    expected={
+        'MM_L46_ABSOLUTE':((4,6),'leading'),
+        'MM_L33_ABSOLUTE':((3,3),'leading'),
+    }.get(proof.get('source_format'),((3,5),'trailing'))
     if p.file_settings.unit!=MM or p.file_settings.number_format!=expected[0]or p.file_settings.zeros!=expected[1]or p.file_settings.notation!='absolute':raise ValueError('SOURCE_FORMAT_DRIFT')
     if p.inventory['MO']!=1 or p.inventory['FS']!=1:raise ValueError('AMBIGUOUS_FORMAT_OR_UNITS')
     if set(p.spans)!=set(range(len(g.objects))):raise ValueError('SOURCE_OBJECT_SPAN_COVERAGE')
+    if proof.get('source_format')=='MM_L33_ABSOLUTE':
+        # L33 arc endpoints were rounded on a 1 µm source grid. This
+        # allowance applies only to source arc recognition.
+        for obj in g.objects:
+            obj.u05_source_arc_grid_mm=.001
     return g,p,proof
+
+def source_arc_grid(obj):
+    return getattr(obj,'u05_source_arc_grid_mm',.00001)
 
 def arc_points(a,b,c,cw,*,grid=.00001):
     radius=math.dist(a,c);other=math.dist(b,c);residual=abs(radius-other);bound=2*math.sqrt(2)*grid
@@ -88,16 +99,16 @@ def arc_points(a,b,c,cw,*,grid=.00001):
     points[0]=a;points[-1]=b
     return points,residual
 
-def primitive_geometry(p):
+def primitive_geometry(p,*,grid=.00001):
     if isinstance(p,gp.Arc):
-        points,residual=arc_points((p.x1,p.y1),(p.x2,p.y2),(p.cx,p.cy),p.clockwise)
+        points,residual=arc_points((p.x1,p.y1),(p.x2,p.y2),(p.cx,p.cy),p.clockwise,grid=grid)
         if p.width<=0:raise ValueError('NONPOSITIVE_ARC_STROKE')
         radius=p.width/2;q=max(16,math.ceil(math.pi/(4*math.acos(max(-1.,1.-SAG/radius)))))
         return LineString(points).buffer(radius,quad_segs=q),residual
     if isinstance(p,gp.ArcPoly):
         points=[];residual=0.
         for a,b,(cw,c)in p.segments:
-            part,r=([a,b],0.)if cw is None else arc_points(a,b,c,cw)
+            part,r=([a,b],0.)if cw is None else arc_points(a,b,c,cw,grid=grid)
             residual=max(residual,r);points.extend(part if not points else part[1:])
         return contour(points),residual
     return primitive(p),0.
@@ -112,7 +123,7 @@ def object_geometry(obj):
     else:raise ValueError('SOURCE_OBJECT_UNSUPPORTED')
     result=[];residual=0.
     for p in positive.to_primitives(unit=MM):
-        shape,r=primitive_geometry(p);residual=max(residual,r);result.append((shape,p.polarity_dark if isinstance(obj,go.Flash)else True))
+        shape,r=primitive_geometry(p,grid=source_arc_grid(obj));residual=max(residual,r);result.append((shape,p.polarity_dark if isinstance(obj,go.Flash)else True))
     return ordered(result),residual
 
 def qualify(raw,out):
@@ -126,18 +137,21 @@ def qualify(raw,out):
     image=ordered(items)
     if not image.is_valid or image.is_empty:raise ValueError('COMPOSED_IMAGE_INVALID_OR_EMPTY')
     body=to_wkb(image);(out/'original_image.wkb').write_bytes(body)
-    return dict(schema='gerber-only-source-qualification/1',status='SOURCE_GEOMETRY_ONLY_NO_U05_EXECUTION',source_sha256=digest(raw),source_objects=len(records),records=records,composition_sha256=digest(body),composition_area_mm2=image.area,coordinate_oracle=proof,max_arc_radius_residual_mm=max_residual,arc_coordinate_bound_mm=2*math.sqrt(2)*.00001,polygon_sag_mm=SAG,source_file_untouched=True,owner='PENDING_USER',electrical_manufacturing='NOT_ESTABLISHED')
+    return dict(schema='gerber-only-source-qualification/1',status='SOURCE_GEOMETRY_ONLY_NO_U05_EXECUTION',source_sha256=digest(raw),source_objects=len(records),records=records,composition_sha256=digest(body),composition_area_mm2=image.area,coordinate_oracle=proof,max_arc_radius_residual_mm=max_residual,arc_coordinate_bound_mm=2*math.sqrt(2)*(.001 if proof.get('source_format')=='MM_L33_ABSOLUTE'else .00001),polygon_sag_mm=SAG,source_file_untouched=True,owner='PENDING_USER',electrical_manufacturing='NOT_ESTABLISHED')
 
-# Explicit generated-file reimport profile. Empty coordinate words remain a
-# separate T35 legacy admission; they are never admitted in standard L46.
+# Millimetre leading-zero formats preserve the source bytes and spans.
+# Empty coordinate words are only admitted by the separate legacy T35 profile.
 def decode_l46(spelling):
  sign=-1 if spelling.startswith('-')else 1;digits=spelling.lstrip('+-')
  if not digits or not digits.isdigit()or len(digits)>10:raise ValueError('L46_INTEGER_COORDINATE_REQUIRED')
  return sign*int(digits)
 
-def normalize_l46(raw):
+def normalize_leading(raw, *, coarse=False):
  text=raw.decode('ascii')
- if text.count('%FSLAX46Y46*%')!=1 or text.count('%MOMM*%')!=1:raise ValueError('GERBER_ONLY_L46_PROFILE_REQUIRES_MM_ABSOLUTE')
+ header='%FSLAX33Y33*%' if coarse else '%FSLAX46Y46*%'
+ max_digits=6 if coarse else 10
+ if text.count(header)!=1 or text.count('%MOMM*%')!=1:
+  raise ValueError('GERBER_ONLY_L33_PROFILE_REQUIRES_MM_ABSOLUTE' if coarse else 'GERBER_ONLY_L46_PROFILE_REQUIRES_MM_ABSOLUTE')
  if '%IPNEG' in text or text.count('%IPPOS*%')>1:raise ValueError('POSITIVE_IMAGE_POLARITY_REQUIRED')
  tokens=[];output=[];coordinates=0;end=0
  for m in TOKEN.finditer(text):
@@ -147,13 +161,20 @@ def normalize_l46(raw):
   if trim=='%IPPOS*%'or re.fullmatch(r'%LN[^*%]+\*%',trim):continue
   if not trim.startswith(('%','G04')):
    fields=FIELD.findall(original)
-   for _,spelling in fields:decode_l46(spelling)
+   for _,spelling in fields:
+    if coarse and len(spelling.lstrip('+-'))>max_digits:raise ValueError('L33_COORDINATE_WORD_TOO_LONG')
+    decode_l46(spelling)
    coordinates+=len(fields)
   start=m.start()+len(original)-len(original.lstrip());stop=start+len(trim)
   output.append(original);tokens.append(dict(command=trim.strip('%').rstrip('*'),span=[start,stop]))
  if text[end:].strip():raise ValueError('TRAILING_UNCONSUMED_SOURCE')
- return ''.join(output),tokens,dict(coordinate_fields=coordinates,legacy_empty_zero_fields=0,zero_semantics='STANDARD_LEADING_ZERO_SUPPRESSION',coordinate_grid_mm=.000001,source_bytes_changed=False,source_format='MM_L46_ABSOLUTE',arc_semantics='Existing explicit legacy-source arc recognition bound retained; independent of clearance and file quantization')
+ return ''.join(output),tokens,dict(coordinate_fields=coordinates,legacy_empty_zero_fields=0,
+  zero_semantics='STANDARD_LEADING_ZERO_SUPPRESSION',coordinate_grid_mm=.001 if coarse else .000001,
+  source_bytes_changed=False,source_format='MM_L33_ABSOLUTE' if coarse else 'MM_L46_ABSOLUTE',
+  arc_semantics='Original declared source grid bounds retained source arcs only' if coarse else 'Existing explicit legacy-source arc recognition bound retained; independent of clearance and file quantization')
 
 _normalize_t35=normalize
 def normalize(raw):
- return normalize_l46(raw)if b'%FSLAX46Y46*%'in raw else _normalize_t35(raw)
+ if b'%FSLAX33Y33*%' in raw:return normalize_leading(raw,coarse=True)
+ if b'%FSLAX46Y46*%' in raw:return normalize_leading(raw)
+ return _normalize_t35(raw)

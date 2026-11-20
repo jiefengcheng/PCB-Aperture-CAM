@@ -1,3 +1,4 @@
+from tests.gerber_u05.producer_fixture import historical_source
 import pytest
 from shapely import get_precision,set_precision,to_wkb,union_all
 from shapely.geometry import Point,box
@@ -52,10 +53,10 @@ def test_non_coordinate_preserving_kernel_result_is_rejected(monkeypatch):
 def test_precision_correction_cannot_retain_connected_t04_or_extra_edits(tmp_path,monkeypatch):
  from pathlib import Path
  from src.gerber_u05 import prefix
- relative='src/gerber_u05/channel_finish.py';root=Path(__file__).resolve().parents[2]
+ relative='src/gerber_u05/channel_finish.py'
  old=tmp_path/'old';new=tmp_path/'new';source=old/relative;target=new/relative
  source.parent.mkdir(parents=True);target.parent.mkdir(parents=True)
- source.write_text('old hash-bound producer fixture');target.write_bytes((root/relative).read_bytes())
+ source.write_text('old hash-bound producer fixture');target.write_bytes(historical_source(relative))
  before,after=prefix.CONNECTED_PREPARATION[relative];real_sha=prefix.sha;assert real_sha(target)==after
  monkeypatch.setattr(prefix,'sha',lambda f:before if Path(f)==source else real_sha(f))
  binding={'files':{str(source):before}}

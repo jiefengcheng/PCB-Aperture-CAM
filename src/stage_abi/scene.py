@@ -36,6 +36,10 @@ def geometry(store,reference):
  return g
 
 def composed(store,scene):
+ if any('translated_route_alias' in r.get('metadata',{}) for r in scene['objects']):
+  from src.gerber_u05.translated_profile import resolve_operands
+  _,current,_=resolve_operands(store,scene)
+  return unary_union([current[s] for s in sorted(current) if not current[s].is_empty]).intersection(box(*scene['viewport_mm']))
  return unary_union([geometry(store,r['geometry_ref']) for r in scene['objects']]).intersection(box(*scene['viewport_mm']))
 
 def compatible(left,right):

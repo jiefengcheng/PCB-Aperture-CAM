@@ -6,7 +6,7 @@ finger/transition domain from original material, never a result image.
 """
 import math
 from pathlib import Path
-from shapely import to_wkb
+from shapely import to_wkb,STRtree,get_precision
 from shapely.geometry import box
 from src import pin_separation as pin
 from src.stage_abi.store import canonical,digest
@@ -19,7 +19,28 @@ def capture(run,inventory):
  spec=registry['sources'].get(raw_sha)
  p.save(run/'PIN_SEPARATION_POLICY.json',dict(schema=pin.SCHEMA,raw_source_sha256=raw_sha,working_source_sha256=p.load(run/'source.json')['source_ref']['sha256'],registry_sha256=digest(canonical(registry)),declaration=spec,disposition='DECLARED_SOURCE_PIN_INTENT'if spec is not None else'NO_SOURCE_PIN_DECLARATION; pin-intent coverage NOT_ESTABLISHED'))
 
-def rooted_slot(source,source_sha256,rows,store,spec,construction_gap,cache=None):
+class SourceContacts:
+ """One initialization's verified original occurrences, in source order."""
+ def __init__(self,store,rows):
+  # Read/hash and validate every occurrence, including spatially distant ones.
+  # Parallel tuples preserve occurrence identity, including exact aliases.
+  # Tree indexes address these tuples directly. Artifact reads stay in the
+  # store ledger for the final byte verification.
+  self.store=store
+  self.records=tuple((row['source_id'],row['original_ref']['sha256'])for row in rows)
+  self.bindings=tuple((row['source_id'],row['original_ref']['artifact_id'],row['original_ref']['sha256'])for row in rows)
+  self.shapes=tuple(p.geometry(store,row['original_ref'])for row in rows)
+  self.tree=STRtree(self.shapes)
+ def validate(self,store,rows):
+  if store is not self.store or self.bindings!=tuple((row['source_id'],row['original_ref']['artifact_id'],row['original_ref']['sha256'])for row in rows):
+   raise ValueError('PIN_CONTACT_SNAPSHOT_CHANGED')
+ def contacts(self,piece):
+  # Precision-grid overlays can move boundaries; keep the full scan there.
+  candidates=range(len(self.shapes))if get_precision(piece)!=0 else sorted(map(int,self.tree.query(piece)))
+  return [dict(source_id=self.records[i][0],original_geometry_sha256=self.records[i][1])
+          for i in candidates if self.shapes[i].intersection(piece).area>0]
+
+def rooted_slot(source,source_sha256,rows,store,spec,construction_gap,cache=None,*,contacts=None):
  seeds=[];source_ids=[]
  for branch in spec['branches']:
   matches=[r for r in rows if r['metadata'].get('source_span')==branch['source_span']]
@@ -55,14 +76,12 @@ def rooted_slot(source,source_sha256,rows,store,spec,construction_gap,cache=None
  domain=void.buffer(reach,quad_segs=64).intersection(box(window.bounds[0],tip-gap,window.bounds[2],end))
  spacing=channel.buffer(reach,quad_segs=64).intersection(box(window.bounds[0],tip-gap,window.bounds[2],channel.bounds[3]-2*uncertainty)).intersection(domain)
  local=surface_parts(source.intersection(domain));attachments=[]
+ if contacts is None:contacts=SourceContacts(store,rows)
+ contacts.validate(store,rows)
  for sid,seed in zip(source_ids,seeds):
   pieces=[g for g in local if g.intersection(seed).area>0]
   if len(pieces)!=1:raise ValueError('PIN_SOURCE_ATTACHMENT_NOT_UNIQUE')
-  contacts=[]
-  for row in rows:
-   original=p.geometry(store,row['original_ref'])
-   if original.intersection(pieces[0]).area>0:contacts.append(dict(source_id=row['source_id'],original_geometry_sha256=row['original_ref']['sha256']))
-  attachments.append(dict(pin_source_id=sid,original_local_contacts=contacts))
+  attachments.append(dict(pin_source_id=sid,original_local_contacts=contacts.contacts(pieces[0])))
  return pin.Slot(source_sha256,spec['slot_id'],tuple(source_ids),domain,source,tuple(seeds),tuple(attachments),protected_void=void,spacing_domain=spacing)
 
 def initialize(store,binding,source,original,scene=None):
@@ -76,7 +95,10 @@ def initialize(store,binding,source,original,scene=None):
  if spec is None:return None
  if spec['raw_source_sha256']!=policy['raw_source_sha256']:raise ValueError('PIN_ORIGINAL_SOURCE_DECLARATION_CHANGED')
  cache={}
- slots=[rooted_slot(source,policy['raw_source_sha256'],original['objects'],store,s,p.CONSTRUCTION_GAP_MM,cache)for s in spec['slots']]
+ # Limit contact snapshot lifetime to this source initialization. Slot and
+ # branch predicates still run for each declaration.
+ contacts=SourceContacts(store,original['objects'])if spec['slots']else None
+ slots=[rooted_slot(source,policy['raw_source_sha256'],original['objects'],store,s,p.CONSTRUCTION_GAP_MM,cache,contacts=contacts)for s in spec['slots']]
  rule=pin.Rule(slots,construction_gap=p.CONSTRUCTION_GAP_MM,finished_gap=p.HARD_GAP_MM)
  if scene is not None:
   for entry in reversed(scene['lineage']):

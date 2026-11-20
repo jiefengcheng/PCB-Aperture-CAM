@@ -71,3 +71,47 @@ def test_distance_certificate_binds_ordered_operands_and_detects_corruption():
     key=next(iter(module.VALUES));value,checksum=module.VALUES[key];module.VALUES[key]=(value+.1,checksum)
     with pytest.raises(ValueError,match='DISTANCE_CERTIFICATE_CHANGED'):module.distance(a,b)
     module.clear()
+
+
+def test_boundary_chunks_reuse_small_and_left_operands_without_changing_edges(monkeypatch):
+    from shapely import from_wkb,to_wkb
+    module.clear();a=Point(0,0).buffer(1,quad_segs=400);b=Point(4,0).buffer(1,quad_segs=400)
+    original=module.chunks;calls=[]
+    def observed(g):calls.append(g);return original(g)
+    monkeypatch.setattr(module,'chunks',observed)
+    first=module.legacy_minimum(a,b,a.distance(b))
+    second=module.legacy_minimum(from_wkb(to_wkb(a)),from_wkb(to_wkb(b)),a.distance(b))
+    assert first.hex()==second.hex()==a.distance(b).hex()
+    assert len(calls)==2 and module.diagnostics()['chunk_hits']==2
+    assert module.diagnostics()['retained_bytes']<=module.LIMIT
+    module.clear()
+
+
+@pytest.mark.parametrize('changed',['copper','precision','srid'])
+def test_boundary_index_invalidates_each_operand_metadata_change(changed):
+    from shapely import set_srid,set_precision,from_wkb,to_wkb
+    module.clear();a=set_precision(box(0,0,1,1),.01)
+    module.boundary_index(a)
+    b={'copper':box(0,0,1.1,1),'precision':from_wkb(to_wkb(a)),'srid':set_srid(a,4326)}[changed]
+    module.boundary_index(b)
+    assert module.diagnostics()['chunk_builds']==2
+    module.clear()
+
+
+def test_boundary_cache_corruption_is_rejected():
+    from shapely.geometry import LineString
+    module.clear();module.boundary_index(box(0,0,1,1))
+    entry=next(iter(module.CHUNKS.values()));entry[1].flags.writeable=True
+    entry[1][0]=LineString([(10,10),(11,11)])
+    with pytest.raises(ValueError,match='BOUNDARY_CACHE_CHANGED'):module.boundary_index(box(0,0,1,1))
+    module.clear()
+
+
+def test_boundary_cache_eviction_keeps_exact_distance(monkeypatch):
+    module.clear();monkeypatch.setattr(module,'LIMIT',500000)
+    for i in range(8):
+        a=Point(0,0).buffer(1+i*.01,quad_segs=400);b=Point(4,0).buffer(1,quad_segs=400)
+        assert module.distance(a,b).hex()==a.distance(b).hex()
+        assert module.diagnostics()['retained_bytes']<=module.LIMIT
+    assert module.diagnostics()['chunk_evictions']>0
+    module.clear()

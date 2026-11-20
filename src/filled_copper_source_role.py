@@ -5,6 +5,7 @@ No coverage percentage, geometry rounding, or net/component exemption is used.
 """
 import hashlib
 import math
+from dataclasses import dataclass
 from shapely import to_wkb
 from shapely.geometry import LineString, Point
 from shapely.ops import unary_union
@@ -41,7 +42,7 @@ def buried_route_witness(source_id, native_points, filled_sources):
                 limitation='Source-role selection only; curved membership uses existing native-route tessellation; no clearance verdict')
 
 
-def bulk_boundary_route_witness(source_id, native_points, width_mm, original_copper):
+def _bulk_boundary_route_witness(source_id, native_points, width_mm, original_copper, *, validate_body):
     """Propose fixed role for a stroke building the edge of broad original fill.
 
     A full one-sided strip twice the verified native width must already be
@@ -53,7 +54,7 @@ def bulk_boundary_route_witness(source_id, native_points, width_mm, original_cop
         raise ValueError('FINITE_BOUND_NATIVE_ROUTE_REQUIRED')
     route=LineString(native_points)
     if not route.length:return None
-    if original_copper.is_empty or not original_copper.is_valid:raise ValueError('VALID_ORIGINAL_COPPER_UNION_REQUIRED')
+    if validate_body and (original_copper.is_empty or not original_copper.is_valid):raise ValueError('VALID_ORIGINAL_COPPER_UNION_REQUIRED')
     for side in (1,-1):
         strip=route.buffer(side*2*width_mm,single_sided=True,quad_segs=128)
         if not strip.is_empty and strip.is_valid and original_copper.covers(strip):
@@ -64,3 +65,26 @@ def bulk_boundary_route_witness(source_id, native_points, width_mm, original_cop
                 role='PROPOSED_FIXED_BULK_BOUNDARY_SOURCE',source_geometry_modified=False,
                 limitation='Source-role heuristic requires visual qualification; never changes clearance policy or hides new copper')
     return None
+
+
+@dataclass(frozen=True, slots=True)
+class PreparedBulkBoundary:
+    """One validity proof for one immutable Shapely copper geometry.
+
+    The exact strip construction, validity, coverage and witness bytes are
+    unchanged. The retained object cannot be replaced; a different geometry
+    requires a different prepared instance and a fresh validity check.
+    """
+    copper: object
+
+    def __post_init__(self):
+        if self.copper.is_empty or not self.copper.is_valid:
+            raise ValueError('VALID_ORIGINAL_COPPER_UNION_REQUIRED')
+
+    def witness(self, source_id, native_points, width_mm):
+        return _bulk_boundary_route_witness(source_id,native_points,width_mm,self.copper,validate_body=False)
+
+
+def bulk_boundary_route_witness(source_id, native_points, width_mm, original_copper):
+    """Compatibility entry: independently validate an uncached copper body."""
+    return _bulk_boundary_route_witness(source_id,native_points,width_mm,original_copper,validate_body=True)

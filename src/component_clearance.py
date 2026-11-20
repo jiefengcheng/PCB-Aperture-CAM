@@ -28,10 +28,10 @@ def joined(values):
     values=list(values);return unary_union(values)if values else Polygon()
 
 class Context:
-    def __init__(self,source,source_hash,originals):
+    def __init__(self,source,source_hash,originals,*,membership_from=None):
         self.index=OriginalOwners(source);self.source_hash=source_hash
         self.reserved={};self.reservation_sha256=None
-        self.originals=dict(originals);self.ids={s:self.index.membership(g)for s,g in originals.items()}
+        self.originals=dict(originals);self.ids=self.index.memberships(self.originals,reuse=membership_from)
         self.approved_partial_pockets={}
         if any(not v for v in self.ids.values()):raise ValueError('SOURCE_OWNER_MISSING')
         self.cores=dict(zip(self.index.ids,self.index.owners))
@@ -147,9 +147,25 @@ class Context:
         diagnostics=[dict(owner=o,union_covers_original=after[o].covers(g),overlay_missing_area_mm2=g.difference(after[o]).area)for o,g in self.cores.items()]
         return dict(passed=not failures,failures=failures,pairs=pairs,ownership_policy=POLICY,source_occurrences_preserved=len(preserved),source_proof='COMPLETE_IMMUTABLE_ORIGINAL_OCCURRENCE_LEDGER_AND_COVERING_CURRENT_CONTRIBUTIONS',union_diagnostics=diagnostics,scope='Every new owner surface to all current foreign original owners; no internal component clearance.')
 
-def bind(source,source_hash,originals):
+def bind(source,source_hash,originals,*,membership_from=None):
     global ACTIVE
-    ACTIVE=Context(source,source_hash,originals);return ACTIVE
+    ACTIVE=Context(source,source_hash,originals,membership_from=membership_from);return ACTIVE
+
+def candidate_union_sha256(parent, current):
+    """Reuse one diagnostic digest across checks of identical ordered copper."""
+    from src.stage_abi.loaded_geometry import geometry_checksum
+
+    # Bound the retained key. The full union is never retained by this cache.
+    if len(current) > 32768:
+        return digest(to_wkb(joined(current.values())))
+    key = tuple((sid, geometry_checksum(shape)) for sid, shape in current.items())
+    cached = getattr(parent, '_candidate_union_digest', None)
+    if cached is not None and cached[0] == key:
+        return cached[1]
+    result = digest(to_wkb(joined(current.values())))
+    parent._candidate_union_digest = (key, result)
+    return result
+
 
 class OwnerCheck:
     def __init__(self,parent,*,context=None,active_test=None):
@@ -203,13 +219,14 @@ class OwnerCheck:
                     self.cache[key]=(whole,delta,size);self.weight+=size
             after[o]=whole;deltas[o]=delta;versions_by_owner[o]=digest(canonical([key[0],[[sid,h]for sid,h in key[1]]]))
         constraint={}
+        shared_memo=getattr(p,'owner_constraint_memo',None)
         for o,g in after.items():
             key=('constraint',o,versions_by_owner[o])
             if key in self.cache:
                 fixed,_,_=self.cache[key];self.cache.move_to_end(key)
             else:
                 from src.gerber_u05.checking_envelopes import constraint as foreign_constraint
-                fixed=foreign_constraint(self.ctx,o,g)
+                fixed=foreign_constraint(self.ctx,o,g,shared_memo=shared_memo)
                 size=2*len(to_wkb(fixed))+512
                 self.remember(key,fixed,None,size)
             constraint[o]=fixed
@@ -240,7 +257,7 @@ class OwnerCheck:
         for r in results:
             r['passed']=r['passed']and r['original_owner_id']not in failed_owners
             r['foreign_owner_pair_indexes']=[i for i,q in enumerate(pairs)if q['owner']==r['original_owner_id']]
-        image=joined(current.values())if materialize_scene else None
+        image_sha256=candidate_union_sha256(p,current)if materialize_scene else None
         binding_vector=digest(canonical(results))
         recorded=results if materialize_scene else []
-        return dict(schema='source-growth-original-copper-ownership/1',passed=not failures,failures=failures,traces=recorded,verified_source_vector_sha256=binding_vector,trace_count=len(traces),checked_trace_count=len(traces),fixed_object_count=p.fixed_count,scene_object_count=len(p.ids),evaluation_complete=not(fail_fast and failures),scene_union_materialized=materialize_scene,candidate_union_wkb_sha256=None if image is None else digest(to_wkb(image)),original_ownership_sha256=self.ctx.index.fingerprint,ownership_policy=getattr(self.ctx,'ownership_policy',POLICY),reserved_prior_positive_sha256=self.ctx.reservation_sha256,required_gap_mm=gap,foreign_owner_pairs=pairs,internal_clearance='NOT_APPLICABLE_SAME_ORIGINAL_OWNER',preparation_cache_bounds=dict(limit_bytes=self.limit,entry_limit=4096,signature_limit=8192),scope='Complete original source identities and all changed-owner versus current foreign-owner surfaces. Source growth caps and export/reparse remain mandatory.')
+        return dict(schema='source-growth-original-copper-ownership/1',passed=not failures,failures=failures,traces=recorded,verified_source_vector_sha256=binding_vector,trace_count=len(traces),checked_trace_count=len(traces),fixed_object_count=p.fixed_count,scene_object_count=len(p.ids),evaluation_complete=not(fail_fast and failures),scene_union_materialized=materialize_scene,candidate_union_wkb_sha256=image_sha256,original_ownership_sha256=self.ctx.index.fingerprint,ownership_policy=getattr(self.ctx,'ownership_policy',POLICY),reserved_prior_positive_sha256=self.ctx.reservation_sha256,required_gap_mm=gap,foreign_owner_pairs=pairs,internal_clearance='NOT_APPLICABLE_SAME_ORIGINAL_OWNER',preparation_cache_bounds=dict(limit_bytes=self.limit,entry_limit=4096,signature_limit=8192),scope='Complete original source identities and all changed-owner versus current foreign-owner surfaces. Source growth caps and export/reparse remain mandatory.')

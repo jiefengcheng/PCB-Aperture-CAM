@@ -1,0 +1,65 @@
+{
+  "schema": "t04-source-built-profile-entry-abi/1",
+  "entrypoint": "tools/Run_T04_Profile.command",
+  "python_entrypoint": "src.gerber_u05.profile_job",
+  "input": "Hash-bound accepted T03 scene, source binding, four native T03 audits and captured policies",
+  "phases": [
+    "Construct source-derived 25 percent route profiles and editable bulk; execute native proposal and complete final checks",
+    "Bind the accepted route and bulk operands as an immutable content-addressed geometry floor",
+    "Construct optional side-specific additions at fixed accepted route poses; execute fresh proposal and complete final checks"
+  ],
+  "parameters": {
+    "parallel_shared_length_mm": 0.05,
+    "curve_noise_fraction": 0.01,
+    "width_variation_limit": 0.25,
+    "maximum_translation_mm": 0.025,
+    "transition_length_mm": 0.05,
+    "maximum_source_width_factor": 1.5,
+    "maximum_total_width_increase_mm": 0.03,
+    "construction_cap_reserve_mm": 0.0005,
+    "pass_increments_per_phase": [1, 1, 1, 1, 2, 2, 2]
+  },
+  "scope": {
+    "bounded": "Explicit unique native route IDs, at most 128",
+    "full_board": "No route-ID filter; complete native admission and source-role projection; requires code/input/policy-bound bounded qualification",
+    "default_pipeline_activation": false,
+    "replay": false,
+    "downstream_export": false
+  },
+  "ownership": {
+    "original_source": "Immutable refs and native identities retained, including zero-contribution aliases and authorized bulk tombstones",
+    "route": "Connected native route, distinct from local parallel group",
+    "bulk": "Existing source-role classifier and original-owner index, independent of chosen mutable route set",
+    "side_floor": "Every accepted route and changed-bulk contribution retained exactly; accepted poses fixed",
+    "neighbor_index": "Complete floor, maximum body and optional-extension bounds plus checking headroom; every candidate must fit its prepared bound. Symmetric source-radius bounds are insufficient for side growth."
+  },
+  "reuse": {
+    "geometry_only": true,
+    "imported_native_proof_reuse": false,
+    "source_preparation": "Once per job, hash-bound source roles and catalogue shared across both phases",
+    "side_witnesses": "Positive immutable shape/recipe hashes only, at most 128 entries per table; cleared at construction boundaries",
+    "route_geometry_bytes": 67108864,
+    "changed_geometry_policy": "Exact binding miss or explicit rejection; never reuse a decision for changed geometry",
+    "planning_candidate_geometry_bytes": 536870912,
+    "planning_candidate_eligibility": "All admissible immutable recipes survive independently of mutable route count, cache budget and residency. No memory-derived top-N cutoff.",
+    "planning_candidate_miss": "Reconstruct exact geometry and verify WKB including SRID, precision, bounds and estimated weight. An oversized shape is used without caching; reconstruction mismatch is fatal.",
+    "planning_candidate_accounting": "The LRU covers geometry reuse only; active source/chosen geometry and lightweight recipes are separate. Budget counters are operational progress, not native proof authority."
+  },
+  "checks": [
+    "Per-proposal physical/functional clearance, source cores and source voids",
+    "Complete nominal and envelope scenes in both phases",
+    "Actual pre-motion foreign-owner gaps and protected terminal partition",
+    "Both source width caps, route width band and side-cell cap witnesses",
+    "Serialized material hash and original identity custody",
+    "Accepted-state proof-chain transition for every native proposal"
+  ],
+  "failure": "Exclusive attempt latch; retain FAIL and artifacts, no retry/resume or acceptance promotion",
+  "reports": "Existing per-proposal and final-check contracts, plus source_built_profile with baseline ref, floor digest, retention and phase wall times",
+  "scope_authority": "RESULT.scope and limiting_construction.scope select execution scope; RESULT.full_board_run records an actual whole-board execution. Historical nested planner labels are retained for report compatibility and do not enable or qualify a board run.",
+  "optional_cap_rejection": "Record rejected width sections, discard an uncertifiable supplement, revalidate the exact accepted floor, then execute all native proposal and final checks",
+  "timing": "Include source intake, construction, shared setup, both native ladders, both complete final checks, floor binding and publication; archive/visual audit separately",
+  "profile_factor_semantics": "Factors denote progress toward a pre-capped profile. Fallback candidate physical width fields and eligibility derive from the profile band; do not multiply source width by progress as a second physical enlargement.",
+  "equal_width_construction": "Use the single exact lower/upper buffer when the bands coincide. Do not clip and union a redundant subset on coincident boundaries.",
+  "candidate_overlay_failure": "Record and reject an invalid optional planning candidate. No snapping, geometry repair, clearance waiver or acceptance promotion.",
+  "candidate_scaling_qualification": "Candidate eligibility is independent of the geometry-cache budget and route count. Tests must include zero bytes, oversized entries, eviction and changed-reconstruction rejection. Previous bounded manifests do not qualify changed code."
+}

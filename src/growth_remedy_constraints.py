@@ -2,7 +2,16 @@
 from src import pin_separation as pin,t04_width_fence as width,t02_shared_gaps as gaps
 
 def remedy(logical,predecessor,*,pin_rule=None):
-    pin_check=pin.remedy(logical,predecessor)if pin_rule is None else pin_rule.remedy(logical,predecessor)
+    effective_pin = pin.ACTIVE if pin_rule is None else pin_rule
+    if effective_pin is None:
+        pin_check = None
+    elif width.ACTIVE is None:
+        pin_check = effective_pin.remedy(logical, predecessor)
+    else:
+        # Both guards consume the same ordered delta. The width rule owns the
+        # bounded geometry memo, and each guard still evaluates its own proof.
+        pin_check = effective_pin.remedy(
+            logical, predecessor, _proposal_delta=width.ACTIVE.proposal_delta)
     width_check=width.remedy(logical,predecessor)
     gap_check=gaps.remedy(logical,predecessor)
     if width_check is None and gap_check is None:return pin_check

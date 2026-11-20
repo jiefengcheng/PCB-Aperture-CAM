@@ -6,6 +6,7 @@ any current/previous finite neighbor changed. Every final native verification
 also runs the original full PreparedWidthScene predicate on nominal/envelope.
 """
 from collections import OrderedDict
+from dataclasses import asdict
 import zlib
 from shapely import STRtree,to_wkb,from_wkb,get_precision
 from shapely.geometry import box
@@ -17,7 +18,7 @@ from src.native_inventory import ERROR_MM
 
 
 class IncrementalWidthScene(PreparedWidthScene):
-    def __init__(self, traces, fixed, *, original_union_cache_bytes=512*1024**2):
+    def __init__(self, traces, fixed, *, original_union_cache_bytes=512*1024**2, reuse_accepted_pairs=False):
         if type(original_union_cache_bytes) is not int or original_union_cache_bytes<0:
             raise ValueError('U03_UNION_CACHE_BUDGET_INVALID')
         super().__init__(traces, fixed)
@@ -30,6 +31,49 @@ class IncrementalWidthScene(PreparedWidthScene):
         self.original_union_targets=set(self.trace_ids)
         self.use_width_union_window=False
         self.original_union_boundary_rechecks=0
+        self.reuse_accepted_pairs = reuse_accepted_pairs
+        self.accepted_pair_reuses = 0
+
+    def proof_state(self):
+        """Return the accepted geometry, per-route witnesses, and proof-chain hash."""
+        return self.accepted_current, self.accepted_results, self.accepted_hash
+
+    def restore_proof_state(self, state):
+        self.accepted_current, self.accepted_results, self.accepted_hash = state
+
+    def seed_from_full_check(self, rows, report):
+        """Carry the complete physical witnesses from the same validated scene."""
+        if (not report['passed'] or not report['evaluation_complete']
+                or report['contract'] != asdict(self.contract)
+                or report['checked_trace_count'] != len(self.trace_ids)
+                or report['predecessor_union_wkb_sha256'] != self.predecessor_sha
+                or report['scene_object_count'] != len(self.original)
+                or report['fixed_object_count'] != self.fixed_count):
+            raise ValueError('T04_COMPLETE_ACCEPTED_CLEARANCE_REQUIRED')
+        proofs = {}
+        for witness in report['traces']:
+            sid = witness['trace_id']
+            if (sid in proofs or not witness['passed'] or witness['failures']
+                    or witness['original_trace_wkb_sha256'] != self.trace_ids.get(sid)):
+                raise ValueError('T04_ACCEPTED_CLEARANCE_WITNESS_CHANGED')
+            pairs = [dict(neighbor_id=pair['neighbor_id'], port_sha256=pair['original_port_wkb_sha256'],
+                          gap_mm=pair['new_exposed_to_visible_neighbor_gap_mm'], passed=not pair['failures'])
+                     for pair in witness['pairs']]
+            proofs[sid] = dict(trace_id=sid, candidate_sha256=witness['candidate_trace_wkb_sha256'],
+                               passed=True, pairs=pairs)
+        self.load_accepted_proofs(rows, proofs, digest(canonical(report)))
+
+    def load_accepted_proofs(self, rows, proofs, proof_hash):
+        candidates = {row['id']:row['candidate'] for row in rows}
+        if set(proofs) != set(self.trace_ids) or set(candidates) != set(self.trace_ids):
+            raise ValueError('T04_ACCEPTED_CLEARANCE_COVERAGE_CHANGED')
+        for sid, proof in proofs.items():
+            if (not proof['passed'] or proof['trace_id'] != sid
+                    or proof['candidate_sha256'] != self.cached_sha(candidates[sid])
+                    or any(not pair['passed'] or pair['neighbor_id'] == sid
+                           or pair['neighbor_id'] not in self.original for pair in proof.get('pairs', ()))):
+                raise ValueError('T04_ACCEPTED_CLEARANCE_WITNESS_CHANGED')
+        self.restore_proof_state((dict(self.original, **candidates), proofs, proof_hash))
 
     def original_union_key(self,sid,candidate):
         # The source operands and STRtree are immutable for this checker.
@@ -89,7 +133,8 @@ class IncrementalWidthScene(PreparedWidthScene):
         return tuple(int(i) for i in self.tree.query(window) if self.ids[int(i)]!=sid)
 
     def compute_original_union(self,key):
-        return unary_union([self.original[self.ids[i]] for i in key])
+        from shapely.ops import unary_union as copper_union
+        return copper_union([self.original[self.ids[i]] for i in key])
 
     def cached_sha(self, g):
         key = id(g); cached = self.geometry_hashes.get(key)
@@ -98,8 +143,9 @@ class IncrementalWidthScene(PreparedWidthScene):
         return cached[1]
 
     def exact_other_original_union(self,sid,candidate):
+        from shapely.ops import unary_union as copper_union
         nearby=[self.original[self.ids[int(i)]] for i in self.tree.query(candidate.envelope) if self.ids[int(i)]!=sid]
-        return unary_union(nearby)
+        return copper_union(nearby)
 
     # Default hooks retain the original predicate and index implementation.
     def spatial_index(self,current):return STRtree([current[s] for s in self.ids])
@@ -149,13 +195,17 @@ class IncrementalWidthScene(PreparedWidthScene):
                 self.incremental_ports.update({key:value[0] for key,value in self.ports.items()})
             return result
         current,rows,changed=self.prepare_trial(traces)
-        c = self.contract; tree = self.spatial_index(current)
+        return self._check_prepared(traces, current, rows, changed, self.spatial_index(current))
+
+    def _check_prepared(self, traces, current, rows, changed, tree, *, oldtree=None):
+        c = self.contract
         self.use_width_union_window=True
         self.original_union_targets=changed
         self.invalidate_proofs(changed)
         affected = set(changed)
         if self.accepted_current is not None:
-            oldtree = self.spatial_index(self.accepted_current)
+            if oldtree is None:
+                oldtree = self.spatial_index(self.accepted_current)
             radius = c.construction_gap_mm + c.comparison_epsilon_mm
             for sid in changed:
                 # Symmetric finite-neighbor dependency, covering both insertion
@@ -177,17 +227,43 @@ class IncrementalWidthScene(PreparedWidthScene):
             exact = self.cached_sha(candidate) == self.trace_ids[sid]
             if not candidate.covers(core): reasons.append('ORIGINAL_TRACE_CORE_REMOVED')
             if not exact:
-                key = self.cached_sha(candidate); entry = self.added_cache.get(sid)
-                if entry is None or entry[0] != key:
-                    retained=self.addition_visibility.get(sid)
-                    entry=retained if retained is not None and retained[0]==key else (key,candidate.difference(self.predecessor))
-                    self.added_cache[sid] = entry
-                added = entry[1]
+                key = self.cached_sha(candidate)
+                # Only an unchanged subject can carry an accepted pair witness.
+                # Index by neighbor ID for constant-time lookup during the fresh query.
+                applicable = {}
+                if (self.reuse_accepted_pairs and self.accepted_current is not None
+                        and self.cached_sha(self.accepted_current[sid]) == key):
+                    # Stable candidate and neighbor versions bind the checked
+                    # copper, visibility, source attachment port and distance.
+                    applicable = {pair['neighbor_id']: pair
+                                  for pair in self.accepted_results[sid].get('pairs', ())}
+                added = None
                 radius = c.construction_gap_mm + c.comparison_epsilon_mm
                 x0,y0,x1,y1 = candidate.bounds
-                for i in sorted(int(v) for v in tree.query(box(x0-radius,y0-radius,x1+radius,y1+radius))):
+                for i in sorted(tree.query(box(x0-radius,y0-radius,x1+radius,y1+radius)).tolist()):
                     oid = self.ids[i]
                     if oid == sid: continue
+                    # The index still discovers every current neighbor. A missing
+                    # witness, changed operand, failed comparison, or boundary gap
+                    # falls through to the original geometry calculation.
+                    prior = applicable.get(oid)
+                    if (prior is not None and prior['passed']
+                            and (prior['gap_mm'] is None or prior['gap_mm'] >
+                                 c.construction_gap_mm + c.comparison_epsilon_mm)
+                            and self.cached_sha(current[oid]) == self.cached_sha(self.accepted_current[oid])):
+                        pairs.append(prior)
+                        self.accepted_pair_reuses += 1
+                        continue
+                    # Build the exposed addition only if at least one pair needs
+                    # a fresh check. Retain the existing per-version geometry cache.
+                    if added is None:
+                        entry = self.added_cache.get(sid)
+                        if entry is None or entry[0] != key:
+                            retained = self.addition_visibility.get(sid)
+                            entry = retained if retained is not None and retained[0] == key else (
+                                key, candidate.difference(self.predecessor))
+                            self.added_cache[sid] = entry
+                        added = entry[1]
                     old = self.original[oid]; key = sid,oid
                     if key not in self.incremental_ports:
                         overlap = core.intersection(old)

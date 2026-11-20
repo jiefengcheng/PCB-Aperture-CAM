@@ -116,7 +116,10 @@ def proposal_check(patch,owner,original,foreign,contract,kind="hole",source_void
     else:
         prior_holes,prior_index=(holes(owner),None) if owner_void_context is None else owner_void_context
         prior_index=STRtree(prior_holes) if prior_index is None else prior_index
-        assembled_holes=holes(assembled)
+        # The preceding guard already validated this exact immutable Polygon.
+        # Extract all rings in original order without validating the owner a
+        # second time inside holes()/parts(). The trapped-void scan still runs.
+        assembled_holes=[Polygon(ring) for ring in assembled.interiors]
         if assembly_out is not None:assembly_out.append((assembled,assembled_holes))
         for h in (assembled_holes if holes_required() else []):
             if any(h.intersection(prior_holes[int(k)]).area>contract.area_epsilon_mm2 for k in prior_index.query(h)):continue
@@ -147,7 +150,18 @@ def foreign_bounded_pocket(parent,owner,original,foreign,contract,parent_check,p
     return candidate,check,assembled
 
 
-def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,reserved=None,partial_strategy=None,approved_partials=None,clearance_only=None):
+def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,source_support=None,reserved=None,partial_strategy=None,approved_partials=None,clearance_only=None,*,memo_bytes=None,reuse_immutable_outputs=False):
+    """Check ordered fill proposals with a bounded, round-local geometry memo.
+
+    ``memo_bytes`` controls retention only. None preserves the shared default;
+    zero disables retention. Larger callers can retain unchanged foreign buffers
+    and ordered barrier unions between proposals instead of evicting/rebuilding
+    them. Complete operand bytes, precision and SRID still key each construction,
+    so changed copper misses. Checksums and all physical checks still execute.
+    The memo is discarded at the end of this round: it never stores acceptance
+    or supplies a verdict to another construction/verification worker. Its byte
+    limit estimates retained geometry, not process RSS or temporary GEOS memory.
+    """
     contract.validate();originals,grown,mapping=components(source,current,contract)
     records=[];accepted=[];frozen=list(grown);tree=STRtree(grown);partial_specs=list(approved_partials or [])
     from src.partial_pocket_remedy import STRATEGY,propose,protected,corresponds
@@ -158,7 +172,10 @@ def plan(source,current,contract=RemedyContract(),checkpoint=lambda record:None,
     clearance_only={}if clearance_only is None else clearance_only
     checking_ids=sorted(clearance_only);checking_tree=STRtree([clearance_only[j]for j in checking_ids])
     from src.stage_abi.loaded_geometry import GeometryMemo
-    memo=GeometryMemo(sha(source)+sha(current)+repr(contract))
+    memo_options={}if memo_bytes is None else{'limit':memo_bytes}
+    if reuse_immutable_outputs is not False:
+        memo_options['reuse_immutable_outputs']=reuse_immutable_outputs
+    memo=GeometryMemo(sha(source)+sha(current)+repr(contract),**memo_options)
     for index,(owner,j) in enumerate(zip(grown,mapping)):
         checkpoint(dict(component=index,total_components=len(grown),proposals_so_far=len(records),fills_so_far=len(accepted)))
         from src.hole_acceptance import required as holes_required

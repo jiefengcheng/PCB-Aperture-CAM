@@ -85,7 +85,13 @@ def test_integral_joint_has_no_artificial_internal_clearance():
     assert inc.evaluate('trace',1.5)['passed']
 
 
-def test_uniform_route_cannot_close_a_large_empty_pocket_in_same_owner():
+def test_uniform_route_cannot_close_a_large_empty_pocket_in_same_owner(monkeypatch):
+    from contextvars import ContextVar
+    from src import hole_acceptance
+
+    # A strict-policy regression should not inherit another job's policy.
+    monkeypatch.setattr(hole_acceptance, 'ACTIVE', ContextVar(
+        'strict_width_pocket_test', default=hole_acceptance.STRICT))
     route=LineString([(0,0),(2,0)]).buffer(.04,quad_segs=128)
     rest=LineString([(2,0),(2,2),(0,2),(0,.09)]).buffer(.04,quad_segs=128)
     cc.bind(route.union(rest),'6'*64,dict(route=route,rest=rest))
@@ -141,6 +147,70 @@ def test_current_native_grid_duplicate_uses_existing_fidelity_only(skin_mm,passe
     assert proof['current_native_fidelity_mm']==.000002
 
 
+def test_width_fence_reuses_geometry_across_exact_replays_and_refreshes_on_copper_change(monkeypatch):
+    from shapely import from_wkb, to_wkb
+    from shapely.geometry.base import BaseGeometry
+
+    original_buffer = BaseGeometry.buffer
+    original_difference = BaseGeometry.difference
+    buffered = []
+    differences = []
+
+    def record_buffer(geometry, *args, **kwargs):
+        buffered.append(geometry)
+        return original_buffer(geometry, *args, **kwargs)
+
+    def record_difference(geometry, *args, **kwargs):
+        differences.append(geometry)
+        return original_difference(geometry, *args, **kwargs)
+
+    monkeypatch.setattr(BaseGeometry, 'buffer', record_buffer)
+    monkeypatch.setattr(BaseGeometry, 'difference', record_difference)
+    baseline = box(0, 0, 1, 1)
+    current = box(0, 0, 1.005, 1)
+    proposal = box(.9, .2, 1.005001, .8)
+    rule = fence.Rule(box(1, 0, 1.01, 1), baseline, 'buffer-reuse')
+
+    rejected = rule.remedy(proposal, baseline)
+    assert not rejected['passed']
+    assert rule.remedy(proposal, baseline) == rejected
+    assert rule.remedy(from_wkb(to_wkb(proposal)), from_wkb(to_wkb(baseline))) == rejected
+    assert len(buffered) == 1
+    assert buffered[0] is baseline
+    assert len(differences) == 3
+
+    accepted = rule.remedy(proposal, current)
+    assert accepted['passed']
+    assert rule.remedy(proposal, from_wkb(to_wkb(current))) == accepted
+    assert len(buffered) == 2
+    assert buffered[1] is current
+    assert len(differences) == 6
+
+
+def test_width_fence_refreshes_buffer_when_only_precision_model_changes(monkeypatch):
+    from shapely import equals_identical, set_precision
+    from shapely.geometry.base import BaseGeometry
+
+    baseline = box(0, 0, 1, 1)
+    fixed_precision = set_precision(baseline, .01, mode='pointwise')
+    assert equals_identical(baseline, fixed_precision)
+    original_buffer = BaseGeometry.buffer
+    buffered = []
+
+    def record_buffer(geometry, *args, **kwargs):
+        buffered.append(geometry)
+        return original_buffer(geometry, *args, **kwargs)
+
+    monkeypatch.setattr(BaseGeometry, 'buffer', record_buffer)
+    rule = fence.Rule(box(1, 0, 1.01, 1), baseline, 'precision-change')
+    proposal = box(.9, .2, 1.005, .8)
+    assert not rule.remedy(proposal, baseline)['passed']
+    fixed_proof = rule.remedy(proposal, fixed_precision)
+    assert rule.remedy(proposal, fixed_precision) == fixed_proof
+    assert len(buffered) == 2
+    assert buffered[1] is fixed_precision
+
+
 def test_overlapping_dependency_corridors_do_not_forbid_approved_neighbour_growth():
     source=box(0,0,1,.1).union(box(.5,.1,.6,.5))
     approved=source.union(box(.49,.09,.61,.5))
@@ -171,3 +241,70 @@ def test_prepared_bounds_include_full_conservative_envelope_at_ceiling(separatio
     assert inc.evaluate('a',1.5)['passed'] is passed
     complete=PreparedWidthScene(base,[]).check([dict(id=s,original=g,candidate=build(s,1.5,True),verified_original_width_mm=.05)for s,g in originals.items()])
     assert complete['passed'] is passed
+
+
+def test_prepared_forbidden_disjoint_proof_preserves_contact_and_grid(monkeypatch):
+    from shapely import set_precision
+    from shapely.geometry import box
+    from shapely.geometry.base import BaseGeometry
+    from src.t04_width_fence import Rule
+
+    forbidden = box(0, 0, 4, 4).difference(box(1, 1, 3, 3))
+    baseline = box(10, 10, 11, 11)
+    rule = Rule(forbidden, baseline, 'test')
+    original_intersection = BaseGeometry.intersection
+    calls = []
+
+    def traced(left, right, *args, **kwargs):
+        calls.append(right)
+        return original_intersection(left, right, *args, **kwargs)
+
+    monkeypatch.setattr(BaseGeometry, 'intersection', traced)
+    assert rule.remedy(box(1.5, 1.5, 2, 2), baseline)['raw_difference_area_mm2'] == 0
+    assert not calls
+    assert rule.remedy(box(1, 1.5, 2, 2), baseline)['raw_difference_area_mm2'] == 0
+    assert len(calls) == 1
+    assert not rule.remedy(box(.9, 1.5, 2, 2), baseline)['passed']
+    assert len(calls) == 2
+    fixed = set_precision(box(1.5, 1.5, 2, 2), .01)
+    assert rule._intersect_forbidden(fixed).is_empty
+    assert len(calls) == 3
+    rule.forbidden = box(1.5, 1.5, 2, 2)
+    assert not rule.remedy(box(1.5, 1.5, 2, 2), baseline)['passed']
+
+
+def test_forbidden_component_index_preserves_exact_intersection_and_order(monkeypatch):
+    from shapely import get_num_coordinates,set_srid,get_srid
+    from shapely.geometry import MultiPolygon
+    from shapely.geometry.base import BaseGeometry
+    forbidden=set_srid(MultiPolygon([box(2*i,0,2*i+1,1).segmentize(.005)for i in range(50)]),4326)
+    baseline=box(-5,-5,-4,-4);rule=fence.Rule(forbidden,baseline,'component-index')
+    proposals=[box(20.9,.2,22.1,.8),box(20.2,.2,20.8,.8),box(21,.2,22,.8)]
+    expected=[g.difference(baseline).difference(baseline).intersection(forbidden).area for g in proposals]
+    original=BaseGeometry.intersection;rights=[]
+    def observed(left,right,*args,**kw):
+        rights.append(right)
+        return original(left,right,*args,**kw)
+    monkeypatch.setattr(BaseGeometry,'intersection',observed)
+    for g,area in zip(proposals,expected):assert rule.remedy(g,baseline)['raw_difference_area_mm2']==area
+    assert all(get_num_coordinates(g)<get_num_coordinates(forbidden)for g in rights)
+    assert all(get_srid(g)==4326 for g in rights)
+    local=rule._local_forbidden(proposals[0],forbidden)
+    expected_parts=[forbidden.geoms[i]for i in (10,11)]
+    assert [g.wkb for g in local.geoms]==[g.wkb for g in expected_parts]
+    assert rule._local_forbidden(proposals[0],forbidden) is local
+    changed=set_srid(MultiPolygon([box(2*i,0,2*i+1.2,1).segmentize(.005)for i in range(50)]),4326)
+    rule.forbidden=changed
+    assert rule.remedy(proposals[0],baseline)['raw_difference_area_mm2']==proposals[0].difference(baseline).difference(baseline).intersection(changed).area
+    assert rule._forbidden_index[0] is changed
+
+
+def test_forbidden_index_keeps_fixed_precision_overlay(monkeypatch):
+    from shapely import set_precision
+    from shapely.geometry import MultiPolygon
+    baseline=box(-5,-5,-4,-4);forbidden=MultiPolygon([box(2*i,0,2*i+1,1).segmentize(.005)for i in range(50)])
+    rule=fence.Rule(forbidden,baseline,'fixed-grid')
+    def forbidden_shortcut(*args):raise AssertionError('fixed precision used component shortcut')
+    monkeypatch.setattr(rule,'_local_forbidden',forbidden_shortcut)
+    g=set_precision(box(.9,.2,1.1,.8),.001)
+    assert rule._intersect_forbidden(g).area==g.intersection(forbidden).area

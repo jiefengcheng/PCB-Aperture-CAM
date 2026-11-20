@@ -28,7 +28,10 @@ def context(run):
     from .component_stages import reserve_prior
     reserve_prior(cc.ACTIVE,store)
     for name in ORDER:
-        value=p.load(run/(name+".json"));scene=store.get_json(value["output_scene_ref"],kind="scene");cc.ACTIVE.register_scene(store,scene)
+        value=p.load(run/(name+".json"));scene=store.get_json(value["output_scene_ref"],kind="scene")
+        from .t04_edge_entry import reject_unqualified_predecessor
+        reject_unqualified_predecessor(scene)
+        cc.ACTIVE.register_scene(store,scene)
     from src.t02_shared_gaps import restore as restore_shared_gaps
     restore_shared_gaps(store,scene,project_parts=True)
     from .stage_entry_prior import bind as bind_entry

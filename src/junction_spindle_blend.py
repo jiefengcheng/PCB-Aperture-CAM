@@ -8,7 +8,8 @@ import math
 from shapely.geometry import box
 
 
-def spindle_blend(owner, radius, window, *, geometry=None):
+def spindle_addition(owner, radius, window, *, geometry=None):
+    """Return the clipped rolling-disc addition before obstacle subtraction."""
     if geometry is None:
         from src.stage_abi.preparation import geometry_memo
         geometry=geometry_memo()
@@ -19,11 +20,26 @@ def spindle_blend(owner, radius, window, *, geometry=None):
     # clipped to the declared local window; never erode the original owner.
     if geometry is None:
         closed=owner.buffer(radius,quad_segs=64).buffer(-radius,quad_segs=64)
-        addition=closed.difference(owner).intersection(window)
-        return owner.union(addition),addition
-    closed=geometry.buffer(geometry.buffer(owner,radius,quad_segs=64),-radius,quad_segs=64)
-    addition=geometry.intersection(geometry.difference(closed,owner),window)
-    return geometry.union(owner,addition),addition
+        return closed.difference(owner).intersection(window)
+
+    def build():
+        closed = geometry.buffer(geometry.buffer(owner, radius, quad_segs=64),
+                                 -radius, quad_segs=64)
+        return geometry.intersection(geometry.difference(closed, owner), window)
+
+    # The nominal addition can be requested for both attachment need and a
+    # full-radius proposal. Reuse the result before barrier/void subtraction:
+    # those operands can change independently and are checked by the caller.
+    return geometry.construct('spindle-addition', [owner, window], (radius, 64), build)
+
+
+def spindle_blend(owner, radius, window, *, geometry=None):
+    if geometry is None:
+        from src.stage_abi.preparation import geometry_memo
+        geometry = geometry_memo()
+    addition = spindle_addition(owner, radius, window, geometry=geometry)
+    candidate = owner.union(addition) if geometry is None else geometry.union(owner, addition)
+    return candidate, addition
 
 
 def check_spindle(owner, candidate, addition, window, foreign, gap=CONSTRUCTION_GAP_MM, *, geometry=None):

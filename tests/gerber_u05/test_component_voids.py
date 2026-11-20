@@ -28,3 +28,23 @@ def test_foreign_copper_in_new_pocket_blocks_fill():
 def test_twenty_percent_shortage_and_file_tolerances_remain_fixed():
  with pytest.raises(ValueError,match='POLICY_OUT_OF_BOUND'):RemedyContract(maximum_shortage=.21).validate()
  with pytest.raises(ValueError,match='FILE_POLICY_CHANGED'):RemedyContract(file_uncertainty_mm=.001).validate()
+
+@pytest.mark.parametrize('foreign', [False, True])
+def test_completion_memo_capacity_preserves_full_proof_and_geometry(foreign):
+ from shapely import to_wkb
+ island=box(.94,.94,1.06,1.06)
+ source=unary_union([opening(),island])if foreign else opening()
+ current=unary_union([ring(),island])if foreign else ring()
+ reference,reference_fills,reference_after=plan(source,current,memo_bytes=0)
+ for capacity in (None,64*1024**2,512*1024**2):
+  report,fills,after=plan(source,current,memo_bytes=capacity)
+  assert report==reference
+  assert [to_wkb(r['geometry'])for r in fills]==[to_wkb(r['geometry'])for r in reference_fills]
+  assert to_wkb(after)==to_wkb(reference_after)
+  if foreign:
+   assert any('FOREIGN_CLEARANCE_FAILED'in r.get('check',{}).get('reasons',[])for r in report['records'])
+  else:assert fills and not holes(after)
+
+def test_completion_rejects_invalid_memo_budget():
+ with pytest.raises(ValueError,match='INVALID_BUDGET'):
+  plan(opening(),ring(),memo_bytes=-1)

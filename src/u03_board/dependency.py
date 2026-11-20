@@ -14,6 +14,7 @@ from shapely.geometry import box
 from src.native_inventory import ERROR_MM
 from src.stage_abi.store import canonical, digest
 from src.source_offset_width import FAMILY
+from .assembly import CandidateSnapshot
 from .checker import IncrementalWidthScene
 
 
@@ -23,6 +24,15 @@ class Certificate:
     context: str
     payload: bytes
     payload_sha256: str
+
+
+@dataclass(frozen=True, slots=True)
+class RouteTrial:
+    """The last checked overlay and the accepted state it started from."""
+    accepted: dict
+    current: dict
+    route_id: str
+    version: str
 
 
 class Certificates:
@@ -92,6 +102,17 @@ comes from a freshly validated complete context, even if an active edge evicts.
 class BoundsView:
     def __init__(self,tree,limits,bounds):
         self.tree=tree;self.limits=limits;self.bounds=bounds;self.memo=OrderedDict();self.weight=0
+
+    def with_bounds(self, position, bounds):
+        """Reuse the maximum-envelope tree when one row fits its original limit."""
+        limits = self.limits[position]
+        if np.any(bounds[:2] < limits[:2]) or np.any(bounds[2:] > limits[2:]):
+            return None
+        updated = self.bounds.copy()
+        updated[position] = bounds
+        updated.setflags(write=False)
+        return BoundsView(self.tree, self.limits, updated)
+
     def query(self,geometry):
         key=geometry.bounds
         if key not in self.memo:
@@ -121,9 +142,13 @@ class DependencyWidthScene(IncrementalWidthScene):
             groups=self.groups,contract=asdict(self.contract),objects=[
             dict(id=s,width=self.widths[s],sha=self.cached_sha(self.original[s])) for s in self.ids])))
         self.last_trial_versions=None;self.pending_changes=set()
+        self.last_single_trial = None
+        self.route_positions = {sid: i for i, sid in enumerate(sorted(self.trace_ids))}
         self.graph=ProofGraph();self.routes=Certificates(self.binding,proof_budget//2);self.pairs=Certificates(self.binding,proof_budget//2)
         self.geometry_budget=geometry_budget;self.geometries=OrderedDict();self.geometry_weight=0
         self.geometry_hits=0;self.empty_witnesses=0;self.visibility_tokens={};self.index_views=OrderedDict()
+        from .visibility_records import VisibilityRecords
+        self.visibility_records=VisibilityRecords(self)
         self.index_builds=1;self.index_fallbacks=0;self.bounds_updates=0
         self.positions={sid:i for i,sid in enumerate(self.ids)}
         self.fixed_ids=[sid for sid in self.ids if sid not in self.trace_ids]
@@ -145,6 +170,9 @@ class DependencyWidthScene(IncrementalWidthScene):
             from src.prepared_width_scene import PreparedWidthScene
             return PreparedWidthScene.check(self,traces,materialize_scene=materialize_scene,fail_fast=fail_fast)
         if self.contract!=self.bound_contract:raise ValueError('U03_DEPENDENCY_POLICY_CHANGED')
+        if self.last_single_trial is not None:
+            self.last_single_trial = None
+            self.last_trial_versions = None
         if materialize_scene or not fail_fast:
             # Full closure still executes the untouched PreparedWidthScene path.
             self.routes.clear();self.pairs.clear();self.graph.clear()
@@ -152,6 +180,55 @@ class DependencyWidthScene(IncrementalWidthScene):
         result=super().check(traces,materialize_scene=materialize_scene,fail_fast=fail_fast)
         self.last_trial_versions=versions
         return result
+
+    def _check_single_route(self, traces, proposal):
+        """Prepare T04's checker-owned proposal against the accepted proof state."""
+        from src import component_clearance
+        if self.accepted_current is None or component_clearance.ACTIVE is not None:
+            return self.check(traces, fail_fast=True)
+        if self.contract != self.bound_contract:
+            raise ValueError('U03_DEPENDENCY_POLICY_CHANGED')
+
+        sid = proposal.id
+        if (not isinstance(traces, CandidateSnapshot) or len(traces) != len(self.trace_ids)
+                or sid not in self.trace_ids or traces[self.route_positions[sid]] is not proposal
+                or self.cached_sha(proposal.original) != self.trace_ids[sid]
+                or proposal.verified_original_width_mm != self.widths[sid]):
+            raise ValueError('ORIGINAL_TRACE_BINDING_CHANGED')
+        accepted = self.accepted_current
+        candidate = proposal.candidate
+        cached = self.geometry_hashes.get(id(candidate))
+        if cached is None or cached[0] is not candidate:
+            self.valid_geometry(candidate)
+        version = self.cached_sha(candidate)
+        accepted_version = self.accepted_results[sid]['candidate_sha256']
+        changed = {sid} if version != accepted_version else set()
+        current = accepted.copy()
+        current[sid] = candidate
+
+        previous = self.last_single_trial
+        if previous is None or (accepted is not previous.accepted and accepted is not previous.current):
+            # A restored or unrelated state has no validated local transition.
+            self.graph.clear()
+            self.pending_changes = set()
+        elif accepted is previous.current:
+            self.pending_changes = changed
+        else:
+            old_sid = previous.route_id
+            versions = {sid: version}
+            if old_sid != sid:
+                versions[old_sid] = self.accepted_results[old_sid]['candidate_sha256']
+            self.pending_changes = {
+                route for route, value in versions.items()
+                if value != (previous.version if route == old_sid else accepted_version)}
+
+        oldtree = self.spatial_index(accepted)
+        tree = oldtree.with_bounds(self.positions[sid], np.asarray(candidate.bounds)) if isinstance(oldtree, BoundsView) else None
+        tree = self.spatial_index(current) if tree is None else self._remember_index(current, tree)
+        report = self._check_prepared(traces, current, self.trace_ids, changed, tree, oldtree=oldtree)
+        self.last_single_trial = RouteTrial(accepted, current, sid, version)
+        self.last_trial_versions = None
+        return report
 
     def trial_versions(self,traces):
         versions={r['id']:self.cached_sha(r['candidate']) for r in traces}
@@ -180,6 +257,9 @@ class DependencyWidthScene(IncrementalWidthScene):
             # No unproved cap assumption: arbitrary or roundoff-outside inputs
             # get the exact legacy index, never an incomplete neighbor set.
             view=super().spatial_index(current);self.index_fallbacks+=1
+        return self._remember_index(current, view)
+
+    def _remember_index(self, current, view):
         self.index_views[id(current)]=(current,view)
         while len(self.index_views)>3:self.index_views.popitem(last=False)
         return view
@@ -202,7 +282,7 @@ class DependencyWidthScene(IncrementalWidthScene):
         if own!=self.trace_ids[sid]:
             r=self.contract.construction_gap_mm+self.contract.comparison_epsilon_mm
             x0,y0,x1,y1=current[sid].bounds
-            for i in sorted(int(i) for i in tree.query(box(x0-r,y0-r,x1+r,y1+r))):
+            for i in sorted(tree.query(box(x0-r,y0-r,x1+r,y1+r)).tolist()):
                 oid=self.ids[i]
                 if oid!=sid:neighbors.append([oid,self.cached_sha(current[oid]),self._visible_token(oid,current)])
         key=digest(canonical(dict(source=self.binding,route=sid,version=own,neighbors=neighbors)))
@@ -236,6 +316,9 @@ class DependencyWidthScene(IncrementalWidthScene):
         version=self.cached_sha(current[sid]);entry=self.visible_cache.get(sid)
         if entry is not None and entry[0]==version:return entry[1]
         key=('visible',sid,version);g=self._geometry(key)
+        if g is None:
+            g=self.visibility_records.get(sid,version)
+            if g is not None:self._save_geometry(key,g)
         if g is None:
             g=super().visible_geometry(sid,current);self._save_geometry(key,g)
         else:self.set_visible(sid,(version,g))

@@ -6,7 +6,12 @@ from src.growth_void_remedy_v09 import surface_parts
 from shapely import STRtree
 from .checking_envelopes import constraint
 
-def initialize(store,binding,scene=None):
+def initialize_t04(store,binding,scene=None):
+ return initialize(store,binding,scene,prepare_membership=True)
+
+def initialize(store,binding,scene=None,*,prepare_membership=False):
+ from .t04_edge_entry import reject_unqualified_predecessor
+ reject_unqualified_predecessor(scene)
  from src.t04_width_fence import restore as restore_width_fence
  restore_width_fence(store,scene)
  from src.t02_shared_gaps import restore as restore_shared_gaps
@@ -17,12 +22,18 @@ def initialize(store,binding,scene=None):
  from .pin_policy import initialize as initialize_pin
  initialize_pin(store,binding,source,original,scene)
  from src import source_channel_scope
- functional=source_channel_scope.bind(source,binding['source_ref']['sha256'],original,store,integral=(store.root.parent/'SOURCE_ASSEMBLY_BINDING.json').exists())
+ functional=source_channel_scope.bind(source,binding['source_ref']['sha256'],original,store,integral=(store.root.parent/'SOURCE_ASSEMBLY_BINDING.json').exists(),prepare_membership=prepare_membership)
  if (store.root.parent/'LEGACY_REFERENCE_JOB.json').exists():
   from .checking_envelopes import initialize as initialize_checking
   initialize_checking(store,binding,scene,functional=functional)
   cc.ACTIVE=None;return None
- context=cc.bind(source,binding['source_ref']['sha256'],current);context.functional=functional
+ # Functional and physical source partitions coincide for integral input.
+ # Offer the completed membership batch, not its mutable public owner map.
+ # OriginalOwners independently binds the ordered partitions and each source
+ # occurrence (bytes, SRID and precision) before reuse. A removed frame or any
+ # changed operand falls back to fresh positive-area membership checks. Both
+ # contexts still build/validate their own partition and run all later guards.
+ context=cc.bind(source,binding['source_ref']['sha256'],current,membership_from=None if functional is None else functional.index);context.functional=functional
  if functional is not None:functional.physical_context=context
  if scene is not None:
   context.register_scene(store,scene)

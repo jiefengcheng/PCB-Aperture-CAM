@@ -41,37 +41,45 @@ class Slot:
   if self.void.intersection(self.source).area>1e-12:raise ValueError('PIN_PROTECTED_SLOT_MUST_BE_ORIGINAL_EMPTY_SPACE')
   object.__setattr__(self,'binding',digest(canonical(dict(schema=SCHEMA,source_sha256=self.source_sha256,slot_id=self.slot_id,pin_ids=list(self.pin_ids),domain_sha256=digest(to_wkb(self.domain)),source_sha=digest(to_wkb(self.source)),seed_sha256=[digest(to_wkb(g))for g in self.seeds],attachments=list(self.attachments),protected_void_sha256=digest(to_wkb(self.void)),spacing_domain_sha256=digest(to_wkb(self.spacing))))))
 
- def check(self,material,gap,predecessor=None):
+ def check(self,material,gap,predecessor=None,*,geometry=None):
+  # Geometry reuse is optional and never caches a slot verdict. Keys bind
+  # exact ordered WKB/SRID/precision; every branch hit, area, distance and
+  # policy comparison below still runs. In particular, a changed gap must
+  # reevaluate against the same geometry, not reuse a previous acceptance.
+  # The original operation order and buffer parameters remain unchanged.
+  intersection=(lambda a,b:a.intersection(b))if geometry is None else geometry.intersection
+  difference=(lambda a,b:a.difference(b))if geometry is None else geometry.difference
   # The complete domain reaches the original common attachment boundary.
   # The original narrowing into that attachment is retained, never a licence
   # for new copper to bridge or narrow an already close transition.
-  local=material.intersection(self.domain);pieces=surface_parts(local);hits=[[i for i,g in enumerate(pieces)if g.intersection(seed).area>0]for seed in self.seeds];failures=[];measured=None;full_gap=None
+  local=intersection(material,self.domain);pieces=surface_parts(local);hits=[[i for i,g in enumerate(pieces)if intersection(g,seed).area>0]for seed in self.seeds];failures=[];measured=None;full_gap=None
   if any(len(h)!=1 for h in hits):failures.append('PIN_BRANCH_MISSING_OR_SPLIT')
   elif hits[0]==hits[1]:failures.append('PIN_BRANCH_LOCAL_BRIDGE')
   else:
    branches=[pieces[h[0]]for h in hits];full_gap=distance(*branches)
-   spacing_branches=[g.intersection(self.spacing)for g in branches]
+   spacing_branches=[intersection(g,self.spacing)for g in branches]
    if any(g.is_empty for g in spacing_branches):failures.append('PIN_SPACING_BRANCH_MISSING')
    else:
     measured=distance(*spacing_branches)
     if predecessor is None and measured+1e-12<gap:failures.append('PIN_BRANCH_SPACING')
    reference=self.source if predecessor is None else predecessor
-   oldpieces=surface_parts(reference.intersection(self.domain));oldhits=[[i for i,g in enumerate(oldpieces)if g.intersection(seed).area>0]for seed in self.seeds]
+   oldpieces=surface_parts(intersection(reference,self.domain));oldhits=[[i for i,g in enumerate(oldpieces)if intersection(g,seed).area>0]for seed in self.seeds]
    if any(len(h)!=1 for h in oldhits)or oldhits[0]==oldhits[1]:failures.append('PIN_RETAINED_PREDECESSOR_BRIDGED')
    else:
     for side in (0,1):
-     delta=branches[side].difference(oldpieces[oldhits[side][0]])
+     delta=difference(branches[side],oldpieces[oldhits[side][0]])
      if delta.area>0:
       # Independent Boolean assembly can produce source-boundary slivers a
       # few ulps wide. Use the existing 1e-12mm comparison epsilon to classify
       # that reconstruction noise, without changing material or spacing gates.
       # Branch connectivity was checked above and never receives this exclusion.
-      checked=delta.difference(oldpieces[oldhits[side][0]].buffer(1e-12,quad_segs=16))
+      expanded=(oldpieces[oldhits[side][0]].buffer(1e-12,quad_segs=16)if geometry is None else geometry.buffer(oldpieces[oldhits[side][0]],1e-12,quad_segs=16))
+      checked=difference(delta,expanded)
       if not checked.is_empty and distance(checked,branches[1-side])+1e-12<gap:failures.append('PIN_NEW_GROWTH_SPACING')
-  original=self.source.intersection(self.domain)
-  if original.difference(local).area>1e-12:failures.append('PIN_SOURCE_COPPER_REMOVED')
+  original=intersection(self.source,self.domain)
+  if difference(original,local).area>1e-12:failures.append('PIN_SOURCE_COPPER_REMOVED')
   for g in pieces:
-   if not any(g.intersection(old).area>0 for old in self.source_parts):failures.append('PIN_SLOT_NEW_UNBOUND_COPPER')
+   if not any(intersection(g,old).area>0 for old in self.source_parts):failures.append('PIN_SLOT_NEW_UNBOUND_COPPER')
   return dict(slot_id=self.slot_id,pin_source_ids=list(self.pin_ids),passed=not failures,failures=sorted(set(failures)),gap_mm=measured,complete_transition_minimum_gap_mm=full_gap,required_gap_mm=gap,domain_sha256=digest(to_wkb(self.domain)),spacing_domain_sha256=digest(to_wkb(self.spacing)),scope='Complete finger and transition surfaces; unchanged original common-attachment taper retained; every new copper delta checked across the complete transition',same_net_or_owner_exemption=False)
 
 class Rule:
@@ -108,20 +116,55 @@ class Rule:
   return dict(passed=True,checks=checks,source_binding=self.binding,prior_binding=self.prior_binding)
 
  def _project(self,material):
+  # Only the immutable geometric constructions are shared. Every material
+  # iterable is still consumed in full (so disk-backed operands retain their
+  # read/hash checks), and growth_parts reevaluates every pin predicate.
+  # GeometryMemo keys include ordered WKB, SRID and precision. Changed copper
+  # or a changed domain therefore misses; an unchanged projection can serve
+  # the before/after streams and subsequent T05 junction checks exactly.
+  from src.stage_abi.loaded_geometry import GeometryMemo
+  memo=getattr(self,'_projection_memo',None)
+  if memo is None:
+   # Per-rule lifetime, bounded to the existing 32 MiB default. Never cache a
+   # verdict, predecessor acceptance, or the mutable sticky rejection state.
+   memo=self._projection_memo=GeometryMemo('pin-projection:'+self.binding)
   buckets={i:[]for i in range(len(self.slots))}
-  for g in material:
+  # Bind the exact ordered domains once per projection, then reuse each
+  # material operand's sparse local pieces. This avoids repeated tree queries
+  # and intersection-cache lookups without holding the complete material
+  # stream in memory. The iterator is still consumed, including remote copper.
+  # Keep a strong tree reference in the key: replacing the tree must miss even
+  # if Python later recycles its identity. Domain tokens also detect changed
+  # geometry, precision or SRID. The same bounded memo owns these tuples.
+  domains=tuple(slot.domain for slot in self.slots)
+  projection_context=(self.tree,tuple(memo.token(g)for g in domains))
+  def local_parts(g):
    for i in map(int,self.tree.query(g.envelope)):
-    local=g.intersection(self.slots[i].domain)
-    if not local.is_empty:buckets[i].append(local)
-  return {i:joined(parts)for i,parts in buckets.items()}
+    local=memo.intersection(g,domains[i])
+    if not local.is_empty:yield i,local
+  for g in material:
+   for i,local in memo.construct_indexed('pin-projected-parts',[g],projection_context,lambda:local_parts(g)):
+    buckets[i].append(local)
+  # Retain the original union's operand order and grouping. Incrementally
+  # unioning a new patch onto an old projection could change GEOS coordinates
+  # and WKB; memoize the exact complete ordered construction instead.
+  return {i:memo.construct('pin-projected-union',parts,(i,),lambda:joined(parts))
+          for i,parts in buckets.items()}
 
  def growth_parts(self,before,after):
   old=self._project(before);new=self._project(after);checks=[]
+  # _project consumes both complete material streams and initializes the same
+  # bounded per-rule memo. Share its spare capacity with exact slot-local
+  # constructions; do not add a second cache or raise the memory budget.
+  memo=self._projection_memo
+  def combined(parts):
+   # Preserve the original complete ordered union, including an empty prior.
+   return memo.construct('pin-retained-material-union',parts,(),lambda:joined(parts))
   for i,slot in enumerate(self.slots):
-   prior=self.prior_local.get(i,Polygon());predecessor=joined([old[i],prior]);candidate=joined([new[i],prior])
-   baseline=slot.check(predecessor,self.finished_gap)
+   prior=self.prior_local.get(i,Polygon());predecessor=combined([old[i],prior]);candidate=combined([new[i],prior])
+   baseline=slot.check(predecessor,self.finished_gap,geometry=memo)
    if not baseline['passed']:raise ValueError('PIN_SEPARATION_COMBINED_PRIOR_FAILED:'+str(baseline))
-   checks.append(slot.check(candidate,self.construction_gap,predecessor=predecessor))
+   checks.append(slot.check(candidate,self.construction_gap,predecessor=predecessor,geometry=memo))
   return dict(schema=SCHEMA,passed=all(r['passed']for r in checks),checks=checks,source_binding=self.binding,prior_binding=self.prior_binding)
 
  def require(self,material,*,finished=True,scope='current'):
@@ -129,10 +172,10 @@ class Rule:
   if not proof['passed']:raise ValueError('PIN_SEPARATION_'+scope.upper()+'_FAILED:'+str([r for r in proof['checks']if not r['passed']][:3]))
   return proof
 
- def remedy(self,logical,predecessor,*,record=True):
+ def remedy(self,logical,predecessor,*,record=True,_proposal_delta=None):
   # The complete raw logical proposal must arrive here before any foreign mask,
   # partial-rim fallback, output partition, or representation-only absorption.
-  delta=logical.difference(predecessor);violations=[]
+  delta=(logical.difference(predecessor) if _proposal_delta is None else _proposal_delta(logical,predecessor));violations=[]
   for i in sorted(map(int,self.remedy_tree.query(logical))):
    slot=self.slots[i]
    if delta.intersection(slot.void).area>0:violations.append(dict(slot_id=slot.slot_id,reason='PROTECTED_PIN_SLOT'))

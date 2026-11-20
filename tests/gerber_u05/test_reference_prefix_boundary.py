@@ -14,7 +14,13 @@ def test_reference_boundary_preserves_23_native_operations_and_no_connected_stag
  assert '23'in text and 'T01, T03, T04, T02 and T05'in text
 
 
-@pytest.mark.parametrize('boundary',['t01','t04','bogus'])
+def test_t04_boundary_leaves_t02_and_t05_for_fresh_execution():
+ assert stages_before('t04')==('t01','t03','t04')
+ assert all(f'connected_{stage}_construct' not in operation_keys(stages_before('t04'))
+            for stage in ('t02','t05'))
+
+
+@pytest.mark.parametrize('boundary',['t01','bogus'])
 def test_partial_connected_boundaries_still_rejected(boundary):
  with pytest.raises(ValueError,match='BOUNDARY_UNSUPPORTED'):stages_before(boundary)
 

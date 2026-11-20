@@ -1,3 +1,4 @@
+from tests.gerber_u05.producer_fixture import historical_source
 from pathlib import Path
 import pytest
 from src.gerber_u05 import prefix,incremental
@@ -25,11 +26,11 @@ def test_retained_t03_must_be_complete_zero_movement(tmp_path,summary):
 
 @pytest.mark.parametrize('relative',sorted(prefix.WIDTH_CORRECTION))
 def test_exact_width_correction_reuses_only_t03_and_rejects_extra_edits(tmp_path,monkeypatch,relative):
- root=Path(__file__).resolve().parents[2];old=tmp_path/'old';new=tmp_path/'new'
+ old=tmp_path/'old';new=tmp_path/'new'
  source=old/relative;target=new/relative
  source.parent.mkdir(parents=True);target.parent.mkdir(parents=True)
  source.write_bytes(b'old immutable producer fixture')
- target.write_bytes((root/relative).read_bytes())
+ target.write_bytes(historical_source(relative))
  before,after=prefix.WIDTH_CORRECTION[relative];real_sha=prefix.sha
  assert real_sha(target)==after
  # Model the independently hash-verified original producer; the new code's
@@ -107,7 +108,7 @@ def test_legacy_ancestry_keeps_distinct_stage_producers_and_rejects_forgery(tmp_
 
 @pytest.mark.parametrize('relative',sorted(prefix.SOURCE_VOID_T04_ONLY))
 def test_source_void_t04_delta_cannot_retain_old_width_stages(tmp_path,monkeypatch,relative):
- root=Path(__file__).resolve().parents[2];old=tmp_path/'old';new=tmp_path/'new';source=old/relative;target=new/relative;source.parent.mkdir(parents=True);target.parent.mkdir(parents=True);source.write_bytes(b'old qualified upstream fixture');target.write_bytes((root/relative).read_bytes());before=prefix.SOURCE_VOID_T04_ONLY[relative][0][0];after=prefix.SOURCE_VOID_T04_ONLY[relative][1];real_sha=prefix.sha;assert real_sha(target)==after
+ old=tmp_path/'old';new=tmp_path/'new';source=old/relative;target=new/relative;source.parent.mkdir(parents=True);target.parent.mkdir(parents=True);source.write_bytes(b'old qualified upstream fixture');target.write_bytes(historical_source(relative));before=prefix.SOURCE_VOID_T04_ONLY[relative][0][0];after=prefix.SOURCE_VOID_T04_ONLY[relative][1];real_sha=prefix.sha;assert real_sha(target)==after
  monkeypatch.setattr(prefix,'sha',lambda f:before if Path(f)==source else real_sha(f));original={'files':{str(source):before}}
  assert prefix.verify_code(original,new,old,stages=('t01','t03'))
  with pytest.raises(ValueError,match='UPSTREAM_DEPENDENCY_CHANGED'):prefix.verify_code(original,new,old)
