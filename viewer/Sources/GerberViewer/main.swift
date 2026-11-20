@@ -157,7 +157,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 const hits=hitObjects({clientX:screen2.x,clientY:screen2.y});
                 if(hits.length>1){const first=selected;drag={moved:false};svg.dispatchEvent(new PointerEvent('pointerup',{clientX:screen2.x,clientY:screen2.y,bubbles:true}));check('overlap cycling',selected!==first);}
                 check('inspector populated',document.querySelector('#properties').children.length===4);
-                if((object.path.match(/M /g)||[]).length>1){const center=new DOMPoint(box.x+box.width/2,box.y+box.height/2).matrixTransform(svg.getScreenCTM());check('aperture hole not selectable',hitObjects({clientX:center.x,clientY:center.y}).length===0);} 
+                if((object.path.match(/M /g)||[]).length>1){const center=new DOMPoint(box.x+box.width/2,box.y+box.height/2).matrixTransform(svg.getScreenCTM());check('aperture hole not selectable',hitObjects({clientX:center.x,clientY:center.y}).length===0);}
                 document.getElementById('inspector').hidden=false;draw();
                 return {checks,revision:scene().revision,selected,objects:scene().objects.length,viewBox:svg.getAttribute('viewBox')};
                 """, arguments: ["value": ["current": try JSONSerialization.jsonObject(with: JSONEncoder().encode(loaded!.current)), "previous": try loaded!.previous.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull()]], in: nil, contentWorld: .page)
