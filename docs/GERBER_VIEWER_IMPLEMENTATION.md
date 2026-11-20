@@ -58,3 +58,5 @@ Resource bounds: 64 MiB/source, 128 MiB/snapshot, 200,000 objects and 8,000,000 
 - External evidence root: `out/lacie_work/viewer/`. Initial failed build and test logs are retained. Observed-before preview source hashes were verified against the immutable asset manifest before import. Synthetic interaction controls are labeled separately and do not represent native PCB exports.
 
 The first slice is a viewer and ABI implementation. Independent review is NOT_RUN: CHANNEL_UNAVAILABLE; owner review remains pending. Electrical/manufacturing acceptance is NOT_ESTABLISHED. iOS execution, model inference and large-board performance are not established by the current checks.
+
+The active T04 chat is connected through the explicit completed-slice queue described in [Live T04 viewer connection](GERBER_VIEWER_LIVE_T04.md). Run `tools/Start_T04_Viewer_Link.command` to resume it.

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Explicit completed slice notification version 1",
+  "type": "object",
+  "required": ["schema", "connection_id", "event_id", "created_ns", "label", "report", "geometry", "kind", "display_status", "completion"],
+  "properties": {
+    "schema": {"const": 1},
+    "connection_id": {"type": "string", "minLength": 1},
+    "event_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "created_ns": {"type": "integer", "minimum": 1},
+    "label": {"type": "string", "minLength": 1},
+    "report": {"$ref": "#/$defs/file"},
+    "geometry": {"$ref": "#/$defs/file"},
+    "kind": {"enum": ["shape-patch", "construction"]},
+    "display_status": {"enum": ["Preview", "Failed"]},
+    "completion": {"const": "PRODUCER_SEALED_AFTER_SLICE_COMPLETION"}
+  },
+  "$defs": {"file": {
+    "type": "object", "required": ["path", "sha256"],
+    "properties": {"path": {"type": "string", "pattern": "^/"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+  }}
+}

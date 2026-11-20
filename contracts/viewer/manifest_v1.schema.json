@@ -2,12 +2,43 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Gerber viewer atomic manifest version 1",
   "type": "object",
-  "required": ["schema", "payload", "sha256", "previousPayload", "previousSHA256"],
+  "required": [
+    "schema",
+    "payload",
+    "sha256",
+    "previousPayload",
+    "previousSHA256"
+  ],
   "properties": {
-    "schema": {"const": 1},
-    "payload": {"type": "string", "pattern": "^[0-9a-f]{64}\\.json$"},
-    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "previousPayload": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}\\.json$"},
-    "previousSHA256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+    "schema": {
+      "const": 1
+    },
+    "payload": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}\\.json$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "previousPayload": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}\\.json$"
+    },
+    "previousSHA256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "producerStateSHA256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Optional live producer state binding; ignored by the rendering-only reader."
+    }
   }
 }

@@ -12,6 +12,6 @@ export SWIFTPM_MODULECACHE_OVERRIDE="$VIEWER_WORK/cache/swift"
 export SWIFT_MODULECACHE_PATH="$VIEWER_WORK/cache/swift"
 export XDG_CACHE_HOME="$VIEWER_WORK/cache"
 export VIEWER_TEST_ROOT="$VIEWER_RUN/native-fixtures"
-"$TASK_ROOT/tools/Run_PCB_Tests.command" -q tests/test_viewer_abi.py > "$VIEWER_RUN/publisher.log" 2>&1 || { cat "$VIEWER_RUN/publisher.log"; exit 1; }
+"$TASK_ROOT/tools/Run_PCB_Tests.command" -q tests/test_viewer_abi.py tests/test_viewer_live.py > "$VIEWER_RUN/publisher.log" 2>&1 || { cat "$VIEWER_RUN/publisher.log"; exit 1; }
 swift test --package-path "$TASK_ROOT/viewer" --scratch-path "$VIEWER_WORK/build" --cache-path "$VIEWER_WORK/cache/swiftpm" --config-path "$VIEWER_WORK/config" --security-path "$VIEWER_WORK/security" --disable-sandbox > "$VIEWER_RUN/native.log" 2>&1 || { cat "$VIEWER_RUN/native.log"; exit 1; }
 printf 'Viewer checks passed. Retained logs: %s\n' "$VIEWER_RUN"

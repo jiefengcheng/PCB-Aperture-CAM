@@ -61,7 +61,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     }
     func fatalDialog(_ message: String) { let alert = NSAlert(); alert.messageText = "Gerber Viewer"; alert.informativeText = message; alert.runModal(); NSApp.terminate(nil) }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { pageReady = true; poll() }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { pageReady = true; if CommandLine.arguments.contains("--live") { send("configureLive", "") }; poll() }
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
         navigationAction.navigationType == .other && navigationAction.request.url?.isFileURL == true ? .allow : .cancel
     }
@@ -101,17 +101,30 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         if action == "modelStatus" {
             Task { send("modelResult", await AppleViewerProvider().availability()) }; return
         }
+        if action == "displayed", let revision = body["revision"], let loaded, revision == loaded.current.revision {
+            do {
+                try verifyStorage()
+                let folder = workspace.appendingPathComponent("outbox")
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                let ack: [String: Any] = ["schema": 1, "status": "DISPLAY_DOM_UPDATED", "job": loaded.current.job, "revision": revision, "payloadSHA256": loaded.digest, "timestamp": ISO8601DateFormatter().string(from: Date())]
+                try JSONSerialization.data(withJSONObject: ack, options: [.sortedKeys]).write(to: folder.appendingPathComponent("display.json"), options: .atomic)
+            } catch { send("viewerError", error.localizedDescription) }
+            return
+        }
+        if action == "clearSelection", let revision = body["revision"], let loaded {
+            let scene = revision == loaded.current.revision ? loaded.current : loaded.previous
+            guard let scene, scene.revision == revision else { return }
+            do { try writeSelection(scene: scene, object: nil) }
+            catch { send("viewerError", error.localizedDescription) }
+            return
+        }
         guard let id = body["id"], let revision = body["revision"], let loaded else { return }
         let scene = revision == loaded.current.revision ? loaded.current : loaded.previous
         guard let scene, scene.revision == revision, let object = scene.objects.first(where: { $0.id == id }) else { return }
         do {
             let objectData = try JSONEncoder().encode(object)
-            let selection: [String: Any] = ["schema": 1, "job": scene.job, "revision": revision, "object": try JSONSerialization.jsonObject(with: objectData), "timestamp": ISO8601DateFormatter().string(from: Date())]
             if action == "select" {
-                try verifyStorage()
-                let folder = workspace.appendingPathComponent("outbox")
-                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-                try JSONSerialization.data(withJSONObject: selection, options: [.sortedKeys]).write(to: folder.appendingPathComponent("selection.json"), options: .atomic)
+                try writeSelection(scene: scene, object: object)
             } else if action == "explain" {
                 guard modelTask == nil else { return }
                 send("modelResult", "Explaining selected record…")
@@ -122,6 +135,14 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 }
             }
         } catch { send("viewerError", error.localizedDescription) }
+    }
+    func writeSelection(scene: Snapshot, object: SceneObject?) throws {
+        try verifyStorage()
+        let value: Any = try object.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull()
+        let selection: [String: Any] = ["schema": 1, "job": scene.job, "revision": scene.revision, "object": value, "timestamp": ISO8601DateFormatter().string(from: Date())]
+        let folder = workspace.appendingPathComponent("outbox")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try JSONSerialization.data(withJSONObject: selection, options: [.sortedKeys]).write(to: folder.appendingPathComponent("selection.json"), options: .atomic)
     }
     func runSmokeIfRequested() {
         let args = CommandLine.arguments
