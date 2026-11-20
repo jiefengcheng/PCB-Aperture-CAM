@@ -146,6 +146,9 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 if(bundle.previous&&bundle.previous.objects.some((o,i)=>o.path!==scene().objects[i]?.path)){check('actual changed paths drawn',!!document.querySelector('#board path[stroke=\"#49dfba\"]'));}
                 if(bundle.previous){document.getElementById('previous').click();check('previous revision',which==='previous');document.getElementById('current').click();}
                 document.getElementById('fit-change').click();check('fit change',JSON.stringify(camera)===JSON.stringify(padded(scene().affected)));
+                const rect=svg.getBoundingClientRect(),scale=Math.min(rect.width/camera.width,rect.height/camera.height),vw=rect.width/scale,vh=rect.height/scale,left=camera.x-(vw-camera.width)/2,top=camera.y-(vh-camera.height)/2;
+                const outside=scene().objects.find(o=>o.bounds.x>left+vw||o.bounds.x+o.bounds.width<left||o.bounds.y>top+vh||o.bounds.y+o.bounds.height<top);
+                if(outside)check('offscreen geometry culled',!drawnPaths.has(outside.id));
                 const object=scene().objects[0], path=[...document.querySelectorAll('.shape')].find(p=>p.dataset.object===object.id);
                 const box=path.getBBox();let inside=null;
                 for(let x=1;x<20&&!inside;x++)for(let y=1;y<20&&!inside;y++){const p=new DOMPoint(box.x+box.width*x/20,box.y+box.height*y/20);if(path.isPointInFill(p))inside=p;}

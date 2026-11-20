@@ -47,7 +47,7 @@ ResearchWorkspace was inspected read-only. This implementation adapts its SwiftU
 
 The importer reuses the existing maintained parser and geometry kernel without modifying them. The initial display profile requires explicit absolute millimetre 4.6 coordinates, X2 positive copper or negative-file-polarity soldermask openings, and positive plotting objects. Clear operations, ambiguous roles, duplicate layers, parser warnings and unsupported semantics reject the import. Missing parser-exposed object attributes stay empty; no pin/net meaning is inferred. Arcs and apertures become polygon display derivatives using the existing kernel; no new Gerber fidelity qualification is claimed.
 
-Resource bounds: 64 MiB/source, 128 MiB/snapshot, 200,000 objects and 8,000,000 characters per path. The renderer currently redraws full snapshots, despite using affected bounds for navigation/highlighting; large-board spatial indexing, tiled/incremental drawing and performance qualification remain future work. Empty layers, board outlines, general clear-polarity composition and PDF import are not included in this slice.
+Resource bounds: 64 MiB/source, 128 MiB/snapshot, 200,000 objects and 8,000,000 characters per path. The renderer retains full snapshots and culls paths outside the visible viewport, including comparison overlays. The 17,849-occurrence client demonstration exposed a selection stall before this correction; that failed observation is retained. Large-board spatial indexing, tiled/incremental drawing and performance qualification remain future work. Empty layers, board outlines, general clear-polarity composition and PDF import are not included in this slice.
 
 ## Verification and retained evidence
 
