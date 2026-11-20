@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pcb-cam:viewer:snapshot:1",
+  "title": "Gerber viewer snapshot version 1",
+  "type": "object",
+  "required": ["schema", "job", "revision", "parentRevision", "slice", "status", "bounds", "affected", "objects", "sources", "evidence", "limitations"],
+  "properties": {
+    "schema": {"const": 1},
+    "job": {"type": "string", "minLength": 1},
+    "revision": {"type": "string", "minLength": 1},
+    "parentRevision": {"type": ["string", "null"]},
+    "slice": {"type": "string", "minLength": 1},
+    "status": {"enum": ["Preview", "Verified", "Failed"]},
+    "bounds": {"$ref": "#/$defs/bounds"},
+    "affected": {"$ref": "#/$defs/bounds"},
+    "objects": {"type": "array", "minItems": 1, "maxItems": 200000, "items": {
+      "type": "object", "required": ["id", "sourceID", "layer", "kind", "path", "bounds", "attributes"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "sourceID": {"type": "string", "minLength": 1},
+        "layer": {"type": "string", "minLength": 1},
+        "kind": {"type": "string"},
+        "path": {"type": "string", "minLength": 1, "maxLength": 8000000},
+        "bounds": {"$ref": "#/$defs/bounds"},
+        "attributes": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "string"}}}
+      }
+    }},
+    "sources": {"type": "array", "minItems": 1, "items": {
+      "type": "object", "required": ["name", "sha256", "layer"],
+      "properties": {"name": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "layer": {"type": "string"}}
+    }},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [{"if": {"properties": {"status": {"const": "Verified"}}}, "then": {"properties": {"evidence": {"minItems": 1}}}}],
+  "$defs": {"bounds": {
+    "type": "object", "required": ["x", "y", "width", "height"],
+    "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "width": {"type": "number", "exclusiveMinimum": 0}, "height": {"type": "number", "exclusiveMinimum": 0}}
+  }}
+}
