@@ -48,3 +48,26 @@ All snapshots, state, queues, feedback, logs and tests remain on the prepared La
 A revision's exact geometry fingerprints are separately hash-bound in its manifest. Snapshot/state files are persisted before the atomic manifest commit. Restart recovery follows only the committed state lineage; orphan files do not count as published events. Watcher process state and last-tick time are retained in `watcher.json`; a heartbeat is operational evidence, not engineering approval.
 
 The initial context is the complete retained attempt_04 T04 diagnostic, not the earlier one-trace demonstration. Actual newly completed producer artifacts may still be partial, failed or unchanged. This connection does not establish whole-board T04 completion, electrical/manufacturing acceptance, owner approval or independent review.
+
+### Selection explanation round trip
+
+A canvas click emits the exact source occurrence and displayed revision through
+`session/outbox/selection.json`. The active T04 chat can inspect a frozen copy
+and the corresponding retained evidence, then return a read-only explanation.
+`tools/viewer_explain.py --workspace <session> --selection <frozen-selection.json>
+--text-file <answer.txt> --author "Active T04 chat" --evidence <report-path>`
+atomically publishes the response to `session/inbox/explanation.json`.
+
+The response contains a checksummed, size-bounded payload bound to the job,
+revision, object ID and source ID. The native reader rejects mismatches and the
+canvas displays the answer only while that exact selection remains active.
+Changing selection or revision clears the answer. This text channel writes no
+snapshot, source geometry or engineering acceptance. The coding chat currently
+coordinates the question and response; clicking alone does not launch inference
+or send a new chat message. Apple Intelligence remains a separate provider.
+
+The real-client demonstration is retained under
+`out/lacie_work/viewer/t04_live/verification/trace_explanation/`:
+source Line occurrence 771, bytes 19017–19031, displayed revision
+`e026f876f6564d4d8e22a79840bea8c6`. Its answer comes from the active T04 chat,
+not the viewer or an inferred electrical net.

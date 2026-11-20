@@ -75,4 +75,17 @@ final class SnapshotTests: XCTestCase {
         XCTAssertThrowsError(try snapshot.validate())
     }
 
+    func testExplanationBoundToSelectionAndRevision() throws {
+        let snapshot = try JSONDecoder().decode(Snapshot.self, from: scene())
+        func envelope(revision: String = "r1", source: String = String(repeating:"a",count:64)+":1", hash: String? = nil) throws -> Data {
+            let payload = try JSONSerialization.data(withJSONObject: ["schema":1,"job":"test","revision":revision,"objectID":"one","sourceID":source,"author":"T04 chat","text":"Retained trace; no geometry changed.","evidence":["CASE.json"]])
+            return try JSONSerialization.data(withJSONObject:["schema":1,"sha256":hash ?? SnapshotReader.digest(payload),"payloadBase64":payload.base64EncodedString()])
+        }
+        XCTAssertEqual(try ExplanationReader.decode(envelope(),scene:snapshot,selectedID:"one").author,"T04 chat")
+        XCTAssertThrowsError(try ExplanationReader.decode(envelope(revision:"other"),scene:snapshot,selectedID:"one"))
+        XCTAssertThrowsError(try ExplanationReader.decode(envelope(source:"wrong"),scene:snapshot,selectedID:"one"))
+        XCTAssertThrowsError(try ExplanationReader.decode(envelope(hash:"bad"),scene:snapshot,selectedID:"one"))
+        XCTAssertThrowsError(try ExplanationReader.decode(envelope(),scene:snapshot,selectedID:"other"))
+    }
+
 }

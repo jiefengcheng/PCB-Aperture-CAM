@@ -14,6 +14,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     var pageReady = false
     var loading = false
     var lastManifestDigest: String?
+    var lastExplanationKey: String?
     var importing = false
     var smokeStarted = false
     var modelTask: Task<Void, Never>?
@@ -75,6 +76,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     func poll() {
         guard pageReady, !loading else { return }
         do { try verifyStorage() } catch { send("viewerError", error.localizedDescription); return }
+        pollExplanation()
         guard FileManager.default.fileExists(atPath: workspace.appendingPathComponent("current.json").path) else { return }
         if let data = try? Data(contentsOf: workspace.appendingPathComponent("current.json")), SnapshotReader.digest(data) == lastManifestDigest, loaded != nil { return }
         loading = true
@@ -94,6 +96,26 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
             } catch { send("viewerError", "Update rejected; retaining displayed revision. " + error.localizedDescription) }
             loading = false
         }
+    }
+    func pollExplanation() {
+        guard let loaded else { return }
+        let response = workspace.appendingPathComponent("inbox/explanation.json")
+        let selectionURL = workspace.appendingPathComponent("outbox/selection.json")
+        guard let size = try? response.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= 128 * 1024,
+              let body = try? Data(contentsOf: response), let selectedData = try? Data(contentsOf: selectionURL),
+              let selection = try? JSONSerialization.jsonObject(with: selectedData) as? [String: Any],
+              let revision = selection["revision"] as? String,
+              let object = selection["object"] as? [String: Any], let id = object["id"] as? String else { return }
+        let key = SnapshotReader.digest(body + selectedData)
+        guard key != lastExplanationKey else { return }
+        lastExplanationKey = key
+        let scene = revision == loaded.current.revision ? loaded.current : loaded.previous
+        guard let scene, scene.revision == revision else { return }
+        do {
+            let explanation = try ExplanationReader.decode(body, scene: scene, selectedID: id)
+            let value = try JSONSerialization.jsonObject(with: JSONEncoder().encode(explanation))
+            send("receiveExplanation", value)
+        } catch { NSLog("Explanation rejected: %@", error.localizedDescription) }
     }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: String], let action = body["action"] else { return }
