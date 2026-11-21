@@ -27,6 +27,13 @@ Incoming snapshots preserve the viewport unless Follow latest change is enabled.
 
 ## File ABI version 1
 
+The [route-selection agent ABI](agent_abi/VIEWER_ROUTE_SELECTION.md) consolidates
+the read-only source comparisons, maintained-route presentation, dotted original
+centerlines, group references and selection feedback. It uses optional fields in
+the existing explanation transport; snapshot/manifest v1 geometry is unchanged.
+See the [capability descriptor](../contracts/viewer/route_selection_v1.json) and
+the [live connection guide](GERBER_VIEWER_LIVE_T04.md) for commands and evidence.
+
 A session contains `current.json`, immutable content-addressed `snapshots/<sha256>.json`, and a latest-selection outbox. See `contracts/viewer/manifest_v1.schema.json` and `snapshot_v1.schema.json` for the wire fields.
 
 Write and fsync the complete snapshot first, then atomically rename the manifest. The provided publisher serializes writers with an exclusive lock; a retained lock requires investigation rather than automatic takeover. It retains both current and previous payloads across reopening. Old snapshots and import failures remain available.

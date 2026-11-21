@@ -35,6 +35,14 @@ uses that group caller after fresh code-bound five/64 readiness. It accounts for
 the complete native inventory, keeps construction and residual conditions, and
 does not publish a completed scene or enable replay/export.
 
+## Read-only viewer and route selection
+
+The [viewer route-selection ABI](VIEWER_ROUTE_SELECTION.md) describes maintained
+native-route selection, filled saved copper, dotted original centerlines,
+segment inspection, parallel-group references and selection-bound explanations.
+Its [capability descriptor](../../contracts/viewer/route_selection_v1.json)
+keeps display/feedback separate from geometry writes and engineering execution.
+
 ## Historical CAM Agent ABI v0.1
 
 This is a project-local JSON boundary around the current CAM evidence. It gives a future coordinator a small, typed vocabulary for describing available capabilities, inspecting hash-bound records, composing a deterministic plan, comparing registered runs, and retrieving saved review evidence.

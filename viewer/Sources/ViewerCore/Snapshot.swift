@@ -29,21 +29,11 @@ public struct Snapshot: Codable, Sendable {
               Set(objects.map(\.id)).count == objects.count,
               !sources.isEmpty, Set(sources.map(\.layer)).count == sources.count, sources.allSatisfy({ Self.isDigest($0.sha256) }) else { throw ABIError.invalid("Invalid snapshot header or identities") }
         // Data paths only: forbid arbitrary SVG, links, scripts and non-finite coordinates.
-        let number = "[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?"
-        let pair = number + "[ ,\\t\\r\\n]+" + number
-        let contour = "M[ \\t\\r\\n]+" + pair + "(?:[ \\t\\r\\n]+L[ \\t\\r\\n]+" + pair + "){2,}[ \\t\\r\\n]+Z"
-        let grammar = try NSRegularExpression(pattern: "^(?:" + contour + ")(?:[ \\t\\r\\n]+" + contour + ")*$")
-        let allowed = CharacterSet(charactersIn: "MLZmlz0123456789., +-eE\n\r\t")
         for object in objects {
             guard !object.id.isEmpty, !object.sourceID.isEmpty, !object.layer.isEmpty,
-                  object.bounds.valid, object.path.first == "M", object.path.count <= 8_000_000,
-                  sources.contains(where: { $0.layer == object.layer && object.sourceID.hasPrefix($0.sha256 + ":") }),
-                  grammar.firstMatch(in: object.path, range: NSRange(object.path.startIndex..., in: object.path)) != nil,
-                  object.path.unicodeScalars.allSatisfy({ allowed.contains($0) }) else { throw ABIError.invalid("Invalid object geometry") }
-            let numbers = object.path.replacingOccurrences(of: "[MLZmlz,]", with: " ", options: .regularExpression)
-                .split(whereSeparator: { $0.isWhitespace })
-            guard numbers.allSatisfy({ Double($0).map { $0.isFinite && abs($0) < 1e7 } ?? false }) else { throw ABIError.invalid("Non-finite or malformed path") }
-            let values = numbers.compactMap { Double($0) }
+                  object.bounds.valid, object.path.count <= 8_000_000,
+                  sources.contains(where: { $0.layer == object.layer && object.sourceID.hasPrefix($0.sha256 + ":") }) else { throw ABIError.invalid("Invalid object geometry") }
+            let values = try Self.polygonCoordinates(object.path)
             let xs = stride(from: 0, to: values.count, by: 2).map { values[$0] }
             let ys = stride(from: 1, to: values.count, by: 2).map { values[$0] }
             let b = object.bounds, tolerance = 1e-6
@@ -56,6 +46,27 @@ public struct Snapshot: Codable, Sendable {
 
         }
         if status == "Verified" && evidence.isEmpty { throw ABIError.invalid("Verified requires scoped evidence references") }
+    }
+    static func polygonCoordinates(_ path: String) throws -> [Double] {
+        // A linear scanner avoids ICU backtracking limits on detailed joint contours.
+        let allowed = CharacterSet(charactersIn: "MLZ0123456789., +-eE\n\r\t")
+        guard path.unicodeScalars.allSatisfy({ allowed.contains($0) }) else { throw ABIError.invalid("Invalid polygon characters") }
+        let tokens = path.replacingOccurrences(of: ",", with: " ").split(whereSeparator: { $0.isWhitespace })
+        var values: [Double] = [], i = 0, vertices = 0, open = false
+        while i < tokens.count {
+            let command = tokens[i]; i += 1
+            if command == "Z" {
+                guard open, vertices >= 3 else { throw ABIError.invalid("Incomplete polygon contour") }
+                open = false; continue
+            }
+            guard (command == "M" && !open) || (command == "L" && open), i + 1 < tokens.count,
+                  let x = Double(tokens[i]), let y = Double(tokens[i+1]),
+                  x.isFinite, y.isFinite, abs(x) < 1e7, abs(y) < 1e7 else { throw ABIError.invalid("Invalid polygon coordinates") }
+            if command == "M" { open = true; vertices = 0 }
+            vertices += 1; values.append(contentsOf: [x,y]); i += 2
+        }
+        guard !open, !values.isEmpty else { throw ABIError.invalid("Unclosed polygon contour") }
+        return values
     }
     public static func isDigest(_ value: String) -> Bool { value.count == 64 && value.allSatisfy { "0123456789abcdef".contains($0) } }
 }

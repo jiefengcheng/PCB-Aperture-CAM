@@ -88,4 +88,36 @@ final class SnapshotTests: XCTestCase {
         XCTAssertThrowsError(try ExplanationReader.decode(envelope(),scene:snapshot,selectedID:"other"))
     }
 
+    func testGrowthComparisonRejectsStaleOrUnsafeArtwork() throws {
+        let snapshot = try JSONDecoder().decode(Snapshot.self, from: scene())
+        let artwork: [String: Any] = ["path": snapshot.objects[0].path, "bounds": ["x":0,"y":0,"width":2,"height":2]]
+        let comparison: [String: Any] = ["schema":1,"selectedPathSHA256":SnapshotReader.digest(Data(snapshot.objects[0].path.utf8)),
+            "originalWkbSHA256":String(repeating:"a",count:64),"currentWkbSHA256":String(repeating:"b",count:64),
+            "original":artwork,"addedAreaMM2":0,"removedAreaMM2":0,"displayHausdorffMM":0,"summary":"Unchanged", "snapshotNote":"Earlier snapshot"]
+        func decode(_ comparison: [String: Any]) throws -> ViewerExplanation {
+            let payload = try JSONSerialization.data(withJSONObject: ["schema":1,"job":"test","revision":"r1","objectID":"one",
+                "sourceID":snapshot.objects[0].sourceID,"author":"T04","text":"Comparison","evidence":["source.wkb"],"comparison":comparison])
+            let envelope = try JSONSerialization.data(withJSONObject:["schema":1,"sha256":SnapshotReader.digest(payload),"payloadBase64":payload.base64EncodedString()])
+            return try ExplanationReader.decode(envelope,scene:snapshot,selectedID:"one")
+        }
+        XCTAssertNotNil(try decode(comparison).comparison)
+        var bad = comparison; bad["selectedPathSHA256"] = String(repeating:"c",count:64)
+        XCTAssertThrowsError(try decode(bad))
+        bad = comparison; bad["added"] = ["path":"M 0 0 <script>","bounds":["x":0,"y":0,"width":2,"height":2]]
+        XCTAssertThrowsError(try decode(bad))
+        bad = comparison; bad["original"] = ["path":snapshot.objects[0].path,"bounds":["x":0,"y":0,"width":9,"height":2]]
+        XCTAssertThrowsError(try decode(bad))
+        bad = comparison; bad["displayHausdorffMM"] = 0.1
+        XCTAssertThrowsError(try decode(bad))
+    }
+
+    func testDetailedPolygonAndBrokenContour() throws {
+        let coordinates = (0..<10000).map { "L 1.000000000 \(Double($0)/10000)" }.joined(separator:" ")
+        let path = "M 0 0 " + coordinates + " L 0 1 Z"
+        XCTAssertEqual(try Snapshot.polygonCoordinates(path).count,20004)
+        for invalid in ["M 0 0 L 1 0 Z", "M 0 0 L 1 0 L 0 1", "L 0 0 L 1 0 L 0 1 Z", "M 0 0 L 1 0 M 0 1 Z", "M 0 0 L 1 0 L 0 1 Z Z"] {
+            XCTAssertThrowsError(try Snapshot.polygonCoordinates(invalid))
+        }
+    }
+
 }

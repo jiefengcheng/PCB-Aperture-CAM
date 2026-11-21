@@ -17,6 +17,7 @@ def main():
     parser.add_argument('--text-file',required=True)
     parser.add_argument('--author',required=True)
     parser.add_argument('--evidence',action='append',required=True)
+    parser.add_argument('--comparison',help='Optional source/candidate overlay JSON; bound to the displayed object path')
     args=parser.parse_args();prepare()
     root=Path(args.workspace).resolve()
     if root==WORK.resolve() or not root.is_relative_to(WORK.resolve()):raise ValueError('EXPLANATION_REQUIRES_LACIE')
@@ -31,8 +32,14 @@ def main():
     if scene['job']!=selected['job'] or scene['revision']!=selected['revision'] or obj not in scene['objects']:
         raise ValueError('EXPLANATION_SELECTION_NOT_IN_REVISION')
     text=Path(args.text_file).read_text()
-    payload=encode(dict(schema=1,job=scene['job'],revision=scene['revision'],objectID=obj['id'],sourceID=obj['sourceID'],author=args.author,text=text,evidence=args.evidence))
-    if not text.strip() or len(payload)>64*1024:raise ValueError('EXPLANATION_TEXT_RESOURCE_LIMIT')
+    value=dict(schema=1,job=scene['job'],revision=scene['revision'],objectID=obj['id'],sourceID=obj['sourceID'],author=args.author,text=text,evidence=args.evidence)
+    if args.comparison:
+        comparison=json.loads(Path(args.comparison).read_bytes())
+        if comparison.get('selectedPathSHA256')!=digest(obj['path'].encode()):
+            raise ValueError('EXPLANATION_COMPARISON_NOT_DISPLAYED')
+        value['comparison']=comparison
+    payload=encode(value)
+    if not text.strip() or len(text)>48_000 or len(payload)>1024*1024:raise ValueError('EXPLANATION_TEXT_RESOURCE_LIMIT')
     envelope=encode(dict(schema=1,sha256=digest(payload),payloadBase64=base64.b64encode(payload).decode()))
     folder=root/'inbox';folder.mkdir(exist_ok=True)
     atomic_write(folder/'explanation.json',envelope)

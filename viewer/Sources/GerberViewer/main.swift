@@ -18,6 +18,10 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     var importing = false
     var smokeStarted = false
     var modelTask: Task<Void, Never>?
+    var traceBusy = false
+    var pendingTrace: (Snapshot, SceneObject)?
+    var routePresentations: [String: RoutePresentation] = [:]
+    var initialSelection: [String: String]?
     func applicationDidFinishLaunching(_ notification: Notification) {
         do {
             func argument(_ name: String) throws -> String {
@@ -32,6 +36,12 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
             guard FileManager.default.fileExists(atPath: workspace.path),
                   workspace.path.hasPrefix(repository.appendingPathComponent("out/lacie_work").resolvingSymlinksInPath().path + "/") else { throw ABIError.invalid("Viewer requires the prepared LaCie workspace") }
             try verifyStorage()
+            if let data = try? Data(contentsOf: workspace.appendingPathComponent("outbox/selection.json")),
+               let saved = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let revision = saved["revision"] as? String,
+               let object = saved["object"] as? [String: Any], let id = object["id"] as? String {
+                initialSelection = ["id": id, "revision": revision]
+            }
             try FileManager.default.createDirectory(at: workspace.appendingPathComponent("tmp"), withIntermediateDirectories: true)
             let controller = WKUserContentController()
             controller.add(self, name: "viewer")
@@ -90,7 +100,12 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                     let current = try JSONSerialization.jsonObject(with: encoder.encode(next.current))
                     let previous: Any = try next.previous.map { try JSONSerialization.jsonObject(with: encoder.encode($0)) } ?? NSNull()
                     loaded = next
-                    send("receiveRevision", ["current": current, "previous": previous])
+                    var value: [String: Any] = ["current": current, "previous": previous]
+                    if let restore = initialSelection, restore["revision"] == next.current.revision {
+                        value["restoreSelection"] = restore
+                    }
+                    initialSelection = nil
+                    send("receiveRevision", value)
                     runSmokeIfRequested()
                 } else { send("clearABIError", "") }
             } catch { send("viewerError", "Update rejected; retaining displayed revision. " + error.localizedDescription) }
@@ -101,7 +116,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         guard let loaded else { return }
         let response = workspace.appendingPathComponent("inbox/explanation.json")
         let selectionURL = workspace.appendingPathComponent("outbox/selection.json")
-        guard let size = try? response.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= 128 * 1024,
+        guard let size = try? response.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= 2 * 1024 * 1024,
               let body = try? Data(contentsOf: response), let selectedData = try? Data(contentsOf: selectionURL),
               let selection = try? JSONSerialization.jsonObject(with: selectedData) as? [String: Any],
               let revision = selection["revision"] as? String,
@@ -113,6 +128,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         guard let scene, scene.revision == revision else { return }
         do {
             let explanation = try ExplanationReader.decode(body, scene: scene, selectedID: id)
+            rememberRoute(explanation)
             let value = try JSONSerialization.jsonObject(with: JSONEncoder().encode(explanation))
             send("receiveExplanation", value)
         } catch { NSLog("Explanation rejected: %@", error.localizedDescription) }
@@ -134,6 +150,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
             return
         }
         if action == "clearSelection", let revision = body["revision"], let loaded {
+            pendingTrace = nil
             let scene = revision == loaded.current.revision ? loaded.current : loaded.previous
             guard let scene, scene.revision == revision else { return }
             do { try writeSelection(scene: scene, object: nil) }
@@ -146,7 +163,10 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         do {
             let objectData = try JSONEncoder().encode(object)
             if action == "select" {
-                try writeSelection(scene: scene, object: object)
+                try writeSelection(scene: scene, object: object, mode: body["mode"] ?? "route")
+                queueTraceComparison(scene: scene, object: object)
+            } else if action == "routeResolved" || action == "selectionMode" {
+                try writeSelection(scene: scene, object: object, mode: body["mode"] ?? "route")
             } else if action == "explain" {
                 guard modelTask == nil else { return }
                 send("modelResult", "Explaining selected record…")
@@ -158,13 +178,80 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
             }
         } catch { send("viewerError", error.localizedDescription) }
     }
-    func writeSelection(scene: Snapshot, object: SceneObject?) throws {
+    func rememberRoute(_ answer: ViewerExplanation) {
+        guard let route = answer.route else { return }
+        routePresentations[answer.revision + ":" + route.routeID] = route
+        if routePresentations.count > 8 {
+            for key in routePresentations.keys.sorted() where key != answer.revision + ":" + route.routeID {
+                routePresentations.removeValue(forKey: key)
+                if routePresentations.count <= 8 { break }
+            }
+        }
+    }
+    func writeSelection(scene: Snapshot, object: SceneObject?, mode: String = "route") throws {
         try verifyStorage()
         let value: Any = try object.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull()
-        let selection: [String: Any] = ["schema": 1, "job": scene.job, "revision": scene.revision, "object": value, "timestamp": ISO8601DateFormatter().string(from: Date())]
+        var selection: [String: Any] = ["schema": 1, "job": scene.job, "revision": scene.revision, "object": value,
+                                      "selectionMode": mode == "segment" ? "segment" : "route",
+                                      "timestamp": ISO8601DateFormatter().string(from: Date())]
+        if let object, let route = routePresentations.values.first(where: {
+            $0.job == scene.job && $0.revision == scene.revision && $0.members.contains(where: { $0.objectID == object.id })
+        }) {
+            selection["route"] = ["routeID": route.routeID, "bindingSHA256": route.bindingSHA256,
+                                  "catalogueSHA256": route.catalogueSHA256,
+                                  "memberSourceIDs": route.members.map(\.sourceID)]
+        }
         let folder = workspace.appendingPathComponent("outbox")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         try JSONSerialization.data(withJSONObject: selection, options: [.sortedKeys]).write(to: folder.appendingPathComponent("selection.json"), options: .atomic)
+    }
+    func queueTraceComparison(scene: Snapshot, object: SceneObject) {
+        guard FileManager.default.fileExists(atPath: workspace.deletingLastPathComponent().appendingPathComponent("connection.json").path) else { return }
+        pendingTrace = (scene, object)
+        send("receiveTraceStatus", ["revision": scene.revision, "objectID": object.id, "text": "Reading retained source and T04 geometry…"])
+        runNextTraceComparison()
+    }
+    func runNextTraceComparison() {
+        guard !traceBusy, let (scene, object) = pendingTrace else { return }
+        pendingTrace = nil; traceBusy = true
+        let repo = repository!, root = workspace!
+        Task {
+            let result = await Task.detached { () -> (Data?, String?) in
+                do {
+                    let folder = root.appendingPathComponent("trace-requests")
+                    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                    let stem = UUID().uuidString
+                    let request = folder.appendingPathComponent(stem + ".request.json")
+                    let response = folder.appendingPathComponent(stem + ".response.json")
+                    let log = folder.appendingPathComponent(stem + ".log")
+                    let value: [String: Any] = ["job": scene.job, "revision": scene.revision,
+                                               "object": try JSONSerialization.jsonObject(with: JSONEncoder().encode(object))]
+                    try JSONSerialization.data(withJSONObject: value).write(to: request, options: .atomic)
+                    let process = Process(); process.executableURL = repo.appendingPathComponent(".venv/bin/python")
+                    process.currentDirectoryURL = repo
+                    process.arguments = ["-B", "tools/viewer_trace.py", "--workspace", root.path,
+                                         "--request", request.path, "--response", response.path]
+                    var env = ProcessInfo.processInfo.environment
+                    env["PYTHONDONTWRITEBYTECODE"] = "1"; env["TMPDIR"] = root.appendingPathComponent("tmp").path
+                    process.environment = env
+                    FileManager.default.createFile(atPath: log.path, contents: nil)
+                    let output = try FileHandle(forWritingTo: log); defer { try? output.close() }
+                    process.standardOutput = output; process.standardError = output
+                    try process.run(); process.waitUntilExit()
+                    guard process.terminationStatus == 0 else { return (nil, "Comparison unavailable; retained evidence: " + log.path) }
+                    // Size and identity validation uses the same reader as chat responses.
+                    let answer = try ExplanationReader.read(response, scene: scene, selectedID: object.id)
+                    return (try JSONEncoder().encode(answer), nil)
+                } catch { return (nil, "Comparison unavailable: " + error.localizedDescription) }
+            }.value
+            if let data = result.0, let value = try? JSONSerialization.jsonObject(with: data) {
+                if let answer = try? JSONDecoder().decode(ViewerExplanation.self, from: data) { rememberRoute(answer) }
+                send("receiveTraceComparison", value)
+            } else {
+                send("receiveTraceStatus", ["revision": scene.revision, "objectID": object.id, "text": result.1 ?? "Comparison unavailable"])
+            }
+            traceBusy = false; runNextTraceComparison()
+        }
     }
     func runSmokeIfRequested() {
         let args = CommandLine.arguments
@@ -172,6 +259,11 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         smokeStarted = true
         let folder = URL(fileURLWithPath: args[i + 1]).resolvingSymlinksInPath()
         guard folder.path.hasPrefix(repository.appendingPathComponent("out/lacie_work").resolvingSymlinksInPath().path + "/") else { return }
+        if let ri = args.firstIndex(of: "--route-smoke-response"), ri + 1 < args.count,
+           let si = args.firstIndex(of: "--route-smoke-source"), si + 1 < args.count {
+            runRouteSmoke(folder: folder, response: URL(fileURLWithPath: args[ri+1]), source: args[si+1])
+            return
+        }
         Task {
             do {
                 try await Task.sleep(for: .milliseconds(400))
@@ -204,6 +296,25 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 if(hits.length>1){const first=selected;drag={moved:false};svg.dispatchEvent(new PointerEvent('pointerup',{clientX:screen2.x,clientY:screen2.y,bubbles:true}));check('overlap cycling',selected!==first);}
                 check('inspector populated',document.querySelector('#properties').children.length===4);
                 if((object.path.match(/M /g)||[]).length>1){const center=new DOMPoint(box.x+box.width/2,box.y+box.height/2).matrixTransform(svg.getScreenCTM());check('aperture hole not selectable',hitObjects({clientX:center.x,clientY:center.y}).length===0);}
+                const selectedObject=scene().objects.find(o=>o.id===selected);
+                const answer={revision:scene().revision,objectID:selected,author:'UI fixture',text:'Source comparison fixture',comparison:{original:{path:selectedObject.path,bounds:selectedObject.bounds},added:{path:selectedObject.path,bounds:selectedObject.bounds},summary:'Width fixture',snapshotNote:'Pinned snapshot'}};
+                window.receiveExplanation(answer);check('source and growth paths rendered',document.querySelectorAll('[data-comparison]').length===2);
+                check('comparison legend visible',!document.getElementById('growth-legend').hidden);
+                window.receiveTraceComparison({...answer,author:'Retained T04 geometry',text:'automatic'});
+                check('automatic comparison preserves chat answer',document.getElementById('model-output').textContent.includes('Source comparison fixture'));
+                clearExplanation();window.receiveTraceComparison({...answer,author:'Retained T04 geometry',text:'automatic'});
+                check('selection receives automatic comparison',!!comparison());
+                window.receiveExplanation({revision:answer.revision,objectID:answer.objectID,author:'UI fixture',text:'Source comparison fixture'});
+                check('chat text retains automatic growth',!!comparison());
+                window.receiveTraceComparison({...answer,objectID:'another-object',text:'wrong selection'});
+                check('late selection response ignored',!document.getElementById('model-output').textContent.includes('wrong selection'));
+                const pickBefore=hitObjects({clientX:screen2.x,clientY:screen2.y});check('overlay preserves picking',JSON.stringify(pickBefore)===JSON.stringify(hits));
+                document.getElementById('growth-overlay').click();check('growth toggle removes overlay',document.querySelectorAll('[data-comparison]').length===0);
+                document.getElementById('growth-overlay').click();document.getElementById('fit-selection').click();
+                check('fit selected source',JSON.stringify(camera)===JSON.stringify(padded(selectedObject.bounds)));
+                window.receiveExplanation({...answer,revision:'stale',text:'wrong'});check('stale answer ignored',!document.getElementById('model-output').textContent.includes('wrong'));
+                document.getElementById('current').click();check('selection change clears explanation',!explanation&&document.querySelectorAll('[data-comparison]').length===0);
+                selected=selectedObject.id;inspect();window.receiveExplanation(answer);
                 document.getElementById('inspector').hidden=false;draw();
                 return {checks,revision:scene().revision,selected,objects:scene().objects.length,viewBox:svg.getAttribute('viewBox')};
                 """, arguments: ["value": ["current": try JSONSerialization.jsonObject(with: JSONEncoder().encode(loaded!.current)), "previous": try loaded!.previous.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull()]], in: nil, contentWorld: .page)
@@ -216,6 +327,99 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
             } catch {
                 try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
                 try? Data(error.localizedDescription.utf8).write(to: folder.appendingPathComponent("ui-smoke-failed.txt"))
+            }
+        }
+    }
+    func runRouteSmoke(folder: URL, response: URL, source: String) {
+        Task {
+            do {
+                guard response.resolvingSymlinksInPath().path.hasPrefix(repository.appendingPathComponent("out/lacie_work").resolvingSymlinksInPath().path + "/"),
+                      let scene = loaded?.current else { throw ABIError.invalid("Route smoke requires a retained local response") }
+                let answer = try ExplanationReader.read(response, scene: scene, selectedID: source)
+                guard answer.route != nil else { throw ABIError.invalid("Route smoke response has no maintained route") }
+                rememberRoute(answer)
+                try await Task.sleep(for: .milliseconds(400))
+                let value = try JSONSerialization.jsonObject(with: JSONEncoder().encode(answer))
+                let result = try await web.callAsyncJavaScript("""
+                const checks=[],check=(name,ok)=>{checks.push({name,pass:!!ok});if(!ok)throw Error(name)};window.routeSmokeChecks=checks;
+                check('response matches displayed revision',answer.revision===scene().revision);
+                $('selection-mode').value='route';selectObject(answer.objectID);window.receiveTraceComparison(answer);
+                const r=routeView();check('maintained route selected',!!r&&r.routeID===answer.route.routeID);
+                check('catalogue picking index retained',routeMembership.size===answer.routeIndex.entries.reduce((n,e)=>n+e.objectIndices.length,0));
+                $('fit-selection').click();check('fit complete route',JSON.stringify(camera)===JSON.stringify(padded(r.bounds)));
+                check('assembled copper filled',document.querySelector('[data-route-copper]')?.getAttribute('fill')==='#49dfba');
+                check('all original members drawn',document.querySelectorAll('[data-source-centerline]').length===r.members.length);
+                check('original centerlines dotted',Array.from(document.querySelectorAll('[data-source-centerline]')).every(p=>p.getAttribute('fill')==='none'&&p.getAttribute('stroke-dasharray')==='1 4'&&p.getAttribute('vector-effect')==='non-scaling-stroke'));
+                check('route avoids original filled overlay',document.querySelectorAll('[data-comparison=original]').length===0);
+                check('catalogue group references shown',document.querySelectorAll('[data-group-reference]').length===r.groups.length);
+                check('segment picker retains complete membership',$('segment-picker').options.length===r.members.length);
+                $('centerlines').click();check('centerlines toggle off',document.querySelectorAll('[data-source-centerline]').length===0);$('centerlines').click();
+                $('group-references').click();check('group reference toggle off',document.querySelectorAll('[data-group-reference]').length===0);$('group-references').click();
+                if(r.members.length>1){
+                    const sibling=r.members.find(m=>m.objectID!==selected);$('segment-picker').value=sibling.objectID;$('segment-picker').dispatchEvent(new Event('change'));
+                    check('segment drilldown keeps whole route',selected===sibling.objectID&&routeView().routeID===r.routeID);
+                    const path=drawnPaths.get(sibling.objectID),box=path.getBBox();let inside=null;
+                    for(let x=1;x<45&&!inside;x++)for(let y=1;y<45&&!inside;y++){const p=new DOMPoint(box.x+box.width*x/45,box.y+box.height*y/45);if(path.isPointInFill(p))inside=p;}
+                    check('member copper has a pick point',!!inside);const screen=inside.matrixTransform(svg.getScreenCTM());drag={moved:false};svg.dispatchEvent(new PointerEvent('pointerup',{clientX:screen.x,clientY:screen.y,bubbles:true}));
+                    check('member click selects catalogue route',routeView()?.routeID===r.routeID);
+                }
+                selectObject(answer.objectID);window.receiveTraceComparison(answer);
+                $('selection-mode').value='segment';$('selection-mode').dispatchEvent(new Event('change'));
+                check('segment mode preserves source inspection',!routeView()&&$('properties').children.length===4&&document.querySelectorAll('[data-route-copper]').length===0);
+                $('fit-selection').click();check('segment fit uses clicked source',JSON.stringify(camera)===JSON.stringify(padded(scene().objects.find(o=>o.id===selected).bounds)));
+                $('selection-mode').value='route';$('selection-mode').dispatchEvent(new Event('change'));$('fit-selection').click();
+                const width=document.querySelector('[data-source-centerline]').getAttribute('stroke-width');camera={...camera,width:camera.width*.75,height:camera.height*.75};draw();check('dotted stroke stable while zooming',document.querySelector('[data-source-centerline]').getAttribute('stroke-width')===width);$('fit-selection').click();
+                const old=routeView().bindingSHA256;window.receiveTraceComparison({...answer,revision:'stale'});check('stale route response ignored',routeView().bindingSHA256===old);
+                const layer=scene().objects.find(o=>o.id===selected).layer;visible.delete(layer);draw();check('hidden layer hides route',document.querySelectorAll('[data-route-copper]').length===0);visible.add(layer);draw();
+                if(bundle.previous){$('previous').click();check('previous clears route selection',selected===null&&!routeView());$('current').click();selectObject(answer.objectID);window.receiveTraceComparison(answer);$('fit-selection').click();}
+                $('inspector').hidden=false;draw();selectionMessage('routeResolved');
+                return {checks,revision:scene().revision,selected,routeID:r.routeID,members:r.members.length,groups:r.groups,viewBox:svg.getAttribute('viewBox')};
+                """, arguments: ["answer": value], in: nil, contentWorld: .page)
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try JSONSerialization.data(withJSONObject: result as Any, options: [.prettyPrinted,.sortedKeys]).write(to: folder.appendingPathComponent("ui-route-smoke.json"))
+                let args=CommandLine.arguments
+                if let oi=args.firstIndex(of:"--route-smoke-other"),oi+1<args.count,
+                   let other=scene.objects.first(where:{$0.id==args[oi+1]}),let index=answer.routeIndex,
+                   let objectIndex=scene.objects.firstIndex(where:{$0.id==other.id}),
+                   let entry=index.entries.first(where:{$0.objectIndices.contains(objectIndex)}) {
+                    let started=Date()
+                    _ = try await web.callAsyncJavaScript("""
+                    const o=scene().objects.find(o=>o.id===id);fit(o.bounds);const path=drawnPaths.get(id),b=path.getBBox();let p=null;
+                    for(let x=1;x<60&&!p;x++)for(let y=1;y<60&&!p;y++){const q=new DOMPoint(b.x+b.width*x/60,b.y+b.height*y/60);if(path.isPointInFill(q))p=q;}
+                    if(!p)throw Error('Other route has no copper pick point');const s=p.matrixTransform(svg.getScreenCTM());
+                    drag={moved:false};svg.dispatchEvent(new PointerEvent('pointerup',{clientX:s.x,clientY:s.y,bubbles:true}));
+                    """,arguments:["id":other.id],in:nil,contentWorld:.page)
+                    var arrived=false
+                    for _ in 0..<60 {
+                        try await Task.sleep(for:.milliseconds(200))
+                        let ready=try await web.callAsyncJavaScript("return routeView()?.routeID===expected",arguments:["expected":entry.routeID],in:nil,contentWorld:.page)
+                        if (ready as? Bool)==true {arrived=true;break}
+                    }
+                    guard arrived else {throw ABIError.invalid("Different catalogue route did not arrive through the native selection worker")}
+                    let roundtrip=try await web.callAsyncJavaScript("$('fit-selection').click();return {routeID:routeView().routeID,members:routeView().members.length,selected,filled:!!document.querySelector('[data-route-copper]'),dotted:document.querySelectorAll('[data-source-centerline]').length}",arguments:[:],in:nil,contentWorld:.page)
+                    try JSONSerialization.data(withJSONObject:["result":roundtrip,"elapsed_s":Date().timeIntervalSince(started),"expected":entry.routeID,"injected_route_response":false],options:[.prettyPrinted,.sortedKeys]).write(to:folder.appendingPathComponent("different-route-roundtrip.json"))
+                    try await Task.sleep(for:.milliseconds(200))
+                    let second=try await web.takeSnapshot(configuration:nil)
+                    if let tiff=second.tiffRepresentation,let bitmap=NSBitmapImageRep(data:tiff),let png=bitmap.representation(using:.png,properties:[:]){try png.write(to:folder.appendingPathComponent("viewer-second-route.png"))}
+                    _ = try await web.callAsyncJavaScript("selectObject(answer.objectID);window.receiveTraceComparison(answer);$('fit-selection').click();selectionMessage('routeResolved');",arguments:["answer":value],in:nil,contentWorld:.page)
+                }
+                try await Task.sleep(for: .milliseconds(250))
+                let image = try await web.takeSnapshot(configuration: nil)
+                if let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data:tiff), let png = bitmap.representation(using:.png,properties:[:]) {
+                    try png.write(to:folder.appendingPathComponent("viewer-route.png"))
+                }
+            } catch {
+                try? FileManager.default.createDirectory(at:folder,withIntermediateDirectories:true)
+                let detail = error.localizedDescription + "\n" + String(describing: (error as NSError).userInfo)
+                try? Data(detail.utf8).write(to:folder.appendingPathComponent("ui-route-smoke-failed.txt"))
+                if let checks = try? await web.callAsyncJavaScript("return window.routeSmokeChecks || []", arguments: [:], in: nil, contentWorld: .page),
+                   let data = try? JSONSerialization.data(withJSONObject: checks, options: [.prettyPrinted,.sortedKeys]) {
+                    try? data.write(to:folder.appendingPathComponent("failed-checks.json"))
+                }
+                if let image = try? await web.takeSnapshot(configuration: nil), let tiff = image.tiffRepresentation,
+                   let bitmap = NSBitmapImageRep(data:tiff), let png = bitmap.representation(using:.png,properties:[:]) {
+                    try? png.write(to:folder.appendingPathComponent("failed-viewer.png"))
+                }
             }
         }
     }

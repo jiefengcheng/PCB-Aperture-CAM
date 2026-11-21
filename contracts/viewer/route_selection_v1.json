@@ -1,0 +1,35 @@
+{
+  "schema": "viewer-route-selection-capability/1",
+  "transport": "Optional route and routeIndex fields in the existing checksummed selection-explanation envelope",
+  "native_types": ["RoutePresentation", "RouteMember", "RouteGroupReference", "RouteCatalogueIndex", "RouteIndexEntry"],
+  "membership": "Maintained native route source IDs; no geometric regrouping or inferred electrical net",
+  "catalogue_binding": "Existing source-role BINDING.json and its admission/roles gzip digests, matching the connection source and accepted-T03 scene",
+  "catalogue_registration": "tools/viewer_trace.py --workspace <session> --catalogue-preparation <existing-preparation-directory>",
+  "route_display": {
+    "copper": "Union of every current member body in maintained native order, preserving holes; bounded display derivative only",
+    "original_segments": "Dotted open polylines from original native route_points_mm, not polygon edges or inferred skeletons",
+    "group_references": "Existing durable straight/arc IDs, separate from native route IDs",
+    "segment_inspection": "Original clicked source object and source identity retained; segment picker and Segment mode remain available"
+  },
+  "selection": {
+    "default_mode": "route",
+    "fallback": "Segment display with an explicit unavailability reason; never truncate a route",
+    "outbox_additions": ["selectionMode", "route.routeID", "route.bindingSHA256", "route.catalogueSHA256", "route.memberSourceIDs"],
+    "source_object_preserved": true,
+    "picking": "Active-layer priority, then catalogued trace membership ahead of covering context; repeat-click overlap cycling"
+  },
+  "bindings": [
+    "Job and revision for index, route presentation and source explanation",
+    "Each member object/source identity and SHA256 of its displayed polygon path",
+    "Current and original WKB SHA256 per member",
+    "Catalogue artifact SHA256 and complete route membership",
+    "Object-order digest for compact picking indices: SHA256 of concatenated uint64-big-endian UTF8 byte lengths and object-ID bytes"
+  ],
+  "derived_cache": "Viewer-only compact membership, per-revision picking index and route presentation; source and construction files remain read-only",
+  "limits": {"route_members": 2048, "original_centerline_points": 100000, "route_payload_bytes": 786432, "index_payload_bytes": 524288, "explanation_payload_bytes": 1048576},
+  "compatibility": "Snapshots are unchanged; missing route fields retain existing source selection and comparison",
+  "engineering_geometry_changed": false,
+  "t04_execution": false,
+  "replay": false,
+  "engineering_acceptance": "UNCHANGED"
+}

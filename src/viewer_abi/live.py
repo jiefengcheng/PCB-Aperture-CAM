@@ -252,6 +252,8 @@ def feedback(root):
     source = next((o for o in scene['objects'] if o['id'] == selection.get('object', {}).get('id')), None)
     if source != selection.get('object'):
         raise ValueError('LIVE_SELECTION_BINDING_MISMATCH')
+    from .route_presentation import validate_route_feedback
+    validate_route_feedback(root, selection, scene)
     return dict(status='CURRENT_SELECTION' if scene is current else 'PREVIOUS_REVISION_SELECTION', selection=selection)
 
 
