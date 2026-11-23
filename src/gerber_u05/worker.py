@@ -5,6 +5,13 @@ from . import pipeline as p
 from .guard import verify_sources,install_read_fence
 ORDER=('t01','t03','t04','t02','t05')
 def compute(run,name):
+ if name not in ('t02','t05'):return _compute(run,name)
+ with p.shared_copper_worker(run) as copper:
+  value=_compute(run,name)
+  p.save(run/'shared_copper_preparation'/(name+'_'+os.environ.get('U05_WORKER_MODE','direct')+'_worker.json'),copper.diagnostics())
+  return value
+
+def _compute(run,name):
  if name=='t02'and os.environ.get('U05_WORKER_MODE')in('1','2'):
   recorded=p.load(run/'t02.json');proof=p.load(run/'audits/t02/construct.json')
   if (proof.get('status')!='PASS'or proof.get('stage')!='t02'or

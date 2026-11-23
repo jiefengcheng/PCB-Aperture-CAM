@@ -55,6 +55,30 @@ def test_arbitrary_source_and_exact_original_growth(tmp_path):
     assert answer['comparison']['currentWkbSHA256'] == digest(candidate.wkb)
 
 
+def test_original_width_keep_does_not_show_superseded_growth_allocations():
+    from src.viewer_abi.trace_selection import treatment_details
+    stage = dict(native_trace_source_ids_by_route={'route':['kept']},
+                 owner_nominal_width_keep_retraction=dict(source_ids=['kept']),
+                 groups=[dict(catalogue_band_index=1, lanes=[dict(source_ids=['kept'],
+                     source_width_mm=.249935, width_mm=.279935)])], hybrid_components={})
+    details = treatment_details(stage, 'kept')
+    assert any('Original source width retained' in text for text in details)
+    assert not any('Recorded span width' in text for text in details)
+
+
+def test_source_focus_uses_authenticated_native_points_and_cannot_change_copper(tmp_path):
+    root,selection,sid,original,candidate,_,_=setup(tmp_path)
+    config=live.load_connection(root);_,scene=read_current(root/'session')
+    objects={o['id']:o for o in scene['objects']}
+    focus=dict(source_id=sid,route_point_index=1,radius_mm=.2)
+    assert live.source_focus(config,{'viewer_source_focus':focus},objects)==pytest.approx(dict(x=4.8,y=-.175,width=.4,height=.4))
+    assert trace_response(root,selection)['comparison']['currentWkbSHA256']==digest(candidate.wkb)
+    with pytest.raises(ValueError,match='POINT_REQUIRED'):
+        live.source_focus(config,{'viewer_source_focus':dict(focus,route_point_index=2)},objects)
+    with pytest.raises(ValueError,match='FOCUS_REQUIRED'):
+        live.source_focus(config,{'viewer_source_focus':dict(focus,source_id='wrong')},objects)
+
+
 def test_previous_snapshot_and_changed_patch_use_own_bodies(tmp_path):
     root, prior, sid, original, candidate, _, _ = setup(tmp_path)
     report = tmp_path/'CASE.json'; report.write_text('{}')
@@ -103,11 +127,39 @@ def test_maintained_route_assembles_all_members_and_reuses_display_cache(tmp_pat
     assert first['routeID'] == 'route-one' and len(first['members']) == 2
     assert first['assembled']['path'] == path_data(display(unary_union([box(0,-.008,5,.067),box(5,-.008,10,.067)]))[0])
     assert first['members'][0]['points'] == [[0.,.025],[5.,.025]]
+    assert first['comparison']['addedAreaMM2'] == pytest.approx(.25)
+    assert first['comparison']['removedAreaMM2'] == 0
+    assert first['comparison']['currentWkbSHA256'] == first['currentWkbSHA256']
+    assert first['comparison']['selectedPathSHA256'] == digest(first['assembled']['path'].encode())
     _, scene = read_current(root/'session')
     sibling = dict(selection, object=next(o for o in scene['objects'] if o['sourceID'] != sid))
     assert trace_response(root,sibling)['route'] == first
     assert len([p for p in (root/'route-cache').glob('*.json') if not p.name.startswith('index-')]) == 1
     assert len(list((root/'route-cache').glob('index-*.json'))) == 1
+
+
+def test_route_growth_uses_union_difference_not_overlapping_member_changes(tmp_path):
+    root, selection, sid, _, candidate, _, _ = setup(tmp_path, members=2)
+    before = trace_response(root, selection)['route']
+    other = before['members'][1]['sourceID']
+    # Move ownership of the shared span between members without changing the
+    # complete copper area. Source-level added/removed areas are both nonzero.
+    report = tmp_path/'CASE.json'; report.write_text('{}')
+    shapes = tmp_path/'joint-ownership.json'
+    shapes.write_bytes(encode({
+        sid: dict(before_wkb_hex=candidate.wkb.hex(), after_wkb_hex=box(0,0,6,.05).wkb.hex()),
+        other: dict(before_wkb_hex=box(5,-.008,10,.067).wkb.hex(), after_wkb_hex=box(6,0,10,.05).wkb.hex())}))
+    live.enqueue(root, label='same route area, changed member overlap', report=report, shapes=shapes)
+    assert live.tick(root)[0]['status'] == 'PUBLISHED'
+    _, scene = read_current(root/'session')
+    now = dict(job=scene['job'], revision=scene['revision'], object=next(o for o in scene['objects'] if o['id']==sid))
+    answer = trace_response(root, now)
+    assert answer['comparison']['addedAreaMM2'] > 0
+    assert answer['route']['comparison']['added'] is None
+    assert answer['route']['comparison']['removed'] is None
+    assert answer['route']['comparison']['addedAreaMM2'] == 0
+    assert answer['route']['comparison']['removedAreaMM2'] == 0
+    assert trace_response(root, selection)['route'] == before
 
 
 def test_route_cache_corruption_and_other_member_source_corruption_fail_closed(tmp_path):

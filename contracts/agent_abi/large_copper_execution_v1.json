@@ -1,0 +1,60 @@
+{
+  "schema": "pcb-large-copper-execution-contract/1",
+  "implementation": "src/large_copper_runner.py",
+  "entry": "tools/run_large_copper.py",
+  "operations": [
+    "run",
+    "status",
+    "prepare-display"
+  ],
+  "source": "EXPLICIT_ABSOLUTE_GERBER_FILE; EXISTING_SUPPORTED_POSITIVE_COPPER_PROFILE",
+  "operation": "TRIM_ONLY",
+  "discovery_profile": "large-copper-source-supported-boundaries/3",
+  "discovery_completeness": "NOT_ESTABLISHED_FOR_GENERAL_CURVES_OR_OTHER_DEFECT_FAMILIES",
+  "binding": [
+    "source_sha256",
+    "original_revision",
+    "shared_context",
+    "implementation",
+    "policy"
+  ],
+  "geometry_limits": {
+    "maximum_depth_mm": 0.1,
+    "maximum_area_fraction": 0.1,
+    "area_comparison": "STRICTLY_LESS_THAN",
+    "area_basis": "COMPLETE_PHYSICAL_BUMP / ORIGINAL_CAUSING_PAD_OR_TRACE",
+    "circular_fit_bound_mm": 0.004,
+    "minimum_straight_support_mm": 0.02,
+    "maximum_discovery_span_mm": 1.0
+  },
+  "shallow_trace_edge_rule": "SEPARATE_EXISTING_SOURCE_SUPPORTED_HALF_WIDTH_PATH_AND_CONTACT_CHECKS; NEVER_PAD_AREA_BYPASS",
+  "native_flashes": "EXACT_CAUSING_PAD_AND_REDUNDANT_ENDPOINT_PROOFS; UNRELATED_OR_DECLARED_TERMINALS_PROTECTED",
+  "rectangular_bumps": "IGNORED",
+  "checks": [
+    "source_custody",
+    "policy_and_code_stability",
+    "complete_physical_protrusion",
+    "source_paths",
+    "original_contacts",
+    "protected_scope",
+    "assembled_subtraction",
+    "no_additions",
+    "physical_topology",
+    "unrelated_source_preservation"
+  ],
+  "duplicate_job": "SOURCE_WIDE_PROCESS_LOCK; SOURCE_POLICY_IMPLEMENTATION_RECEIPT; NO_AUTOMATIC_FAILED_JOB_RETRY",
+  "display": "NEW_JOB_LOCAL_SAVED_SESSION; CURRENT_NATIVE_ACK_REQUIRED; NAVIGATION_NEVER_EXECUTES_TREATMENT",
+  "storage": "PREPARED_OUT_LACIE_WORK_ONLY; NO_INTERNAL_FALLBACK",
+  "indexed_budget_bytes": 134217728,
+  "snapshot_budget_bytes": 201326592,
+  "budgets_are_process_rss_caps": false,
+  "owner": "PENDING_USER",
+  "independent": "NOT_RUN: CHANNEL_UNAVAILABLE",
+  "electrical_manufacturing": "NOT_ESTABLISHED",
+  "growth": false,
+  "exports": false,
+  "family_selection": "ONE_FIXED_OPERATION; ALL_REQUIRED_FAMILIES_ALWAYS_CONSIDERED; VIEW_FILTERS_SAVED_ONLY",
+  "reference_selection": "EXACT_NATIVE_STRAIGHT_SUPPORT_BEFORE_OVERLAPPING_APPROXIMATE_CIRCLES; ONE_SOURCE_SUPPORTED_CIRCLE_PER_NATIVE_CENTER",
+  "native_references": "EXPOSED_ORIGINAL_ROUND_CAP; NATIVE_SOURCE_BYTES_AND_ACCEPTED_SOURCE_FLANKS_FIXED; UNRELATED_OWNER_BOUNDS_MAY_CHANGE",
+  "source_paths": "SHALLOW_PATH_STRICTLY_PRESERVED; AREA_NOISE_MAY_TRIM_A_BOUNDED_FREE_END_AFTER_COMPLETE_PHYSICAL_AREA_PROOF; NO_CAUSING_PATH_INTERIOR_OR_WHOLE_PATH_REMOVAL"
+}

@@ -45,8 +45,6 @@ def clear():
         if ENGINE is not None:ENGINE.close();ENGINE=None
         STATS.clear();CHUNKS.clear();CHUNK_WEIGHT=0;MEASUREMENTS.clear();MEASURE_WEIGHT=0;SIGNATURES.clear();VALUES.clear();VALUE_WEIGHT=0
 
-
-
 def legacy_value(left,right):
     """Retain exact fallback witnesses only for byte-identical ordered operands."""
     global MEASURE_WEIGHT
@@ -65,7 +63,7 @@ def legacy_value(left,right):
 
 class Engine:
     """Own reentrant GEOS context and bounded WKB-derived geometry handles."""
-    def __init__(self):
+    def __init__(self,owner=None):
         library=Path(shapely.__file__).parent/'.dylibs/libgeos_c.1.19.2.dylib'
         if not library.is_file():raise RuntimeError('PINNED_GEOS_LIBRARY_UNAVAILABLE')
         self.library_sha256=hashlib.sha256(library.read_bytes()).hexdigest()
@@ -79,7 +77,7 @@ class Engine:
         if not self.reader:
             self.api.GEOS_finish_r(self.context)
             raise RuntimeError('INDEXED_GEOS_CONTEXT_FAILED')
-        self.handles=OrderedDict();self.weight=0;self.lock=threading.RLock();self.closed=False
+        self.handles=OrderedDict();self.weight=0;self.lock=threading.RLock();self.closed=False;self.owner=owner
     def handle(self,shape):
         key=signature(shape);old=self.handles.get(key)
         if old is not None:self.handles.move_to_end(key);STATS['geometry_hits']+=1;return old[0],False
@@ -89,7 +87,12 @@ class Engine:
         weight=6*len(blob)+int(get_num_coordinates(shape))*64+1024
         # Caller destroys uncached handles after its one measurement. Eviction
         # happens after the measurement so the other operand stays live.
-        if weight<=LIMIT//4 and int(get_num_coordinates(shape))>=32768:self.handles[key]=(handle,weight);self.weight+=weight;return handle,False
+        if getattr(self,'owner',None) is not None and int(get_num_coordinates(shape))>=32768:
+            try:self.owner._charge(weight)
+            except BaseException:
+                self.api.GEOSGeom_destroy_r(self.context,handle);raise
+            self.handles[key]=(handle,weight);self.weight+=weight;return handle,False
+        if getattr(self,'owner',None) is None and weight<=LIMIT//4 and int(get_num_coordinates(shape))>=32768:self.handles[key]=(handle,weight);self.weight+=weight;return handle,False
         return handle,True
     def measure(self,left,right):
         with self.lock:
@@ -109,12 +112,13 @@ class Engine:
                     if free_b:self.api.GEOSGeom_destroy_r(self.context,b)
             finally:
                 if free_a:self.api.GEOSGeom_destroy_r(self.context,a)
-                while self.handles and(self.weight>LIMIT//4 or len(self.handles)>256):
+                while getattr(self,'owner',None) is None and self.handles and(self.weight>LIMIT//4 or len(self.handles)>256):
                     _,(handle,weight)=self.handles.popitem(last=False);self.api.GEOSGeom_destroy_r(self.context,handle);self.weight-=weight;STATS['evictions']+=1
     def close(self):
         with self.lock:
             if self.closed:return
             for handle,_ in self.handles.values():self.api.GEOSGeom_destroy_r(self.context,handle)
+            if getattr(self,'owner',None) is not None:self.owner.weight-=self.weight
             self.handles.clear();self.weight=0;self.api.GEOSWKBReader_destroy_r(self.context,self.reader);self.api.GEOS_finish_r(self.context);self.closed=True
 
 def chunks(shape):
@@ -128,6 +132,74 @@ def chunks(shape):
             if segments%32:result.append(np.asarray([shapely.linestrings(coords[full*32:])],dtype=object))
     return np.concatenate(result)
 
+
+def prepared_boundary(shape, parts=None):
+    """The single T02/T05 complete ordered-edge search structure builder."""
+    parts=chunks(shape) if parts is None else parts
+    tree=STRtree(parts)
+    weight=6*len(to_wkb(shape))+int(get_num_coordinates(shape))*64+len(parts)*1024+1024
+    checksum=hashlib.sha256(b''.join(shapely.to_wkb(parts,include_srid=True))).hexdigest()
+    parts.flags.writeable=False
+    return tree,parts,weight,checksum
+
+
+def boundary_rings(shape):
+    offset=0;result=[]
+    for p,poly in enumerate([shape] if shape.geom_type=='Polygon' else shape.geoms):
+        for r,ring in enumerate([poly.exterior,*poly.interiors]):
+            count=(len(ring.coords)-1+31)//32
+            result.append(dict(polygon=p,ring=r,first=offset,count=count,closed=True));offset+=count
+    return result
+
+
+class BoundaryPreparation:
+    """Board-lifetime ownership of the existing shared T02/T05 structure.
+
+    The board context supplies checked persistence and accounting. All exact
+    edge partitioning, native index construction and integrity live HERE, as
+    they do for the legacy operation-scoped cache. No parallel search engine.
+    """
+    def __init__(self,owner):
+        self.owner=owner;self.entries={};self.signatures={}
+
+    def index(self,shape):
+        from src.shared_copper_context import geometry_key
+        known=self.signatures.get(id(shape))
+        if known is not None and known[0]() is shape:key=known[1]
+        else:
+            key=geometry_key(shape);self.signatures[id(shape)]=(weakref.ref(shape),key)
+        if key in self.entries:
+            self.owner.stats['boundary_index_hits']+=1
+            tree,parts,_,_=self.entries[key]
+            return tree,parts
+        with self.owner.lock,self.owner._publication_lock():
+            path=self.owner.directory/'boundaries'/(key+'.json.gz')
+            if path.exists():
+                record=self.owner._read(path)
+                if record['geometry']!=key:raise ValueError('SHARED_COPPER_BOUNDARY_BINDING_CHANGED')
+                if record.get('rings')!=boundary_rings(shape):raise ValueError('SHARED_COPPER_BOUNDARY_ADJACENCY_CHANGED')
+                parts=np.asarray([shapely.from_wkb(bytes.fromhex(b)) for b in record['ordered_parts']],dtype=object)
+                expected=chunks(shape)
+                if list(shapely.to_wkb(parts,include_srid=True))!=list(shapely.to_wkb(expected,include_srid=True)):
+                    raise ValueError('SHARED_COPPER_BOUNDARY_ORDER_CHANGED')
+                self.owner.stats['boundary_warm_loads']+=1
+            else:
+                parts=chunks(shape)
+                self.owner._write(path,dict(geometry=key,rings=boundary_rings(shape),ordered_parts=[b.hex() for b in shapely.to_wkb(parts,include_srid=True)]))
+                self.owner.stats['boundary_cold_preparations']+=1
+            entry=prepared_boundary(shape,parts)
+            self.owner._charge(entry[2]);self.entries[key]=entry
+            self.owner.stats['boundary_index_builds']+=1
+            return entry[0],entry[1]
+
+    def validate(self):
+        for tree,parts,_,checksum in self.entries.values():
+            if (len(tree.geometries)!=len(parts) or any(a is not b for a,b in zip(tree.geometries,parts)) or
+                    hashlib.sha256(b''.join(shapely.to_wkb(parts,include_srid=True))).hexdigest()!=checksum):
+                raise ValueError('SHARED_COPPER_RESIDENT_BOUNDARY_CHANGED')
+
+    def close(self):self.entries.clear();self.signatures.clear()
+
 def boundary_index(shape):
     """Reuse every ordered edge chunk, on either side of a distance query.
 
@@ -138,6 +210,10 @@ def boundary_index(shape):
     chunk budget, so admitting small shapes does not increase the memory cap.
     The 8192-entry ceiling separately bounds Python/index overhead.
     """
+    from src.shared_copper_context import ACTIVE
+    shared = ACTIVE.get()
+    if shared is not None:
+        return shared.boundary_index(shape)
     global CHUNK_WEIGHT
     key=(signature(shape),int(shapely.get_srid(shape)),float(get_precision(shape)))
     entry=CHUNKS.get(key)
@@ -151,11 +227,8 @@ def boundary_index(shape):
             raise ValueError('INDEXED_DISTANCE_BOUNDARY_INDEX_CHANGED')
         CHUNKS.move_to_end(key);STATS['chunk_hits']+=1
         return tree,parts
-    parts=chunks(shape);tree=STRtree(parts)
-    weight=6*len(to_wkb(shape))+int(get_num_coordinates(shape))*64+len(parts)*1024+1024
+    tree,parts,weight,checksum=prepared_boundary(shape)
     if weight<=chunk_budget():
-        checksum=hashlib.sha256(b''.join(shapely.to_wkb(parts,include_srid=True))).hexdigest()
-        parts.flags.writeable=False
         while CHUNKS and(CHUNK_WEIGHT+weight>chunk_budget() or len(CHUNKS)>=8192):
             _,old=CHUNKS.popitem(last=False);CHUNK_WEIGHT-=old[2];STATS['chunk_evictions']+=1
         CHUNKS[key]=(tree,parts,weight,checksum);CHUNK_WEIGHT+=weight
@@ -191,8 +264,7 @@ def compute_distance(left,right):
     # distance in numerically delicate touching cases.
     if left.intersects(right):STATS['intersection_fallbacks']+=1;return left.distance(right)
     with CONTROL:
-        if ENGINE is None:ENGINE=Engine()
-        value=ENGINE.measure(left,right)
+        value=measurement_engine().measure(left,right)
         value=legacy_minimum(left,right,value)
     if not math.isfinite(value)or value<0:raise ValueError('INDEXED_DISTANCE_INVALID')
     # Never let changed traversal/roundoff decide a clearance boundary. This
@@ -200,6 +272,14 @@ def compute_distance(left,right):
     if value<=1e-12 or any(abs(value-threshold)<=4e-12 for threshold in(HARD_GAP_MM,CONSTRUCTION_GAP_MM)):
         STATS['boundary_fallbacks']+=1;return legacy_value(left,right)
     STATS['indexed_calls']+=1;return value
+
+def measurement_engine():
+    global ENGINE
+    from src.shared_copper_context import ACTIVE
+    shared=ACTIVE.get()
+    if shared is not None:return shared.engine()
+    if ENGINE is None:ENGINE=Engine()
+    return ENGINE
 
 def distance(left,right):
     global VALUE_WEIGHT

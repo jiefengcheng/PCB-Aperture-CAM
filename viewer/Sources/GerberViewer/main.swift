@@ -10,12 +10,21 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     var timer: Timer?
     var workspace: URL!
     var repository: URL!
+    var workRoot: URL!
+    var portable = false
+    var portableStorage: PortableWorkspaceGuard?
+    var workerEnvironment: [String: String] = [:]
     var loaded: LoadedRevision?
     var pageReady = false
     var loading = false
     var lastManifestDigest: String?
+    var displayReadStarted: ContinuousClock.Instant?
     var lastExplanationKey: String?
+    var lastPresentationKey: String?
+    var loadingPresentation = false
     var importing = false
+    var cleanupBusy = false
+    var cleanupJob: URL?
     var smokeStarted = false
     var modelTask: Task<Void, Never>?
     var traceBusy = false
@@ -24,6 +33,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     var initialSelection: [String: String]?
     func applicationDidFinishLaunching(_ notification: Notification) {
         do {
+            portable = Bundle.main.object(forInfoDictionaryKey: "CleanupPortable") as? Bool == true
             func argument(_ name: String) throws -> String {
                 let args = CommandLine.arguments
                 if let index = args.lastIndex(of: name), index + 1 < args.count { return args[index + 1] }
@@ -31,10 +41,15 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else { throw ABIError.invalid("Launch through tools/Start_Gerber_Viewer.command") }
                 return value
             }
-            workspace = URL(fileURLWithPath: try argument("--workspace")).resolvingSymlinksInPath()
-            repository = URL(fileURLWithPath: try argument("--repository")).resolvingSymlinksInPath()
+            if portable {
+                guard try initializePortable() else { return }
+            } else {
+                workspace = URL(fileURLWithPath: try argument("--workspace")).resolvingSymlinksInPath()
+                repository = URL(fileURLWithPath: try argument("--repository")).resolvingSymlinksInPath()
+                workRoot = repository.appendingPathComponent("out/lacie_work").resolvingSymlinksInPath()
+            }
             guard FileManager.default.fileExists(atPath: workspace.path),
-                  workspace.path.hasPrefix(repository.appendingPathComponent("out/lacie_work").resolvingSymlinksInPath().path + "/") else { throw ABIError.invalid("Viewer requires the prepared LaCie workspace") }
+                  workspace.path.hasPrefix(workRoot.path + "/") else { throw ABIError.invalid("Viewer requires its explicitly prepared workspace") }
             try verifyStorage()
             if let data = try? Data(contentsOf: workspace.appendingPathComponent("outbox/selection.json")),
                let saved = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -61,18 +76,71 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
             NSApp.activate(ignoringOtherApps: true)
         } catch { fatalDialog(error.localizedDescription) }
     }
+    func initializePortable() throws -> Bool {
+        guard let resources = Bundle.main.resourceURL, let frameworks = Bundle.main.privateFrameworksURL else {
+            throw ABIError.invalid("Portable runtime missing")
+        }
+        repository = resources.appendingPathComponent("payload").resolvingSymlinksInPath()
+        let args = CommandLine.arguments
+        let chosen: URL
+        if let index = args.firstIndex(of: "--work-root"), index + 1 < args.count {
+            chosen = URL(fileURLWithPath: args[index+1])
+        } else {
+            let picker = NSOpenPanel(); picker.canChooseFiles = false; picker.canChooseDirectories = true
+            picker.canCreateDirectories = true; picker.allowsMultipleSelection = false
+            picker.message = "Choose an APFS work folder with at least 5 GiB free. Jobs, caches and saved results stay here."
+            picker.prompt = "Use work folder"
+            NSApp.activate(ignoringOtherApps: true)
+            guard picker.runModal() == .OK, let url = picker.url else { NSApp.terminate(nil); return false }
+            chosen = url
+        }
+        let home = frameworks.appendingPathComponent("Python.framework/Versions/3.14")
+        workerEnvironment = ProcessInfo.processInfo.environment
+        workerEnvironment.removeValue(forKey: "__PYVENV_LAUNCHER__")
+        workerEnvironment["PYTHONHOME"] = home.path
+        workerEnvironment["PYTHONPATH"] = repository.path
+        workerEnvironment["PYTHONNOUSERSITE"] = "1"
+        workerEnvironment["PYTHONDONTWRITEBYTECODE"] = "1"
+        let process = Process(); process.executableURL = repository.appendingPathComponent(".venv/bin/python")
+        process.currentDirectoryURL = repository
+        process.arguments = ["-B", "tools/portable_cleanup.py", "--workspace", chosen.path, "init"]
+        process.environment = workerEnvironment
+        let output = Pipe(), errors = Pipe(); process.standardOutput = output; process.standardError = errors
+        try process.run()
+        let data = output.fileHandleForReading.readDataToEndOfFile(); process.waitUntilExit()
+        guard process.terminationStatus == 0,
+              let value = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let path = value["workspace"] as? String else {
+            throw ABIError.invalid("Workspace setup stopped: " + String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self))
+        }
+        workRoot = URL(fileURLWithPath: path).resolvingSymlinksInPath()
+        workerEnvironment["PCB_CLEANUP_WORKSPACE"] = path
+        workerEnvironment["TMPDIR"] = workRoot.appendingPathComponent("tmp").path
+        if let index = args.firstIndex(of: "--workspace"), index + 1 < args.count {
+            workspace = URL(fileURLWithPath: args[index+1]).resolvingSymlinksInPath()
+        } else {
+            workspace = workRoot.appendingPathComponent("native_sessions/" + UUID().uuidString)
+            try FileManager.default.createDirectory(at: workspace, withIntermediateDirectories: true)
+        }
+        return true
+    }
     func verifyStorage() throws {
-        let root = repository.appendingPathComponent("out/lacie_work").resolvingSymlinksInPath()
+        let root = workRoot!
+        if portable {
+            if portableStorage == nil { portableStorage = try PortableWorkspaceGuard(root: root) }
+            try portableStorage!.verify()
+            return
+        }
         let data = try Data(contentsOf: root.appendingPathComponent("STORAGE_IDENTITY.json"))
         let identity = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        guard identity?["lacie_volume_uuid"] as? String == "5E178CE8-A7FF-37D9-B307-F0D08FBB4D14" else { throw ABIError.invalid("LaCie storage identity mismatch") }
+        guard identity?["lacie_volume_uuid"] as? String == "6D461CE3-1544-4670-BA1D-BE4DA490D97E" else { throw ABIError.invalid("LaCie storage identity mismatch") }
         // An unmounted directory must never become an internal fallback.
         let values = try root.resourceValues(forKeys: [.volumeURLKey])
         guard values.volume?.standardizedFileURL.path == root.standardizedFileURL.path else { throw ABIError.invalid("LaCie workspace is not mounted") }
     }
     func fatalDialog(_ message: String) { let alert = NSAlert(); alert.messageText = "Gerber Viewer"; alert.informativeText = message; alert.runModal(); NSApp.terminate(nil) }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { pageReady = true; if CommandLine.arguments.contains("--live") { send("configureLive", "") }; poll() }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { pageReady = true; if portable { send("configurePortableCleanup", "") }; if CommandLine.arguments.contains("--live") { send("configureLive", "") }; poll() }
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
         navigationAction.navigationType == .other && navigationAction.request.url?.isFileURL == true ? .allow : .cancel
     }
@@ -86,10 +154,22 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     func poll() {
         guard pageReady, !loading else { return }
         do { try verifyStorage() } catch { send("viewerError", error.localizedDescription); return }
+        if cleanupBusy, let job = cleanupJob,
+           let data = try? Data(contentsOf: job.appendingPathComponent("PROGRESS.json")),
+           let progress = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            let state = progress["status"] as? String ?? "Working"
+            let phase = progress["phase"] as? String ?? (state.hasPrefix("COMPLETED") ? "preparing saved display" : state)
+            let count = (progress["completed"] as? Int).map { " · \($0)/\(progress["candidates"] as? Int ?? 0)" } ?? ""
+            send("receiveCleanupStatus", ["busy": true, "text": "Large copper: " + phase + count])
+        }
         pollExplanation()
         guard FileManager.default.fileExists(atPath: workspace.appendingPathComponent("current.json").path) else { return }
-        if let data = try? Data(contentsOf: workspace.appendingPathComponent("current.json")), SnapshotReader.digest(data) == lastManifestDigest, loaded != nil { return }
+        if let data = try? Data(contentsOf: workspace.appendingPathComponent("current.json")), SnapshotReader.digest(data) == lastManifestDigest, loaded != nil {
+            pollBoardGrowth()
+            return
+        }
         loading = true
+        displayReadStarted = ContinuousClock().now
         let root = workspace!
         Task {
             do {
@@ -99,8 +179,21 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                     let encoder = JSONEncoder()
                     let current = try JSONSerialization.jsonObject(with: encoder.encode(next.current))
                     let previous: Any = try next.previous.map { try JSONSerialization.jsonObject(with: encoder.encode($0)) } ?? NSNull()
-                    loaded = next
                     var value: [String: Any] = ["current": current, "previous": previous]
+                    var presentationKey: String?
+                    let presentation = root.appendingPathComponent("presentations/" + next.digest + ".json")
+                    if FileManager.default.fileExists(atPath: presentation.path) {
+                        let stamp = try presentation.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
+                        if let date = stamp.contentModificationDate, let size = stamp.fileSize {
+                            presentationKey = next.digest + ":" + String(date.timeIntervalSince1970) + ":" + String(size)
+                        }
+                        let growth = try await Task.detached {
+                            try BoardGrowthReader.read(presentation, scene: next.current, digest: next.digest)
+                        }.value
+                        value["boardGrowth"] = try JSONSerialization.jsonObject(with: encoder.encode(growth))
+                    }
+                    loaded = next
+                    lastPresentationKey = presentationKey
                     if let restore = initialSelection, restore["revision"] == next.current.revision {
                         value["restoreSelection"] = restore
                     }
@@ -110,6 +203,30 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 } else { send("clearABIError", "") }
             } catch { send("viewerError", "Update rejected; retaining displayed revision. " + error.localizedDescription) }
             loading = false
+        }
+    }
+    func pollBoardGrowth() {
+        guard !loadingPresentation, let current = loaded else { return }
+        let url = workspace.appendingPathComponent("presentations/" + current.digest + ".json")
+        guard let values = try? url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey]),
+              let date = values.contentModificationDate, let size = values.fileSize else { return }
+        let key = current.digest + ":" + String(date.timeIntervalSince1970) + ":" + String(size)
+        guard key != lastPresentationKey else { return }
+        loadingPresentation = true
+        Task {
+            defer { loadingPresentation = false }
+            do {
+                let growth = try await Task.detached {
+                    try BoardGrowthReader.read(url, scene: current.current, digest: current.digest)
+                }.value
+                guard loaded?.digest == current.digest else { return }
+                let value = try JSONSerialization.jsonObject(with: JSONEncoder().encode(growth))
+                lastPresentationKey = key
+                send("receiveBoardGrowth", value)
+            } catch {
+                lastPresentationKey = key
+                send("viewerError", "Comparison update rejected; retaining displayed artwork. " + error.localizedDescription)
+            }
         }
     }
     func pollExplanation() {
@@ -135,7 +252,8 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: String], let action = body["action"] else { return }
-        if action == "open" { openGerbers(); return }
+        if action == "open" { if !portable { openGerbers() }; return }
+        if action == "runLargeCopper" { runLargeCopper(); return }
         if action == "modelStatus" {
             Task { send("modelResult", await AppleViewerProvider().availability()) }; return
         }
@@ -144,7 +262,11 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 try verifyStorage()
                 let folder = workspace.appendingPathComponent("outbox")
                 try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-                let ack: [String: Any] = ["schema": 1, "status": "DISPLAY_DOM_UPDATED", "job": loaded.current.job, "revision": revision, "payloadSHA256": loaded.digest, "timestamp": ISO8601DateFormatter().string(from: Date())]
+                var ack: [String: Any] = ["schema": 1, "status": "DISPLAY_DOM_UPDATED", "job": loaded.current.job, "revision": revision, "payloadSHA256": loaded.digest, "presentation": body["presentation"] ?? "OBJECT_ARTWORK", "growthParts": body["growthParts"] ?? "0", "timestamp": ISO8601DateFormatter().string(from: Date())]
+                if let started = displayReadStarted {
+                    let duration = started.duration(to: ContinuousClock().now).components
+                    ack["native_snapshot_read_to_dom_seconds"] = Double(duration.seconds) + Double(duration.attoseconds) / 1e18
+                }
                 try JSONSerialization.data(withJSONObject: ack, options: [.sortedKeys]).write(to: folder.appendingPathComponent("display.json"), options: .atomic)
             } catch { send("viewerError", error.localizedDescription) }
             return
@@ -206,6 +328,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         try JSONSerialization.data(withJSONObject: selection, options: [.sortedKeys]).write(to: folder.appendingPathComponent("selection.json"), options: .atomic)
     }
     func queueTraceComparison(scene: Snapshot, object: SceneObject) {
+        if portable { return }
         guard FileManager.default.fileExists(atPath: workspace.deletingLastPathComponent().appendingPathComponent("connection.json").path) else { return }
         pendingTrace = (scene, object)
         send("receiveTraceStatus", ["revision": scene.revision, "objectID": object.id, "text": "Reading retained source and T04 geometry…"])
@@ -258,7 +381,8 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         guard !smokeStarted, let i = args.firstIndex(of: "--smoke-report"), i + 1 < args.count else { return }
         smokeStarted = true
         let folder = URL(fileURLWithPath: args[i + 1]).resolvingSymlinksInPath()
-        guard folder.path.hasPrefix(repository.appendingPathComponent("out/lacie_work").resolvingSymlinksInPath().path + "/") else { return }
+        guard folder.path.hasPrefix(workRoot.path + "/") else { return }
+        if args.contains("--cleanup-smoke") { runCleanupSmoke(folder: folder); return }
         if let ri = args.firstIndex(of: "--route-smoke-response"), ri + 1 < args.count,
            let si = args.firstIndex(of: "--route-smoke-source"), si + 1 < args.count {
             runRouteSmoke(folder: folder, response: URL(fileURLWithPath: args[ri+1]), source: args[si+1])
@@ -330,18 +454,147 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
             }
         }
     }
+    func runCleanupSmoke(folder: URL) {
+        Task {
+            do {
+                try await Task.sleep(for: .milliseconds(500))
+                let result = try await web.callAsyncJavaScript("""
+                const checks=[],check=(name,ok)=>{checks.push({name,pass:!!ok});if(!ok)throw Error(name)};
+                window.cleanupSmokeChecks=checks;
+                check('revision-bound saved cleanup present',!!cleanupData());
+                const sourcePaths=scene().objects.map(o=>o.path).join('|'),revision=scene().revision;
+                const actualPost=post,messages=[];post=v=>messages.push(v);
+                try {
+                  $('workspace-mode').value='cleanup';$('workspace-mode').onchange();
+                  check('dedicated controls',!$('cleanup-controls').hidden&&$('trace-controls').hidden&&!$('cleanup-panel').hidden&&$('inspector').hidden);
+                  check('only treated copper artwork',boardGrowth().parts.length>0&&boardGrowth().parts.every(p=>p.attributes.copper_object?.length===1));
+                  const boardAdditions=bundle.boardGrowth.parts.filter(p=>p.kind==='added').map(p=>p.path);
+                  check('trace growth excluded',boardGrowth().parts.filter(p=>p.kind==='added').every(p=>!boardAdditions.includes(p.path)||cleanupData().cases.some(c=>c.kind==='recess'&&c.path===p.path)));
+                  for(const object of cleanupData().objects){$('cleanup-object').value=object.id;$('cleanup-object').onchange();check('copper object '+object.id,boardGrowth().parts.every(p=>p.attributes.copper_object[0]===object.id));}
+                  $('cleanup-object').value='all';$('cleanup-object').onchange();
+                  const all=cleanupData().cases;
+                  for(const c of all){cleanupSelection=c.id;$('cleanup-places').value=c.id;cleanupInfo();focusCleanup();check('place '+c.id,cleanupSelected()?.id===c.id&&$('cleanup-info').textContent.includes(c.disposition));}
+                  const first=cleanupSelection;$('cleanup-next').click();$('cleanup-prev').click();check('next and previous',cleanupSelection===first);
+                  for(const mode of ['original','corrected','comparison']){
+                    $('cleanup-view').value=mode;draw();
+                    const paths=[...document.querySelectorAll('[data-board-growth]')];
+                    check(mode+' grey copper',paths.filter(p=>p.dataset.boardGrowth!=='removed'||mode!=='comparison').every(p=>p.getAttribute('fill')==='#bac8ce'));
+                    check(mode+' correct partition',mode==='original'?!paths.some(p=>p.dataset.boardGrowth==='added'):mode==='corrected'?!paths.some(p=>p.dataset.boardGrowth==='removed'):true);
+                  }
+                  $('cleanup-ghosts').checked=false;draw();check('removal ghosts optional',!document.querySelector('[data-board-growth="removed"]'));
+                  $('cleanup-ghosts').checked=true;
+                  for(const filter of ['bump','recess','corrected','unresolved','ignored','circular']){$('cleanup-filter').value=filter;$('cleanup-filter').onchange();check(filter+' filter',cleanupCases().every(c=>c.kind===filter||c.status===filter||filter==='circular'&&c.boundaryKind==='circular'));}
+                  $('cleanup-filter').value='all';updateCleanup();
+                  $('cleanup-area').checked=false;updateCleanup();check('area rule independent',cleanupCases().every(c=>!c.rule.includes('AREA_NOISE')));$('cleanup-area').checked=true;
+                  $('cleanup-shallow').checked=false;updateCleanup();check('shallow rule independent',cleanupCases().every(c=>!c.rule.includes('SHALLOW_SOURCE_EDGE')));$('cleanup-shallow').checked=true;updateCleanup();
+                  const playbackCases=cleanupCases(),playbackStart=cleanupSelection;
+                  if(playbackCases.length>1){
+                  $('cleanup-play').click();check('play starts',cleanupTimer!==null&&$('cleanup-play').getAttribute('aria-pressed')==='true');
+                  const playbackDeadline=performance.now()+10000;
+                  while(cleanupSelection===playbackStart&&performance.now()<playbackDeadline)await new Promise(resolve=>setTimeout(resolve,100));
+                  check('play advances saved detail',cleanupSelection===playbackCases[(playbackCases.findIndex(c=>c.id===playbackStart)+1)%playbackCases.length].id);
+                  const detail=cleanupSelected().bounds;check('play fits detail',camera.x<detail.x&&camera.y<detail.y&&camera.width>detail.width);
+                  $('cleanup-play').click();const pausedPlace=cleanupSelection;check('pause clears timer',cleanupTimer===null&&$('cleanup-play').getAttribute('aria-pressed')==='false');
+                  await new Promise(resolve=>setTimeout(resolve,100));check('pause retains place',cleanupSelection===pausedPlace);
+                  $('cleanup-play').click();$('cleanup-next').click();check('manual navigation pauses',cleanupTimer===null);
+                  cleanupSelection=cleanupCases().at(-1).id;advanceCleanup();check('playback wraps filtered places',cleanupSelection===cleanupCases()[0].id);
+                  $('cleanup-play').click();$('cleanup-filter').value='unresolved';$('cleanup-filter').onchange();check('filter change pauses',cleanupTimer===null);
+                  }else{check('zero or one place disables playback',$('cleanup-play').disabled&&cleanupTimer===null)}
+                  $('cleanup-filter').value='recess';$('cleanup-filter').onchange();if(trimOnly())check('empty list disables play',$('cleanup-play').disabled);
+                  $('cleanup-filter').value='all';$('cleanup-filter').onchange();
+                  if(trimOnly())check('trim only without added copper',bundle.boardGrowth.addedAreaMM2<=1e-12&&!boardGrowth().parts.some(p=>p.kind==='added'));
+                  if(cleanupData().cases.some(c=>c.reviewNumber!=null)){
+                    $('cleanup-filter').value='reviewed';$('cleanup-filter').onchange();
+                    check('original eight review places retained',cleanupCases().length===8&&cleanupCases().every((c,i)=>c.reviewNumber===i+1));
+                    for(const c of cleanupCases()){cleanupSelection=c.id;$('cleanup-places').value=c.id;cleanupInfo();focusCleanup();check('review '+c.reviewNumber+' explanation',$('cleanup-info').textContent.includes('Place '+c.reviewNumber+'/8:')&&c.sources.length>0&&c.areaMM2>0)}
+                    $('cleanup-filter').value='all';$('cleanup-filter').onchange();
+                  }
+                  check('source geometry unchanged',revision===scene().revision&&sourcePaths===scene().objects.map(o=>o.path).join('|'));
+                  check('zero treatment or selection requests',messages.length===0);
+                  $('cleanup-all').click();
+                } finally {post=actualPost}
+                return {checks,revision,constructionSHA256:bundle.boardGrowth.constructionSHA256,sourceSHA256:bundle.boardGrowth.sourceSHA256,cases:cleanupData().cases.length,trimmed:cleanupData().cases.filter(c=>c.kind==='bump'&&c.status==='corrected').length,recesses:cleanupData().cases.filter(c=>c.kind==='recess').length,unresolved:cleanupData().cases.filter(c=>c.status==='unresolved').length,ignored:cleanupData().cases.filter(c=>c.status==='ignored').length};
+                """, arguments: [:], in: nil, contentWorld: .page)
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try JSONSerialization.data(withJSONObject: result as Any, options: [.prettyPrinted,.sortedKeys]).write(to: folder.appendingPathComponent("cleanup-ui.json"))
+                for mode in ["original","corrected","comparison"] {
+                    _ = try await web.callAsyncJavaScript("$('cleanup-view').value=mode;draw()", arguments: ["mode":mode], in: nil, contentWorld: .page)
+                    let image = try await web.takeSnapshot(configuration: nil)
+                    if let tiff=image.tiffRepresentation,let bitmap=NSBitmapImageRep(data:tiff),let png=bitmap.representation(using:.png,properties:[:]) {
+                        try png.write(to:folder.appendingPathComponent("cleanup-"+mode+".png"))
+                    }
+                }
+                for example in ["area", "recess", "shallow", "marked"] {
+                    let shown = try await web.callAsyncJavaScript("""
+                    $('cleanup-object').value='all';$('cleanup-filter').value='all';updateCleanup();
+                    if(example==='recess'&&trimOnly())return false;
+                    const chosen=cleanupCases().find(c=>c.status==='corrected'&&(example==='marked'?c.sources.some(s=>s.ordinal===2688):example==='shallow'?c.rule.includes('SHALLOW_SOURCE_EDGE'):example==='recess'?c.kind==='recess':c.rule==='AREA_NOISE'));
+                    if(!chosen)return false;
+                    cleanupSelection=chosen.id;$('cleanup-places').value=chosen.id;cleanupInfo();focusCleanup();
+                    $('cleanup-view').value='comparison';draw();return true;
+                    """, arguments:["example":example],in:nil,contentWorld:.page)
+                    guard shown as? Bool == true else { continue }
+                    let image=try await web.takeSnapshot(configuration:nil)
+                    if let tiff=image.tiffRepresentation,let bitmap=NSBitmapImageRep(data:tiff),let png=bitmap.representation(using:.png,properties:[:]) {
+                        try png.write(to:folder.appendingPathComponent("cleanup-detail-"+example+".png"))
+                    }
+                }
+                for number in 1...8 {
+                    let shown = try await web.callAsyncJavaScript("""
+                    if(!cleanupData().cases.some(c=>c.reviewNumber===number))return false;
+                    $('cleanup-object').value='all';$('cleanup-filter').value='reviewed';updateCleanup();
+                    const chosen=cleanupCases().find(c=>c.reviewNumber===number);
+                    cleanupSelection=chosen.id;$('cleanup-places').value=chosen.id;cleanupInfo();focusCleanup();
+                    $('cleanup-view').value='comparison';$('cleanup-panel').scrollTop=0;draw();return true;
+                    """, arguments:["number":number],in:nil,contentWorld:.page)
+                    if shown as? Bool == true {
+                        let image=try await web.takeSnapshot(configuration:nil)
+                        if let tiff=image.tiffRepresentation,let bitmap=NSBitmapImageRep(data:tiff),let png=bitmap.representation(using:.png,properties:[:]) {
+                            try png.write(to:folder.appendingPathComponent("review-place-\(number).png"))
+                        }
+                    }
+                }
+                let circularShown = try await web.callAsyncJavaScript("""
+                const latest=cleanupData().cases.find(c=>c.boundaryKind==='circular'&&c.sources.some(s=>s.ordinal===14440));
+                if(!latest)return false;
+                $('cleanup-object').value='all';$('cleanup-filter').value='circular';updateCleanup();
+                cleanupSelection=latest.id;$('cleanup-places').value=latest.id;cleanupInfo();focusCleanup();
+                $('cleanup-panel').scrollTop=0;return true;
+                """,arguments:[:],in:nil,contentWorld:.page)
+                if circularShown as? Bool == true {
+                    for mode in ["original","corrected","comparison"] {
+                        _ = try await web.callAsyncJavaScript("$('cleanup-view').value=mode;draw()",arguments:["mode":mode],in:nil,contentWorld:.page)
+                        let image=try await web.takeSnapshot(configuration:nil)
+                        if let tiff=image.tiffRepresentation,let bitmap=NSBitmapImageRep(data:tiff),let png=bitmap.representation(using:.png,properties:[:]) {
+                            try png.write(to:folder.appendingPathComponent("circular-endpoint-"+mode+".png"))
+                        }
+                    }
+                }
+            } catch {
+                try? FileManager.default.createDirectory(at:folder,withIntermediateDirectories:true)
+                try? Data(error.localizedDescription.utf8).write(to:folder.appendingPathComponent("cleanup-ui-failed.txt"))
+                if let checks=try? await web.callAsyncJavaScript("return window.cleanupSmokeChecks || []",arguments:[:],in:nil,contentWorld:.page),let data=try? JSONSerialization.data(withJSONObject:checks){try? data.write(to:folder.appendingPathComponent("cleanup-ui-partial.json"))}
+            }
+        }
+    }
     func runRouteSmoke(folder: URL, response: URL, source: String) {
         Task {
             do {
                 guard response.resolvingSymlinksInPath().path.hasPrefix(repository.appendingPathComponent("out/lacie_work").resolvingSymlinksInPath().path + "/"),
-                      let scene = loaded?.current else { throw ABIError.invalid("Route smoke requires a retained local response") }
-                let answer = try ExplanationReader.read(response, scene: scene, selectedID: source)
+                      let loaded else { throw ABIError.invalid("Route smoke requires a retained local response") }
+                // Qualify the revision actually selected by the user, including Previous.
+                let candidates = [loaded.current, loaded.previous].compactMap { $0 }
+                guard let answer = candidates.compactMap({ try? ExplanationReader.read(response, scene: $0, selectedID: source) }).first,
+                      let scene = candidates.first(where: { $0.revision == answer.revision }) else {
+                    throw ABIError.invalid("Route smoke response does not match Current or Previous")
+                }
                 guard answer.route != nil else { throw ABIError.invalid("Route smoke response has no maintained route") }
                 rememberRoute(answer)
                 try await Task.sleep(for: .milliseconds(400))
                 let value = try JSONSerialization.jsonObject(with: JSONEncoder().encode(answer))
                 let result = try await web.callAsyncJavaScript("""
                 const checks=[],check=(name,ok)=>{checks.push({name,pass:!!ok});if(!ok)throw Error(name)};window.routeSmokeChecks=checks;
+                if(scene().revision!==answer.revision)$(bundle.current.revision===answer.revision?'current':'previous').click();
                 check('response matches displayed revision',answer.revision===scene().revision);
                 $('selection-mode').value='route';selectObject(answer.objectID);window.receiveTraceComparison(answer);
                 const r=routeView();check('maintained route selected',!!r&&r.routeID===answer.route.routeID);
@@ -350,7 +603,14 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 check('assembled copper filled',document.querySelector('[data-route-copper]')?.getAttribute('fill')==='#49dfba');
                 check('all original members drawn',document.querySelectorAll('[data-source-centerline]').length===r.members.length);
                 check('original centerlines dotted',Array.from(document.querySelectorAll('[data-source-centerline]')).every(p=>p.getAttribute('fill')==='none'&&p.getAttribute('stroke-dasharray')==='1 4'&&p.getAttribute('vector-effect')==='non-scaling-stroke'));
-                check('route avoids original filled overlay',document.querySelectorAll('[data-comparison=original]').length===0);
+                check('route avoids clicked-segment overlay',document.querySelectorAll('[data-comparison]').length===0);
+                check('route growth controls and legend visible',!!r.comparison&&!$('comparison-controls').hidden&&!$('growth-legend').hidden&&$('growth-title').textContent.startsWith('Selected route'));
+                check('original route copper is grey',document.querySelector('[data-route-comparison=original]')?.getAttribute('fill')==='#bac8ce');
+                check('added route copper has a green edge',!!document.querySelector('[data-route-comparison=added]')===!!r.comparison.added&&(!r.comparison.added||(document.querySelector('[data-route-comparison=added]').getAttribute('fill')==='#bac8ce'&&document.querySelector('[data-route-comparison=added]').getAttribute('stroke')==='#42f599')));
+                check('removed route copper is distinct',!!document.querySelector('[data-route-comparison=removed]')===!!r.comparison.removed&&(!r.comparison.removed||document.querySelector('[data-route-comparison=removed]').getAttribute('fill')==='#ff87a8'));
+                $('growth-overlay').click();check('growth toggle retains filled route and dotted centerlines',document.querySelectorAll('[data-route-comparison]').length===0&&!!document.querySelector('[data-route-copper]')&&document.querySelectorAll('[data-source-centerline]').length===r.members.length);$('growth-overlay').click();
+                check('growth toggle restores route comparison',!!document.querySelector('[data-route-comparison=original]'));
+
                 check('catalogue group references shown',document.querySelectorAll('[data-group-reference]').length===r.groups.length);
                 check('segment picker retains complete membership',$('segment-picker').options.length===r.members.length);
                 $('centerlines').click();check('centerlines toggle off',document.querySelectorAll('[data-source-centerline]').length===0);$('centerlines').click();
@@ -358,6 +618,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 if(r.members.length>1){
                     const sibling=r.members.find(m=>m.objectID!==selected);$('segment-picker').value=sibling.objectID;$('segment-picker').dispatchEvent(new Event('change'));
                     check('segment drilldown keeps whole route',selected===sibling.objectID&&routeView().routeID===r.routeID);
+                    check('segment drilldown retains whole-route growth',$('growth-summary').textContent===r.comparison.summary&&!!document.querySelector('[data-route-comparison=original]'));
                     const path=drawnPaths.get(sibling.objectID),box=path.getBBox();let inside=null;
                     for(let x=1;x<45&&!inside;x++)for(let y=1;y<45&&!inside;y++){const p=new DOMPoint(box.x+box.width*x/45,box.y+box.height*y/45);if(path.isPointInFill(p))inside=p;}
                     check('member copper has a pick point',!!inside);const screen=inside.matrixTransform(svg.getScreenCTM());drag={moved:false};svg.dispatchEvent(new PointerEvent('pointerup',{clientX:screen.x,clientY:screen.y,bubbles:true}));
@@ -371,7 +632,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 const width=document.querySelector('[data-source-centerline]').getAttribute('stroke-width');camera={...camera,width:camera.width*.75,height:camera.height*.75};draw();check('dotted stroke stable while zooming',document.querySelector('[data-source-centerline]').getAttribute('stroke-width')===width);$('fit-selection').click();
                 const old=routeView().bindingSHA256;window.receiveTraceComparison({...answer,revision:'stale'});check('stale route response ignored',routeView().bindingSHA256===old);
                 const layer=scene().objects.find(o=>o.id===selected).layer;visible.delete(layer);draw();check('hidden layer hides route',document.querySelectorAll('[data-route-copper]').length===0);visible.add(layer);draw();
-                if(bundle.previous){$('previous').click();check('previous clears route selection',selected===null&&!routeView());$('current').click();selectObject(answer.objectID);window.receiveTraceComparison(answer);$('fit-selection').click();}
+                if(bundle.previous){const saved=which;$(which==='current'?'previous':'current').click();check('revision switch clears route selection',selected===null&&!routeView());$(saved).click();selectObject(answer.objectID);window.receiveTraceComparison(answer);$('fit-selection').click();}
                 $('inspector').hidden=false;draw();selectionMessage('routeResolved');
                 return {checks,revision:scene().revision,selected,routeID:r.routeID,members:r.members.length,groups:r.groups,viewBox:svg.getAttribute('viewBox')};
                 """, arguments: ["answer": value], in: nil, contentWorld: .page)
@@ -420,6 +681,57 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                    let bitmap = NSBitmapImageRep(data:tiff), let png = bitmap.representation(using:.png,properties:[:]) {
                     try? png.write(to:folder.appendingPathComponent("failed-viewer.png"))
                 }
+            }
+        }
+    }
+    func runLargeCopper() {
+        guard !cleanupBusy, !importing else { return }
+        let panel = NSOpenPanel(); panel.allowsMultipleSelection = false; panel.canChooseDirectories = false
+        panel.message = "Choose one Gerber source. One fixed trimming policy is applied; viewing filters do not select treatment families. Unresolved findings remain unchanged in the saved Preview."
+        panel.beginSheetModal(for: window) { [weak self] response in
+            guard response == .OK, let self, let source = panel.url else { return }
+            self.cleanupBusy = true
+            let repo = self.repository!
+            let work = self.workRoot!, portable = self.portable, portableEnvironment = self.workerEnvironment
+            let job = work.appendingPathComponent("large_copper_jobs/viewer-" + UUID().uuidString)
+            self.cleanupJob = job
+            self.send("receiveCleanupStatus", ["busy": true, "text": "Reading source and preparing copper…"])
+            Task {
+                let result = await Task.detached { () -> (URL?, String) in
+                    do {
+                        let process = Process(); process.executableURL = repo.appendingPathComponent(".venv/bin/python")
+                        process.currentDirectoryURL = repo
+                        process.arguments = (portable ? ["-B", "tools/portable_cleanup.py", "--workspace", work.path, "run"] : ["-B", "tools/run_large_copper.py", "run"]) + ["--source", source.path,
+                                             "--output", job.path, "--prepare-display"]
+                        var env = portable ? portableEnvironment : ProcessInfo.processInfo.environment
+                        env["PYTHONDONTWRITEBYTECODE"] = "1"
+                        env["TMPDIR"] = work.appendingPathComponent("tmp").path
+                        process.environment = env
+                        let log = work.appendingPathComponent("large-copper-" + UUID().uuidString + ".log")
+                        FileManager.default.createFile(atPath: log.path, contents: nil)
+                        let errors = try FileHandle(forWritingTo: log); defer { try? errors.close() }
+                        let output = Pipe(); process.standardOutput = output; process.standardError = errors
+                        try process.run()
+                        let data = output.fileHandleForReading.readDataToEndOfFile(); process.waitUntilExit()
+                        guard process.terminationStatus == 0,
+                              let value = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                              let display = value["display"] as? [String: Any], let path = display["workspace"] as? String else {
+                            return (nil, "Trimming stopped. Retained evidence: " + log.path)
+                        }
+                        let target = URL(fileURLWithPath: path).resolvingSymlinksInPath()
+                        let fence = work.path + "/"
+                        guard target.path.hasPrefix(fence) else { return (nil, "Cleanup display path rejected") }
+                        return (target, "Saved trimming result · one fixed policy · review unresolved findings")
+                    } catch { return (nil, error.localizedDescription) }
+                }.value
+                self.cleanupBusy = false; self.cleanupJob = nil
+                if let target = result.0 {
+                    self.workspace = target; self.loaded = nil; self.lastManifestDigest = nil
+                    self.lastExplanationKey = nil; self.lastPresentationKey = nil; self.initialSelection = nil
+                    self.pendingTrace = nil; self.routePresentations.removeAll()
+                    self.poll()
+                }
+                self.send("receiveCleanupStatus", ["busy": false, "text": result.1])
             }
         }
     }

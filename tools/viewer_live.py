@@ -20,6 +20,7 @@ def main():
     init = sub.add_parser('init')
     for name in ['template', 'legacy', 'construction', 'thread']:
         init.add_argument('--'+name, required=True)
+    init.add_argument('--context', choices=['retained_t03', 'original'], default='retained_t03')
     event = sub.add_parser('complete', help='Seal explicit completion after both artifacts are finalized')
     event.add_argument('--label', required=True); event.add_argument('--report', required=True)
     group = event.add_mutually_exclusive_group(required=True)
@@ -37,7 +38,7 @@ def main():
         raise ValueError('LIVE_CONNECTION_MUST_USE_LACIE_WORK')
     if args.command == 'init':
         print(json.dumps(live.initialize(root, template=args.template, legacy=args.legacy,
-                                        construction=args.construction, thread=args.thread), indent=2))
+                                        construction=args.construction, thread=args.thread, context=args.context), indent=2))
     elif args.command == 'attach-benchmark':
         print(json.dumps(live.attach_benchmark(root, log=args.log, qualification=args.qualification, script=args.script), indent=2))
     elif args.command == 'complete':

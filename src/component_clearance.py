@@ -29,9 +29,15 @@ def joined(values):
 
 class Context:
     def __init__(self,source,source_hash,originals,*,membership_from=None):
-        self.index=OriginalOwners(source);self.source_hash=source_hash
+        from src.shared_copper_context import ACTIVE as SHARED_COPPER
+        shared=SHARED_COPPER.get()
+        self.index=None if shared is None else shared.original_owner_index(source)
+        if self.index is None:self.index=OriginalOwners(source)
+        self.source_hash=source_hash
         self.reserved={};self.reservation_sha256=None
-        self.originals=dict(originals);self.ids=self.index.memberships(self.originals,reuse=membership_from)
+        self.originals=dict(originals)
+        prepared=None if shared is None else shared.original_memberships(self.originals,self.index)
+        self.ids=self.index.memberships(self.originals,reuse=membership_from) if prepared is None else prepared
         self.approved_partial_pockets={}
         if any(not v for v in self.ids.values()):raise ValueError('SOURCE_OWNER_MISSING')
         self.cores=dict(zip(self.index.ids,self.index.owners))

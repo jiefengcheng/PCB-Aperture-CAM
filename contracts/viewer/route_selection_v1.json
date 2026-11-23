@@ -7,6 +7,7 @@
   "catalogue_registration": "tools/viewer_trace.py --workspace <session> --catalogue-preparation <existing-preparation-directory>",
   "route_display": {
     "copper": "Union of every current member body in maintained native order, preserving holes; bounded display derivative only",
+    "growth_comparison": "Optional route.comparison: original/current union difference using GrowthComparison fields, bound to assembled path and current union WKB; blue original, green added, pink removed. comparisonUnavailable explains display-budget fallback.",
     "original_segments": "Dotted open polylines from original native route_points_mm, not polygon edges or inferred skeletons",
     "group_references": "Existing durable straight/arc IDs, separate from native route IDs",
     "segment_inspection": "Original clicked source object and source identity retained; segment picker and Segment mode remain available"

@@ -1,0 +1,71 @@
+{
+  "schema": "bulk-copper-cleanup-agent/1",
+  "version": "1",
+  "implementation": "src/agent_abi/bulk_copper_cleanup.py",
+  "cli": "tools/bulk_copper_cleanup_agent.py",
+  "handoff": "docs/agent_abi/BIG_COPPER_CLEANUP_HANDOFF.md",
+  "architecture": "docs/agent_abi/SHARED_COPPER_CONTEXT.md",
+  "verification": "out/lacie_work/shared_copper_qualification_20261122/agent_handoff_58/RESULT.json",
+  "connection": "out/lacie_work/t04_large_fill_audit_20261122/source_viewer",
+  "checkpoint": {
+    "date_singapore": "2026-11-22",
+    "connection_id": "fc924313bca84b4eb040573f45bcf7af",
+    "source_sha256": "207a51318f103190a4d61e76f4a0457fcfd11fd3db560c9439dd2f5f460f9b90",
+    "original_scene_ref": {
+      "artifact_id": "scene:0b3cb8da3614f8b19c38dd59eb4e88e0be0ed42ae7a1e66a7c059d93e5da962a",
+      "sha256": "0b3cb8da3614f8b19c38dd59eb4e88e0be0ed42ae7a1e66a7c059d93e5da962a"
+    },
+    "revision": "515c0cc7d92a41738da934049e4c5cbb",
+    "construction_sha256": "dad108b81ae8ee2d98db625380b84a51d07ce6b008c97840e52bf67f4a5f2303",
+    "construction": "out/lacie_work/shared_copper_qualification_20261122/circular_endpoint_trim_50/construction.json.gz",
+    "report": "out/lacie_work/shared_copper_qualification_20261122/circular_endpoint_trim_50/RESULT.json",
+    "delivery": "out/lacie_work/shared_copper_qualification_20261122/FINAL_54/REPORT.md",
+    "native_ui": "out/lacie_work/shared_copper_qualification_20261122/circular_endpoint_viewer_53/cleanup-ui.json",
+    "source_occurrences": 17849,
+    "corrected": 46,
+    "unresolved": 3,
+    "ignored": 1,
+    "component_hole_counts": [275, 114]
+  },
+  "request": {
+    "required_keys": ["abi_version", "operation", "filter", "place_id", "revision"],
+    "additional_keys": false,
+    "abi_version": "1",
+    "operations": {
+      "describe": {"selectors": "all null", "effect": "Read this capability descriptor"},
+      "status": {"selectors": "all null", "effect": "Authenticate live commit/presentation bindings and report drift/display acknowledgement"},
+      "list_places": {"filter": ["all", "corrected", "unresolved", "ignored", "reviewed", "circular"], "place_id": null, "revision": null, "effect": "Return saved metadata without polygon paths"},
+      "inspect_place": {"filter": null, "place_id": "current cleanup:<number>", "revision": "required current revision", "effect": "Return one saved feature and reference paths; stale revisions reject"},
+      "check_saved": {"selectors": "all null", "effect": "Authenticate source bytes/catalogue, report, construction and all saved occurrence fingerprints; return compact saved phase claims and construction reference; never rerun geometry checks"}
+    }
+  },
+  "response": {
+    "success": ["abi_version", "operation", "status=OK", "result", "writes=false", "geometry_execution=false", "acceptance_change=false", "full_board_execution=false"],
+    "failure": "status=FAIL, error, nonzero CLI exit; no fallback or automatic repair",
+    "checkpoint_drift": "Reported explicitly as checkpoint_match=false; current bindings are read, never substituted by the historical checkpoint",
+    "display_current": "Native acknowledgement matches current revision, payload, DISPLAY_DOM_UPDATED and BULK_COPPER_CLEANUP"
+  },
+  "policy": {
+    "baseline": "Original source only; accepted_t03=false; no T01/T03 substitute",
+    "operation": "TRIM_ONLY",
+    "area_rule": "Complete physical protrusion strictly below 10% of original causing pad/trace; overlapping plotting fragments are not separate denominators",
+    "shallow_rule": "Separate source-supported trace-edge rule; retain path and contact checks",
+    "maximum_depth_mm": 0.1,
+    "circular_fit_tolerance_mm": 0.004,
+    "rectangular_bumps": "IGNORED; rectangle 17569 and its overlaps restored to verified parent",
+    "nominal_trace_growth_cutoff_mm": 0.25,
+    "nominal_rounding": "Stored 0.249935 mm displayed as 0.250 mm stays unchanged for growth",
+    "copper_colour": "GREY in every state; optional pink removals; no T04 growth highlights in cleanup",
+    "clearance": "Subtraction cannot decrease foreign-copper separation; no positive addition clearance search; contacts/protected features/topology still require validation",
+    "preparation": "Use CopperContext and existing indexed_polygon_distance T02/T05 preparation; no private per-defect full-board index/union",
+    "storage": "LaCie out/lacie_work only; prepare first; no internal fallback"
+  },
+  "not_implemented": [
+    "Generic full-board cleanup discovery and execution ABI",
+    "Complete circular-defect coverage",
+    "Automatic acceptance or export/reparse qualification",
+    "Full-board T04 growth in this plan"
+  ],
+  "mutating_operations": [],
+  "scope": "Continuation inspection and documentation only. Existing bounded constructors remain separately callable engineering APIs, not universal qualified cleanup. No new treatment is performed by this ABI."
+}

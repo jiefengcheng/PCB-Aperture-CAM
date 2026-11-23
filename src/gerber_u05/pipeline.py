@@ -336,7 +336,47 @@ def run_t05(store,scene,t04):
     if not check['passed']:raise ValueError('T05_COMPLETE_ATTACHMENT_RECONSTRUCTION_FAILED')
     return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,**({}if prior_floor is None else{'prior_positive_floor':prior_floor}),summary=dict(routes=len(targets),**(dict(protected_frame_routes=sum(c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'for c in contacts),protected_frame_source_contacts=sum(len(c['lands'])for c in contacts if c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'))if functional is not None else{}),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
 
+from contextlib import contextmanager
+
+@contextmanager
+def shared_copper_worker(run):
+    from src.shared_copper_context import CopperContext,ACTIVE,geometry_key
+    binding=load(run/'source.json')
+    active=ACTIVE.get()
+    if active is not None:
+        if active.binding['source']!=dict(source_sha256=binding['source_ref']['sha256']):
+            raise ValueError('SHARED_COPPER_WORKER_SOURCE_CHANGED')
+        yield active
+        return
+    store=Store(run/'runtime');source_scene=validate_scene(store,binding['scene_ref'])
+    _,original,_=operands(store,source_scene)
+    root=None
+    isolated=run/'T05_OUTER_ACCEPTANCE.json'
+    if isolated.exists():
+        # Certified construction forbids every read/write outside its sealed
+        # job. Keep that boundary: same preparation implementation and lifetime,
+        # explicitly job-owned storage, never a widened global-cache exception.
+        producer=load(run/'PRODUCER_BINDING.json')
+        if producer.get('job_inputs',{}).get(str(isolated))!=digest(isolated.read_bytes()):
+            raise ValueError('SHARED_COPPER_ISOLATED_PROFILE_UNBOUND')
+        root=run/'performance_cache/shared_copper_context'
+    with CopperContext(original,source_binding=dict(source_sha256=binding['source_ref']['sha256']),
+                       frame=dict(units='mm',axes='X_RIGHT_Y_DOWN',layer='SOURCE_BOUND_COPPER'),
+                       role='native-stage',root=root) as copper:
+        with copper.activate():yield copper
+
 def stage(run,name,*,recorded=None):
+    if name not in ('t02','t05'):
+        return _stage(run,name,recorded=recorded)
+    with shared_copper_worker(run) as copper:
+        result=_stage(run,name,recorded=recorded)
+        # Operational cache/timing data never changes the deterministic proof.
+        import os
+        folder=run/'shared_copper_preparation';folder.mkdir(exist_ok=True)
+        save(folder/(name+'_'+os.environ.get('U05_WORKER_MODE','direct')+'.json'),copper.diagnostics())
+        return result
+
+def _stage(run,name,*,recorded=None):
     if recorded is not None and name!='t02':raise ValueError('FIXED_CANDIDATE_RECONSTRUCTION_STAGE_UNSUPPORTED')
     store=Store(run/'runtime');binding=load(run/'source.json');order=['t01','t03','t04','t02','t05'];index=order.index(name);scene_ref=binding['scene_ref']if index==0 else load(run/(order[index-1]+'.json'))['output_scene_ref'];scene=validate_scene(store,scene_ref)
     initialize(store,binding,scene)

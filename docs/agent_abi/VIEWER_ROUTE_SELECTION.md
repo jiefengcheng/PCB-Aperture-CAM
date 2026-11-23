@@ -14,7 +14,10 @@ Route mode fills the union of the displayed revision's saved member copper and
 overlays original native centerlines as dotted open polylines. The segment picker
 and Segment mode retain source inspection and source-growth comparisons. Group
 references remain labels and inspector records. Area/growth figures concern the
-clicked segment unless explicitly stated otherwise. No copper is repaired,
+clicked segment unless explicitly stated otherwise. The route growth legend
+reports complete-route union differences: blue original copper, green additions,
+pink removals. Its optional `route.comparison` binds to the assembled path and
+current union WKB, not the clicked segment. No copper is repaired,
 snapped, trimmed or regenerated for the display.
 
 ## ABI map
@@ -40,6 +43,8 @@ The optional explanation fields are:
 - `route`: filled assembled artwork, original centerline points and group
   references for every member. Each member retains its object/source ID,
   displayed-path digest and original/current WKB digests.
+  Its optional `comparison` uses the existing `GrowthComparison` fields for the
+  complete route; `comparisonUnavailable` explains a display-budget fallback.
 - `routeIndex`: compact route-to-object-index membership for picking. Its digest
   binds the complete ordered object table; duplicate or foreign membership fails.
 - `routeUnavailable`: explicit reason for retaining source-level display.

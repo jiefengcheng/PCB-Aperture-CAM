@@ -2,8 +2,10 @@
 import json,os,plistlib,shutil,subprocess,tempfile
 from pathlib import Path
 IMAGE=Path('/Volumes/LaCie/PCB_Aperture_CAM_Workspace/PCB_CAM_Work.sparsebundle')
-IDENTITY='5E178CE8-A7FF-37D9-B307-F0D08FBB4D14'
+IDENTITY='6D461CE3-1544-4670-BA1D-BE4DA490D97E'
 def configure():
+ from src.cleanup_runtime import is_portable,configure_portable
+ if is_portable():return configure_portable()
  images=plistlib.loads(subprocess.check_output(['hdiutil','info','-plist']))['images']
  mounts=[Path(e['mount-point'])for i in images if Path(i.get('image-path',''))==IMAGE for e in i.get('system-entities',[])if e.get('mount-point')]
  if len(mounts)!=1:raise RuntimeError('PREPARED_LACIE_IMAGE_REQUIRED_NO_FALLBACK')

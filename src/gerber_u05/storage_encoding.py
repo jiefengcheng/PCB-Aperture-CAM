@@ -37,7 +37,8 @@ def _require_directory(path, temporary_bytes):
     if (not parent.is_relative_to(_backing)
             or parent.stat().st_dev != _backing.stat().st_dev):
         raise ValueError('EVIDENCE_ENCODING_REQUIRES_VERIFIED_LACIE_DIRECTORY')
-    free = min(shutil.disk_usage(_backing).free, shutil.disk_usage(IMAGE.parent).free)
+    from src.cleanup_runtime import is_portable
+    free = shutil.disk_usage(_backing).free if is_portable() else min(shutil.disk_usage(_backing).free, shutil.disk_usage(IMAGE.parent).free)
     if free < RESERVE_BYTES + temporary_bytes + 64 * 1024:
         raise ValueError('EVIDENCE_ENCODING_TRANSIENT_SPACE_RESERVE_REQUIRED')
 

@@ -165,6 +165,14 @@ still concerns the clicked source, not an inferred route-wide width. Fit selecti
 fits the complete route in Route mode and the clicked source in Segment mode.
 Original centerlines and group references have independent visibility toggles.
 
+Route mode also highlights growth over the complete original route: blue is
+original copper, green is added copper and pink is removed copper. The visible
+legend and **Growth over source** toggle apply to the whole route. Differences
+are calculated after unioning every original/current member, so joint overlaps
+are not counted twice. Dotted original centerlines and group labels stay visible.
+Segment-mode figures remain specific to the clicked source. This only derives
+viewer artwork from saved copper; no T04 processing or geometry writes occur.
+
 The viewer uses the existing source-role preparation to register a compact,
 source/scene-bound membership artifact once:
 
@@ -204,3 +212,37 @@ changes selection/presentation only; it grants no T04 execution or acceptance.
 
 Route UI qualification, screenshots, controls and unchanged-geometry receipts:
 `out/lacie_work/viewer/route_selection_20261121/`.
+
+### Whole-board gray/green growth presentation
+
+For a committed saved construction, prepare the optional presentation with:
+
+```sh
+.venv/bin/python -B tools/viewer_board_growth.py \
+  --connection "$PWD/out/lacie_work/viewer/t04_live"
+```
+
+Reopen the linked viewer to load it. **Growth · gray / green** draws retained
+copper in `#bac8ce`, additions in `#42f599`, and removals in pink on `#102634`,
+without the grid or thick revision outlines. This matches the supplied expert
+PNG palette. The baseline is accepted T03, so green represents T04 additions
+only. The diagnostic result is a REPLAY, not a fresh growth run or acceptance.
+
+The producer authenticates the committed construction event and every current
+source WKB fingerprint. It unions complete predecessor/current material images
+before taking intersections and differences; overlaps between occurrences do
+not create false deltas. Areas use unsimplified geometry. Display contours retain
+the existing 0.0005 mm Hausdorff bound. Source picking uses the original snapshot
+objects; display-only polygons do not become selectable source occurrences.
+
+The checksummed sidecar in `session/presentations/<snapshot SHA256>.json` binds
+the job, revision, exact snapshot digest, source, predecessor and construction.
+Native validation applies the existing finite polygon grammar and bounds rules
+to its own complete display bounds, including removed material outside the
+current contour. Snapshot/engineering evidence is never rewritten. Stale,
+foreign, corrupt or unsafe artwork is rejected. Revisions without a sidecar
+retain the existing object view. This command supports complete construction
+events only; it rejects patch-only lineage rather than substituting a result.
+
+Current display evidence and checks:
+`out/lacie_work/viewer/style_match_20261122/`.

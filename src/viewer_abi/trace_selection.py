@@ -67,6 +67,8 @@ def resolve_body(root, config, state, row, *, cache=None):
                 body = bytes.fromhex(mapping[sid])
                 treatment = ('Editable bulk copper' if sid in stage['hybrid_components']['changed_bulk_copper']
                              else 'Constructed T04 trace')
+                record=stage['hybrid_components'].get('continuous_source_bodies',{}).get(sid,{})
+                if record.get('display_treatment'):treatment=record['display_treatment']
             else:
                 body = artifact_reader(config['legacy'])(row['geometry_ref'])
                 treatment = 'Retained context; no constructed T04 body in this slice'
@@ -97,6 +99,10 @@ def treatment_details(stage, sid):
     routes = [rid for rid, sources in stage.get('native_trace_source_ids_by_route', {}).items() if sid in sources]
     if routes:
         details.append('Native route: ' + ', '.join(routes) + '.')
+    keep = stage.get('owner_nominal_width_keep_retraction', {})
+    if sid in keep.get('source_ids', []):
+        details.append('Original source width retained under the nominal 0.250 mm limit. Earlier widening was retracted.')
+        return details
     for group in stage.get('groups', []):
         for lane in group['lanes']:
             if sid not in lane['source_ids']:
@@ -148,9 +154,9 @@ def trace_response(root, selection):
         comparison['summary'] = summary
         response['comparison'] = comparison
         text = [treatment + '.', summary + '.', *details,
-                'Blue = original source; green = added copper; pink = removed copper. '
+                'Grey = copper; green outline = added edge; pink = removed area. '
                 'This is one source occurrence, not the assembled route. Geometric differences do not establish '
-                'net intent, clearance approval or manufacturing acceptance. No geometry was changed.']
+                'net intent, clearance approval or manufacturing acceptance. Viewing this comparison does not change geometry.']
     except ValueError as error:
         # A differently derived context path is not silently replaced with another body's overlay.
         if str(error) != 'EXPLANATION_CURRENT_BODY_NOT_DISPLAYED':

@@ -1,0 +1,7 @@
+{
+  "schema": "pcb-edge-restoration-settings/2",
+  "status": "PROVISIONAL",
+  "maximum_depth_mm": 0.100,
+  "maximum_noise_area_fraction": 0.10,
+  "noise_area_basis": "ORIGINAL_CAUSING_PAD_OR_TRACE"
+}

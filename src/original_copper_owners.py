@@ -13,6 +13,18 @@ def polygons(g):
  return [g]if g.geom_type=='Polygon'else list(g.geoms)
 
 class OriginalOwners:
+ @classmethod
+ def from_prepared(cls,source,owners,ids):
+  """Restore the same ownership structure from authenticated preparation."""
+  if len(owners)!=len(ids) or [sha(g)for g in owners]!=list(ids):
+   raise ValueError('PREPARED_ORIGINAL_OWNER_BINDING_CHANGED')
+  result=cls.__new__(cls);result.source=source;result.source_sha256=sha(source)
+  result.owners=list(owners);result.ids=list(ids);result.tree=STRtree(result.owners)
+  prepare(result.owners)
+  result._floating_valid_owners={id(g):g for g in result.owners if get_precision(g)==0 and g.is_valid}
+  result.fingerprint=hashlib.sha256((result.source_sha256+'\n'+'\n'.join(result.ids)).encode()).hexdigest()
+  return result
+
  def __init__(self,source):
   # Partition source polygon faces by connected components. Stable geometry
   # hashes fix face traversal, owner ordering and public owner identities.

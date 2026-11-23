@@ -86,4 +86,26 @@ final class RouteTests: XCTestCase {
         value["objectsSHA256"]=String(repeating:"b",count:64)
         XCTAssertThrowsError(try validate(value))
     }
+
+    func testRouteGrowthBindsToAssembledCopperNotClickedSegment() throws {
+        let (scene, route) = try fixture()
+        let artwork = try XCTUnwrap(route["assembled"] as? [String: Any])
+        let path = try XCTUnwrap(artwork["path"] as? String)
+        var comparison: [String: Any] = ["schema":1,
+            "selectedPathSHA256":SnapshotReader.digest(Data(path.utf8)),
+            "originalWkbSHA256":String(repeating:"b",count:64),
+            "currentWkbSHA256":route["currentWkbSHA256"]!,
+            "original":artwork,"addedAreaMM2":0,"removedAreaMM2":0,
+            "displayHausdorffMM":0,"summary":"Complete route unchanged","snapshotNote":"Saved revision"]
+        var value = route; value["comparison"] = comparison
+        XCTAssertNoThrow(try decode(value,scene:scene,selected:"s0"))
+        XCTAssertNoThrow(try decode(value,scene:scene,selected:"s2"))
+        comparison["selectedPathSHA256"] = SnapshotReader.digest(Data(scene.objects[0].path.utf8))
+        value["comparison"] = comparison
+        XCTAssertThrowsError(try decode(value,scene:scene))
+        comparison["selectedPathSHA256"] = SnapshotReader.digest(Data(path.utf8))
+        comparison["currentWkbSHA256"] = String(repeating:"c",count:64)
+        value["comparison"] = comparison
+        XCTAssertThrowsError(try decode(value,scene:scene))
+    }
 }

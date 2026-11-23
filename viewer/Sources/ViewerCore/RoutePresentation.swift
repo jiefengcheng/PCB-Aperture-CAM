@@ -45,6 +45,8 @@ public struct RoutePresentation: Codable, Sendable {
     public let job: String, revision: String, routeID: String, catalogueSHA256: String, bindingSHA256: String, currentWkbSHA256: String
     public let displayHausdorffMM: Double
     public let assembled: ComparisonArtwork
+    public let comparison: GrowthComparison?
+    public let comparisonUnavailable: String?
     public let bounds: Bounds
     public let members: [RouteMember]
     public let groups: [RouteGroupReference]
@@ -88,5 +90,11 @@ public struct RoutePresentation: Codable, Sendable {
         try Snapshot(schema: 1, job: scene.job, revision: scene.revision, slice: "Route presentation", status: "Preview",
                      parentRevision: nil, bounds: b, affected: b, objects: [object], sources: scene.sources,
                      evidence: [], limitations: []).validate()
+        if let comparison {
+            guard comparison.currentWkbSHA256 == currentWkbSHA256 else {
+                throw ABIError.invalid("Route growth comparison body mismatch")
+            }
+            try comparison.validate(scene: scene, selected: object)
+        }
     }
 }

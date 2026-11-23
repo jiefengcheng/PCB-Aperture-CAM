@@ -23,8 +23,7 @@ def distance(left,right):
  elif left.intersects(right):value=float(left.distance(right))
  else:
   with legacy.CONTROL:
-   if legacy.ENGINE is None:legacy.ENGINE=legacy.Engine()
-   value=float(legacy.ENGINE.measure(left,right))
+   value=float(legacy.measurement_engine().measure(left,right))
   if not math.isfinite(value)or value<0:raise ValueError('INDEXED_ORIGINAL_COMPONENT_DISTANCE_INVALID')
   if value<=1e-12 or any(abs(value-t)<=4e-12 for t in(HARD_GAP_MM,CONSTRUCTION_GAP_MM)):value=legacy.legacy_value(left,right)
  if not math.isfinite(value)or value<0:raise ValueError('ORIGINAL_COMPONENT_DISTANCE_INVALID')

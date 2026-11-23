@@ -5,7 +5,7 @@ ROOT=Path(__file__).resolve().parents[1]
 VOLUME=Path('/Volumes/LaCie')
 IMAGE=VOLUME/'PCB_Aperture_CAM_Workspace/PCB_CAM_Work.sparsebundle'
 WORK=ROOT/'out/lacie_work'
-IDENTITY='5E178CE8-A7FF-37D9-B307-F0D08FBB4D14'
+IDENTITY='6D461CE3-1544-4670-BA1D-BE4DA490D97E'
 
 
 def snapshot_backing():

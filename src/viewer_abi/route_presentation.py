@@ -136,7 +136,7 @@ def route_presentation(root, config, scene, state, selected_row, catalogue, stag
     if any(s not in rows or s not in objects for s in sources):
         return None, 'A complete route is not present in this displayed snapshot; no partial route was substituted.'
     read = artifact_reader(config['legacy'])
-    members, bodies, evidence = [], [], []
+    members, bodies, originals, evidence = [], [], [], []
     point_count = 0
     for source in sources:
         row, obj = rows[source], objects[source]
@@ -160,6 +160,7 @@ def route_presentation(root, config, scene, state, selected_row, catalogue, stag
                             currentPathSHA256=digest(obj['path'].encode()), currentWkbSHA256=digest(body),
                             originalWkbSHA256=digest(original), points=points, groups=groups))
         bodies.append(body)
+        originals.append(original)
         evidence.append([source, member_ref['sha256'], digest(encode(row.get('metadata', {})))])
     binding = dict(schema='viewer-maintained-route-display/1', job=scene['job'], revision=scene['revision'],
                    routeID=route_id, catalogueSHA256=catalogue_ref['sha256'], sceneRef=config['scene_ref'],
@@ -179,11 +180,27 @@ def route_presentation(root, config, scene, state, selected_row, catalogue, stag
     if derivative is None:
         return None, 'The maintained route has no visible copper in this snapshot.'
     groups = sorted({(g['kind'], g['id']) for m in members for g in m['groups']})
-    fit_geometry = unary_union([current, *[LineString(m['points']) for m in members]])
+    # Compare the complete unions, not per-member differences: neighboring
+    # members overlap at joints, which must not appear as added/removed copper.
+    from .explanation import growth_comparison
+    original = unary_union([from_wkb(body) for body in originals])
+    assembled = dict(path=path_data(derivative), bounds=bounds(derivative))
+    comparison = growth_comparison(to_wkb(original), to_wkb(current), assembled,
+        summary='Maintained route · growth over original source',
+        snapshot_note='Bound to displayed ' + scene['slice'] + ' · revision ' + scene['revision'][:12] +
+                      '. Complete route union. Viewing this comparison does not change geometry.')
+    comparison['summary'] = (f"Route · added {comparison['addedAreaMM2']:.6g} mm² · "
+                             f"removed {comparison['removedAreaMM2']:.6g} mm²")
+    fit_geometry = unary_union([current, original, *[LineString(m['points']) for m in members]])
     route = dict(schema=1, job=scene['job'], revision=scene['revision'], routeID=route_id, catalogueSHA256=catalogue_ref['sha256'], bindingSHA256=key,
                  currentWkbSHA256=digest(to_wkb(current)), displayHausdorffMM=error,
-                 assembled=dict(path=path_data(derivative), bounds=bounds(derivative)), bounds=bounds(fit_geometry),
+                 assembled=assembled, comparison=comparison, bounds=bounds(fit_geometry),
                  members=members, groups=[dict(kind=k, id=v) for k,v in groups])
+    if len(encode(route)) > 768*1024:
+        # Keep the complete route selectable when its optional exact difference
+        # contours exceed the presentation budget; never truncate copper.
+        route.pop('comparison')
+        route['comparisonUnavailable'] = 'Route growth contours exceed the display budget; complete current copper remains displayed.'
     if len(encode(route)) > 768*1024:
         return None, 'Complete route contours exceed the display resource limit; no geometry was truncated.'
     folder.mkdir(exist_ok=True)

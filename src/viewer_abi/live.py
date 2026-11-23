@@ -1,6 +1,7 @@
 """Explicit completed-slice queue. Reads engineering artifacts; writes viewer state only."""
 from pathlib import Path
 import json
+import math
 import os
 import time
 import uuid
@@ -63,9 +64,12 @@ def artifact_reader(legacy):
 
 def construction_map(stage, config):
     binding = stage['input_binding']
-    if (binding['source_sha256'] != config['source_sha256'] or
-            binding['t03_sha256'] != config['t03_sha256'] or
-            binding['scene_ref'] != config['scene_ref']):
+    source_only = config.get('context') == 'original'
+    wrong_context = ((binding.get('context') != 'original' or binding.get('accepted_t03') is not False or
+                      binding.get('original_scene_ref') != config['scene_ref'] or 't03_sha256' in binding)
+                     if source_only else binding.get('t03_sha256') != config['t03_sha256'])
+    if (binding.get('source_sha256') != config['source_sha256'] or wrong_context or
+            binding.get('scene_ref') != config['scene_ref']):
         raise ValueError('LIVE_CONSTRUCTION_LINEAGE_MISMATCH')
     h = stage['hybrid_components']
     result = dict(h['continuous_source_bodies'])
@@ -73,25 +77,48 @@ def construction_map(stage, config):
     return {sid: record['wkb_hex'] for sid, record in result.items()}
 
 
-def initialize(root, *, template, legacy, construction, thread):
+def initialize(root, *, template, legacy, construction, thread, context='retained_t03'):
     import gzip
     root = Path(root)
     if root.exists():
         raise FileExistsError('LIVE_CONNECTION_ALREADY_EXISTS')
+    if context not in ('retained_t03', 'original'):
+        raise ValueError('LIVE_UNSUPPORTED_SOURCE_CONTEXT')
     template_raw = Path(template).read_bytes(); snapshot = json.loads(template_raw)
     source_raw = (Path(legacy) / 'source.json').read_bytes()
-    t03_raw = (Path(legacy) / 't03.json').read_bytes()
-    source = json.loads(source_raw); t03 = json.loads(t03_raw)
+    source = json.loads(source_raw)
     read = artifact_reader(legacy)
     raw = read(source['source_ref']); source_sha = digest(raw)
-    scene = json.loads(read(t03['output_scene_ref']))
+    if context == 'original':
+        scene_ref = source['scene_ref']
+        scene = json.loads(read(scene_ref))
+        if ([r.get('stage') for r in scene.get('lineage', [])] != ['gerber-source-intake'] or
+                any(row['geometry_ref'] != row.get('original_ref') for row in scene['objects'])):
+            raise ValueError('LIVE_ORIGINAL_SOURCE_SCENE_REQUIRED')
+    else:
+        t03_raw = (Path(legacy) / 't03.json').read_bytes()
+        t03 = json.loads(t03_raw); scene_ref = t03['output_scene_ref']
+        scene = json.loads(read(scene_ref))
     if (scene['source_sha256'] != source_sha or {s['sha256'] for s in snapshot['sources']} != {source_sha} or
             {o['id'] for o in snapshot['objects']} != {r['source_id'] for r in scene['objects']}):
         raise ValueError('LIVE_TEMPLATE_SOURCE_MISMATCH')
     config = dict(schema=1, connection_id=uuid.uuid4().hex, thread=thread, require_display_ack=True,
-                  source_sha256=source_sha, t03_sha256=digest(t03_raw), scene_ref=t03['output_scene_ref'],
+                  source_sha256=source_sha, scene_ref=scene_ref,
                   legacy=str(Path(legacy).resolve()), template=dict(path=str(Path(template).resolve()), sha256=digest(template_raw)),
                   construction=sealed_file(construction))
+    if context == 'original':
+        config.update(context='original', source_binding_sha256=digest(source_raw))
+        # Rebuild every baseline object from original source bytes: a retained
+        # template may contain T01-grown lands, even outside this bounded case.
+        by_id = {o['id']: o for o in snapshot['objects']}
+        for row in scene['objects']:
+            shape, _ = display(from_wkb(read(row['geometry_ref'])))
+            by_id[row['source_id']] = dict(by_id[row['source_id']], path=path_data(shape), bounds=bounds(shape))
+        snapshot = dict(snapshot, objects=list(by_id.values()))
+        template_raw = encode(snapshot)
+        config['template'] = dict(path=str(root.resolve()/'source-template.json'), sha256=digest(template_raw))
+    else:
+        config['t03_sha256'] = digest(t03_raw)
     # Bind exact unsimplified WKB identities, separate from display derivatives.
     fingerprints = {row['source_id']: digest(read(row['geometry_ref'])) for row in scene['objects']}
     changes = construction_map(json.loads(gzip.decompress(read_bound(config['construction']['path'], config['construction']['sha256']))), config)
@@ -108,14 +135,16 @@ def initialize(root, *, template, legacy, construction, thread):
         else:
             objects[sid] = dict(objects[sid], path=path_data(shape), bounds=bounds(shape))
     snapshot.update(job='live-t04-' + config['connection_id'], revision=uuid.uuid4().hex, parentRevision=None,
-                    slice='T04 connected · retained diagnostic context', status='Preview', objects=list(objects.values()),
+                    slice='T04 directly on original source · bounded diagnostic' if context == 'original' else 'T04 connected · retained diagnostic context', status='Preview', objects=list(objects.values()),
                     bounds=area_bounds(list(objects.values())), affected=area_bounds(list(objects.values())),
-                    limitations=['Live viewer connection; retained diagnostic baseline, not completed T04.',
+                    limitations=['Original-source bounded T04 only; no T01/T02/T03/T05 execution or full-board result.' if context == 'original' else 'Live viewer connection; retained diagnostic baseline, not completed T04.',
                                  'Display-only derivatives; maximum new-body Hausdorff error mm: ' + str(error),
                                  'Producer-reported completion and qualifications remain separate from viewer delivery.',
                                  'Client artwork stack identity NOT_ESTABLISHED; no inferred net intent.'],
                     evidence=[config['construction']['path']])
     root.mkdir(parents=True)
+    if context == 'original':
+        (root/'source-template.json').write_bytes(template_raw)
     for name in ['queue', 'receipts', 'feedback', 'session/snapshots']:
         (root / name).mkdir(parents=True)
     (root / 'connection.json').write_bytes(encode(config))
@@ -170,6 +199,25 @@ def enqueue(root, *, label, report, shapes=None, construction=None, display_stat
     return event
 
 
+def source_focus(config, report, objects):
+    """Read-only camera bounds at an authenticated original native point."""
+    focus=report.get('viewer_source_focus')
+    if focus is None:return None
+    if set(focus)!={'source_id','route_point_index','radius_mm'}:
+        raise ValueError('LIVE_SOURCE_FOCUS_SCHEMA')
+    sid=focus['source_id'];index=focus['route_point_index'];radius=focus['radius_mm']
+    if (sid not in objects or type(index)is not int or index<0 or
+            type(radius)not in(int,float)or not math.isfinite(radius)or not .05<=radius<=1):
+        raise ValueError('LIVE_SOURCE_FOCUS_REQUIRED')
+    catalogue=json.loads(artifact_reader(config['legacy'])(config['scene_ref']))
+    matches=[r for r in catalogue['objects'] if r['source_id']==sid]
+    if len(matches)!=1:raise ValueError('LIVE_SOURCE_FOCUS_UNKNOWN')
+    points=matches[0]['metadata'].get('route_points_mm',[])
+    if index>=len(points):raise ValueError('LIVE_SOURCE_FOCUS_POINT_REQUIRED')
+    x,y=points[index]
+    return dict(x=x-radius,y=y-radius,width=2*radius,height=2*radius)
+
+
 def process_event(root, event):
     import gzip
     root = Path(root); config = load_connection(root)
@@ -222,7 +270,7 @@ def process_event(root, event):
     if status not in ('Preview', 'Failed'):
         raise ValueError('LIVE_STATUS_PROMOTION_FORBIDDEN')
     snapshot = dict(current, objects=list(objects.values()), bounds=area_bounds(list(objects.values())),
-                    affected=area_bounds(changed) if changed else current['affected'], status=status,
+                    affected=source_focus(config,report,objects) or (area_bounds(changed) if changed else current['affected']), status=status,
                     slice=event['label'] + ('' if changed else ' · no geometry changes'),
                     evidence=[event['report']['path'], event['geometry']['path']],
                     limitations=['Completed slice sealed by producer; display delivery is not engineering acceptance.',
