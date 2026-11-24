@@ -68,17 +68,23 @@ def publish_board_growth(root):
                               sourceID=config['source_sha256'] + ':display-growth:' + str(len(parts)),
                               layer=layer, kind=kind, path=path_data(polygon), bounds=bounds(polygon),
                               attributes={'physical_area_mm2':[repr(physical_area)]}))
+    source_scope=('Full-board T04 after large-copper trimming' if stage.get('full_board_run') and stage.get('trimmed_predecessor')
+                  else 'Full-board T04 directly over original source' if stage.get('full_board_run')
+                  else 'Bounded T04 directly over original source')
     value = dict(schema=1, job=snapshot['job'], revision=snapshot['revision'],
                  sceneSHA256=manifest['sha256'], sourceSHA256=config['source_sha256'],
                  predecessorSHA256=config['scene_ref']['sha256'] if config.get('context') == 'original' else config['t03_sha256'], constructionSHA256=event['geometry']['sha256'],
                  beforeWkbSHA256=digest(before.wkb), afterWkbSHA256=digest(after.wkb),
                  parts=parts, bounds=area_bounds(parts), addedAreaMM2=areas['added'], removedAreaMM2=areas['removed'], displayHausdorffMM=display_error,
-                 summary=('Bounded T04 directly over original source' if config.get('context') == 'original' else 'T04 over accepted T03') + ' · grey copper · green added edges · pink removed areas',
+                 summary=(source_scope if config.get('context') == 'original' else 'T04 over accepted T03') + ' · diagnostic Preview · grey copper · green added edges · pink removed areas',
                  note='REPLAY of saved diagnostic construction. Exact material-image differences; display Hausdorff <=0.0005 mm. '
                       'No growth execution or acceptance change. Source object picking remains separate.')
     from .copper_cleanup import cleanup_cases
-    value['cleanup']=cleanup_cases(stage,{r['source_id']:r for r in rows},originals,
-                                   before.difference(after),after.difference(before),display,layer=layer,source_image=before)
+    # A full T04 difference is not a saved big-copper treatment catalogue.
+    # Do not relabel its trace changes as cleanup cases or auto-open that mode.
+    value['cleanup']=(None if stage.get('full_board_run')or stage.get('schema')=='t04-maximal-member-group-plan/1' else
+        cleanup_cases(stage,{r['source_id']:r for r in rows},originals,
+                      before.difference(after),after.difference(before),display,layer=layer,source_image=before))
     if stage.get('operation')=='TRIM_ONLY':
         value['summary']='Trimming only directly over original source · grey copper · pink removed areas · no added copper'
         value['note']='Saved bounded trim-only construction. No widening, recess filling or positive-copper clearance search.'
@@ -94,5 +100,6 @@ def publish_board_growth(root):
                                     payloadBase64=base64.b64encode(payload).decode())))
     return dict(status='DISPLAY_ONLY', revision=snapshot['revision'], path=str(target.resolve()),
                 sha256=digest(target.read_bytes()), parts=len(parts), addedAreaMM2=areas['added'],
-                removedAreaMM2=areas['removed'], construction=event['geometry'],operation=value['cleanup']['operation'],
-                cleanupPlaces=len(value['cleanup']['cases']))
+                removedAreaMM2=areas['removed'], construction=event['geometry'],
+                operation=value['cleanup']['operation'] if value['cleanup'] else 'FULL_BOARD_T04'if stage.get('full_board_run')else'BOUNDED_T04',
+                cleanupPlaces=len(value['cleanup']['cases']) if value['cleanup'] else 0)

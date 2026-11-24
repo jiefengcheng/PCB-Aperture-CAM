@@ -8,13 +8,19 @@ from src import source_channel_scope as sc
 @pytest.mark.parametrize('fully_covered',[False,True])
 @pytest.mark.parametrize('hybrid',[False,True])
 @pytest.mark.parametrize('full_board',[False,True])
-def test_actual_group_entry_uses_occurrence_coverage_and_keeps_native_route(tmp_path,monkeypatch,fully_covered,hybrid,full_board):
+def test_actual_group_entry_uses_occurrence_coverage_and_keeps_native_route(tmp_path,monkeypatch,fully_covered,hybrid,full_board,corrupt_bulk=False):
     ids=['hidden']if fully_covered else['hidden','visible']
     rows={s:dict(kind='stroke',metadata=dict(route_kind='segment',minimum_caliper_mm=.05,
          source_port_width_mm=.05,route_points_mm=[[i,0.],[i+1.,0.]]))for i,s in enumerate(ids)}
     rows['bulk']=dict(kind='region',metadata={})
     current={s:box(i,-.025,i+1.,.025)for i,s in enumerate(ids)}
     current['bulk']=box(-.1,-.1,1.2,.2)
+    if corrupt_bulk:
+        current['bulk']=box(-1,-1,4,4)
+        from src.gerber_u05 import group_components
+        monkeypatch.setattr(group_components,'run',lambda *a,**kw:dict(
+            continuous_source_bodies={'hidden':dict(wkb_hex=current['hidden'].wkb.hex())},
+            changed_bulk_copper={'hidden':dict(wkb_hex=box(0,0,.5,.025).wkb.hex())}))
     path=dict(path_id='r',source_ids=ids,ordered_source_edges=[])
     native=dict(admitted=[path],paths=[dict(path=path,disposition='ADMIT_COMPLETE_GERBER_ROUTE')],groups=[])
     scope=SimpleNamespace(index=None,ids={s:('owner',)for s in current},cores={'owner':current['bulk'].union(current[ids[-1]])})
@@ -35,6 +41,10 @@ def test_actual_group_entry_uses_occurrence_coverage_and_keeps_native_route(tmp_
         with pytest.raises(ValueError,match='COMPLETE_NATIVE_SELECTION_REQUIRED'):
             stage.run(None,{},route_ids=None,settings=settings,rule=rule)
         return
+    if corrupt_bulk:
+        with pytest.raises(ValueError,match='GLOBAL_KEEP_CONTOUR_CHANGED'):
+            stage.run(None,dict(scene='accepted'),route_ids=['r'],settings=settings,rule=rule)
+        return
     q=stage.run(None,dict(scene='accepted'),route_ids=None if full_board else['r'],settings=settings,rule=rule)
     assert q['requested_routes']==['r']
     assert q['native_trace_source_ids_by_route']==dict(r=ids)
@@ -47,3 +57,8 @@ def test_actual_group_entry_uses_occurrence_coverage_and_keeps_native_route(tmp_
     if full_board:
         assert q['full_board_run']and q['hybrid_components']['full_board_run']
         assert q['complete_native_route_inventory']and len(q['native_route_dispositions'])==1
+
+
+def test_protected_copper_cannot_be_cut_through_a_second_serialized_body(tmp_path,monkeypatch):
+    test_actual_group_entry_uses_occurrence_coverage_and_keeps_native_route(
+        tmp_path,monkeypatch,fully_covered=True,hybrid=True,full_board=False,corrupt_bulk=True)

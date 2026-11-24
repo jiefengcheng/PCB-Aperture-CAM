@@ -52,6 +52,48 @@ def test_already_grown_chain_uses_full_span_and_preserves_the_floor():
     assert descriptors['a']['member_id']==descriptors['b']['member_id']
 
 
+def test_smooth_chain_replaces_optional_steps_but_preserves_original_copper_and_groups():
+    rows,cores,material=fixture();old=dict(material);fixed=box(-1,-.0375,0,.0375);material['group:0']=fixed
+    ends={('route',(0.,0.)):section(0.,.075),('route',(.08,0.)):section(.08,.05)}
+    ribbons,proof=run(rows,material,{'route':['a','b']},[dict(source_id=s,selected_factor=1.2)for s in rows],ends,
+        dict(a=.075,b=.075),set(),lambda s:('own',),source_cores=cores,replace_optional_floor=True)
+    assert proof['constructed_sources']==2 and proof['reports'][0]['optional_floor_replaced']
+    assert proof['reports'][0]['removed_optional_area_mm2']>0
+    assert proof['reports'][0]['addition_check']['passed']and proof['reports'][0]['pocket_check']['passed']
+    assert all(material[s].covers(cores[s])for s in rows)
+    assert any(not material[s].covers(old[s])for s in rows)and to_wkb(material['group:0'])==to_wkb(fixed)
+    assert material['a'].equals_exact(material['b'],0)
+    pa,pb=(ribbons[s]['side_field_proofs'][0]for s in('a','b'))
+    for side in(0,1):
+        assert pa['controls'][side][-1]==pytest.approx(pb['controls'][side][0])
+        assert pa['endpoint_derivatives'][side][1]==pytest.approx(pb['endpoint_derivatives'][side][0])
+
+
+def test_smooth_chain_with_fixed_nominal_ends_retains_a_smooth_interior_growth_field():
+    rows,cores,material=fixture();ends={('route',(0.,0.)):section(0.,.05),('route',(.08,0.)):section(.08,.05)}
+    ribbons,proof=run(rows,material,{'route':['a','b']},[dict(source_id=s,selected_factor=1.2)for s in rows],ends,
+        dict(a=.075,b=.075),set(),lambda s:('own',),source_cores=cores,replace_optional_floor=True)
+    assert proof['constructed_sources']==2
+    body=material['a'];assert body.intersection(LineString([[.04,-.1],[.04,.1]])).length>.05
+    assert body.intersection(LineString([[0,-.1],[0,.1]])).length==pytest.approx(.05)
+    assert body.intersection(LineString([[.08,-.1],[.08,.1]])).length==pytest.approx(.05)
+
+
+def test_piecewise_chain_receipt_retains_the_midpoint_and_reversed_source_tangents():
+    from src.gerber_u05.ribbon_profile import build
+    from src.gerber_u05.residual_chain_match import local_recipe
+    points=[[0.,0.],[.1,0.],[.3,0.]]
+    _,recipe=build(points,.05,.075,ends=[section(0.,.05),section(.3,.05)])
+    chain=dict(points=points,width=.05,chain_id='RC-pieces',source_ids=['a','b'])
+    q=local_recipe(recipe,chain,dict(source_id='b',first_mm=.1,last_mm=.3,forward=False))
+    assert len(q['side_field_proofs'])==2
+    assert sum(p['length_mm']for p in q['side_field_proofs'])==pytest.approx(.2)
+    a,b=q['side_field_proofs'];assert a['controls'][0][-1]==pytest.approx(b['controls'][0][0])
+    assert a['endpoint_derivatives'][0][1]==pytest.approx(b['endpoint_derivatives'][0][0])
+    assert q['endpoint_sections'][0]['upper_mm'][1]==pytest.approx(-.025)
+    assert q['maximum_width_mm']==pytest.approx(.075)
+
+
 def test_clearance_budget_limits_widths_before_proposal_and_never_moves_a_group():
     rows,cores,material=fixture();material['fixed']=box(-.1,.078,.2,.15);before=to_wkb(material['fixed'])
     reports=[dict(source_id=s,selected_factor=1.2)for s in rows]
@@ -167,3 +209,21 @@ def test_rail_bounds_match_brute_distance_caps_over_saved_style_curves_and_budge
         assert actual==expected
         hashes.append([k for k,g in hits])
     assert hashes[0]==hashes[1]==hashes[2]
+
+
+def test_shared_chain_descriptor_uses_true_outer_receipts_for_reversed_custody():
+    from src.gerber_u05.ribbon_profile import build
+    from src.gerber_u05.residual_chain_match import local_recipe
+    from src.gerber_u05.corner_transition import corners
+    points=[[0.,0.],[.001,.002],[.1,.002],[.3,.002]]
+    ends=[section(0.,.075),dict(normal=[0.,1.],lower_mm=[.3,-.0355],upper_mm=[.3,.0395])]
+    _,recipe=build(points,.05,.075,ends=ends)
+    chain=dict(points=points,width=.05,chain_id='true-ends',source_ids=['b'])
+    length=LineString(points).length
+    local=local_recipe(recipe,chain,dict(source_id='b',first_mm=.05,last_mm=length,forward=False))
+    rows={'b':dict(metadata=dict(route_points_mm=[[.3,.002],[.05,.002]],minimum_caliper_mm=.05,aperture_family=['C',.05],route_kind='segment'))}
+    desc=describe(rows,{'r':['b']},{},set(),{'b':local},{})['b']
+    assert desc['endpoint_sections'][0]['lower_mm']==ends[1]['upper_mm']
+    assert desc['endpoint_sections'][1]['upper_mm']==ends[0]['lower_mm']
+    values,_=corners(desc,0,skin=False)
+    assert np.array_equal(values,[ends[1]['upper_mm'],ends[1]['lower_mm']])

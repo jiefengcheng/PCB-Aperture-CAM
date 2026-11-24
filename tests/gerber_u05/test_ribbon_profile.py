@@ -48,3 +48,29 @@ def test_tight_default_bend_uses_a_swept_body_when_inner_rail_collapses():
 def test_outlier_reach_limit_rejects_a_transition_without_moving_its_ends():
     with pytest.raises(ValueError,match='RESIDUAL_TRANSITION_REACH_OUTLIER'):
         build([[0.,0.],[1.,0.]],.05,.075,maximum_extra_reach_mm=.001)
+def test_valid_outline_must_realize_its_complete_native_cross_sections():
+    import numpy as np
+    from shapely.geometry import LineString
+    from src.gerber_u05.ribbon_profile import build,frame
+    from src.gerber_u05.smooth_transition import value
+    from src.native_inventory import ERROR_MM
+    points=[[0.,0.],[.010425132833193,.002181591039488],[.011,.002],
+            [.012200335611277,.002586769519859],[.109,.025]]
+    body,recipe=build(points,.0508,.07618)
+    assert recipe['folded_cross_section_cells']>0
+    p,n,stations,length=frame(points)
+    for point,normal,t in zip(p,n,stations):
+        i=0 if t<=length/2 else 1;f=(t-i*length/2)/(length/2)
+        offsets=[value(c,min(1.,max(0.,f)))for c in recipe['side_field_proofs'][i]['controls']]
+        section=LineString([point-normal*(.0254+offsets[0]),point+normal*(.0254+offsets[1])])
+        assert section.difference(body.buffer(ERROR_MM,quad_segs=128)).length<=ERROR_MM
+
+
+def test_exact_interfaces_are_not_shrunk_by_free_interior_face_budgets():
+    from src.gerber_u05.ribbon_profile import exact_ends
+    from shapely.geometry import LineString
+    ends=[dict(normal=[0.,1.],lower_mm=[x,-.0375],upper_mm=[x,.0375])for x in(0.,1.)]
+    body,recipe=exact_ends([[0.,0.],[1.,0.]],.05,.075,ends=ends,face_budgets=dict(negative=.004,positive=.006))
+    assert recipe['end_deviation']==0
+    for end in ends:assert body.covers(LineString([end['lower_mm'],end['upper_mm']]))
+    assert body.intersection(LineString([[.5,-.1],[.5,.1]])).length<.075

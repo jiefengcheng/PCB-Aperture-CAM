@@ -24,11 +24,12 @@ def test_independent_routes_fixed_order_both_caps_and_ten_passes():
         ok=s!='a' or f<=1.10
         return dict(passed=ok,failures=[]if ok else[dict(reason='FOREIGN_CLEARANCE')])
     solution=solve(dict(c=.3,b=.05,a=.065),settings,check,lambda s,f:state.update({s:f}))
-    assert solution['selected_rungs']==dict(a=2,b=10,c=2)
+    assert solution['selected_rungs']==dict(a=2,b=10,c=0)
     assert solution['stable_route_order']==['a','b','c']
     assert len(solution['passes'])==10
     assert all(d['attempts']<=10 for d in solution['decisions'])
-    assert [s for s,_,_ in calls[:3]]==['a','b','c']
+    assert [s for s,_,_ in calls[:2]]==['a','b']
+    assert all(s!='c'for s,_,_ in calls)  # Source width > global 0.25 mm: no geometry trial.
     assert calls[1][2]['a']==1.05  # Immediate acceptance is visible to next route.
     assert solution['maximum_claim'].startswith('NONE')
 

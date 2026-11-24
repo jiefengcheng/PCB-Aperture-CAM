@@ -51,7 +51,7 @@ def frame(points,*,extra_stations=()):
     return p,normals,stations,length
 
 
-def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,interior_width=None,plateau=None,maximum_extra_reach_mm=.11,direct_transition=False):
+def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,interior_width=None,plateau=None,maximum_extra_reach_mm=.11,direct_transition=False,middle_faces=None):
     p,normals,stations,length=frame(points,extra_stations=()if plateau is None else(plateau['first_mm'],plateau['last_mm']))
     desired=max(0.,((target_width if interior_width is None else interior_width)-width)/2)
     faces=[];oriented=[]
@@ -74,11 +74,17 @@ def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,in
         lo=max(0.,max(a,b)-delta);hi=min(a,b)+delta
         if not direct_transition and lo>hi+1e-12:raise ValueError('FROZEN_JOINT_TRANSITION_TOO_SHORT')
         middle.append((a+b)/2 if direct_transition else min(hi,max(lo,desired_faces[side])));bounds.append(lo)
+    if middle_faces is not None:
+        if plateau is not None or direct_transition or len(middle_faces)!=2 or any(not math.isfinite(v)or v<0 for v in middle_faces):
+            raise ValueError('VALID_FREE_INTERIOR_FACE_BUDGETS_REQUIRED')
+        middle=list(middle_faces)
+        if any(v<lo-1e-12 or v>min(faces[0][i],faces[1][i])+delta+1e-12 for i,(v,lo)in enumerate(zip(middle,bounds))):
+            raise ValueError('RESIDUAL_SIDE_FIELD_SLOPE_CHANGED')
     cap=max(0.,target_width-width)
     if sum(faces[0])>cap+1e-9 or sum(faces[1])>cap+1e-9:raise ValueError('FROZEN_JOINT_EXCEEDS_SOURCE_WIDTH_CAP')
     excess=max(0.,sum(middle)-cap)
     for i in sorted(range(2),key=lambda i:-(middle[i]-bounds[i])):
-        take=min(excess,middle[i]-bounds[i]);middle[i]-=take;excess-=take
+        take=min(excess,max(0.,middle[i]-bounds[i]));middle[i]-=take;excess-=take
     if excess>1e-12:raise ValueError('FROZEN_JOINT_WIDTH_BUDGET_INFEASIBLE')
     if direct_transition:
         if plateau is not None:raise ValueError('DIRECT_RESIDUAL_CANNOT_CHANGE_GROUP_PLATEAU')
@@ -105,25 +111,51 @@ def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,in
     if reach>maximum_extra_reach_mm+1e-12:raise ValueError('RESIDUAL_TRANSITION_REACH_OUTLIER')
     body=Polygon(lower.tolist()+upper[::-1].tolist())
     method='SIMPLE_TWO_RAIL_POLYGON'
-    if not body.is_valid:
+    # A globally simple outline can still fold across one of its native
+    # cross sections. Negative cell turns expose this without a scene search.
+    # The complete section is an input obligation, not just its two endpoints.
+    cells=np.stack((lower[:-1],lower[1:],upper[1:],upper[:-1]),axis=1)
+    edges=np.roll(cells,-1,axis=1)-cells
+    turns=edges[:,:,0]*np.roll(edges,-1,axis=1)[:,:,1]-edges[:,:,1]*np.roll(edges,-1,axis=1)[:,:,0]
+    folded=int(np.count_nonzero(np.any(turns<0,axis=1)))
+    if not body.is_valid or folded:
         # A short, tight source bend can have a collapsed inner rail. Its
         # swept cross sections still define finite material, just as the
         # existing cell-based side profile does. Materialize those cells;
         # never repair a constructed group or pretend this proves clearance.
         # Each hull lies in the convex sweep of two adjacent cross sections.
-        cells=[Polygon([lower[i],lower[i+1],upper[i+1],upper[i]]).convex_hull
-               for i in range(len(p)-1)]
-        body=unary_union([g for g in cells if g.area>0])
+        sweeps=[Polygon(cell).convex_hull for cell in cells]
+        body=unary_union([g for g in sweeps if g.area>0])
         method='DEFAULT_SWEEP_CELL_UNION; CLEARANCE_VERIFICATION_REQUIRED'
     if body.is_empty or not body.is_valid or body.geom_type not in('Polygon','MultiPolygon'):
         raise ValueError('RESIDUAL_RIBBON_NOT_SIMPLE')
     endpoint_sections=[dict(normal=normals[i].tolist(),lower_mm=lower[i].tolist(),upper_mm=upper[i].tolist())for i in(0,-1)]
     actual=max(width+sum(v)for v in[faces[0],middle,faces[1]])
     return body,dict(schema='t04-inherited-sided-ribbon/1',materialization=method,endpoint_sections=endpoint_sections,
+        folded_cross_section_cells=folded,
         endpoint_faces_mm=faces,midpoint_faces_mm=middle,side_field_proofs=proofs,
         maximum_width_mm=actual,target_width_mm=target_width,length_mm=length,
         maximum_extra_reach_mm=reach,transition_extra_reach_limit_mm=maximum_extra_reach_mm,
         exact_frozen_sections_retained=True,source_path_changed=False,clearance_certified=False)
+
+
+def exact_ends(points,width,target_width,*,ends,face_budgets,maximum_side_slope=.25):
+    """Frozen interfaces are boundary conditions; free interiors use budgets.
+
+    Existing end copper must not be narrowed by a free-interior packing cap or
+    constructor headroom. All emitted positive additions still require the
+    caller's ordinary clearance and pocket checks.
+    """
+    middle=[face_budgets['negative'],face_budgets['positive']]
+    try:
+        body,recipe=build(points,width,target_width,ends=ends,maximum_side_slope=maximum_side_slope,middle_faces=middle)
+    except ValueError as error:
+        if str(error)not in('RESIDUAL_SIDE_FIELD_SLOPE_CHANGED','FROZEN_JOINT_TRANSITION_TOO_SHORT'):raise
+        body,recipe=build(points,width,target_width,ends=ends,maximum_side_slope=maximum_side_slope,direct_transition=True)
+        recipe['interior_transition']='ONE_FULL_SPAN; NO_STATIONARY_INTERIOR_FITS'
+    recipe.update(schema='t04-exact-frozen-end-profile/1',free_interior_face_budgets_mm=face_budgets,
+                  end_deviation=0.,group_interiors_changed=False)
+    return body,recipe
 
 
 def match_ends(points,width,target_width,*,ends,deviation=.1,maximum_side_slope=.25,face_budgets=None,free_unmatched_ends=False):

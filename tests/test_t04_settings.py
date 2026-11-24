@@ -30,7 +30,8 @@ def test_ladder_uses_existing_factor_and_simultaneous_absolute_cap():
 
 
 def test_thirty_um_is_total_width_increase_with_exact_boundary():
-    settings = capture()
+    # Exercise historical ladder arithmetic separately from the new global width exclusion.
+    settings = from_bytes(capture()._raw)
     boundary = settings.rung(.3, 2)
     assert boundary['within_growth_limits']
     assert boundary['total_width_increase_mm'] == .030

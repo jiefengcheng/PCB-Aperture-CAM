@@ -69,30 +69,43 @@ def local_recipe(recipe,chain,interval):
     Shared native-chain metadata still identifies the true two outer ends.
     Only floating-point roundoff at those ends may be clamped to [0, 1].
     """
-    points,normals,stations,L=frame(chain['points']);w=chain['width'];proof=recipe['side_field_proofs'][0];a=interval['first_mm']/L;b=interval['last_mm']/L
-    if a<-1e-12 or b>1+1e-12 or a>b:raise ValueError('CHAIN_SOURCE_INTERVAL_OUTSIDE_NATIVE_PATH')
-    a=max(0.,a);b=min(1.,b)
-    controls=[restrict(c,a,b)for c in proof['controls']];sections=[]
-    for t in(interval['first_mm'],interval['last_mm']):
+    points,normals,stations,L=frame(chain['points']);w=chain['width']
+    first,last=interval['first_mm'],interval['last_mm']
+    if first<-1e-12 or last>L+1e-12 or first>last:raise ValueError('CHAIN_SOURCE_INTERVAL_OUTSIDE_NATIVE_PATH')
+    first,last=max(0.,first),min(L,last);pieces=[];cursor=0.
+    for proof in recipe['side_field_proofs']:
+        end=cursor+proof['length_mm'];pieces.append((cursor,end,proof));cursor=end
+    if abs(cursor-L)>1e-9:raise ValueError('CHAIN_FIELD_LENGTH_CHANGED')
+    sections=[]
+    for t in(first,last):
         j=int(np.argmin(abs(stations-t)));center=points[j];n=normals[j]
         if abs(t)<1e-10:n=np.asarray(recipe['endpoint_sections'][0]['normal'])
         elif abs(t-L)<1e-10:n=np.asarray(recipe['endpoint_sections'][1]['normal'])
-        faces=[value(c,min(1.,max(0.,t/L)))for c in proof['controls']]
+        lo,hi,proof=next((q for q in pieces if t<=q[1]+1e-12),pieces[-1])
+        faces=[value(c,min(1.,max(0.,(t-lo)/(hi-lo))))for c in proof['controls']]
         sections.append(dict(normal=n.tolist(),lower_mm=(center-n*(w/2+faces[0])).tolist(),upper_mm=(center+n*(w/2+faces[1])).tolist()))
+    parts=[]
+    for lo,hi,proof in pieces:
+        a,b=max(first,lo),min(last,hi)
+        if b-a<=1e-12:continue
+        controls=[restrict(c,max(0.,(a-lo)/(hi-lo)),min(1.,(b-lo)/(hi-lo)))for c in proof['controls']]
+        if not interval['forward']:controls=[c[::-1]for c in controls[::-1]]
+        length=b-a
+        parts.append(dict(proof,controls=controls,length_mm=length,
+            endpoint_derivatives=[[3*(c[1]-c[0])/length,3*(c[3]-c[2])/length]for c in controls]))
     if not interval['forward']:
+        parts.reverse()
         sections=[dict(normal=(-np.asarray(e['normal'])).tolist(),lower_mm=e['upper_mm'],upper_mm=e['lower_mm'])for e in sections[::-1]]
-        controls=[c[::-1]for c in controls[::-1]]
-    length=interval['last_mm']-interval['first_mm'];part=dict(proof,controls=controls,length_mm=length,
-        endpoint_derivatives=[[3*(c[1]-c[0])/length,3*(c[3]-c[2])/length]for c in controls])
-    return dict(recipe,endpoint_sections=sections,side_field_proofs=[part],length_mm=length,
+    return dict(recipe,endpoint_sections=sections,side_field_proofs=parts,length_mm=last-first,
         shared_residual_chain_id=chain['chain_id'],member_source_ids=chain['source_ids'],
         shared_chain_points_mm=chain['points'],shared_chain_side_field_proofs=recipe['side_field_proofs'],
-        real_endpoints=([abs(interval['first_mm'])<1e-10,abs(interval['last_mm']-L)<1e-10]if interval['forward']else[abs(interval['last_mm']-L)<1e-10,abs(interval['first_mm'])<1e-10]),
+        shared_chain_endpoint_sections=recipe['endpoint_sections'],
+        real_endpoints=([abs(first)<1e-10,abs(last-L)<1e-10]if interval['forward']else[abs(last-L)<1e-10,abs(first)<1e-10]),
         source_interval_mm=dict(interval),native_seam_is_transition=False,
-        maximum_width_mm=w+max(sum(c[k]for c in controls)for k in range(4)))
+        maximum_width_mm=w+max(sum(c[k]for c in part['controls'])for part in parts for k in range(4)))
 
 
-def run(rows,material,paths,reports,endpoint_sections,width_caps,fixed_sources,owner,*,deviation=.1,protected_domains=(),source_cores=None,route_supports=None):
+def run(rows,material,paths,reports,endpoint_sections,width_caps,fixed_sources,owner,*,deviation=.1,protected_domains=(),source_cores=None,route_supports=None,replace_optional_floor=False):
     """Budget and admit residual chains after default growth, before joints.
 
     ``material`` and matching source decisions in ``reports`` are updated only
@@ -106,15 +119,17 @@ def run(rows,material,paths,reports,endpoint_sections,width_caps,fixed_sources,o
     retains the preceding chain, including its entire grown copper floor.
     """
     started=perf_counter();fixed=set(fixed_sources);decisions={v['source_id']:v for v in reports}
+    if replace_optional_floor and source_cores is None:raise ValueError('SMOOTH_CHAIN_REQUIRES_AUTHENTICATED_SOURCE_CORES')
     eligible={s for ss in paths.values()for s in ss if s not in fixed and s in material and s in decisions and rows[s]['metadata']['aperture_family'][0]=='C'}
     grown_count=sum(decisions[s]['selected_factor']>1+1e-10 for s in eligible)
     planned,deferred=chains(rows,paths,eligible);records=[];ready={};accepted={};verifications=0;addition_distances=0;route_floors={}
     for chain in planned:
         sources=chain['source_ids'];w=chain['width'];ends=[endpoint_sections.get((chain['route_id'],point_key(pt)))for pt in(chain['points'][0],chain['points'][-1])]
-        if not any(e is not None and np.linalg.norm(np.subtract(e['upper_mm'],e['lower_mm']))>w+ERROR_MM for e in ends):
+        wider=any(e is not None and np.linalg.norm(np.subtract(e['upper_mm'],e['lower_mm']))>w+ERROR_MM for e in ends)
+        if not wider and not(replace_optional_floor and any(decisions[s]['selected_factor']>1+1e-10 for s in sources)):
             deferred.append(dict(route_id=chain['route_id'],source_ids=sources,reason='NO_REGISTERED_WIDER_BOUNDARY'));continue
         cid='RC-'+digest(canonical([chain['route_id'],sources]))[:16];chain['chain_id']=cid
-        cap=min(width_caps[s]for s in sources)-2*ERROR_MM
+        cap=min(width_caps[s]for s in sources)-(0. if replace_optional_floor else 2*ERROR_MM)
         row=dict(chain_id=cid,route_id=chain['route_id'],source_ids=sources,length_mm=chain['length_mm'],preceding_factors={s:decisions[s]['selected_factor']for s in sources})
         records.append(row)
         if cap<=w:row.update(status='KEEP_PRECEDING_RESULT; CONSTRUCTION_LIMIT',reason='NO_WIDTH_HEADROOM_FOR_NOMINAL_SKIN');continue
@@ -124,7 +139,7 @@ def run(rows,material,paths,reports,endpoint_sections,width_caps,fixed_sources,o
             if end is not None:
                 vector=np.subtract(end['upper_mm'],end['lower_mm']);normal=vector/np.linalg.norm(vector);n[j]=normal if n[j]@normal>=0 else-normal
         ratio=max(1.,float(np.linalg.norm(n,axis=1).max()))
-        chain.update(owner=tuple(owner(sources[0])),ends=ends,target=cap,normal_ratio=ratio,
+        chain.update(owner=tuple(owner(sources[0])),ends=ends,target=cap,normal_ratio=ratio,wider_boundary=wider,
             reach_cap=(cap-w)*ratio,total_growth_cap=(cap-w)*ratio,
             rails={side:LineString(pts+sign*n*w/2)for side,sign in(('negative',-1),('positive',1))},record=row)
         if any(tuple(owner(s))!=chain['owner']for s in sources):row.update(status='KEEP_PRECEDING_RESULT; CONSTRUCTION_LIMIT',reason='CHAIN_OWNER_CHANGED');continue
@@ -137,9 +152,23 @@ def run(rows,material,paths,reports,endpoint_sections,width_caps,fixed_sources,o
             try:
                 budgets={side:allocation['growth_mm'][cid+'#'+side]/c['normal_ratio']for side in('negative','positive')}
                 slope=1. if len(sources)==1 and rows[sources[0]]['metadata']['route_kind']=='segment'and c['length_mm']<=.1 else .25
-                body,recipe=match_ends(c['points'],w,c['target'],ends=c['ends'],deviation=deviation,
-                    maximum_side_slope=slope,face_budgets=budgets,free_unmatched_ends=True)
-                proposed,method=certified_union(floor,body)
+                if replace_optional_floor and not c['wider_boundary']:
+                    from .ribbon_profile import build
+                    target=min(c['target'],w+2*min(budgets.values()))
+                    body,recipe=build(c['points'],w,target,ends=c['ends'],maximum_side_slope=slope)
+                    recipe['transition_policy']='SHARED_FULL_CHAIN_CUBIC; ORIGINAL_FLOOR_ONLY'
+                elif replace_optional_floor:
+                    from .ribbon_profile import exact_ends
+                    body,recipe=exact_ends(c['points'],w,c['target'],ends=c['ends'],face_budgets=budgets,maximum_side_slope=slope)
+                else:
+                    body,recipe=match_ends(c['points'],w,c['target'],ends=c['ends'],deviation=deviation,
+                        maximum_side_slope=slope,face_budgets=budgets,free_unmatched_ends=True)
+                if replace_optional_floor:
+                    from .source_trace_floor import preserve
+                    core=unary_union([source_cores[s]for s in sources])
+                    proposed,floor_proof=preserve(core,body);method='AUTHENTICATED_SOURCE_FLOOR; OPTIONAL_PROFILE_REPLACED'
+                    row['original_floor_check']=floor_proof
+                else:proposed,method=certified_union(floor,body)
                 if method=='EXACT_FLOOR_FALLBACK'and source_cores is not None:
                     core=unary_union([source_cores[s]for s in sources]);body=unary_union([body,core.buffer(ERROR_MM,quad_segs=128)]);proposed,method=certified_union(floor,body)
                 if method=='EXACT_FLOOR_FALLBACK':raise ValueError('CHAIN_CANNOT_RETAIN_EXACT_GROWN_FLOOR')
@@ -157,7 +186,10 @@ def run(rows,material,paths,reports,endpoint_sections,width_caps,fixed_sources,o
                 route=c['route_id']
                 if route not in route_floors:
                     route_floors[route]=unary_union([material[s]for s in paths[route]if s in material]+list((route_supports or {}).get(route,())))
-                trial=unary_union([route_floors[route],proposed]);pockets=new_pocket_regions(route_floors[route],trial)
+                trial=(unary_union([proposed,*[material[s]for s in paths[route]if s not in sources and s in material],
+                                   *list((route_supports or {}).get(route,()))])if replace_optional_floor else
+                       unary_union([route_floors[route],proposed]))
+                pockets=new_pocket_regions(route_floors[route],trial)
                 row['pocket_check']=dict(passed=not pockets,new_pocket_areas_mm2=[g.area for g in pockets],constructed_groups_audited=0)
                 if pockets:row.update(status='KEEP_PRECEDING_RESULT; NEW_RESIDUAL_POCKET');continue
                 # Deterministic input pair budgets cover every future chain.
@@ -169,9 +201,12 @@ def run(rows,material,paths,reports,endpoint_sections,width_caps,fixed_sources,o
                     s=interval['source_id']
                     material[s]=proposed
                     accepted[s]=local[s]
-                    d=decisions[s];d.update(selected_factor=max(d['selected_factor'],accepted[s]['maximum_width_mm']/w),status='MATCHED_RESIDUAL_CHAIN_ENDS',factor_semantics='PROFILE_CEILING; GROWN_FLOOR_RETAINED')
+                    d=decisions[s];factor=accepted[s]['maximum_width_mm']/w
+                    d.update(selected_factor=factor if replace_optional_floor else max(d['selected_factor'],factor),status='MATCHED_RESIDUAL_CHAIN_ENDS',
+                             factor_semantics='PROFILE_CEILING; ORIGINAL_SOURCE_FLOOR_RETAINED'if replace_optional_floor else'PROFILE_CEILING; GROWN_FLOOR_RETAINED')
                     d.setdefault('attempts',[]).append(dict(passed=True,failures=[],decision='BUDGETED_RESIDUAL_CHAIN',chain_id=cid,geometry_verification_scope='RESIDUAL_POSITIVE_ADDITIONS_ONLY'))
                 row.update(status='MATCHED_CHAIN_FLOOR; TRANSITIONS_EXTENDED'if delta.is_empty else'CONSTRUCTED_FROM_MATCHED_CHAIN_ENDS',shared_contour_sha256=digest(to_wkb(proposed)),source_seams_are_treatments=False,added_area_mm2=delta.area)
+                row.update(optional_floor_replaced=replace_optional_floor,removed_optional_area_mm2=floor.difference(proposed).area if replace_optional_floor else 0.)
                 route_floors[route]=trial
                 workspace.add('accepted:'+cid,own,delta)
             except(ValueError,GEOSException)as error:row.update(status='KEEP_PRECEDING_RESULT; CONSTRUCTION_LIMIT',reason=str(error))

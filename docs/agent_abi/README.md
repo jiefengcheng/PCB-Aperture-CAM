@@ -4,6 +4,15 @@ The executable [stage runtime version 1](STAGE_RUNTIME.md) provides all 35 T01/T
 
 The [independent five-suite audit](audits/20261031_06c146e/README.md) passed all 313 tests plus 2 subtests and exercised all 35 CLI operations at commit `06c146e`. Its PASS_FOR_NEXT_SLICE applies to code/contracts/model scope. Exact-runtime saved native verification remains NOT_ESTABLISHED; historical C02/C03 qualifications and frozen acceptance are unchanged.
 
+## T04 after saved copper cleanup
+
+Use the [T04 cleanup handoff](T04_AFTER_LARGE_COPPER_CLEANUP.md),
+[global eligibility policy](T04_GROWTH_ELIGIBILITY.md),
+[native joint/cap repair and qualified evidence](T04_NATIVE_INTERFACE_REPAIR.md)
+and [dedicated grey T04 workspace](T04_VIEWER_WORKSPACE.md).
+The original-source runner is `tools/run_t04_after_cleanup.py`; viewer
+preparation is `tools/viewer_t04.py`. These are separate from T02/T05 execution.
+
 ## Source-built T04 profile entry
 
 The explicit [source-built T04 profile entry](T04_PROFILE_ENTRY.md) constructs

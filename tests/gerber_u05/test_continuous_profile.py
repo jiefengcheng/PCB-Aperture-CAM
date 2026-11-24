@@ -115,3 +115,90 @@ def test_joint_widths_agree_across_line_arc_and_reversed_native_directions():
     joint_widths(p,rows,{'a':.075,'b':.06})
     assert p['segments']['a']['endpoint_widths_mm'][1]==p['segments']['b']['endpoint_widths_mm'][1]==.06
     assert p['segments']['a']['inherited_width_mm']==.075
+
+
+def side_join_fixture(*,reversed=False,conflicting=False,short=False):
+    from src.gerber_u05.continuous_profile import joint_widths
+    length=.01 if short else 1.
+    rows={s:dict(metadata=dict(route_kind='segment',minimum_caliper_mm=.05,route_points_mm=pts))
+          for s,pts in [('a',[[0.,0.],[1.,0.]]),('b',[[1.+length,0.],[1.,0.]]if reversed else[[1.,0.],[1.+length,0.]])]}
+    groups=[dict(axis=[1.,0.],first_mm=0.,last_mm=1.,catalogue_band_index=0,
+        lanes=[dict(mutable=True,source_ids=['a'],source_normal_mm=0.,source_width_mm=.05,width_mm=.075,profile_midline_shift_mm=.01)])]
+    if conflicting:groups.append(dict(axis=[1.,0.],first_mm=1.,last_mm=2.,catalogue_band_index=1,
+        lanes=[dict(mutable=True,source_ids=['b'],source_normal_mm=0.,source_width_mm=.05,width_mm=.065,profile_midline_shift_mm=0.)]))
+    profiles=source_profiles(rows,{'r':['a','b']},dict(groups=groups))
+    joint_widths(profiles,rows,dict(a=.075,b=.06))
+    profiles['segments']['a']['inherit_sided_endpoints']=True
+    return rows,profiles
+
+
+def test_shared_physical_sides_remove_asymmetric_step_without_geometry_search():
+    from src.gerber_u05.continuous_profile import joint_side_fields,straight_fields,straight_body
+    from shapely.geometry import LineString
+    import pytest
+    rows,profiles=side_join_fixture()
+    a,b=(profiles['segments'][s]for s in('a','b'))
+    old_a,old_b=(straight_fields(q,.05)for q in(a,b))
+    assert old_a['pieces'][-1]['controls'][1][-1]!=old_b['pieces'][0]['controls'][1][0]
+    proof=joint_side_fields(profiles,rows)
+    assert len(proof['resolved'])==1 and not proof['unresolved']and proof['geometry_searches']==0
+    new_a,new_b=(straight_fields(q,.05)for q in(a,b))
+    for side in(0,1):
+        assert new_a['pieces'][-1]['controls'][side][-1]==pytest.approx(new_b['pieces'][0]['controls'][side][0])
+        assert new_a['pieces'][-1]['endpoint_derivatives'][side]==new_b['pieces'][0]['endpoint_derivatives'][side]==0
+    line=LineString([[1.,-.2],[1.,.2]])
+    assert straight_body(a,.05).intersection(line).normalize().equals_exact(straight_body(b,.05).intersection(line).normalize(),1e-12)
+
+
+def test_shared_physical_sides_respect_reversed_native_direction():
+    from src.gerber_u05.continuous_profile import joint_side_fields,straight_fields
+    import pytest
+    rows,profiles=side_join_fixture(reversed=True);joint_side_fields(profiles,rows)
+    a,b=(straight_fields(profiles['segments'][s],.05)for s in('a','b'))
+    assert a['pieces'][-1]['controls'][1][-1]==pytest.approx(-b['pieces'][-1]['controls'][0][-1])
+    assert a['passed']and b['passed']
+
+
+def test_incompatible_frozen_sides_remain_unresolved_and_are_never_averaged():
+    from src.gerber_u05.continuous_profile import joint_side_fields
+    rows,profiles=side_join_fixture(conflicting=True);proof=joint_side_fields(profiles,rows)
+    assert proof['unresolved'][0]['reason']=='FROZEN_GROUP_SIDES_DISAGREE'
+    assert not proof['resolved']and all('endpoint_sides_mm'not in q for q in profiles['segments'].values())
+
+
+def test_too_short_shared_transition_remains_rejected_by_existing_slope_bound():
+    from src.gerber_u05.continuous_profile import joint_side_fields,straight_fields,straight_body,ProfileUnresolved
+    import pytest
+    rows,profiles=side_join_fixture(short=True);joint_side_fields(profiles,rows)
+    b=profiles['segments']['b'];assert not straight_fields(b,.05)['passed']
+    with pytest.raises(ProfileUnresolved):straight_body(b,.05)
+
+
+def test_covered_continuation_remains_in_endpoint_plan_without_growing_it():
+    from src.gerber_u05.continuous_profile import joint_widths,fixed_continuation_sections,straight_fields
+    from src.gerber_u05.ribbon_profile import build
+    import pytest
+    rows={s:dict(metadata=dict(route_kind=kind,minimum_caliper_mm=.05,route_points_mm=points))
+          for s,kind,points in [('covered','segment',[[0.,0.],[1.,0.]]),
+                                ('arc','arc',[[1.,0.],[1.5,.1],[2.,.5]])]}
+    profiles=source_profiles(rows,{'r':['arc']},dict(groups=[]));joint_widths(profiles,rows,dict(arc=.075))
+    ends=fixed_continuation_sections(profiles,rows,{'r':['covered','arc']})
+    assert set(ends)=={'arc'}and ends['arc'][0]is not None and ends['arc'][1]is None
+    _,recipe=build(rows['arc']['metadata']['route_points_mm'],.05,.075,ends=ends['arc'])
+    assert recipe['endpoint_faces_mm'][0]==pytest.approx([0.,0.])
+    assert recipe['side_field_proofs'][0]['endpoint_derivatives']==[0.,0.]
+    assert profiles['fixed_continuation_joints']['records'][0]['fixed_continuation_source_ids']==['covered']
+    assert 'covered'not in profiles['segments']
+
+
+def test_fixed_continuation_caps_true_member_end_without_restarting_internal_seams():
+    from src.gerber_u05.continuous_profile import joint_widths,fixed_continuation_sections,straight_fields
+    rows={s:dict(metadata=dict(route_kind='segment',minimum_caliper_mm=.05,route_points_mm=points))
+          for s,points in [('fixed',[[0.,0.],[1.,0.]]),('a',[[1.,0.],[2.,0.]]),('b',[[3.,0.],[2.,0.]])]}
+    construction=dict(groups=[],full_member_catalogue=dict(maximal_straight_members=[dict(run_id='m',source_ids=['a','b'],start=[1.,0.],end=[3.,0.])]))
+    profiles=source_profiles(rows,{'r':['a','b']},construction);joint_widths(profiles,rows,dict(a=.075,b=.075))
+    fixed_continuation_sections(profiles,rows,{'r':['fixed','a','b']})
+    a,b=(straight_fields(profiles['segments'][s],.05)for s in('a','b'))
+    assert a['pieces'][0]['controls'][0][0]==-.025
+    assert a['pieces'][-1]['controls'][1][-1]==-b['pieces'][-1]['controls'][0][-1]
+    assert not a['source_seam_restarts_transition']and a['passed']and b['passed']

@@ -101,3 +101,18 @@ class ParallelFillWitnessTests(unittest.TestCase):
         a=self.row('a', [0, 0], [2, 0]); b=self.row('b', [0, .04], [2, .04])
         b['geometry']=box(10, 10, 11, 11)
         self.assertIsNone(overlapping_parallel_fill_witness(a, b))
+
+
+def test_coincident_native_overlay_fringe_uses_area_and_coordinate_bounds_together():
+    from shapely.geometry import box
+    from src.trace_growth_eligibility import classify_stroke
+    source=box(0.,0.,.001,.05)
+    neighbor=box(0.,0.,.001,.05-1e-10)
+    report=classify_stroke('s',source,.05,'segment',[dict(id='fill',geometry=neighbor,kind='region',trace_width_mm=0.)])
+    assert report['fully_covered']and not report['exact_geometry_coverage']
+    assert report['native_resolution_coverage']['passed']
+    # The same tiny area can be a genuine, deeper exposed tip.
+    source=box(0.,0.,1e-8,.05)
+    neighbor=box(0.,0.,1e-8,.05-.00005)
+    report=classify_stroke('s',source,.05,'segment',[dict(id='fill',geometry=neighbor,kind='region',trace_width_mm=0.)])
+    assert report['exposed_area_mm2']<1e-12 and not report['fully_covered']

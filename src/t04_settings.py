@@ -4,7 +4,7 @@ The factor ladder and total-width cap are simultaneous limits. A capped rung
 is blocked, never clamped to an off-ladder width. Original width is always the
 source width; neither preceding growth nor the last accepted rung compounds it.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import Decimal
 import hashlib
 import json
@@ -48,6 +48,7 @@ class T04Settings:
     maximum_total_width_increase_mm: float
     source_sha256: str
     _raw: bytes = field(repr=False)
+    _eligibility: bytes | None = field(default=None,repr=False)
 
     @property
     def factor_increment(self):
@@ -66,26 +67,38 @@ class T04Settings:
         factor = 1 + (Decimal(str(self.maximum_factor)) - 1) * rung / self.step_count
         increase = width * (factor - 1)
         allowed = increase <= Decimal(str(self.maximum_total_width_increase_mm))
+        width_blocked=False;width_reason=None
+        if self._eligibility is not None and rung:
+            from src.trace_growth_policy import Policy
+            width_reason=Policy(self._eligibility).blocking_reason(float(width))
+            width_blocked=width_reason is not None
+            allowed=allowed and not width_blocked
         return dict(rung=rung, factor=float(factor), original_width_mm=float(width),
                     resulting_width_mm=float(width + increase),
                     total_width_increase_mm=float(increase),
                     per_side_offset_mm=float(increase / 2),
                     percentage_growth=float((factor - 1) * 100),
                     within_growth_limits=allowed,
-                    blocking_reason=None if allowed else 'TOTAL_WIDTH_INCREASE_LIMIT')
+                    blocking_reason=None if allowed else width_reason if width_blocked else 'TOTAL_WIDTH_INCREASE_LIMIT')
 
     def resolved(self):
-        return dict(status='PROVISIONAL', maximum_factor=self.maximum_factor,
+        value=dict(status='PROVISIONAL', maximum_factor=self.maximum_factor,
                     step_count=self.step_count, factor_increment=self.factor_increment,
                     maximum_total_width_increase_mm=self.maximum_total_width_increase_mm,
                     absolute_limit_basis='TOTAL_WIDTH_INCREASE_FROM_ORIGINAL_SOURCE',
                     candidate_basis='ORIGINAL_SOURCE_GEOMETRY_AND_WIDTH',
                     cap_behavior='REJECT_RUNG_WITHOUT_CLAMPING')
+        if self._eligibility is not None:
+            from src.trace_growth_policy import Policy
+            value['trace_eligibility']=Policy(self._eligibility).snapshot()
+        return value
 
     def write_snapshot(self, path):
         payload = dict(schema='pcb-t04-ladder-job-snapshot/1',
                        source_sha256=self.source_sha256,
                        source_json=self._raw.decode('utf-8'), resolved=self.resolved())
+        if self._eligibility is not None:
+            payload.update(schema='pcb-t04-ladder-job-snapshot/2',trace_eligibility_json=self._eligibility.decode())
         body = _json(payload)
         with Path(path).open('xb') as stream:
             stream.write(body)
@@ -114,16 +127,24 @@ def from_bytes(raw):
 
 
 def capture(path=DEFAULT_REGISTRY):
-    return from_bytes(Path(path).read_bytes())
+    from src.trace_growth_policy import capture as eligibility
+    settings=from_bytes(Path(path).read_bytes());policy=eligibility()
+    return replace(settings,_eligibility=policy.raw,source_sha256=hashlib.sha256(settings._raw+policy.raw).hexdigest())
 
 
 def read_snapshot(path):
     payload = _decode(Path(path).read_bytes())
+    version2=isinstance(payload,dict)and payload.get('schema')=='pcb-t04-ladder-job-snapshot/2'
+    keys={'schema', 'source_sha256', 'source_json', 'resolved'}|({'trace_eligibility_json'}if version2 else set())
     if (type(payload) is not dict
-            or set(payload) != {'schema', 'source_sha256', 'source_json', 'resolved'}
-            or payload['schema'] != 'pcb-t04-ladder-job-snapshot/1'):
+            or set(payload) != keys
+            or payload['schema'] not in('pcb-t04-ladder-job-snapshot/1','pcb-t04-ladder-job-snapshot/2')):
         raise ValueError('T04_SNAPSHOT_SCHEMA_CHANGED')
     policy = from_bytes(payload['source_json'].encode('utf-8'))
+    if version2:
+        from src.trace_growth_policy import Policy
+        eligibility=Policy(payload['trace_eligibility_json'].encode())
+        policy=replace(policy,_eligibility=eligibility.raw,source_sha256=hashlib.sha256(policy._raw+eligibility.raw).hexdigest())
     if (policy.source_sha256 != payload['source_sha256']
             or policy.resolved() != payload['resolved']):
         raise ValueError('T04_JOB_SNAPSHOT_CHANGED')

@@ -69,6 +69,9 @@ def offset_part(core,minimum_width,factor,envelope=False,*,extra_envelope_mm=0.,
     if not g.is_valid or not g.covers(core):raise ValueError('SOURCE_OFFSET_CORE_OR_GEOMETRY_CHANGED')
     return g
 def operands(store,scene):
+    if any(v.get('stage')=='verified-large-copper-trim-entry' for v in scene.get('lineage',())):
+        from .trimmed_entry import operands as trimmed_operands
+        return trimmed_operands(store,scene)
     if any('translated_route_alias' in r['metadata'] for r in scene['objects']):
         from .translated_profile import resolve_operands
         return resolve_operands(store,scene)
@@ -236,7 +239,7 @@ def width_admission(store,scene,*,loaded=None):
         if members&frame_ids:
             if not members<=frame_ids:raise ValueError('SOURCE_PATH_MIXES_TEMPORARY_FRAME_AND_FUNCTIONAL_CHANNEL')
             decisions.append(dict(path=p,disposition='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME',coverage_source_ids=sorted(members),exposed_area_mm2=0.));continue
-        core=unary_union([current[s]for s in sorted(members)]);near=[ids[int(i)]for i in tree.query(core,predicate='intersects')if ids[int(i)]not in members];cover=unary_union([current[s]for s in near]);covered=cover.covers(core)
+        core=unary_union([current[s]for s in sorted(members)]);near=[ids[int(i)]for i in tree.query(core,predicate='intersects')if ids[int(i)]not in members];cover=unary_union([current[s]for s in near]);covered=core.is_empty or cover.covers(core)
         if not covered and p['route_type']=='DEGENERATE_SOURCE_STROKE_CONTEXT':raise ValueError('EXPOSED_DEGENERATE_ROUTE_NOT_QUALIFIED')
         decisions.append(dict(path=p,disposition='KEEP_FULLY_COVERED'if covered else'ADMIT_COMPLETE_GERBER_ROUTE',coverage_source_ids=near,exposed_area_mm2=core.difference(cover).area))
         if not covered:admitted.append(p)

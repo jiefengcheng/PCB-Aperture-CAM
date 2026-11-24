@@ -8,12 +8,41 @@ No constructed contour is submitted to a clearance verifier.
 from time import perf_counter
 import math
 from shapely import STRtree,to_wkb
-from shapely.geometry import LineString
+from shapely.geometry import LineString,Point
 from shapely.ops import substring,unary_union
 from shapely.errors import GEOSException
 from .member_allocation import maximum_pair_packing
 from .limiting_math import GUARD,MARGIN,SHARED_LENGTH
 from . import pipeline as p
+
+
+def retain_attached_skin(body, original):
+    """Reject optional endpoint-buffer islands at their construction boundary.
+
+    An independently buffered true-end point can be outside the plotted chord
+    by more than a very small allocated growth. It then makes a separate disk,
+    not a widening skin. Never remove a source face, even below the error
+    bounds, and never silently discard a substantive disconnected proposal.
+    This uses only this member's operands; no scene search or clearance pass.
+    """
+    from src.component_voids import parts
+    from src.native_inventory import ERROR_MM
+    faces=parts(body);attached=[g for g in faces if g.intersects(original)]
+    pending=[g for g in faces if not g.intersects(original)]
+    while pending:
+        connected=[g for g in pending if any(g.intersects(a)for a in attached)]
+        if not connected:break
+        attached.extend(connected);ids={id(g)for g in connected}
+        pending=[g for g in pending if id(g)not in ids]
+    rejected=[dict(area_mm2=g.area,bounds_mm=list(g.bounds),wkb_hex=to_wkb(g).hex())for g in pending]
+    passed=all(g.area<=p.EPS and max(g.bounds[2]-g.bounds[0],g.bounds[3]-g.bounds[1])<=ERROR_MM for g in pending)
+    proof=dict(passed=passed,rejected_faces=len(pending),rejected=rejected,
+        source_faces_removed=0,native_area_error_mm2=p.EPS,native_coordinate_error_mm=ERROR_MM,
+        policy='SOURCE_ATTACHED_ARC_SKIN; REJECT_UNSUPPORTED_ENDPOINT_BUFFER_MICRO_FACES')
+    if not passed:
+        proof['reason']='UNATTACHED_ARC_SKIN_EXCEEDS_NATIVE_ERROR_BOUNDS'
+        return None,proof
+    return (unary_union(attached)if pending else body),proof
 
 
 def prepare(rows,original,material,groups,used,owner,roles,settings,width_caps,*,protected_domains=(),complete_members=False):
@@ -34,11 +63,23 @@ def prepare(rows,original,material,groups,used,owner,roles,settings,width_caps,*
             if path.length-2*reserve<SHARED_LENGTH:continue
             line=substring(path,reserve,path.length-reserve)
             try:
-                domain=line.buffer(w/2+cap+.11,cap_style=2,quad_segs=128)
+                domain=line.buffer(w/2+cap+.11,cap_style=1 if complete_members else 2,quad_segs=128)
                 if any(domain.envelope.intersects(d.envelope)for d in protected_domains):continue
                 side=[path.offset_curve(sign*w/2,quad_segs=128,join_style=1).intersection(domain)for sign in(-1,1)]
             except GEOSException:continue
             if any(g.is_empty or g.geom_type not in('LineString','MultiLineString')for g in side):continue
+            if complete_members:
+                # These are the same true-end normals later registered as
+                # frozen sections. Budget their source-cap points before
+                # allocation; an offset polyline's final noisy chord alone
+                # does not enclose a section on the native arc tangent.
+                from .arc_membership import tangent
+                points=md['route_points_mm'];ends=[]
+                for end,center in ((False,points[0]),(True,points[-1])):
+                    u=tangent(points,end)*( -1 if end else 1)
+                    ends.append((center,(-float(u[1]),float(u[0]))))
+                side=[unary_union([g,*[Point(c[0]+sign*n[0]*w/2,c[1]+sign*n[1]*w/2)
+                                       for c,n in ends]]) for sign,g in zip((-1,1),side)]
             members[s]=dict(width_mm=w,cap_mm=max(0.,cap),length_mm=path.length,
                 first_mm=reserve,last_mm=path.length-reserve,domain=domain,
                 original_core=original[s].intersection(domain),source_ref=rows[s]['original_ref'],
@@ -74,12 +115,21 @@ def prepare(rows,original,material,groups,used,owner,roles,settings,width_caps,*
                 deferred.append(dict(group_id=group['group_id'],source_id=s,reason='ARC_CORE_REPRESENTATION_FAILED',error=str(error)));continue
             if body.is_empty or not body.is_valid or body.geom_type not in('Polygon','MultiPolygon'):
                 deferred.append(dict(group_id=group['group_id'],source_id=s,reason='ARC_CORE_REPRESENTATION_INVALID'));continue
+            cap_proof=None
+            if complete_members:
+                from .arc_end_skin import retain_native_end_planes
+                body,cap_proof=retain_native_end_planes(body,m['original_core'],rows[s]['metadata']['route_points_mm'])
+            body,attachment=retain_attached_skin(body,m['original_core'])
+            if body is None:
+                deferred.append(dict(group_id=group['group_id'],source_id=s,
+                    reason='UNATTACHED_ARC_SKIN',attachment=attachment));continue
             cores[s]=dict(body=body,domain=m['domain'],first_mm=m['first_mm'],last_mm=m['last_mm'],
                           negative_growth_mm=growth[0],positive_growth_mm=growth[1],group_id=group['group_id'],
-                          complete_member=complete_members)
+                          complete_member=complete_members,end_skin=cap_proof,source_attachment=attachment)
             claimed.add(s);active.append(s)
             working[s]=unary_union([working[s],body])
         models.append(dict(group_id=group['group_id'],active_sources=active,allocation=allocation,witnesses=witnesses,
+            source_attachment={s:cores[s]['source_attachment']for s in active},
             source_members={s:{k:v for k,v in m.items()if k not in('domain','original_core')}for s,m in members.items()},
             rail_sha256={k:p.digest(to_wkb(g))for k,g in rails.items()},
             construction_guarantee='SOURCE_RAIL_BUFFER_ENCLOSURE_AND_PAIR_BUDGET_TRIANGLE_INEQUALITY',geometry_audit=False))

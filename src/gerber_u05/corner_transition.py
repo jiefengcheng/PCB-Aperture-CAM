@@ -4,7 +4,7 @@ Constructed groups are immutable supports. Only the new joint copper is
 clearance-verified. Native adjacency supplies the work list; one fixed scene
 index is shared by all proposals. No group search or original-copper union.
 """
-from collections import defaultdict
+from collections import defaultdict,ChainMap
 from time import perf_counter
 import math
 import numpy as np
@@ -58,18 +58,36 @@ def describe(rows,paths,straight_fields,frozen_straights,ribbons,arc_cores,*,sup
             d['points']=v['member_points_mm']if sign==1 else v['member_points_mm'][::-1]
             a,b=(v['negative_growth_mm'],v['positive_growth_mm'])if sign==1 else(v['positive_growth_mm'],v['negative_growth_mm'])
             d['offsets_mm']=[-w/2-a,w/2+b];d['member_id']=v['member_id']
+            d['member_source_ids']=v['member_source_ids']if sign==1 else v['member_source_ids'][::-1]
+            sections=[]
+            for end in (0,1):
+                center=np.asarray(d['points'][0 if end==0 else -1]);u=tangent(d['points'],bool(end))*(1 if end==0 else -1)
+                n=np.array([-u[1],u[0]])
+                sections.append(dict(normal=n.tolist(),lower_mm=(center+n*d['offsets_mm'][0]).tolist(),upper_mm=(center+n*d['offsets_mm'][1]).tolist()))
+            d['endpoint_sections']=sections
             stations=[interval['first_mm'],interval['last_mm']]
             if sign==-1:stations.reverse()
             d['real_endpoints']=[abs(t)<1e-10 or abs(t-v['member_length_mm'])<1e-10 for t in stations]
-        elif s in frozen_straights:d['fields']=straight_fields[s]['pieces']
+        elif s in frozen_straights:
+            d['fields']=straight_fields[s]['pieces']
+            p,n,_,_=frame(d['points']);sections=[]
+            for i,piece,k in ((0,d['fields'][0],0),(-1,d['fields'][-1],-1)):
+                low,high=[c[k]for c in piece['controls']]
+                sections.append(dict(normal=n[i].tolist(),lower_mm=(p[i]+n[i]*low).tolist(),upper_mm=(p[i]+n[i]*high).tolist()))
+            d['endpoint_sections']=sections
         elif s in ribbons:
             recipe=ribbons[s]
             if recipe.get('shared_residual_chain_id'):
                 forward=recipe['source_interval_mm']['forward'];d['points']=recipe['shared_chain_points_mm']if forward else recipe['shared_chain_points_mm'][::-1]
                 d['member_id']=recipe['shared_residual_chain_id'];d['real_endpoints']=recipe['real_endpoints']
+                d['member_source_ids']=recipe['member_source_ids']if forward else recipe['member_source_ids'][::-1]
                 proofs=recipe['shared_chain_side_field_proofs']
                 if not forward:proofs=[dict(q,controls=[c[::-1]for c in q['controls'][::-1]])for q in proofs[::-1]]
-            else:proofs=recipe['side_field_proofs']
+                sections=recipe.get('shared_chain_endpoint_sections')
+                if sections is not None:
+                    d['endpoint_sections']=sections if forward else [dict(normal=(-np.asarray(e['normal'])).tolist(),lower_mm=e['upper_mm'],upper_mm=e['lower_mm'])for e in sections[::-1]]
+            else:
+                proofs=recipe['side_field_proofs'];d['endpoint_sections']=recipe['endpoint_sections']
             fields=[];first=0.
             for proof in proofs:
                 length=proof['length_mm'];negative,positive=proof['controls']
@@ -89,22 +107,38 @@ def joint_frame(desc,points,*,extra_stations=()):
     direction into the unchanged interior frame; never refit source points,
     sparse polylines, or straight corners.
     """
-    if not desc.get('stabilize_joint_frame')or len(points)<8:return frame(points,extra_stations=extra_stations)
     length=LineString(points).length;span=min(.02,length*.1)
-    pts,n,stations,_=frame(points,extra_stations=[span,length-span,*extra_stations])
-    for end in (0,1):
-        u=tangent(points,bool(end));normal=np.array([-u[1],u[0]])*(1 if end==0 else-1)
-        distance=stations if end==0 else length-stations
-        interior=n[int(np.argmin(abs(distance-span)))].copy();interior/=np.linalg.norm(interior)
-        for i in np.flatnonzero(distance<span):
-            a=value(controls(0.,1.),min(1.,max(0.,float(distance[i]/span))))
-            v=(1-a)*normal+a*interior;n[i]=v/np.linalg.norm(v)
+    stabilize=desc.get('stabilize_joint_frame')and len(points)>=8 and not desc.get('endpoint_sections')
+    pts,n,stations,_=frame(points,extra_stations=[span,length-span,*extra_stations]if stabilize else extra_stations)
+    if stabilize:
+        for end in (0,1):
+            u=tangent(points,bool(end));normal=np.array([-u[1],u[0]])*(1 if end==0 else-1)
+            distance=stations if end==0 else length-stations
+            interior=n[int(np.argmin(abs(distance-span)))].copy();interior/=np.linalg.norm(interior)
+            for i in np.flatnonzero(distance<span):
+                a=value(controls(0.,1.),min(1.,max(0.,float(distance[i]/span))))
+                v=(1-a)*normal+a*interior;n[i]=v/np.linalg.norm(v)
+    # A receipt's exact section was already used to emit this copper. A raw
+    # plotting-end chord must not invent a different corner or joint frame.
+    sections=desc.get('endpoint_sections')
+    if sections:
+        reverse=tuple(points[0])==tuple(desc['points'][-1])
+        for i,section in zip((0,-1),sections[::-1]if reverse else sections):
+            normal=np.asarray(section['normal'])*(-1 if reverse else 1)
+            n[i]=normal
+    elif desc.get('endpoint_normals'):
+        reverse=tuple(points[0])==tuple(desc['points'][-1])
+        for i,normal in zip((0,-1),desc['endpoint_normals'][::-1]if reverse else desc['endpoint_normals']):
+            if normal is not None:n[i]=np.asarray(normal)*(-1 if reverse else 1)
     return pts,n,stations,length
 
 
 def corners(desc,endpoint,*,skin=True):
     pts,n,_,_=joint_frame(desc,oriented(desc,endpoint));low,high=offsets(desc,0.,endpoint)
-    values=[pts[0]+n[0]*low,pts[0]+n[0]*high]
+    section=desc.get('endpoint_sections',[])
+    if section:
+        section=section[endpoint];values=[np.asarray(section[k])for k in (('lower_mm','upper_mm')if endpoint==0 else('upper_mm','lower_mm'))]
+    else:values=[pts[0]+n[0]*low,pts[0]+n[0]*high]
     if skin and 'support'in desc:
         # Anchor inside the actual frozen skin, with the same 20 nm overlap
         # used by source assembly. This is a boundary read, not a group audit.
@@ -148,13 +182,15 @@ def propose(receiver,endpoint,donor_corner,side,length,*,maximum_reach_mm=.11,ma
     transported=unit*dn+tangent*dt
     expanded=pts+(base-pts)*(1-alpha[:,None])+transported*alpha[:,None]
     bump=expanded-base
-    # A common convex control field points outwards along every native normal.
-    # This is a source-frame construction precondition, not a contour audit.
+    # Check the transported rail in its native moving frame. A fixed world
+    # delta rotates inward on a valid curved continuation. Crossing underneath
+    # a wider frozen skin is also harmless: the output only adds to that skin.
+    # The side rail itself must never cross the native centerline.
     signs=normals*(-1 if side==0 else 1)
-    if min(float(sign@delta)for sign in signs)<-ERROR_MM:raise ValueError('CORNER_FIELD_TURNS_INWARD')
+    if min(float(sign@vector)for sign,vector in zip(signs,expanded-pts))<-ERROR_MM:raise ValueError('CORNER_FIELD_TURNS_INWARD')
     source_half=receiver['source_width_mm']/2
     bound=max(float(np.linalg.norm(b-p))for b,p in zip(expanded,pts))-source_half
-    if bound>maximum_reach_mm+1e-12:raise ValueError('CORNER_TRANSITION_REACH_OUTLIER')
+    raw_reach=bound
     envelope_radius=max(max(float(np.linalg.norm(b-p))for b,p in zip(base,pts)),float(np.linalg.norm(np.asarray(donor_corner)-pts[0])))
     # Measure the joined endpoint envelope against the source path, rather
     # than pairing a translated curved face with one arbitrary station.
@@ -171,6 +207,14 @@ def propose(receiver,endpoint,donor_corner,side,length,*,maximum_reach_mm=.11,ma
         shape=unary_union([Polygon([backing,pts[0],expanded[0]]).convex_hull,*[Polygon([pts[i],pts[i+1],expanded[i+1],expanded[i]]).convex_hull for i in range(len(base)-1)]])
     shape=polygonal(shape)
     if shape.is_empty or not shape.is_valid:raise ValueError('CORNER_TRANSITION_NOT_FINITE')
+    if bound>maximum_reach_mm+1e-12:
+        # Existing frozen skin can be wide where a member curves back beside
+        # itself. Only a NEW surface is subject to this constructor's reach;
+        # re-measuring the existing support must not reject a local blend.
+        positive=shape.difference(receiver.get('support',Polygon()))
+        limit=path.buffer(source_half+maximum_reach_mm,quad_segs=128)
+        if not positive.is_empty and not limit.covers(positive):raise ValueError('CORNER_TRANSITION_REACH_OUTLIER')
+        bound=maximum_reach_mm
     return shape,dict(schema='t04-larger-corner-transition/1',side=side,length_mm=length,
         start_corner_mm=np.asarray(donor_corner).tolist(),end_correction_mm=[0.,0.],
         initial_correction_controls_mm=cs,blend_controls=[1.,1.,0.,0.],blend_endpoint_derivatives=[0.,0.],
@@ -181,6 +225,7 @@ def propose(receiver,endpoint,donor_corner,side,length,*,maximum_reach_mm=.11,ma
         endpoint_step_slope_limit_mm_per_mm=maximum_slope,
         input_face_envelope_radius_mm=envelope_radius,
         extra_reach_bound_mm=bound,extra_reach_limit_mm=maximum_reach_mm,
+        input_skin_raw_reach_mm=raw_reach,reach_scope='POSITIVE_ADDITION; EXISTING_SUPPORT_UNCHANGED',
         source_path_changed=False,group_copper_changed=False,geometry_audit=False,
         width_scope='EXISTING_JOINED_ENDPOINT_ENVELOPE; SEGMENT_INTERIOR_CAPS_UNCHANGED')
 
@@ -210,10 +255,47 @@ def skin_fill(support,path,window,face_radius,*,radius=.05,maximum_depth=.005):
     return polygonal(addition.intersection(corridor).intersection(support.buffer(maximum_depth,quad_segs=128)))
 
 
+def attached_skin(support,proposal):
+    """A generated skin may not introduce an ungrounded positive component.
+
+    Boolean closing/backing can mint a long, vanishingly thin duplicate edge.
+    Reject only detached optional faces below BOTH native area and thickness
+    resolution, retaining their evidence. A substantive detached proposal is
+    deferred whole. The immutable support is never edited or buffered as output.
+    """
+    faces=parts(proposal);attached=[g for g in faces if g.intersects(support)]
+    pending=[g for g in faces if not g.intersects(support)]
+    while pending:
+        joined=[g for g in pending if any(g.intersects(a)for a in attached)]
+        if not joined:break
+        attached.extend(joined);ids={id(g)for g in joined};pending=[g for g in pending if id(g)not in ids]
+    rejected=[dict(area_mm2=g.area,bounds_mm=list(g.bounds),wkb_hex=to_wkb(g).hex())for g in pending]
+    passed=all(g.area<=ERROR_MM**2 and g.buffer(-ERROR_MM,quad_segs=32).is_empty for g in pending)
+    proof=dict(passed=passed,rejected_optional_faces=rejected,source_faces_removed=0,
+               native_area_bound_mm2=ERROR_MM**2,native_thickness_bound_mm=2*ERROR_MM)
+    if not passed:return None,proof
+    if not pending:return proposal,proof
+    # Retain exact component contours; re-unioning them can mint another sliver.
+    from shapely.geometry import MultiPolygon
+    return (attached[0]if len(attached)==1 else MultiPolygon(attached)if attached else Polygon()),proof
+
+
 def new_pocket_regions(before,after):
     """Reuse the void kernel for pockets enclosed by new joint copper only."""
-    new=polygonal(unary_union(holes(after)).difference(unary_union(holes(before))))
-    return [g for g in parts(new)if g.area>ERROR_MM**2]
+    old=holes(before);current=holes(after)
+    new=polygonal(unary_union(current).difference(unary_union(old)))
+    result=[g for g in parts(new)if g.area>ERROR_MM**2]
+    # A bridge inside an already bounded source void can isolate a new small
+    # pocket without creating any new void AREA. Preserve the largest ongoing
+    # opening and report each extra disconnected descendant of the old void.
+    # Merely shrinking one old opening is not a newly enclosed pocket.
+    for original_void in old:
+        descendants=[g for g in current if g.intersection(original_void).area>ERROR_MM**2]
+        if len(descendants)<2:continue
+        descendants.sort(key=lambda g:(-g.area,g.bounds))
+        for g in descendants[1:]:
+            if g.area>ERROR_MM**2 and not any(g.equals(v)for v in result):result.append(g)
+    return result
 
 
 def joined_cap_envelope(descriptors,ends,radius):
@@ -277,6 +359,17 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
         for target,end,donor,de in((a,ae,b,be),(b,be,a,ae)):
             if target in covered:continue
             receive=descriptors[target];other=descriptors[donor]
+            if not receive.get('endpoint_sections')and other.get('endpoint_sections'):
+                # An unconstructed tiny connector has no emitted endpoint
+                # frame of its own. Inherit the adjoining frozen frame, as
+                # the ribbon constructor does, while retaining its ACTUAL
+                # narrow skin. This must still discover and construct the
+                # missing taper; it grants no coverage or clearance pass.
+                normal=np.asarray(other['endpoint_sections'][de]['normal'])
+                _,native,_,_=frame(receive['points']);index=0 if end==0 else -1
+                if float(normal@native[index])<0:normal=-normal
+                normals=[None,None];normals[end]=normal.tolist()
+                receive=dict(receive,endpoint_normals=normals)
             if receive.get('route_kind')==other.get('route_kind')=='arc':
                 # Arc-to-arc endpoint chords carry plotting noise. Reuse the
                 # catalogue tangent for this joint field, never for a group
@@ -287,25 +380,35 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
             declared_small,_=corners(receive,end,skin=False);declared_large,_=corners(other,de,skin=False)
             donor_points=np.asarray(oriented(other,de));du=donor_points[1]-donor_points[0];du/=np.linalg.norm(du)
             donor_backing=donor_points[0]+du*2*ERROR_MM
-            available=LineString(receive['points']).length
             for side,sign in((0,-1),(1,1)):
                 outward=n*sign;big=max(large,key=lambda p:float(p@outward));difference=float((big-small[side])@outward)
                 if max(float((v-declared_small[side])@outward)for v in declared_large)<=ERROR_MM and difference<=10*ERROR_MM:continue
                 if difference<=ERROR_MM:continue
+                required=max(2*ERROR_MM,1.5*float(np.linalg.norm(big-small[side]))/.25)
+                span_receive=receive;span_end=end
+                available=LineString(receive['points']).length
+                if required>available+1e-12:
+                    from .joint_receiver_chain import extend
+                    extension=extend(rows,[s for s in paths[route] if s not in covered],ChainMap({target:receive},descriptors),target,end,required)
+                    if extension is not None:
+                        if any(owner(s)!=owner(target) for s in extension['joint_receiver_source_ids']):
+                            raise ValueError('NATIVE_RECEIVER_CHAIN_OWNER_CHANGED')
+                        span_receive=extension;span_end=0
+                        available=LineString(extension['points']).length
                 # Only reserve half a face when its opposite true end also
                 # needs an incoming taper. The group search length is not a
                 # lower bound on a joint's taper span.
-                other_end=1-end;other_small,other_n=corners(receive,other_end)
+                other_end=1-span_end;other_small,other_n=corners(span_receive,other_end)
                 physical_side=1-side;competing=False
-                other_pt=tuple(round(v,10)for v in rows[target]['metadata']['route_points_mm'][other_end])
-                if receive.get('real_endpoints',[True,True])[other_end]:
+                other_pt=tuple(round(v,10)for v in oriented(span_receive,span_end)[-1])
+                if span_receive.get('real_endpoints',[True,True])[other_end]:
                     for neighbor,ne in nodes.get((route,other_pt),[]):
-                        if neighbor==target:continue
+                        if neighbor in span_receive.get('joint_receiver_source_ids',[target]):continue
                         neighbor_corners,_=corners(descriptors[neighbor],ne,skin=False)
                         direction=other_n*(-1 if physical_side==0 else 1)
                         competing=any(float((v-other_small[physical_side])@direction)>ERROR_MM for v in neighbor_corners)
                 span=available/2 if competing else available
-                required=max(2*ERROR_MM,1.5*float(np.linalg.norm(big-small[side]))/.25)
+                if span_receive is not receive:span=min(span,required)
                 lengths=[span]
                 while lengths[-1]/2>required:lengths.append(lengths[-1]/2)
                 lengths=sorted(set([*lengths,required]),reverse=True)
@@ -323,9 +426,23 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
                 limited=None
                 for length,slope_limit in trials:
                     if length>span+1e-12:continue
-                    try:shape,recipe=propose(receive,end,big,side,length,maximum_reach_mm=maximum_reach_mm,maximum_slope=slope_limit,donor_backing=donor_backing)
+                    try:shape,recipe=propose(span_receive,span_end,big,side,length,maximum_reach_mm=maximum_reach_mm,maximum_slope=slope_limit,donor_backing=donor_backing)
                     except ValueError as error:
+                        if str(error)=='NO_LARGER_EXPOSED_CORNER'and span_receive is not receive and 'support'in span_receive:
+                            # The longer native span may already supply the
+                            # requested section through another occurrence.
+                            # Prove its entire section and inward continuation;
+                            # a projected corner coordinate alone is not proof.
+                            pts=np.asarray(oriented(span_receive,span_end));u=pts[1]-pts[0];u/=np.linalg.norm(u)
+                            line=LineString(declared_large);inside=LineString([v+u*2*ERROR_MM for v in declared_large])
+                            support=span_receive['support'].buffer(ERROR_MM,quad_segs=128)
+                            if support.covers(line)and support.covers(inside):
+                                record.update(status='ALREADY_COVERED',coverage_scope='COMPLETE_NATIVE_SECTION_AND_INWARD_SECTION_IN_EXISTING_ROUTE_SPAN',
+                                    joint_receiver_source_ids=span_receive['joint_receiver_source_ids']);break
                         record['attempts'].append(dict(length_mm=length,passed=False,reasons=[str(error)]));continue
+                    if 'joint_receiver_source_ids' in span_receive:
+                        recipe=dict(recipe,joint_receiver_source_ids=span_receive['joint_receiver_source_ids'],
+                                    source_seams_are_not_taper_boundaries=True)
                     window=shape.envelope.buffer(GUARD+2*MARGIN);near=sorted(map(int,tree.query(window)))
                     own=owner(target);same=[material[ids[i]].intersection(shape.envelope.buffer(ERROR_MM))for i in near if owner(ids[i])==own]
                     same.extend(p['geometry'].intersection(shape.envelope.buffer(ERROR_MM))for p in patches if p['owner']==own and p['geometry'].envelope.intersects(window))
@@ -356,7 +473,7 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
                     barriers=[clearance_barrier(r['geometry'],GUARD+2*MARGIN)for r in fixed]
                     barriers.extend(protected_domains)
                     clipped=polygonal(shape.difference(unary_union(barriers)))
-                    route_support=unary_union([receive.get('support',material.get(target,Polygon())),
+                    route_support=unary_union([span_receive.get('support',material.get(target,Polygon())),
                         other.get('support',material.get(donor,Polygon())),
                         *[p['geometry']for p in patches if p['route_id']==route and p['geometry'].envelope.intersects(shape.envelope)]])
                     backed=polygonal(unary_union([clipped,shape.intersection(route_support)]))
@@ -408,8 +525,11 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
         path=unary_union([LineString(descriptors[s]['points'])for s,_ in ends])
         addition=skin_fill(support,path,window,reach,radius=radius,maximum_depth=depth)
         if addition.is_empty or addition.area<=1e-14:skin_reports.append(record);continue
-        if addition.difference(support.buffer(ERROR_MM,quad_segs=128)).is_empty:
-            skin_reports.append(record);continue
+        # Apply the established native-error skin predicate to EACH face;
+        # meaningful copper elsewhere must not admit a numerical duplicate edge.
+        near_skin=support.buffer(ERROR_MM,quad_segs=128)
+        addition=polygonal(unary_union([g for g in parts(addition)if not g.difference(near_skin).is_empty]))
+        if addition.is_empty:skin_reports.append(record);continue
         fixed=[dict(id=ids[i],geometry=material[ids[i]])for i in near if owner(ids[i])!=own]
         fixed.extend(dict(id='joint:'+str(i),geometry=p['geometry'])for i,p in enumerate(patches)if p['owner']!=own and p['geometry'].envelope.intersects(prep))
         check=verify_patch(addition,fixed)
@@ -424,6 +544,11 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
         # Keep a redundant supported overlap as an assembly operand, just as
         # for the larger-corner fields. The positive delta alone is checked.
         backed=polygonal(unary_union([addition,support.intersection(addition.buffer(2*ERROR_MM,quad_segs=128))]))
+        backed,attachment=attached_skin(support,backed)
+        record['attachment']=attachment
+        if backed is None:
+            record['status']='KEEP_DISCONNECTED_ADDITION';skin_reports.append(record);continue
+        if backed.is_empty:skin_reports.append(record);continue
         recipe=dict(schema='t04-native-joint-skin-closure/1',radius_mm=radius,shoulder_mm=shoulder,maximum_depth_mm=depth,
                     input_face_envelope_radius_mm=reach,clearance_limited=limited,source_path_changed=False,
                     group_copper_changed=False,geometry_audit=False,assembly_overlap_mm=2*ERROR_MM,

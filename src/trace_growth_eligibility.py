@@ -9,7 +9,7 @@ import math
 from shapely import to_wkb
 from shapely.ops import unary_union
 
-VERSION = 'source-stroke-fully-covered-exclusion/4'
+VERSION = 'source-stroke-fully-covered-exclusion/5'
 
 
 def _valid(geometry):
@@ -96,6 +96,14 @@ def classify_stroke(source_id, geometry, width_mm, kind, neighbors, *, fill_witn
             operands.append(other)
     other_copper = unary_union(operands)
     exposed = geometry.difference(other_copper)
+    exact_coverage=other_copper.covers(geometry)
+    # A coincident-edge overlay can leave a vanishingly thin positive face.
+    # Both established native bounds must hold; an area-only test could hide
+    # a real remote tip. Source and covering operands remain unchanged.
+    from src.native_inventory import ERROR_MM
+    from src.gerber_u05.pipeline import EPS
+    resolution_coverage=(not exact_coverage and exposed.area<=EPS and
+        other_copper.buffer(ERROR_MM,quad_segs=128).covers(geometry))
     fraction = exposed.area / geometry.area
     scope_fraction = None
     scope_fully_covered = False
@@ -106,8 +114,9 @@ def classify_stroke(source_id, geometry, width_mm, kind, neighbors, *, fill_witn
             scope_fraction = exposed.intersection(eligibility_scope).area / local.area
             scope_fully_covered = other_copper.covers(local)
     reasons = []
-    if other_copper.covers(geometry):
+    if exact_coverage:
         reasons.append('FULLY_COVERED_BY_OTHER_EXISTING_COPPER')
+    elif resolution_coverage:reasons.append('COVERED_WITHIN_NATIVE_AREA_AND_COORDINATE_RESOLUTION')
     if scope_fully_covered:
         reasons.append('FULLY_COVERED_WITHIN_ELIGIBILITY_SCOPE')
     if fill_witness is not None:
@@ -127,7 +136,10 @@ def classify_stroke(source_id, geometry, width_mm, kind, neighbors, *, fill_witn
                 ignored_same_trace_source_ids=[],
                 same_trace_neighbor_ids=sorted(ignored_continuations),
                 coverage_source_ids=sorted(identities - set(aliases)),
-                fully_covered=other_copper.covers(geometry),
+                fully_covered=exact_coverage or resolution_coverage,
+                exact_geometry_coverage=exact_coverage,
+                native_resolution_coverage=dict(passed=resolution_coverage,
+                    area_bound_mm2=EPS,coordinate_bound_mm=ERROR_MM),
                 scope_fully_covered=scope_fully_covered,
                 partial_overlap_rule='RETAIN_ELIGIBILITY_AND_ESTABLISHED_COMMON_TRACE_GROUP_SCALE',
                 geometry_changes='NONE', qualification='PROVISIONAL_ELIGIBILITY_NOT_CLEARANCE_ACCEPTANCE')

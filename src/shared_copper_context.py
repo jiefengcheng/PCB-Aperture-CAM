@@ -92,6 +92,22 @@ class Revision:
         return own[0], self.owners[own[0]]
 
 
+class SourceQueryView:
+    """Borrowed transient contributions, never an ownership/acceptance revision.
+
+    Local validation needs exact neighbours and changed bounds, not a second
+    persisted owner partition and removed/added WKB for the entire candidate.
+    Native source and overlay queries use the context's existing implementation.
+    """
+    def __init__(self,context,key,values):
+        self.context,self.key=context,key
+        self.values=MappingProxyType(values);self._tree=None
+    def sources(self,window,*,predicate='intersects'):
+        return self.context.sources(self,window,predicate=predicate)
+    def owner(self,*args):
+        raise ValueError('QUERY_VIEW_HAS_NO_VERIFIED_OWNERSHIP')
+
+
 class CopperContext:
     """A single explicitly owned, bounded context per loaded board.
 
@@ -331,6 +347,7 @@ class CopperContext:
         """Publish a batch; unchanged owners and source index remain shared."""
         self._check()
         parent = self.source if parent is None else parent
+        if not isinstance(parent,Revision):raise ValueError('SHARED_COPPER_VERIFIED_PARENT_REQUIRED')
         if parent.context is not self: raise ValueError('SHARED_COPPER_FOREIGN_REVISION')
         changes = dict(changes or {})
         if not changes.keys() <= parent.values.keys():
@@ -401,6 +418,57 @@ class CopperContext:
         self.stats['source_queries'] += 1
         return tuple(sorted(hits, key=self.ordinal.__getitem__))
 
+    def query_view(self, values):
+        """Reuse source preparation for an unaccepted, caller-owned candidate."""
+        self._check()
+        if tuple(values)!=self.ids:raise ValueError('SHARED_COPPER_QUERY_INVENTORY_CHANGED')
+        keys={s:geometry_key(polygon(g))for s,g in values.items()}
+        key=digest(encoded([self.key,list(keys.items())]))
+        views=getattr(self,'query_views',None)
+        if views is None:self.query_views=views={}
+        if key not in views:
+            borrowed={s:self._retain(g,borrowed=True)for s,g in values.items()}
+            views[key]=SourceQueryView(self,key,borrowed)
+            self.stats['transient_source_query_views']+=1
+        else:self.stats['transient_source_query_view_hits']+=1
+        return views[key]
+
+    def prepared_subset(self, revision, source_ids):
+        """One revision-bound material image for a maintained source role.
+
+        This is shared preparation, not an owner partition or an acceptance
+        result. It borrows the ordered contributions and builds no new tree.
+        Both the selected role inventory and every selected operand are bound
+        on disk, so a revision (including growth outside old bounds) cannot
+        reuse an old image. Unchanged calls within a worker return the resident
+        geometry; a restart authenticates the saved preparation.
+        """
+        self._check()
+        if revision.context is not self:raise ValueError('SHARED_COPPER_FOREIGN_REVISION')
+        selected=set(source_ids)
+        if not selected<=revision.values.keys():raise ValueError('SHARED_COPPER_SUBSET_INVENTORY_CHANGED')
+        ids=[s for s in self.ids if s in selected]
+        binding=dict(schema='shared-copper-source-subset/1',revision=revision.key,
+                     sources=[[s,geometry_key(revision.values[s])]for s in ids])
+        key=digest(encoded(binding));subsets=getattr(self,'source_subsets',None)
+        if subsets is None:self.source_subsets=subsets={}
+        if key in subsets:
+            self.stats['source_subset_resident_hits']+=1
+            return subsets[key]
+        with self.lock,self._publication_lock():
+            path=self.directory/'source_subsets'/(key+'.json.gz')
+            if path.exists():
+                record=self._read(path)
+                if record['binding']!=binding:raise ValueError('SHARED_COPPER_SUBSET_BINDING_CHANGED')
+                shape=self._load_geometry(record['geometry'])
+                self.stats['source_subset_warm_loads']+=1
+            else:
+                shape=polygon(unary_union([revision.values[s]for s in ids]))if ids else Polygon()
+                self.stats['source_subset_unions']+=1
+                self._write(path,dict(binding=binding,geometry=self._geometry(shape)))
+            subsets[key]=shape
+            return shape
+
     def boundary_index(self, shape):
         """Delegate to the EXISTING shared T02/T05 boundary implementation."""
         self._check()
@@ -448,6 +516,10 @@ class CopperContext:
     def close(self):
         for revision in self.revisions.values(): revision._tree=None;revision._image=None
         if hasattr(self,'pad_fill_preparation'):self.pad_fill_preparation.clear()
+        if hasattr(self,'source_subsets'):self.source_subsets.clear()
+        if hasattr(self,'query_views'):
+            for view in self.query_views.values():view._tree=None
+            self.query_views.clear()
         self.boundary_preparation.close(); self.shapes.clear(); self.revisions.clear()
         if self.native_engine is not None:self.native_engine.close();self.native_engine=None
         self.source_tree = None

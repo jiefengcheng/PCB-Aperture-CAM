@@ -24,7 +24,7 @@ def native_board_selection(native):
     return sorted(ids),dispositions
 
 
-def run(store, scene, *, route_ids, settings, rule):
+def run(store, scene, *, route_ids, settings, rule, copper=None):
     board_diagnostic=(rule['scope']=='FULL_BOARD_DIAGNOSTIC' and rule.get('full_board_diagnostic')is True)
     if board_diagnostic:
         if route_ids is not None or not rule.get('hybrid_components'):
@@ -32,10 +32,20 @@ def run(store, scene, *, route_ids, settings, rule):
     elif rule['scope'] != 'BOUNDED' or not route_ids:
         raise ValueError('T04_GROUP_INCREMENT_BOUNDED_ONLY')
     started = perf_counter();loaded = p.operands(store, scene)
+    if rule.get('trimmed_entry') is not None:
+        from .trimmed_entry import constructor_operands
+        loaded = constructor_operands(loaded, rule['trimmed_entry'])
     rows, current, original = loaded
     context = sc.ACTIVE if sc.ACTIVE is not None else cc.ACTIVE
     if context is None:raise ValueError('T04_SOURCE_OWNER_CONTEXT_REQUIRED')
-    roles, native, source_binding = prepare_or_load(rule['source_preparation'], store, scene, loaded, context.index)
+    if 'bounded_order_source_binding' in rule:
+        from .bounded_order import prepare_original, SCHEMA
+        if rule['input_binding'].get('schema') != SCHEMA or board_diagnostic:
+            raise ValueError('T04_BOUNDED_ORDER_SEPARATE_SOURCE_CUSTODY_REQUIRED')
+        roles, native, source_binding = prepare_original(rule['source_preparation'], store, scene,
+            rule['bounded_order_source_binding'], context.index)
+    else:
+        roles, native, source_binding = prepare_or_load(rule['source_preparation'], store, scene, loaded, context.index)
     admission = project(native, roles)
     native_ids = {v['path_id'] for v in native['admitted']}
     if board_diagnostic:
@@ -47,13 +57,24 @@ def run(store, scene, *, route_ids, settings, rule):
     from .durable_groups import prepare as durable_members,source_catalogue
     from .covered_traces import prepare as covered_traces
     artifact_root=p.ROOT/'out/lacie_work/source_artifacts'
+    from src import trace_growth_policy
+    trace_policy=trace_growth_policy.for_job(store)
+    all_native_paths={v['path_id']:v['source_ids']for v in admission['admitted']}
+    eligibility,eligibility_preparation=trace_growth_policy.prepare(
+        rule.get('trace_policy_cache',artifact_root/'t04_trace_eligibility'),scene,rows,current,all_native_paths,trace_policy,copper=copper)
+    selected_sources={s for ss in native_paths.values()for s in ss}
+    fixed_reasons={s:why for s,why in eligibility['keep_source_reasons'].items()if s in selected_sources}
+    fixed_sources=set(eligibility['fixed_source_ids'])
+    editable_roles={s:v for s,v in roles.items()if s not in fixed_sources}
     tick=perf_counter()
     straight,curves,group_binding,relationship_preparation=source_catalogue(
         rule.get('relationship_cache_root',artifact_root/'t04_parallel_relationships'),
         store,scene,rows,admission,roles,rule,catalogue)
     membership,member_binding,member_hit=durable_members(rule.get('member_cache',artifact_root/'t04_parallel_members'),straight,curves,group_binding)
     member_preparation=dict(wall_s=perf_counter()-tick,cache_hit=member_hit,relationships=relationship_preparation)
-    paths,coverage,coverage_preparation=covered_traces(rule.get('coverage_cache',artifact_root/'t04_trace_coverage'),scene,rows,current,native_paths)
+    paths,coverage,coverage_preparation=covered_traces(rule.get('coverage_cache',artifact_root/'t04_trace_coverage'),scene,rows,current,native_paths,
+        original=original,keep_source_ids=rule.get('keep_source_ids',()),fixed_source_reasons=fixed_reasons,
+        authorized_empty_ids=[s for s,g in current.items()if g.is_empty] if rule.get('trimmed_entry') else ())
     from .arc_catalogue import prepare as maximal_arcs
     tick=perf_counter()
     arc_members,arc_binding,arc_hit=maximal_arcs(rule.get('arc_member_cache',artifact_root/'t04_maximal_arcs'),straight,curves,member_binding)
@@ -62,7 +83,7 @@ def run(store, scene, *, route_ids, settings, rule):
     # Straight members are frozen first. Later residual growth must respect
     # them; reserving hypothetical future motion here suppresses legal faces.
     anchored=bool(rule.get('hybrid_components'))
-    boundary = SourceBoundaries(current, roles, rows, {s for ss in paths.values() for s in ss},protected_domains=protected,
+    boundary = SourceBoundaries(current, editable_roles, rows, {s for ss in paths.values() for s in ss},protected_domains=protected,
                                 reserve_mutable_growth=not anchored,defer_close_sources=anchored)
     active_sources={s for members in paths.values()for s in members}
     whole_exposed_routes=[r for r,ss in native_paths.items()if set(ss)<=active_sources]
@@ -90,6 +111,7 @@ def run(store, scene, *, route_ids, settings, rule):
                   arc_catalogue_preparation=arc_preparation,
                   catalogue_preparation=member_preparation,
                   covered_trace_projection=coverage,coverage_preparation=coverage_preparation,
+                  trace_eligibility_policy=eligibility,trace_eligibility_preparation=eligibility_preparation,
                   native_trace_source_ids_by_route=native_paths,
                   source_preparation_binding=source_binding,
                   growth_source_ids_by_route=paths,
@@ -106,10 +128,12 @@ def run(store, scene, *, route_ids, settings, rule):
                   stage_construction_wall_s=perf_counter()-started)
     # No completed scene, native acceptance verdict or inherited proof tip.
     if rule.get('hybrid_components'):
+        if rule.get('trimmed_entry') is not None:result['trimmed_entry']=rule['trimmed_entry']
         from .group_components import run as components
         result['phase_order']=['STRAIGHT_GROUPS','ARC_GROUPS','DEFAULT_SEARCH_AND_VERIFY']
         result['straight_priority']='FROZEN_BEFORE_ARC_AND_DEFAULT_GROWTH; NO_REVERSE_CAP_REDUCTION'
         result['corner_smoothing']=True
+        result['smooth_route_profiles']=trace_policy.value.get('smooth_native_route_profiles',False)
         if rule.get('residual_end_matching'):
             # Both flags are explicit opt-ins. Chain matching extends the old
             # nominal-only reference path; it does not enable itself merely
@@ -117,8 +141,16 @@ def run(store, scene, *, route_ids, settings, rule):
             result['residual_end_matching']=dict(deviation=rule.get('residual_end_deviation',.1))
             if rule.get('residual_chain_matching'):result['residual_end_matching']['chain_matching']=True
         if rule.get('wide_end_trimming'):result['wide_end_trimming']=True
-        result['hybrid_components']=components(rows,current,original,roles,paths,result,settings,context,
-                                               progress=rule.get('progress'),continuous=True,coherent_pose=True)
+        result['hybrid_components']=components(rows,current,original,editable_roles,paths,result,settings,context,
+                                               progress=rule.get('progress'),continuous=True,coherent_pose=True,copper=copper)
+        constructed=result['hybrid_components']
+        # Coverage is an independent KEEP reason even when the provisional
+        # connected-component exclusion is disabled. Audit both serialized maps.
+        for source in set(eligibility['fixed_source_ids']) | set(coverage['covered_source_ids']):
+            for container in ('continuous_source_bodies','changed_bulk_copper'):
+                record=constructed.get(container,{}).get(source)
+                if record is not None and record['wkb_hex']!=p.to_wkb(current[source]).hex():
+                    raise ValueError('T04_GLOBAL_KEEP_CONTOUR_CHANGED:'+source)
         result['continuous_source_profiles']=source_profiles(rows,paths,result)
         result['stage_construction_wall_s']=perf_counter()-started
     if board_diagnostic:

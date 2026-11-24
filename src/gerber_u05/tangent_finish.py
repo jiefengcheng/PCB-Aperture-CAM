@@ -123,8 +123,31 @@ def face_cut(support,center,u,window,protected,*,radius=.05,maximum_depth=.005):
     return polygonal(unary_union(cuts))
 
 
+def _local_joint_cut(support,pt,u,window,protected):
+    """Untrusted optional subtraction: failure leaves all source bodies intact."""
+    cut=face_cut(support,pt,u,window,protected)
+    if cut.is_empty:return cut
+    def candidate_for(mask):
+        candidate=polygonal(support.difference(mask))
+        if not candidate.is_valid or candidate.geom_type not in ('Polygon','MultiPolygon'):
+            error=ValueError('INVALID_NATIVE_TANGENT_DIFFERENCE')
+            error.rejected_candidate_wkb_hex=to_wkb(candidate).hex()
+            raise error
+        return candidate
+    candidate=candidate_for(cut);components=parts(candidate)
+    detached=[g for g in components if g.intersection(protected).area<=ERROR_MM**2]
+    if any(g.area>.005**2 or not window.buffer(ERROR_MM).covers(g)for g in detached):return Polygon()
+    if detached:
+        cut=polygonal(unary_union([cut,*detached]));candidate=candidate_for(cut)
+    if len(parts(candidate))>len(parts(support)):return Polygon()
+    old_holes=unary_union(holes(support));new_holes=unary_union(holes(candidate)).difference(old_holes)
+    if new_holes.area>ERROR_MM**2:return Polygon()
+    return cut
+
+
 def run(rows,paths,bodies,descriptors,fixed_groups,*,covered=(),source_cores=None):
-    started=perf_counter();covered=set(covered);nodes=defaultdict(list);cuts={};reports=[]
+    from shapely.errors import GEOSException
+    started=perf_counter();covered=set(covered);nodes=defaultdict(list);cuts={};reports=[];unresolved=[]
     for route,sources in sorted(paths.items()):
         for s in sources:
             if s in covered or s not in descriptors:continue
@@ -144,18 +167,16 @@ def run(rows,paths,bodies,descriptors,fixed_groups,*,covered=(),source_cores=Non
         nominal=unary_union([LineString(descriptors[s]['points']).buffer(descriptors[s]['source_width_mm']/2+MARGIN,quad_segs=128)for s,_ in ends])
         protected=unary_union([nominal,*[descriptors[s].get('support',Polygon())for s,_ in ends],
             *[(source_cores or {}).get(s,Polygon())for s,_ in ends],*[g for ss,g in fixed_groups if a in ss or b in ss]])
-        cut=face_cut(support,pt,u,window,protected)
+        try:
+            cut=_local_joint_cut(support,pt,u,window,protected)
+        except (ValueError,GEOSException) as error:
+            unresolved.append(dict(route_id=route,endpoint_mm=list(pt),source_ids=[a,b],
+                status='KEEP_UNCHANGED_NUMERICAL_TANGENT_LIMIT',error=repr(error),
+                support_wkb_hex=to_wkb(support).hex(),window_wkb_hex=to_wkb(window).hex(),
+                protected_wkb_hex=to_wkb(protected).hex(),
+                rejected_candidate_wkb_hex=getattr(error,'rejected_candidate_wkb_hex',None)))
+            continue
         if cut.is_empty:continue
-        # An opening can leave a detached optional tooth tip. Remove that tip
-        # in the same shallow window, or keep this joint unchanged if a fixed
-        # support would be separated. Never publish a new copper island.
-        candidate=polygonal(support.difference(cut));components=parts(candidate)
-        detached=[g for g in components if g.intersection(protected).area<=ERROR_MM**2]
-        if any(g.area>.005**2 or not window.buffer(ERROR_MM).covers(g)for g in detached):continue
-        if detached:cut=polygonal(unary_union([cut,*detached]));candidate=polygonal(support.difference(cut))
-        if len(parts(candidate))>len(parts(support)):continue
-        old_holes=unary_union(holes(support));new_holes=unary_union(holes(candidate)).difference(old_holes)
-        if new_holes.area>ERROR_MM**2:continue
         # Apply one mask to both adjacent source operands and all their joint
         # additions. Otherwise a redundant operand would restore the bump.
         for s,_ in ends:cuts[s]=polygonal(unary_union([cuts.get(s,Polygon()),cut]))
@@ -163,7 +184,43 @@ def run(rows,paths,bodies,descriptors,fixed_groups,*,covered=(),source_cores=Non
             cut_sha256=digest(to_wkb(cut)),maximum_depth_mm=.005,radius_mm=.05,
             policy='SUBTRACTIVE_TANGENT_OPENING; NOMINAL_CORE_AND_GROUP_INTERIOR_PROTECTED',constructed_groups_audited=0))
     return cuts,dict(schema='t04-native-joint-tangent-finish/1',reports=reports,wall_s=perf_counter()-started,
-        trimmed_joints=len(reports),removed_area_sum_mm2=sum(v['removed_area_mm2']for v in reports),constructed_groups_audited=0)
+        trimmed_joints=len(reports),unresolved=unresolved,removed_area_sum_mm2=sum(v['removed_area_mm2']for v in reports),constructed_groups_audited=0)
+
+
+def subtract_optional_patch(original, mask):
+    """Keep an original optional part if a cut mints a sub-resolution face.
+
+    Normal overlay bytes are unchanged. Only a problematic local subtraction
+    is reconstructed per original polygon; its affected parent is retained
+    instead of deleting positive copper or weakening the component counter.
+    """
+    from .pipeline import EPS
+    def micro(g):
+        return g.area<=EPS and g.buffer(-ERROR_MM,quad_segs=32).is_empty
+    original_parts=parts(original)
+    candidate=polygonal(original.difference(mask))
+    proof=dict(retained_original_parts=0,retained=[],source_or_group_copper_changed=False)
+    if not candidate.is_valid:
+        # Subtracting overlapping valid cut masks can create a self-touching
+        # result. This optional cut has no authority to repair its operand.
+        # Keep the exact valid addition and retain the rejected output.
+        proof.update(retained_original_parts=len(original_parts),retained=[dict(
+            reason='KEEP_ORIGINAL_OPTIONAL_PART; INVALID_TANGENT_DIFFERENCE',
+            rejected_candidate_wkb_hex=to_wkb(candidate).hex(),wkb_hex=to_wkb(original).hex())])
+        return original,proof
+    old_tiny=[g for g in original_parts if micro(g)]
+    new_tiny=[g for g in parts(candidate)if micro(g)and not any(g.equals(old)for old in old_tiny)]
+    if not new_tiny:return candidate,proof
+    kept=[]
+    for parent in original_parts:
+        cut=polygonal(parent.difference(mask))
+        if not cut.is_valid or any(micro(g)and not g.equals(parent)for g in parts(cut)):
+            kept.append(parent)
+            proof['retained'].append(dict(area_mm2=parent.area,wkb_hex=to_wkb(parent).hex(),
+                reason='KEEP_ORIGINAL_OPTIONAL_PART; NUMERICAL_TANGENT_FACE_LIMIT'))
+        else:kept.append(cut)
+    proof['retained_original_parts']=len(proof['retained'])
+    return polygonal(unary_union(kept)),proof
 
 
 def materialize(patches,cuts,floors):
@@ -173,14 +230,18 @@ def materialize(patches,cuts,floors):
     attachment to the unchanged native-route floor. This is a joint-constructor
     topology condition, not a clearance audit of constructed group copper.
     """
-    started=perf_counter();finished=list(patches);reports=[]
+    started=perf_counter();finished=list(patches);reports=[];numerical_limits=[]
     for route,floor in sorted(floors.items()):
         indices=[i for i,p in enumerate(patches)if p['route_id']==route]
         if not indices or not any(patches[i]['source_id']in cuts for i in indices):continue
         before=polygonal(unary_union([floor,*[patches[i]['geometry']for i in indices]]))
         for i in indices:
             p=patches[i]
-            if p['source_id']in cuts:finished[i]=dict(p,geometry=polygonal(p['geometry'].difference(cuts[p['source_id']])))
+            if p['source_id']in cuts:
+                value,proof=subtract_optional_patch(p['geometry'],cuts[p['source_id']])
+                finished[i]=dict(p,geometry=value)
+                if proof['retained_original_parts']:
+                    numerical_limits.append(dict(route_id=route,source_id=p['source_id'],patch_index=i,**proof))
         after=polygonal(unary_union([floor,*[finished[i]['geometry']for i in indices]]))
         prior_components=OriginalOwners(before).owners;before_count=len(prior_components);components=OriginalOwners(after).owners
         previously_attached=unary_union([g for g in prior_components if g.intersects(floor)])
@@ -211,5 +272,6 @@ def materialize(patches,cuts,floors):
             new_trim_pockets_restored=len(pockets)if passed else 0,restored_from_original_joint_operands_only=True,
             frozen_floor_changed=False,constructed_groups_audited=0))
     return finished,dict(reports=reports,wall_s=perf_counter()-started,
+        numerical_cut_limits=numerical_limits,
         support_limited_routes=[r['route_id']for r in reports if r['status']!='FINISHED'],
         detached_optional_tips_removed=sum(r['detached_optional_tips_removed']for r in reports),constructed_groups_audited=0)

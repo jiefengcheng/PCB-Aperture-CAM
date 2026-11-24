@@ -11,6 +11,13 @@ from .finite_profile_union import polygonal
 from .limiting_math import MARGIN
 
 
+def component_count(body):
+    """A retained zero contribution has zero components, not a lost identity."""
+    from src.original_copper_owners import OriginalOwners
+    if body.is_empty and body.is_valid:return 0
+    return len(OriginalOwners(body).owners)
+
+
 def assemble(sources, bodies, material):
     """Use declared source contours, including every positive copper face.
 

@@ -68,3 +68,20 @@ def test_a_covered_occurrence_does_not_get_growth_through_a_member_alias():
         SimpleNamespace(maximum_factor=1.5,maximum_total_width_increase_mm=.03),dict.fromkeys(rows,.075))
     assert 'a'not in cores and 'b'not in cores
     assert proof['member_deferrals'][0]['reason'].startswith('FIXED_OR_COVERED_OCCURRENCE')
+
+
+def test_complete_arc_skin_realizes_the_true_tangent_sections_it_freezes():
+    from src.gerber_u05.arc_membership import tangent
+    from src.native_inventory import ERROR_MM
+    rows,original,groups=maximal_fixture()
+    cores,_=prepare_maximal(rows,original,original,groups,set(rows),
+        lambda s:('A' if s in ('a','b') else 'B',),{},
+        SimpleNamespace(maximum_factor=1.5,maximum_total_width_increase_mm=.03),dict.fromkeys(rows,.075))
+    members={m['member_id']:m for g in groups for m in g['members']}
+    for value in cores.values():
+        points=members[value['member_id']]['reference_points_mm']
+        for end,center in ((False,points[0]),(True,points[-1])):
+            u=tangent(points,end)*(-1 if end else 1);n=(-float(u[1]),float(u[0]))
+            ends=[(center[0]+sign*n[0]*(.025+growth),center[1]+sign*n[1]*(.025+growth))
+                  for sign,growth in ((-1,value['negative_growth_mm']),(1,value['positive_growth_mm']))]
+            assert value['body'].buffer(ERROR_MM,quad_segs=128).covers(LineString(ends))

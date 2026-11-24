@@ -127,16 +127,22 @@ def prepared(store,scene,route_ids,settings,rule):
     if pin.ACTIVE is not None:forbidden.update(s for slot in pin.ACTIVE.slots for s in slot.pin_ids)
     if forbidden&set(roles):raise ValueError('T04_PROTECTED_SOURCE_HAS_BULK_ROLE')
     admission=project(native,roles)
+    from src import trace_growth_policy
+    eligibility,_=trace_growth_policy.prepare(
+        p.ROOT/'out/lacie_work/source_artifacts/t04_trace_eligibility',scene,rows,current,
+        {v['path_id']:v['source_ids']for v in admission['admitted']},trace_growth_policy.for_job(store))
+    protected_by_policy=set(eligibility['fixed_source_ids'])
     raw_paths={v['path_id']:v for v in native['admitted']}
     requested=sorted(raw_paths) if route_ids is None else sorted(route_ids)
     if not set(requested)<=set(raw_paths):raise ValueError('T04_NATIVE_REQUESTED_PATH_CHANGED')
     admitted={v['path_id']:v['source_ids'] for v in admission['admitted']}
-    paths={r:admitted[r] for r in requested if r in admitted}
+    paths={r:admitted[r] for r in requested if r in admitted and r not in eligibility['kept_routes']}
     if not paths:raise ValueError('T04_NO_TRACE_GROWTH_CORES_IN_REQUEST')
     used={s for members in paths.values() for s in members}
     if used&set(roles):raise ValueError('T04_EDITABLE_BULK_USED_AS_TRACE_CORE')
     cores={r:unary_union([original[s] for s in ss]) for r,ss in paths.items()}
     straight,curves,group_binding=catalogue(store,scene,rows,admission,roles,rule)
+    roles={s:v for s,v in roles.items()if s not in protected_by_policy}
     parallel,_,_,_=collect_proposals(rows,paths,straight,curves,original,roles)
     caps={r:min(settings.maximum_total_width_increase_mm/2,*(rows[s]['metadata']['minimum_caliper_mm']*(settings.maximum_factor-1)/2 for s in ss)) for r,ss in paths.items()}
     targets={r:min(parallel.get(r,caps[r]),caps[r]) for r in paths}

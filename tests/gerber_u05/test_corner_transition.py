@@ -56,6 +56,19 @@ def test_withdrawal_follows_an_overlapping_joint_that_reveals_a_second_enclosure
     assert proof['rounds'][1]['rejected_endpoints_mm']==[[1.5,3.]]
 
 
+def test_a_new_pocket_inside_an_existing_bounded_void_is_not_hidden_by_zero_new_void_area():
+    from shapely.ops import unary_union
+    from src.gerber_u05.corner_transition import new_pocket_regions,reject_enclosing_additions
+    floor=box(0,0,5,5).difference(box(1,1,4,4))
+    bridge=dict(endpoint_mm=[2.5,1.45],geometry=box(.9,1.4,4.1,1.5))
+    after=unary_union([floor,bridge['geometry']])
+    pockets=new_pocket_regions(floor,after)
+    assert len(pockets)==1 and pockets[0].area==pytest.approx(1.2)
+    kept,proof=reject_enclosing_additions(floor,[bridge])
+    assert not kept and proof['passed']
+    assert not new_pocket_regions(floor,unary_union([floor,box(.9,1,1.2,4)]))
+
+
 def test_joint_pocket_cap_includes_both_native_paths_without_increasing_the_radius():
     from shapely.geometry import Point
     from src.gerber_u05.corner_transition import joined_cap_envelope
@@ -115,6 +128,17 @@ def test_taper_into_an_arc_preserves_the_existing_arc_and_source_path():
     assert all(p['recipe']['extra_reach_bound_mm']<=.11 for p in patches)
 
 
+def test_transport_follows_a_turn_instead_of_reusing_a_world_space_delta():
+    import math
+    points=[[.15*math.sin(t),.15*(1-math.cos(t))]
+            for t in [i*math.pi/200 for i in range(201)]]
+    receiver=dict(points=points,source_width_mm=.05,offsets_mm=[-.025,.025])
+    shape,proof=propose(receiver,0,[0.,.0375],1,.4)
+    assert shape.is_valid and proof['extra_reach_bound_mm']<=.11
+    corridor=LineString(points).buffer(proof['input_face_envelope_radius_mm']+.00001,quad_segs=128)
+    assert shape.difference(corridor).area<1e-12
+
+
 def test_a_receiving_profile_cannot_grow_a_new_bulb_above_both_input_faces():
     rows,desc,material=fixture()
     desc['small']['fields']=[dict(first_mm=0.,last_mm=.1,controls=[[-.025,-.025,-.0375,-.0375],[.025,.025,.0375,.0375]]),
@@ -142,6 +166,23 @@ def test_one_ended_short_receiver_uses_its_full_length_and_keeps_supported_overl
     assert q['filled']==2 and q['unresolved']==0
     assert all(p['recipe']['length_mm']==.08 for p in patches)
     assert all(p['geometry'].intersection(material['small']).area>0 for p in patches)
+
+
+def test_a_native_source_seam_does_not_stop_a_valid_joint_taper():
+    rows,desc,material=fixture()
+    points=[[0.,0.],[.01,0.]]
+    rows['small']['metadata']['route_points_mm']=points;desc['small']['points']=points
+    material['small']=box(0.,-.025,.01,.025)
+    points=[[.01,0.],[1.,0.]]
+    rows['continuation']=dict(metadata=dict(route_points_mm=points))
+    desc['continuation']=dict(points=points,source_width_mm=.05,offsets_mm=[-.025,.025])
+    material['continuation']=box(.01,-.025,1.,.025)
+    patches,report=run(rows,dict(r=list(rows)),material,lambda s:('r',),desc)
+    fills=[p for p in patches if p['source_id']=='small' and p['side'] in (0,1)]
+    assert len(fills)==2 and all(p['recipe']['length_mm']>.01 for p in fills)
+    assert all(p['recipe']['source_seams_are_not_taper_boundaries'] for p in fills)
+    blocked,report=run(rows,dict(r=list(rows)),material,lambda s:('r',),desc,covered={'continuation'})
+    assert not any(p['source_id']=='small' and p['side'] in (0,1) for p in blocked)
 
 
 def test_arc_taper_cutoff_keeps_the_original_member_offset_normal():
@@ -281,3 +322,61 @@ def test_new_joint_pocket_work_list_never_includes_a_preexisting_hole():
     from src.gerber_u05.corner_transition import new_pocket_regions
     before=box(-.1,-.05,.1,.05).difference(box(-.01,-.01,.01,.01))
     assert not new_pocket_regions(before,before.union(box(.09,-.02,.12,.02)))
+def test_generated_skin_rejects_detached_subresolution_needle_without_changing_support():
+    from shapely.geometry import box,MultiPolygon
+    from src.gerber_u05.corner_transition import attached_skin
+    support=box(0,0,1,.1);main=box(0,0,1,.12);needle=box(.1,.13,.2,.1300000002)
+    result,proof=attached_skin(support,MultiPolygon([main,needle]))
+    assert result.equals(main)and proof['passed']and proof['source_faces_removed']==0
+    assert len(proof['rejected_optional_faces'])==1
+    assert result.covers(support)
+
+
+def test_generated_skin_defers_a_substantive_detached_proposal():
+    from shapely.geometry import box,MultiPolygon
+    from src.gerber_u05.corner_transition import attached_skin
+    support=box(0,0,1,.1);main=box(0,0,1,.12);separate=box(.1,.2,.2,.3)
+    result,proof=attached_skin(support,MultiPolygon([main,separate]))
+    assert result is None and not proof['passed']
+
+
+
+def test_saved_endpoint_section_overrides_a_plotting_chord_in_both_directions():
+    import numpy as np
+    from src.gerber_u05.corner_transition import corners,joint_frame,oriented
+    desc=dict(points=[[0.,0.],[.001,.002],[.1,.002]],source_width_mm=.05,offsets_mm=[-.03,.03],
+        endpoint_sections=[dict(normal=[0.,1.],lower_mm=[0.,-.03],upper_mm=[0.,.03]),
+                           dict(normal=[0.,1.],lower_mm=[.1,-.028],upper_mm=[.1,.032])])
+    for end in (0,1):
+        values,n=corners(desc,end,skin=False)
+        section=desc['endpoint_sections'][end]
+        expected=[section[k]for k in(('lower_mm','upper_mm')if end==0 else('upper_mm','lower_mm'))]
+        assert np.array_equal(values,expected)
+        assert np.array_equal(n,[0.,1. if end==0 else -1.])
+        _,normals,_,_=joint_frame(desc,oriented(desc,end))
+        assert np.array_equal(normals[0],n)
+
+
+def test_tiny_unconstructed_connector_inherits_frozen_frame_and_uses_continuation():
+    from shapely.geometry import Polygon
+    rows,desc,material=fixture()
+    desc['large']['endpoint_sections']=[dict(normal=[0.,1.],lower_mm=[x,-.0375],upper_mm=[x,.0375])for x in(-1.,0.)]
+    pts=[[0.,0.],[.002,.003]];rows['small']['metadata']['route_points_mm']=pts;desc['small']['points']=pts
+    material['small']=LineString(pts).buffer(.025,quad_segs=128)
+    pts=[[.002,.003],[1.,.003]];rows['next']=dict(metadata=dict(route_points_mm=pts))
+    desc['next']=dict(points=pts,source_width_mm=.05,offsets_mm=[-.025,.025])
+    material['next']=LineString(pts).buffer(.025,quad_segs=128)
+    patches,q=run(rows,{'r':list(rows)},material,lambda s:('r',),desc)
+    fills=[p for p in patches if p['source_id']=='small' and p['side']in(0,1)]
+    assert fills and all(p['recipe']['length_mm']>LineString(desc['small']['points']).length for p in fills)
+    assert all(p['recipe']['source_seams_are_not_taper_boundaries']for p in fills)
+    assert all(p['recipe']['extra_reach_bound_mm']<=.11 for p in fills)
+
+
+def test_existing_wide_skin_is_not_charged_as_new_corner_reach():
+    desc=dict(points=[[0.,0.],[1.,0.]],source_width_mm=.05,offsets_mm=[-.025,.025],
+              support=box(0.,-.025,1.,.3))
+    shape,proof=propose(desc,0,[0.,.21],1,1.,maximum_slope=1.)
+    assert proof['input_skin_raw_reach_mm']>.11
+    assert proof['extra_reach_bound_mm']==.11
+    assert shape.difference(desc['support']).difference(LineString(desc['points']).buffer(.135,quad_segs=128)).is_empty

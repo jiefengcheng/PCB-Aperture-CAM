@@ -2,6 +2,7 @@ import Foundation
 
 public struct BoardGrowth: Codable, Sendable {
     public let cleanup: CopperCleanup?
+    public let t04: T04Workspace?
     public let schema: Int
     public let job: String, revision: String, sceneSHA256: String, sourceSHA256: String
     public let predecessorSHA256: String, constructionSHA256: String, beforeWkbSHA256: String, afterWkbSHA256: String
@@ -9,6 +10,23 @@ public struct BoardGrowth: Codable, Sendable {
     public let bounds: Bounds
     public let addedAreaMM2: Double, removedAreaMM2: Double, displayHausdorffMM: Double
     public let summary: String, note: String
+}
+public struct T04Workspace: Codable, Sendable {
+    public let schema: Int
+    public let fullBoard: Bool?
+    public let largeFillCoverageFraction: Double?
+    public let inputSceneSHA256: String, beforeWkbSHA256: String, afterWkbSHA256: String
+    public let parts: [SceneObject], bounds: Bounds
+    public let addedAreaMM2: Double, removedAreaMM2: Double, displayHausdorffMM: Double
+    public let findings: [T04Finding]
+    public let grownRoutes: Int, keptRoutes: Int, connectionChecks: Int
+    public let nominalCutoffMM: Double, maximumFactor: Double, maximumWidthIncreaseMM: Double
+    public let summary: String, note: String
+}
+public struct T04Finding: Codable, Sendable {
+    public let id: String, kind: String, routeID: String, description: String
+    public let sourceIDs: [String], reasons: [String], bounds: Bounds
+    public let missingSectionMM: Double?
 }
 public struct CopperCleanup: Codable, Sendable {
     public let schema: Int
@@ -65,6 +83,28 @@ public enum BoardGrowthReader {
         try Snapshot(schema: 1, job: scene.job, revision: scene.revision, slice: "Board growth display", status: "Preview",
                      parentRevision: nil, bounds: value.bounds, affected: value.bounds, objects: value.parts,
                      sources: scene.sources, evidence: [], limitations: []).validate()
+        if let t04 = value.t04 {
+            guard t04.schema == 1, [t04.inputSceneSHA256,t04.beforeWkbSHA256,t04.afterWkbSHA256].allSatisfy(Snapshot.isDigest),
+                  t04.afterWkbSHA256 == value.afterWkbSHA256,
+                  [t04.addedAreaMM2,t04.removedAreaMM2,t04.displayHausdorffMM].allSatisfy({$0.isFinite && $0 >= 0}),
+                  t04.displayHausdorffMM <= 0.000500001, t04.bounds.valid,
+                  t04.grownRoutes >= 0, t04.keptRoutes >= 0, t04.connectionChecks >= 0,
+                  [t04.nominalCutoffMM,t04.maximumFactor,t04.maximumWidthIncreaseMM].allSatisfy({$0.isFinite && $0 > 0}),
+                  (t04.largeFillCoverageFraction == nil || (t04.largeFillCoverageFraction!.isFinite && t04.largeFillCoverageFraction! > 0 && t04.largeFillCoverageFraction! <= 1)),
+                  t04.summary.count <= 1000, t04.note.count <= 2000,
+                  t04.findings.count <= 20000, Set(t04.findings.map(\.id)).count == t04.findings.count,
+                  t04.findings.allSatisfy({["corner","endpoint","eligibility","continuity"].contains($0.kind) && $0.bounds.valid &&
+                      $0.description.count <= 2000 && $0.reasons.count <= 50 &&
+                      $0.sourceIDs.allSatisfy({$0.hasPrefix(value.sourceSHA256+":")}) &&
+                      ($0.missingSectionMM == nil || ($0.missingSectionMM!.isFinite && $0.missingSectionMM! >= 0))}),
+                  t04.parts.allSatisfy({["source","added","removed"].contains($0.kind) && $0.id.hasPrefix("growth:t04:") &&
+                      $0.sourceID.hasPrefix(value.sourceSHA256+":display-growth:t04:")}) else {
+                throw ABIError.invalid("T04 workspace binding invalid")
+            }
+            try Snapshot(schema:1,job:scene.job,revision:scene.revision,slice:"Saved T04 workspace",status:"Preview",
+                parentRevision:nil,bounds:t04.bounds,affected:t04.bounds,objects:t04.parts,
+                sources:scene.sources,evidence:[],limitations:[]).validate()
+        }
         if let cleanup = value.cleanup {
             guard cleanup.schema == 1, cleanup.areaLimitFraction == 0.1, cleanup.depthLimitMM == 0.1,
                   cleanup.areaComparison == "STRICTLY_LESS_THAN", cleanup.areaBasis == "ORIGINAL_CAUSING_PAD_OR_TRACE",

@@ -53,6 +53,22 @@ final class BoardGrowthTests: XCTestCase {
         cleanupCase["referencePath"]="M 0 0 L 1 0";cleanup["cases"]=[cleanupCase];cleanup["areaComparison"]="LESS_OR_EQUAL";value["cleanup"]=cleanup
         XCTAssertThrowsError(try validate(value))
         value.removeValue(forKey:"cleanup")
+        var t04Part=part;t04Part["id"]="growth:t04:0";t04Part["sourceID"]=scene.sources[0].sha256+":display-growth:t04:0"
+        var finding:[String:Any] = ["id":"t04-finding:0","kind":"endpoint","routeID":"r","description":"Saved endpoint finding",
+            "sourceIDs":[scene.sources[0].sha256+":source"],"reasons":["FROZEN_END_SECTION_NOT_REALIZED_BY_EMITTED_ROUTE"],
+            "bounds":["x":0,"y":0,"width":1,"height":1],"missingSectionMM":0.001]
+        var t04:[String:Any] = ["schema":1,"inputSceneSHA256":sha,"beforeWkbSHA256":sha,"afterWkbSHA256":sha,
+            "parts":[t04Part],"bounds":["x":0,"y":0,"width":4,"height":2],"addedAreaMM2":0,"removedAreaMM2":0,
+            "displayHausdorffMM":0,"findings":[finding],"grownRoutes":1,"keptRoutes":0,"connectionChecks":1,
+            "nominalCutoffMM":0.25,"maximumFactor":1.5,"maximumWidthIncreaseMM":0.03,"summary":"T04 only","note":"Saved data only"]
+        value["t04"]=t04;XCTAssertNoThrow(try validate(value))
+        t04["fullBoard"]=false;t04["largeFillCoverageFraction"]=0.8;value["t04"]=t04;XCTAssertNoThrow(try validate(value))
+        t04["largeFillCoverageFraction"]=1.1;value["t04"]=t04;XCTAssertThrowsError(try validate(value));t04["largeFillCoverageFraction"]=0.8
+        t04["inputSceneSHA256"]="stale";value["t04"]=t04;XCTAssertThrowsError(try validate(value));t04["inputSceneSHA256"]=sha
+        t04["afterWkbSHA256"]=String(repeating:"c",count:64);value["t04"]=t04;XCTAssertThrowsError(try validate(value));t04["afterWkbSHA256"]=sha
+        finding["kind"]="bump";t04["findings"]=[finding];value["t04"]=t04;XCTAssertThrowsError(try validate(value))
+        finding["kind"]="endpoint";finding["missingSectionMM"] = -1;t04["findings"]=[finding];value["t04"]=t04;XCTAssertThrowsError(try validate(value))
+        value.removeValue(forKey:"t04")
         XCTAssertThrowsError(try BoardGrowthReader.decode(envelope(value,corrupt:true),scene:scene,digest:sha))
         for key in ["job","revision","sceneSHA256","sourceSHA256"] {
             var wrong=value;wrong[key]="stale";XCTAssertThrowsError(try validate(wrong))

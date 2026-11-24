@@ -383,6 +383,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         let folder = URL(fileURLWithPath: args[i + 1]).resolvingSymlinksInPath()
         guard folder.path.hasPrefix(workRoot.path + "/") else { return }
         if args.contains("--cleanup-smoke") { runCleanupSmoke(folder: folder); return }
+        if args.contains("--t04-smoke") { runT04Smoke(folder: folder); return }
         if let ri = args.firstIndex(of: "--route-smoke-response"), ri + 1 < args.count,
            let si = args.firstIndex(of: "--route-smoke-source"), si + 1 < args.count {
             runRouteSmoke(folder: folder, response: URL(fileURLWithPath: args[ri+1]), source: args[si+1])

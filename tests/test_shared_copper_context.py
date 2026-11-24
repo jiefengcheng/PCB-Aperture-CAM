@@ -38,6 +38,32 @@ with CopperContext(dict(a=box(0,0,2,2),b=box(3,0,4,2)),source_binding=dict(sourc
     assert result.stdout.strip()=='1 0'
 
 
+def test_role_subset_reuses_resident_and_restart_preparation_and_tracks_revision(tmp_path):
+    with open_context(tmp_path)as c:
+        image=c.prepared_subset(c.source,['a'])
+        assert c.prepared_subset(c.source,['a'])is image
+        revision=c.acquire(dict(a=box(-2,0,2,2)))
+        changed=c.prepared_subset(revision,['a'])
+        assert changed.bounds[0]==-2 and image.bounds[0]==0
+        assert c.stats['source_subset_unions']==2
+        assert c.stats['source_index_builds']==1
+        assert c.prepared_subset(c.source,[]).is_empty
+    with open_context(tmp_path)as c:
+        assert c.prepared_subset(c.source,['a']).equals(box(0,0,2,2))
+        assert c.stats['source_subset_warm_loads']==1
+        assert c.stats['source_subset_unions']==0
+
+
+def test_role_subset_corruption_stops_instead_of_rebuilding(tmp_path):
+    with open_context(tmp_path)as c:
+        c.prepared_subset(c.source,['a']);directory=c.directory
+    path=next((directory/'source_subsets').glob('*.json.gz'));path.write_bytes(b'broken')
+    with open_context(tmp_path)as c:
+        with pytest.raises(ValueError,match='SHARED_COPPER_CORRUPT_ENTRY'):c.prepared_subset(c.source,['a'])
+        assert c.stats['source_subset_unions']==0
+
+
+
 def test_growth_outside_old_bounds_merge_split_and_reopen(tmp_path):
     with open_context(tmp_path) as c:
         base=c.source

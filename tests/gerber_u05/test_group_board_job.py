@@ -94,3 +94,18 @@ def test_failure_inputs_are_retained_without_reexecuting_the_operation(tmp_path)
     operand=saved['frames'][0]['operands']['support']
     assert Path(operand['path']).read_bytes()==to_wkb(box(0,0,1,1),include_srid=True)
     assert job.file_sha(operand['path'])==operand['sha256']and calls==[1]
+
+
+def test_failure_recorder_accepts_native_numpy_joint_coordinates(tmp_path):
+    import numpy as np
+    from shapely.geometry import box
+    def face_cut():
+        support=box(0,0,1,1)
+        raise ValueError('primary native error')
+    def run():
+        route='r';pt=np.array([1.,2.]);ends=[('a',0)]
+        face_cut()
+    try:run()
+    except ValueError as error:ref=job.failure_operands(error,tmp_path)
+    data=json.loads(Path(ref['path']).read_bytes())
+    assert data['site']['pt']==[1.,2.] and data['site']['ends']==[['a',0]]

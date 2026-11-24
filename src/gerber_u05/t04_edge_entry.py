@@ -16,7 +16,7 @@ from shapely.ops import unary_union
 from src import component_clearance as cc, source_channel_scope as sc, pin_separation as pin
 from src import t04_width_fence as fence
 from src.bulk_edge_restore import propose, fingerprint, topology
-from src.edge_restoration_settings import capture
+from src.edge_restoration_settings import capture, classify_protrusion
 from src.copper_corner_workspace import CutPolicy, qualify_bulk_region
 from . import pipeline as p
 
@@ -151,6 +151,10 @@ def prepared(store,scene,source_ids,settings,*,policy=None):
             policy=policy)
         if not proof['passed'] or not added.is_empty or removed.is_empty:
             raise ValueError('T04_EDGE_ENTRY_FEATURE_REJECTED:'+sid+':'+str(proof['failures']))
+        noise=classify_protrusion(removed,original[sid],source_id=sid,policy=policy)
+        if not noise['is_noise']:
+            raise ValueError('T04_EDGE_ENTRY_PROTRUSION_NOT_BELOW_NOISE_AREA_LIMIT:'+sid)
+        proof['noise_area_check']=noise
         changes[sid]=after;ledger[sid]=dict(proof,removal_ref=p.geomref(store,removed),
             addition_ref=p.geomref(store,added),before_ref=row['geometry_ref'],after_ref=p.geomref(store,after))
     working,scope,relations=_working_context(old_cc,old_sc,changes,ledger)

@@ -4,7 +4,7 @@ from src.stage_abi.store import canonical, digest
 SCHEMA = 'source-route-ten-step-width-ladder/1'
 
 
-def solve(widths, settings, evaluate, accept=lambda route, factor: None):
+def solve(widths, settings, evaluate, accept=lambda route, factor: None, *, keep_routes=None):
     """evaluate sees the current accepted scene; accept publishes one change.
 
     A rejected next rung may be reconsidered on the next complete pass. There
@@ -12,6 +12,8 @@ def solve(widths, settings, evaluate, accept=lambda route, factor: None):
     Neither callback may start a combination or continuous-factor search.
     """
     order = sorted(widths)
+    keep_routes={}if keep_routes is None else keep_routes
+    if not set(keep_routes)<=set(order):raise ValueError('T04_KEEP_ROUTE_OUTSIDE_INVENTORY')
     if not order or any(type(s) is not str for s in order):
         raise ValueError('T04_COMPLETE_ROUTE_WIDTHS_REQUIRED')
     for width in widths.values():
@@ -25,6 +27,8 @@ def solve(widths, settings, evaluate, accept=lambda route, factor: None):
             if rungs[sid] == settings.step_count:
                 continue
             candidate = settings.rung(widths[sid], rungs[sid] + 1)
+            if sid in keep_routes:
+                candidate=dict(candidate,within_growth_limits=False,blocking_reason='GLOBAL_TRACE_ELIGIBILITY_KEEP')
             attempts[sid] += 1
             if not candidate['within_growth_limits']:
                 check = dict(passed=False, failures=[dict(reason=candidate['blocking_reason'])],
@@ -73,9 +77,9 @@ def solve(widths, settings, evaluate, accept=lambda route, factor: None):
                 maximum_claim='NONE; safe prescribed discrete process only')
 
 
-def replay(widths, settings, solution, evaluate, accept=lambda route, factor: None):
+def replay(widths, settings, solution, evaluate, accept=lambda route, factor: None, *, keep_routes=None):
     """Freshly execute every prescribed attempt and compare the complete ledger."""
-    actual = solve(widths, settings, evaluate, accept)
+    actual = solve(widths, settings, evaluate, accept,keep_routes=keep_routes)
     if canonical(actual) != canonical(solution):
         raise ValueError('T04_FRESH_LADDER_REPLAY_CHANGED')
     return dict(passed=True, complete_ladder_replayed=True,

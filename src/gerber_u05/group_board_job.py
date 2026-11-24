@@ -86,7 +86,12 @@ def failure_operands(error,directory):
             with path.open('xb')as stream:stream.write(raw)
             operands[name]=dict(path=str(path),sha256=p.digest(raw),precision_mm=float(get_precision(shape)),srid=int(get_srid(shape)))
         records.append(dict(function=function,operands=operands))
-    p.save(root/'INPUTS.json',dict(site=site,frames=records))
+    def plain(value):
+        if hasattr(value,'tolist'):return plain(value.tolist())
+        if isinstance(value,dict):return {k:plain(v)for k,v in value.items()}
+        if isinstance(value,(tuple,list)):return [plain(v)for v in value]
+        return value
+    p.save(root/'INPUTS.json',dict(site=plain(site),frames=records))
     return dict(path=str(root/'INPUTS.json'),sha256=file_sha(root/'INPUTS.json'))
 
 
