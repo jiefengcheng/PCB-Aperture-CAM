@@ -1,5 +1,11 @@
 # Reproducing and learning from Copper Trimming 0.2.0
 
+For general installation and day-to-day operation, start with
+[Deploy and run large-copper trimming](../../docs/LARGE_COPPER_DEPLOY_AND_RUN.md).
+It covers source deployment, viewer/CLI execution, saved results and reopening,
+including a native Ubuntu setup path without Docker. This document supplies the
+additional package-rebuild and Docker-development details.
+
 This handoff includes the complete committed implementation, the tested
 [`source.gbr`](../../baselines/large_copper_0.2.0/source.gbr), recorded
 [reference results](../../baselines/large_copper_0.2.0/reference.json), package

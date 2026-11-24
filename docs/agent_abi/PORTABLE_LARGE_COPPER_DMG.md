@@ -1,5 +1,8 @@
 # Standalone large-copper trimming for another Mac
 
+Start with the [general deployment and run guide](../LARGE_COPPER_DEPLOY_AND_RUN.md)
+for installation, viewer/CLI steps, saved-result reopening and troubleshooting.
+
 For a clean clone, package versions, the versioned client source baseline,
 one-command DMG sealing and Ubuntu/Docker development instructions, use the
 [0.2.0 reproduction guide](../../reproduction/large_copper_0.2.0/README.md).

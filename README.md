@@ -2,6 +2,10 @@
 
 ## Copper Trimming 0.2.0 reproduction
 
+Start with [Deploy and run large-copper trimming](docs/LARGE_COPPER_DEPLOY_AND_RUN.md)
+for prerequisites, source setup, Mac viewer/CLI operation, saved results,
+reopening, troubleshooting and native Ubuntu source-environment setup.
+
 The [Mac rebuild and Ubuntu/Docker development guide](reproduction/large_copper_0.2.0/README.md)
 includes the tested [source.gbr baseline](baselines/large_copper_0.2.0/source.gbr),
 reference results, package versions and the app/DMG builder. A bit-identical DMG
