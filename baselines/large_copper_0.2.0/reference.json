@@ -1,0 +1,68 @@
+{
+  "historical_artifacts": {
+    "construction_sha256": "6f9ec7d328aea262fb9f42c4126925357482e865bcd22f934deecdbf4b7dfde0",
+    "dmg_bytes": 105059385,
+    "dmg_contains_client_source": false,
+    "dmg_file": "Copper_Trimming_0.2.0.dmg",
+    "dmg_sha256": "7bbf5b36ed0f8071fc842642edf598033f579532d9aa56bf2823a02f0a599e3f",
+    "note": "Historical hashes identify retained artifacts, not required hashes for a rebuild. The DMG payload included other then-present modules; scoped source commit separately reproduced every final contribution.",
+    "signing": "AD_HOC_LOCAL_NOT_NOTARIZED",
+    "source_delivery_commit": "ebb898638d8f644051da416db952aaa74249c42b"
+  },
+  "purpose": "SOURCE_BASELINE_AND_RECORDED_REGRESSION_EXPECTATIONS",
+  "recorded_result": {
+    "added_area_mm2": 0.0,
+    "changed_contributions": 895,
+    "counts": {
+      "corrected": 356,
+      "ignored": 24,
+      "unresolved": 77
+    },
+    "discovery_completeness": "NOT_ESTABLISHED_FOR_GENERAL_CURVES_OR_OTHER_DEFECT_FAMILIES",
+    "removed_area_mm2": 0.15143175658548183,
+    "reviewed_keep_windows_preserved": 3,
+    "reviewed_rectangle_preserved": true,
+    "reviewed_removal_witnesses_covered": 46,
+    "status": "COMPLETED_WITH_UNRESOLVED",
+    "topology_after": [
+      275,
+      114
+    ],
+    "topology_before": [
+      275,
+      114
+    ],
+    "treatment_complete": false
+  },
+  "release": "0.2.0",
+  "runtime": {
+    "architecture": "arm64",
+    "geos": "3.13.1",
+    "gerbonara": "1.6.3",
+    "macos_geos_c_sha256": "29d74cf4b9747ee581b6d35c513281672fa9e9fcdaf9896b5357a5e5773fbd7c",
+    "minimum_macos": "15.0",
+    "numpy": "2.5.4",
+    "python": "3.14.5",
+    "shapely": "2.1.2"
+  },
+  "schema": "large-copper-reference/1",
+  "scope": {
+    "bit_identical_rebuild_required": false,
+    "electrical_manufacturing": "NOT_ESTABLISHED",
+    "exports": false,
+    "growth": false,
+    "independent": "NOT_RUN: CHANNEL_UNAVAILABLE",
+    "linux_trimming": "NOT_QUALIFIED_REQUIRES_EXPLICIT_PLATFORM_ADAPTERS",
+    "operation": "TRIM_ONLY",
+    "owner": "PENDING_USER"
+  },
+  "source": {
+    "bytes": 532869,
+    "clear_operations": 0,
+    "coordinate_format": "MM_L33_ABSOLUTE",
+    "file": "source.gbr",
+    "scene_sha256": "0b3cb8da3614f8b19c38dd59eb4e88e0be0ed42ae7a1e66a7c059d93e5da962a",
+    "sha256": "207a51318f103190a4d61e76f4a0457fcfd11fd3db560c9439dd2f5f460f9b90",
+    "source_occurrences": 17849
+  }
+}

@@ -1,5 +1,14 @@
 # PCB-Aperture-CAM-V1 — isolated Codex handoff
 
+## Copper Trimming 0.2.0 reproduction
+
+The [Mac rebuild and Ubuntu/Docker development guide](reproduction/large_copper_0.2.0/README.md)
+includes the tested [source.gbr baseline](baselines/large_copper_0.2.0/source.gbr),
+reference results, package versions and the app/DMG builder. A bit-identical DMG
+is not required. The native viewer is macOS-only; Linux source intake and the
+remaining runtime-porting boundaries are documented separately and do not imply
+qualified end-to-end Linux trimming.
+
 ## Current T01 rules
 
 Use the maintained [plain-language T01 rulebook](docs/T01_RULES.md) for current

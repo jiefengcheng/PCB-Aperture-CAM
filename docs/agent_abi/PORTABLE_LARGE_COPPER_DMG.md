@@ -1,5 +1,10 @@
 # Standalone large-copper trimming for another Mac
 
+For a clean clone, package versions, the versioned client source baseline,
+one-command DMG sealing and Ubuntu/Docker development instructions, use the
+[0.2.0 reproduction guide](../../reproduction/large_copper_0.2.0/README.md).
+Linux trimming is not yet qualified; that guide lists the required adapters.
+
 Current delivery: **0.2.0**, 2026-11-23. Apple silicon, macOS 15 or newer.
 The fixed Run action considers all agreed supported families. Saved object,
 status, rule and circular-edge filters affect viewing only. Python 3.14.5,

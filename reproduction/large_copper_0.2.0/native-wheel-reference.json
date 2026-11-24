@@ -1,0 +1,33 @@
+{
+  "linux_execution": "NOT_RUN",
+  "note": "Linux values are development references, not an activated or qualified runtime profile. Preserve the existing Mac pin and explicitly qualify a separate Linux adapter.",
+  "platforms": {
+    "linux/amd64": {
+      "libraries": {
+        "shapely.libs/libgeos-3ef06f11.so.3.13.1": "59e0139d1ccea9a331b932c60b399974bafdff5c0e07b554c6a5df80edacf150",
+        "shapely.libs/libgeos_c-abcdd5fa.so.1.19.2": "91589f52067072ab661524cf181caf856097fc901c1ecc4a98585d03f5452c02"
+      },
+      "wheel": "shapely-2.1.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "wheel_sha256": "21952dc00df38a2c28375659b07a3979d22641aeb104751e769c3ee825aadecf"
+    },
+    "linux/arm64": {
+      "libraries": {
+        "shapely.libs/libgeos-9c5cb28e.so.3.13.1": "ff5ec5bbedb286bfa5fa63ef44385a3f6b26d297e64e21b75eb19985f31bf63a",
+        "shapely.libs/libgeos_c-42bdf9a9.so.1.19.2": "882f6aaa28e24418fd1ed695b0fb3a36362ffa386c4ca840526962c2aab21eb3"
+      },
+      "wheel": "shapely-2.1.2-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+      "wheel_sha256": "f67b34271dedc3c653eba4e3d7111aa421d5be9b4c4c7d38d30907f796cb30df"
+    },
+    "macos/arm64": {
+      "libraries": {
+        "shapely/.dylibs/libgeos.3.13.1.dylib": "005ec82730229dd3818d40865aa9ced1123cc8d89d2be278ff77b93df5982266",
+        "shapely/.dylibs/libgeos_c.1.19.2.dylib": "29d74cf4b9747ee581b6d35c513281672fa9e9fcdaf9896b5357a5e5773fbd7c"
+      },
+      "wheel": "shapely-2.1.2-cp314-cp314-macosx_11_0_arm64.whl",
+      "wheel_sha256": "1ff629e00818033b8d71139565527ced7d776c269a49bd78c9df84e8f852190c"
+    }
+  },
+  "schema": "large-copper-native-wheel-reference/1",
+  "source": "https://pypi.org/project/shapely/2.1.2/#files",
+  "verification": "WHEEL_SHA256_MATCHES_PYPI_METADATA; ARCHIVE_LIBRARY_BYTES_HASHED"
+}

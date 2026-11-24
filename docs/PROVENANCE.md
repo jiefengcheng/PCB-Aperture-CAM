@@ -1,5 +1,20 @@
 # Source register and immutability
 
+## Authorized large-copper source baseline — 2026-11-24
+
+The owner explicitly requested including the tested client Gerber in the GitHub
+reproduction handoff. [source.gbr](../baselines/large_copper_0.2.0/source.gbr) is a
+byte-identical copy of the existing local positive-copper input, SHA-256
+`207a51318f103190a4d61e76f4a0457fcfd11fd3db560c9439dd2f5f460f9b90`.
+Its [baseline record](../baselines/large_copper_0.2.0/README.md) and
+[reproduction guide](../reproduction/large_copper_0.2.0/README.md) distinguish
+original source, recorded corrected geometry, Mac packaging and unfinished
+Linux runtime adaptation. This is a development/process baseline, not a newly
+approved manufacturing export or a new license grant. Original local input,
+immutable `assets/` and historical evidence remain unchanged.
+
+## Original V1 source register
+
 | Asset | Origin | Actual status |
 |---|---|---|
 | `assets/starter/` | Original supplied `aperture_cam_starter_v0_1.zip`, unpacked without alteration | Author-generated synthetic source fixtures + reference Gerbers, NOT KiCad-executed output |
@@ -13,7 +28,7 @@ There is **no real candidate KiCad plot in these assets**. For V1, Codex must pr
 
 The Mac-observed baseline headers identify `KiCad Pcbnew 10.99.0-unknown`, coordinate format X4.6/Y4.6, millimeters, and F.Mask negative image polarity. KiCad 10.99 is a development build; G1 should record exactly which version newly generated the fresh pair.
 
-The user's two PPTs and historical discussions are not re-distributed in this minimal handoff. The business context is summarized in `docs/CONTEXT.md`. No customer manufacturing data and no externally cloned PCB designs are included.
+The user's two PPTs and historical discussions are not re-distributed in this minimal handoff. The business context is summarized in `docs/CONTEXT.md`. The original V1 minimal handoff included no customer manufacturing data or externally cloned PCB designs; subsequent authorized additions are recorded separately here.
 
 
 ## Authorized V1.5 amendment — 2026-10-14

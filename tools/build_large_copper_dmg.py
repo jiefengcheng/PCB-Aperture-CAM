@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 import sysconfig
+import tempfile
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
@@ -108,13 +109,31 @@ def audit_native(app):
     return inventory
 
 
-def build(output):
+def build(output,*,build_workspace=None):
     from src.gerber_u05.workspace import configure
     from src.cleanup_runtime import PROFILE
     from tools.preflight import verify_manifest
-    work=configure().resolve();output=output.resolve()
-    if not output.is_relative_to(work):raise ValueError('LACIE_BUILD_OUTPUT_REQUIRED')
+    if build_workspace is None:
+        work=configure().resolve()
+    else:
+        # Explicit standalone build adapter for another Mac. The normal
+        # checkout still uses configure() and never selects a fallback.
+        from src.cleanup_runtime import _volume
+        work=Path(build_workspace)
+        if not work.is_absolute():raise ValueError('EXPLICIT_ABSOLUTE_BUILD_WORKSPACE_REQUIRED')
+        work=work.resolve(strict=True)
+        if not work.is_dir() or work.is_relative_to(ROOT):raise ValueError('SEPARATE_BUILD_WORKSPACE_REQUIRED')
+        _volume(work)
+        if shutil.disk_usage(work).free<5*1024**3:raise ValueError('WORKSPACE_REQUIRES_5_GIB_FREE')
+        tmp=work/'tmp';tmp.mkdir(exist_ok=True)
+        if tmp.is_symlink():raise ValueError('BUILD_TMP_SYMLINK_REJECTED')
+        os.environ.update(TMPDIR=str(tmp),TMP=str(tmp),TEMP=str(tmp),
+                          XDG_CACHE_HOME=str(work/'cache'),PYTHONDONTWRITEBYTECODE='1')
+        tempfile.tempdir=str(tmp)
+    output=output.resolve()
+    if not output.is_relative_to(work) or output==work:raise ValueError('BUILD_OUTPUT_OUTSIDE_VERIFIED_WORKSPACE')
     if platform.machine()!='arm64':raise ValueError('APPLE_SILICON_BUILD_REQUIRED')
+    if sys.version_info[:2]!=(3,14):raise ValueError('CPYTHON_314_FRAMEWORK_BUILD_REQUIRED')
     assets=verify_manifest()
     output.mkdir(parents=True,exist_ok=False)
     stage=output/'image';stage.mkdir()
@@ -142,6 +161,9 @@ def build(output):
     packages={d.metadata['Name']:d.version for d in importlib.metadata.distributions(path=[str(site)]) if d.metadata['Name'].lower() not in ('pip','pytest')}
     (licenses/'PACKAGE_VERSIONS.json').write_text(json.dumps(packages,sort_keys=True,indent=2))
     viewer_work=work/'viewer'
+    # A clean clone has no pre-existing Swift build/cache directories.
+    for name in ('tmp','cache/clang','cache/swift','cache/swiftpm','config','security'):
+        (viewer_work/name).mkdir(parents=True,exist_ok=True)
     env=dict(os.environ,TMPDIR=str(viewer_work/'tmp'),CLANG_MODULE_CACHE_PATH=str(viewer_work/'cache/clang'),
         SWIFTPM_MODULECACHE_OVERRIDE=str(viewer_work/'cache/swift'),SWIFT_MODULECACHE_PATH=str(viewer_work/'cache/swift'),
         XDG_CACHE_HOME=str(viewer_work/'cache'))
@@ -205,7 +227,8 @@ exec "$PYTHONHOME/bin/python3.14" -B "$PYTHONPATH/tools/portable_cleanup.py" "$@
     manifest=dict(schema='portable-copper-build/1',app=str(app),architecture='arm64',minimum_macos='15.0',
         assets_verified=assets,payload_files=files,runtime=runtime,packages=packages,
         signing='AD_HOC_LOCAL_NOT_NOTARIZED',client_data_included=False,
-        app_signature=run(['/usr/bin/codesign','-dv','--verbose=2',app]) if False else 'verified --deep --strict')
+        app_signature=run(['/usr/bin/codesign','-dv','--verbose=2',app]) if False else 'verified --deep --strict',
+        build_workspace=str(work),workspace_selection='EXPLICIT_APFS' if build_workspace is not None else 'CHECKOUT_LACIE')
     (output/'BUILD.json').write_text(json.dumps(manifest,sort_keys=True,indent=2))
     qa=output/'qa';qa.mkdir();(qa/'work').mkdir()
     offline_env={'PATH':'/usr/bin:/bin:/usr/sbin:/sbin'}
@@ -221,9 +244,31 @@ exec "$PYTHONHOME/bin/python3.14" -B "$PYTHONPATH/tools/portable_cleanup.py" "$@
     return manifest
 
 
+def seal(output):
+    """Create and verify a new image; never overwrite an existing delivery."""
+    image=output/'Copper_Trimming_0.2.0.dmg'
+    if image.exists():raise ValueError('IMMUTABLE_DMG_ALREADY_EXISTS')
+    creation=run(['/usr/bin/hdiutil','create','-volname','Copper Trimming 0.2.0',
+                  '-srcfolder',output/'image','-format','UDZO',image])
+    (output/'dmg-create.log').write_text(creation)
+    verification=run(['/usr/bin/hdiutil','verify',image])
+    (output/'dmg-verify.log').write_text(verification)
+    receipt=dict(schema='portable-copper-dmg/1',file=image.name,sha256=sha(image),
+                 bytes=image.stat().st_size,verification='HDIUTIL_VERIFY_PASS',
+                 build_sha256=sha(output/'BUILD.json'),
+                 bit_identical_to_historical_image='NOT_REQUIRED',
+                 native_viewer_baseline_reproduction='NOT_RUN_FOR_THIS_BUILD')
+    (output/'DMG.json').write_text(json.dumps(receipt,sort_keys=True,indent=2))
+    return receipt
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output-dir',type=Path,required=True)
-    args=parser.parse_args();print(json.dumps(build(args.output_dir),sort_keys=True))
+    parser.add_argument('--build-workspace',type=Path,help='Existing separate APFS directory for an explicit standalone build on another Mac; default retains the checkout LaCie policy')
+    parser.add_argument('--seal-dmg',action='store_true',help='After app/runtime checks, create and verify a new read-only DMG')
+    args=parser.parse_args();manifest=build(args.output_dir,build_workspace=args.build_workspace)
+    if args.seal_dmg:manifest['dmg']=seal(args.output_dir.resolve())
+    print(json.dumps(manifest,sort_keys=True))
 
 
 if __name__=='__main__':main()

@@ -1,0 +1,21 @@
+# Only the explicit source/development recipe inputs enter Docker's context.
+**
+!requirements.lock.txt
+!requirements-completion.txt
+!src/
+!src/**
+!contracts/
+!contracts/**
+!assets/
+!assets/**
+!tools/
+!tools/**
+!baselines/
+!baselines/large_copper_0.2.0/
+!baselines/large_copper_0.2.0/**
+!reproduction/
+!reproduction/large_copper_0.2.0/
+!reproduction/large_copper_0.2.0/**
+**/__pycache__
+**/*.pyc
+**/.DS_Store
