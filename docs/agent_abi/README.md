@@ -6,6 +6,11 @@ The [independent five-suite audit](audits/20261031_06c146e/README.md) passed all
 
 ## T04 after saved copper cleanup
 
+The [joined cleanup/T04 coordinator](COPPER_PIPELINE.md) connects the existing phases
+through sealed input/output with separate grey workspaces. See its
+[operation contract](../../contracts/agent_abi/copper_pipeline_v1.json) and the
+[retained-widening shoulder ABI](T04_BOUNDARY_TRANSITIONS.md).
+
 Use the [T04 cleanup handoff](T04_AFTER_LARGE_COPPER_CLEANUP.md),
 [global eligibility policy](T04_GROWTH_ELIGIBILITY.md),
 [native joint/cap repair and qualified evidence](T04_NATIVE_INTERFACE_REPAIR.md)

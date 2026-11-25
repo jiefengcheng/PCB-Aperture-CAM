@@ -137,6 +137,26 @@ def status(job):
                 custody='AUTHENTICATED_SAVED_BYTES; GEOMETRY_NOT_RERUN')
 
 
+def execution_binding(raw,policy,code):
+    """One canonical producer identity for execution and orchestration."""
+    return dict(schema=SCHEMA,source_sha256=digest(raw),implementation=code,
+        policy=policy.resolved(),discovery=dict(profile=PROFILE,minimum_support_mm=MIN_SUPPORT_MM,
+            maximum_span_mm=MAX_SPAN_MM,circular_fit_bound_mm=.004),
+        treatment=dict(selection='ALL_REQUIRED_FAMILIES; NO_EXECUTION_FAMILY_SWITCHES',
+            required_families=list(REQUIRED_FAMILIES),
+            unresolved_discovery_families=list(DISCOVERY_GAPS),
+            family_filters='SAVED_VIEW_ONLY'),
+        original_paths_and_contacts='CAUSING_PATH_PRESERVED_OR_BOUNDED_AREA_NOISE_FREE_END; SHALLOW_PATH_STRICT; PHYSICAL_AND_TERMINAL_CONTACTS_PRESERVED',
+        overlapping_plotting_fragments='EXISTING_WHOLE_PHYSICAL_NOISE_RULE; NO_INDEPENDENT_FRAGMENT_DENOMINATORS',rectangles='IGNORED',
+        flash_policy='UNRELATED_AND_DECLARED_PROTECTED; EXACT_CAUSING_PAD_AND_REDUNDANT_ENDPOINT_PROOFS_REQUIRED')
+
+
+def execution_identity(binding):
+    # Native preparation annotates the saved execution after its source/code/
+    # policy key was allocated. These are results, not a second job identity.
+    return digest(encode({k:v for k,v in binding.items()if k not in('shared_context','original_revision')}))
+
+
 def run(source, *, output=None, progress_callback=lambda **event: None):
     from src.gerber_u05.workspace import configure
     configure()
@@ -155,17 +175,8 @@ def run(source, *, output=None, progress_callback=lambda **event: None):
     if policy.maximum_depth_mm>.100 or policy.maximum_noise_area_fraction!=.10:
         raise ValueError('CLEANUP_POLICY_OUTSIDE_AUTHORIZED_LIMITS')
     code=implementation()
-    execution=dict(schema=SCHEMA,source_sha256=digest(raw),implementation=code,
-        policy=policy.resolved(),discovery=dict(profile=PROFILE,minimum_support_mm=MIN_SUPPORT_MM,
-            maximum_span_mm=MAX_SPAN_MM,circular_fit_bound_mm=.004),
-        treatment=dict(selection='ALL_REQUIRED_FAMILIES; NO_EXECUTION_FAMILY_SWITCHES',
-            required_families=list(REQUIRED_FAMILIES),
-            unresolved_discovery_families=list(DISCOVERY_GAPS),
-            family_filters='SAVED_VIEW_ONLY'),
-        original_paths_and_contacts='CAUSING_PATH_PRESERVED_OR_BOUNDED_AREA_NOISE_FREE_END; SHALLOW_PATH_STRICT; PHYSICAL_AND_TERMINAL_CONTACTS_PRESERVED',
-        overlapping_plotting_fragments='EXISTING_WHOLE_PHYSICAL_NOISE_RULE; NO_INDEPENDENT_FRAGMENT_DENOMINATORS',rectangles='IGNORED',
-        flash_policy='UNRELATED_AND_DECLARED_PROTECTED; EXACT_CAUSING_PAD_AND_REDUNDANT_ENDPOINT_PROOFS_REQUIRED')
-    key=digest(encode(execution))
+    execution=execution_binding(raw,policy,code)
+    key=execution_identity(execution)
     from src.cleanup_runtime import workspace_root
     work=workspace_path(workspace_root()/'large_copper_jobs')
     work.mkdir(exist_ok=True)

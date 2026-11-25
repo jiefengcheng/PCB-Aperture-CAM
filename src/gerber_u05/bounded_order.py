@@ -180,6 +180,14 @@ def assemble(store, scene, stage):
             if sid not in material: raise ValueError('ORDER_ASSEMBLY_UNKNOWN_SOURCE')
             material[sid] = from_wkb(bytes.fromhex(value['wkb_hex']))
     ref = p.artifact_scene(store, scene, material, 'bounded-order-diagnostic-assembly')
+    transitions=stage['hybrid_components'].get('boundary_transitions')or{}
+    if transitions.get('deferred_terminals'):
+        from .terminal_handoff import seal
+        ledger=seal(transitions['deferred_terminals'],material,scene['source_sha256'],
+                    transitions['maximum_transition_angle_degrees'])
+        saved=store.get_json(ref,kind='scene')
+        saved['lineage'][-1]['terminal_handoff_ref']=store.put_json('t04-terminal-handoff',ledger)
+        ref=store.put_json('scene',saved)
     return dict(scene_ref=ref, stage_sha256=p.digest(p.canonical(stage)),
                 complete_t04=False, publication_ready=False, export_qualified=False)
 

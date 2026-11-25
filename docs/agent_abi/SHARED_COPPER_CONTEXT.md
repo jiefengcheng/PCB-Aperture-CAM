@@ -206,3 +206,32 @@ windows remain outside this cleanup list. The owner accepted the reviewed result
 and then deferred rectangular bumps; this grants no full-board or manufacturing
 acceptance. Independent review is NOT_RUN / CHANNEL_UNAVAILABLE;
 electrical/manufacturing is NOT_ESTABLISHED.
+
+
+## Native revision publication retention fix — 2026-11-26
+
+Native-stage revisions now use the existing LazyOwners representation on both
+cold publication and warm restore. Output owner/delta blobs are persisted and
+authenticated without becoming an additional resident snapshot beside active
+T04 preparation. Active owners/indexes remain pinned; explicit owner loading
+still enforces the same geometry budget. Repeated owner access reuses its
+resident native object. Unchanged owners keep their existing geometry keys.
+
+Publication borrows the existing source/overlay index to select possible new
+contacts, keeps the exact owner predicate and metadata closure, and screens
+remaining candidates once per owner. Already affected owners need no repeated
+intersection proof. Fixed-grid inputs retain the exhaustive-owner fallback.
+Inactive screening operands are temporary; no private owner index is introduced.
+Affected-owner recomposition, source order, polarity-composed geometry, original
+boundary coordinates, native distance machinery, kernel binding, format, and
+128/192 MiB budgets remain unchanged. No stage accepts cached preparation as a
+verification result.
+
+Evidence is
+`out/lacie_work/t04_shoulders_joined_20261125_01/publication_blocker_20261126/FINAL_REPORT.md`.
+The saved client publication passes at 158.012 MiB with the active boundary index
+and all 275 native ownership polygons retained, adding only 80,000 bytes. Its
+revision bytes equal the old publisher's output exactly. Restart performs zero
+owner recompositions. All 222 focused regressions passed. This is publication-
+only evidence: the failed T04 job remains failed and no full-board treatment,
+viewer publication or export was rerun.

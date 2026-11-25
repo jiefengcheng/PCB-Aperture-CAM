@@ -1,6 +1,67 @@
 # Provisional T04 growth eligibility — 2026-11-22
 
-## Current policy revision 6 and qualified checkpoint — 2026-11-24
+## Current policy revision 8: large-copper coverage excludes ordinary pad overlap
+
+The revision-7 bounded review exposed a false exclusion: nine additional source
+members were mostly under ordinary circular/rectangular terminals. Only places
+1 and 2 were the marked large-copper boundary issue. Normal successful growth
+records were also mixed into the default All saved places list.
+
+Revision 8 sets `source_coverage_mode = INDEPENDENT_BROAD_FILL`. Individual
+members use the same independently prepared broad-fill material already used
+by the route measurement (0.125 mm inset and 1 mm² broad core). Reuse the
+existing route intersection with that material. Do not build another index,
+query neighbours again or union the board for each member. Ordinary isolated
+pad overlap cannot establish this new 80% piece-level exclusion. The original
+exact-coverage classifier, route exclusions, width cutoff and contact checks
+are unchanged. Revision 7 snapshots retain their recorded broader semantics.
+
+Saved per-piece measurements retain their `basis`; broad-fill KEEP uses
+`LARGELY_COVERED_SOURCE_SEGMENT_BY_LARGE_FILLED_COPPER`. The default viewer
+Findings filter excludes successful normal-growth records. All saved places
+and Normal grown traces remain available for optional inspection. Selection
+still runs no treatment.
+
+## Previous policy revision 7: measure covered pieces separately — 2026-11-24
+
+The owner confirmed that covered pieces within an exposed route must be
+measured separately. Revision 7 adds `coverage_granularity =
+ROUTE_AND_SOURCE_SEGMENT`. The existing 80% threshold also applies to each
+source segment's own stage-entry copper area. A covered member stays byte-identical
+even when its complete route is below 80%; exposed neighbours remain eligible.
+Route-wide width and coverage exclusions remain effective.
+
+For each route, reuse the already prepared independent covered geometry,
+excluding every own route member and exact normalized alias. Intersect each
+member with that operand; do not build another index, repeat the route query,
+reconstruct owners or union the board per member. The ledger's
+`candidate_source_coverage[route][source]` retains original area, covered area,
+fraction and disposition. Individual KEEP reasons enter the existing fixed-source
+and covered-source projection before construction. The existing fixed-continuation
+sections constrain the transition from exposed neighbours to retained members.
+
+Historical snapshots keep their recorded semantics. In particular, revision 6
+does not acquire the new per-member rule. Saved viewer eligibility places also
+include retained individual members, without executing treatment on selection.
+The revision-6 full-board result below is historical evidence, not qualification
+of revision 7. New qualification starts with the marked arc 15804 / line 15805
+in route `JR-b79d65285f6fc7c5`, then bounded continuity and endpoint cases.
+
+Bounded qualification: `out/lacie_work/t04_segment_coverage_20261124_01/`.
+Four routes passed connection, reference, functional and pocket checks; all
+70 frozen endpoint sections passed with zero unresolved corners. The marked
+arc/line are 99.631% / 99.567% independently covered and stay byte-identical;
+none of their previous 0.005327 mm² unwanted addition remains. Exposed route
+members still grow. The fresh bounded execution took 119.898 s, including
+preparation and final checks. Its shared source index was built once. Tests
+also prove that measuring several members reuses one shared route query.
+106 focused Python tests, 37 publisher tests, 20 native reader tests and 25
+native T04 workflow checks passed; navigation issued zero treatment requests.
+The dedicated grey viewer displays this **bounded** result, focused on source
+15804. The prior full-board construction is retained; revision 7 has not yet
+been rerun across the full board. See `REPORT.md` and `RECEIPT.json` there.
+
+## Previous policy revision 6 and qualified checkpoint — 2026-11-24
 
 Revision 6 additionally measures complete candidate routes against **other
 stage-entry copper**, including overlapping native-stroke artwork omitted by

@@ -206,8 +206,10 @@ def main():
     source_rows={r['source_id']:r for r in rows}
     stats=Counter()
     begin=perf_counter()
-    tree=STRtree(shapes)
-    pairs=tree.query(shapes,predicate='dwithin',distance=PROXIMITY_MM)
+    # A supported straight-only source has no arc relationships to prepare.
+    # Shapely's empty Python list otherwise becomes a float array at query.
+    pairs=(STRtree(shapes).query(shapes,predicate='dwithin',distance=PROXIMITY_MM)
+           if shapes else np.empty((2,0),dtype=np.intp))
     fit_pairs=[]
     relations=[]
     for i,j in zip(*pairs):
@@ -280,8 +282,8 @@ def main():
                                straight_segments_grouped=len(straight_sources),
                                prior_run_associated_straight_segments=len(run_sources),total_source_segments=total_segments,
                                total_source_segments_grouped=len(all_sources),
-                               source_segment_coverage_percent=100*len(all_sources)/total_segments,
-                               source_arc_coverage_percent=100*len(curve_sources)/total_arcs,
+                               source_segment_coverage_percent=100*len(all_sources)/total_segments if total_segments else None,
+                               source_arc_coverage_percent=100*len(curve_sources)/total_arcs if total_arcs else None,
                                routes_with_grouped_segments=len(routes_touched),
                                routes_with_every_source_segment_participating=len(complete_routes),
                                route_count=len(route_sources),curve_group_sizes=dict(Counter(len(g['members']) for g in groups)),
@@ -293,7 +295,7 @@ def main():
     result=dict(source_sha256=inputs['source_sha256'],metric='Maximum full polyline centerline residual / target curve length; sampled least-squares scale fit',
                 transforms='Positive uniform scale and spatial translation, source direction reversal allowed',
                 tolerance=FIT_TOLERANCE,minimum_shared_run_sweep_mm=list(MINIMUMS),spatial_distance_mm=PROXIMITY_MM,
-                source_arcs=len(arcs),source_straight_segments=12116,statistics=stats,summaries=summaries,
+                source_arcs=len(arcs),source_straight_segments=sum(r['metadata']['route_kind']=='segment'for r in rows),statistics=stats,summaries=summaries,
                 scan_wall_s=perf_counter()-begin,source_copper_changed=False,t04_stage_run=False,replay=False)
     (ROOT/'SUMMARY.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
     (ROOT/'CURVE_GROUPS.json.gz').write_bytes(gzip.compress(json.dumps(dict(arcs=arcs,cases=outputs),separators=(',',':')).encode(),mtime=0))

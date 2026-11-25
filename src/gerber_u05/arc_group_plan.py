@@ -157,7 +157,10 @@ def prepare_maximal(rows,original,material,groups,used,owner,roles,settings,widt
             widths=[rows[s]['metadata']['minimum_caliper_mm']for s in sources]
             if max(widths)-min(widths)>1e-12:continue
             if any(rows[s]['metadata']['aperture_family'][0]!='C'for s in sources):continue
-            if len({owner(s)for s in sources})!=1:raise ValueError('MAXIMAL_ARC_SOURCE_OWNER_CHANGED')
+            # Source membership batches use JSON arrays; live channel scopes
+            # use tuples. Preserve the complete ordered owner collection in
+            # the equality key without depending on its container type.
+            if len({tuple(owner(s))for s in sources})!=1:raise ValueError('MAXIMAL_ARC_SOURCE_OWNER_CHANGED')
             members[mid]=m;virtual_caps[mid]=min(width_caps[s]for s in sources)
             virtual_rows[mid]=dict(original_ref=rows[sources[0]]['original_ref'],
                 member_source_refs=[dict(source_id=s,original_ref=rows[s]['original_ref'])for s in sources],

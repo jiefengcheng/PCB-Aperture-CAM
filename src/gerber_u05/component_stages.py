@@ -38,7 +38,9 @@ def initialize(store,binding,scene=None,*,prepare_membership=False):
  if scene is not None:
   context.register_scene(store,scene)
   if functional is not None:functional.register_scene(store,scene)
-  if len(scene['lineage'])>1:reserve_prior(context,store)
+  if len(scene['lineage'])>1:
+   from .trimmed_entry import sealed_subtractive_entry
+   if not sealed_subtractive_entry(store,scene):reserve_prior(context,store)
  from .checking_envelopes import initialize as initialize_checking
  initialize_checking(store,binding,scene,physical=context,functional=functional)
  return context

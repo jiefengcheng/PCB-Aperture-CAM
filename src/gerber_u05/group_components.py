@@ -815,6 +815,80 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                 corner_report['unresolved']=sum(v['status']in('KEEP_UNRESOLVED','REJECTED_NEW_POCKET')for v in corner_report['reports'])
                 phases.append(dict(phase='SUBTRACTIVE_INTERFACE_RECONCILIATION',wall_s=interface_report['wall_s']))
                 if progress:progress(dict(event='interface_reconciliation',trimmed=interface_report['trimmed_joints'],kept_components=len(interface_report['kept_original_components']),endpoint_failures=len(endpoint_audit['failures']),unresolved_corners=corner_report['unresolved'],wall_s=interface_report['wall_s']))
+    boundary_report=None;boundary_cuts={};boundary_inputs={}
+    if continuous and anchored and getattr(settings,'_transitions',None) is not None:
+        from src.t04_transition_policy import decode as transition_policy
+        from src.shared_copper_context import ACTIVE
+        from .boundary_prepare import supports as prepare_contacts
+        from .boundary_finish import run as finish_boundaries,component_count as boundary_components
+        shared=copper or ACTIVE.get()
+        if shared is None:raise ValueError('T04_BOUNDARY_TRANSITIONS_REQUIRE_SHARED_COPPER')
+        revision=shared.acquire({s:g for s,g in original.items()if to_wkb(g)!=to_wkb(shared.source.values[s])})
+        fixed=set(construction.get('covered_trace_projection',{}).get('covered_source_ids',[]))
+        fixed.update(construction.get('trace_eligibility_policy',{}).get('fixed_source_ids',[]))
+        fixed.update(s for ss in native_paths.values()for s in ss if s not in used)
+        declared={s:source_bodies.get(s,material.get(s,current[s]))for ss in native_paths.values()for s in ss}
+        policy=transition_policy(settings._transitions)
+        contacts=prepare_contacts(rows,native_paths,original,revision,covered=fixed,with_sources=True,
+            admitted=declared if policy['revision']>=2 else None)
+        terminal_regions=[]
+        if policy['revision']>=2:
+            from .terminal_handoff import prepare as prepare_terminals
+            terminal_regions=prepare_terminals(rows,native_paths,original,contacts,declared)
+        if policy['revision']==4:
+            from .retained_boundary import run as finish_retained
+            baseline={s:source_bodies.get(s,material.get(s,current[s]))for s in current}
+            refined,boundary_cuts,replacements,boundary_report=finish_retained(
+                rows,native_paths,declared,original,construction['source_width_targets_mm'],
+                material=baseline,covered=fixed,contacts=contacts,revision=revision,
+                eligibility=construction['trace_eligibility_policy'],terminals=terminal_regions,
+                carriers={s:v.get('member_source_ids',[s])if v.get('body_scope','').startswith('MAXIMAL_')else[s]for s,v in bodies.items()},
+                endpoint_sections=obligations,
+                protected_voids=()if pin.ACTIVE is None else[slot.void for slot in pin.ACTIVE.slots],
+                angle=policy['maximum_transition_angle_degrees'],progress=progress)
+        elif policy['revision']==3:
+            from .growth_bridge import run as bridge_gaps
+            from .boundary_prepare import bridge_allowances
+            baseline={s:source_bodies.get(s,material.get(s,current[s]))for s in current}
+            refined,boundary_cuts,replacements,boundary_report=bridge_gaps(
+                rows,native_paths,declared,original,construction['source_width_targets_mm'],covered=fixed,
+                supports=contacts,maximum_transition_angle_degrees=policy['maximum_transition_angle_degrees'],
+                progress=progress,terminals=terminal_regions,
+                prepare=lambda plans:bridge_allowances(plans,baseline,revision,
+                    protected_voids=()if pin.ACTIVE is None else[slot.void for slot in pin.ACTIVE.slots]))
+        else:
+            refined,boundary_cuts,replacements,boundary_report=finish_boundaries(
+                rows,native_paths,declared,original,construction['source_width_targets_mm'],
+                covered=fixed,supports=contacts,maximum_transition_angle_degrees=
+                    policy['maximum_transition_angle_degrees'],progress=progress,terminals=terminal_regions,
+                    local_controls=policy['revision']>=2)
+        input_keys={s:p.digest(to_wkb(declared[s]))for s in boundary_cuts}
+        boundary_inputs=dict(source_sha256=input_keys,
+            geometry_wkb_hex_by_sha256={sha:to_wkb(declared[s]).hex()for s,sha in input_keys.items()})
+        for s in boundary_cuts:
+            source_bodies[s]=refined[s]
+            bodies.setdefault(s,{}).update(wkb_hex=to_wkb(refined[s]).hex(),
+                connected_components=boundary_components(refined[s]),
+                final_boundary_refinement='FLEXIBLE_END_REBRIDGE_WITH_NO_NET_LOSS'if policy['revision']==4 else
+                    'GAP_BRIDGE_WITH_NO_NET_LOSS'if policy['revision']==3 else'SUBTRACTIVE_CHAIN_TRANSITION',
+                **{('boundary_change_sha256'if policy['revision']>=3 else'boundary_cut_sha256'):p.digest(to_wkb(boundary_cuts[s]))})
+        changed_routes={r for r,ss in native_paths.items()if set(ss).intersection(boundary_cuts)}
+        for record in connections:
+            if record['route_id']in changed_routes:
+                body=declared_route(native_paths[record['route_id']],source_bodies,material)
+                record.update(assembled_components=boundary_components(body),final_boundary_refinement_checked=True)
+                record['passed']=record['assembled_components']<=record['source_components']
+        superseded=[]
+        for item in obligations:
+            site=(item['source_id'],tuple(round(x,10)for x in item['endpoint_mm']))
+            if site in replacements:
+                superseded.append(dict(source_id=site[0],point_mm=list(site[1]),previous=item['section'],replacement=replacements[site]))
+                item['section']=replacements[site];item['native_frame_transition_admitted']=True
+        for r in changed_routes:route_audit_bodies[r]=declared_route(native_paths[r],source_bodies,material)
+        endpoint_audit=audit_sections(route_audit_bodies,obligations,buffers=section_buffers)
+        endpoint_audit.update(cross_section_mismatches=section_conflicts,superseded_boundary_sections=superseded)
+        phases.append(dict(phase='FLEXIBLE_RETAINED_WIDENING_BRIDGES'if policy['revision']==4 else
+            'LOCAL_GAP_BRIDGES'if policy['revision']==3 else'SUBTRACTIVE_BOUNDARY_TRANSITIONS',wall_s=boundary_report['wall_s']))
     if continuous:
         # Verify exactly the source contours serialized and displayed below.
         # Raw groups/joints remain construction evidence, not duplicate output
@@ -848,6 +922,9 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                 corner_smoothing=corner_report,
                 tangent_finishing=finish_report,
                 joint_interface_reconciliation=interface_report,
+                boundary_transitions=boundary_report,
+                boundary_transition_inputs=boundary_inputs,
+                boundary_transition_cut_shapes={s:dict(wkb_hex=to_wkb(g).hex())for s,g in boundary_cuts.items()},
                 joint_interface_cut_shapes={s:dict(wkb_hex=to_wkb(g).hex())for s,g in interface_cuts.items()},
                 **(dict(wider_end_trimming=wide_end_report,
                     wider_end_cut_shapes={s:dict(wkb_hex=to_wkb(cut).hex())for s,cut in wide_end_cuts.items()},

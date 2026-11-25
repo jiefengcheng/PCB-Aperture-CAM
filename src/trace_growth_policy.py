@@ -35,6 +35,10 @@ class Policy:
         if smooth:expected|={'smooth_native_route_profiles'}
         candidate=type(value.get('revision'))is int and value['revision']>=6
         if candidate:expected|={'candidate_coverage_mode'}
+        pieces=type(value.get('revision'))is int and value['revision']>=7
+        if pieces:expected|={'coverage_granularity'}
+        broad_pieces=type(value.get('revision'))is int and value['revision']>=8
+        if broad_pieces:expected|={'source_coverage_mode'}
         if (set(value)!=expected or value['schema']!='pcb-trace-growth-eligibility/1' or
                 type(value['revision'])is not int or value['revision']<1 or value['status']!='PROVISIONAL' or
                 type(value['preserve_routes_connected_to_large_fill'])is not bool or value['preserve_complete_large_fill_contours']is not True):
@@ -52,6 +56,10 @@ class Policy:
             raise ValueError('SMOOTH_NATIVE_ROUTE_PROFILES_REQUIRED')
         if candidate and value['candidate_coverage_mode']!='OTHER_ENTRY_COPPER_EXCLUDING_ROUTE_AND_EXACT_ALIASES':
             raise ValueError('INVALID_CANDIDATE_COVERAGE_POLICY')
+        if pieces and value['coverage_granularity']!='ROUTE_AND_SOURCE_SEGMENT':
+            raise ValueError('INVALID_COVERAGE_GRANULARITY')
+        if broad_pieces and value['source_coverage_mode']!='INDEPENDENT_BROAD_FILL':
+            raise ValueError('INVALID_SOURCE_COVERAGE_MODE')
         for name in ('maximum_eligible_source_width_mm','large_fill_core_radius_mm','minimum_large_fill_core_area_mm2'):
             if type(value[name])not in(int,float)or not math.isfinite(value[name])or value[name]<=0:
                 raise ValueError('INVALID_TRACE_ELIGIBILITY_PARAMETER:'+name)
@@ -137,7 +145,7 @@ def classify(rows,predecessor,paths,policy,*,copper=None):
     # fill roles were removed. Disabling connected-route protection must not
     # keep those ordinary traces indirectly through the fixed-source ledger.
     protected=large_members if settings['preserve_routes_connected_to_large_fill'] else large_members-native_sources
-    coverage={};support=[];candidate_coverage={}
+    coverage={};support=[];candidate_coverage={};source_coverage={};source_reasons={}
     if 'minimum_large_fill_coverage_fraction'in settings:
         # A broad owner also contains its attached thin branches. It is NOT a
         # coverage operand: that would make every attached route cover itself.
@@ -147,12 +155,15 @@ def classify(rows,predecessor,paths,policy,*,copper=None):
         aliases={normalized[s]for s in native_sources}
         support=[s for s in predecessor if s not in native_sources and
                  not predecessor[s].is_empty and normalized[s]not in aliases]
-        material=(copper.prepared_subset(revision,support)if copper is not None else
-                  unary_union([predecessor[s]for s in support]))
-        faces=[]if material.is_empty else([material]if material.geom_type=='Polygon'else list(material.geoms))
-        broad=[g for g in faces if g.area>=settings['minimum_large_fill_core_area_mm2']and
-               g.buffer(-settings['large_fill_core_radius_mm'],quad_segs=128).area>=settings['minimum_large_fill_core_area_mm2']]
-        fill=unary_union(broad)
+        if copper is not None:
+            fill=copper.prepared_broad_fill(revision,support,radius=settings['large_fill_core_radius_mm'],
+                minimum_area=settings['minimum_large_fill_core_area_mm2'])
+        else:
+            material=unary_union([predecessor[s]for s in support])
+            faces=[]if material.is_empty else([material]if material.geom_type=='Polygon'else list(material.geoms))
+            broad=[g for g in faces if g.area>=settings['minimum_large_fill_core_area_mm2']and
+                   g.buffer(-settings['large_fill_core_radius_mm'],quad_segs=128).area>=settings['minimum_large_fill_core_area_mm2']]
+            fill=unary_union(broad)
         # All growth candidates must also be measured against independent
         # stage-entry material. Plotted filled artwork can itself be admitted
         # as native strokes, so excluding ALL native paths loses that cover.
@@ -166,7 +177,8 @@ def classify(rows,predecessor,paths,policy,*,copper=None):
             source_tree=STRtree(list(predecessor.values()))
         for route,members in sorted(paths.items()):
             body=unary_union([predecessor[s]for s in members])
-            overlap=body.intersection(fill).area if broad else 0.
+            fill_covered=body.intersection(fill)
+            overlap=fill_covered.area
             fraction=min(1.,overlap/body.area)if body.area else 0.
             coverage[route]=dict(original_route_area_mm2=body.area,large_fill_covered_area_mm2=overlap,
                 large_fill_coverage_fraction=fraction,
@@ -189,7 +201,29 @@ def classify(rows,predecessor,paths,policy,*,copper=None):
                     keep=fraction>=settings['minimum_large_fill_coverage_fraction'],
                     support_source_ids=supporting,covered_geometry_sha256=digest(to_wkb(covered)),
                     basis=candidate_mode)
-    kept={};reasons={}
+                if settings.get('coverage_granularity')=='ROUTE_AND_SOURCE_SEGMENT':
+                    # Reuse this route's independent coverage operands. Its
+                    # exposed length must not dilute a buried member's area.
+                    # Ordinary pad overlap alone is not broad-fill coverage.
+                    # No new query, owner build, intersection or board union
+                    # is needed to obtain the route's broad-fill operand.
+                    broad_only=settings.get('source_coverage_mode')=='INDEPENDENT_BROAD_FILL'
+                    source_cover=fill_covered if broad_only else covered
+                    basis='INDEPENDENT_BROAD_FILL'if broad_only else candidate_mode
+                    reason=('LARGELY_COVERED_SOURCE_SEGMENT_BY_LARGE_FILLED_COPPER'if broad_only else
+                            'LARGELY_COVERED_SOURCE_SEGMENT_BY_OTHER_ENTRY_COPPER')
+                    pieces={}
+                    for s in members:
+                        g=predecessor[s]
+                        area=min(g.area,g.intersection(source_cover).area)
+                        fraction=max(0.,min(1.,area/g.area))if g.area else 0.
+                        keep=fraction>=settings['minimum_large_fill_coverage_fraction']
+                        pieces[s]=dict(original_source_area_mm2=g.area,
+                            other_entry_covered_area_mm2=area,other_entry_coverage_fraction=fraction,
+                            keep=keep,basis=basis)
+                        if keep:source_reasons[s]=[reason]
+                    source_coverage[route]=pieces
+    kept={};reasons={s:list(why)for s,why in source_reasons.items()}
     for route,members in sorted(paths.items()):
         why=[]
         if settings['preserve_routes_connected_to_large_fill'] and any(s in large_members for s in members):
@@ -200,7 +234,7 @@ def classify(rows,predecessor,paths,policy,*,copper=None):
         elif candidate_coverage.get(route,{}).get('keep'):why.append('LARGELY_COVERED_BY_OTHER_ENTRY_COPPER')
         if why:
             kept[route]=why
-            for s in members:reasons[s]=why
+            for s in members:reasons[s]=list(why)
     fixed=protected|set(reasons)
     ledger=dict(schema='pcb-trace-growth-eligibility-ledger/1',policy=policy.snapshot(),
                 predecessor_geometry_sha256=digest(canonical({s:digest(to_wkb(g))for s,g in sorted(predecessor.items())})),
@@ -215,6 +249,8 @@ def classify(rows,predecessor,paths,policy,*,copper=None):
                 connected_route_protection=settings['preserve_routes_connected_to_large_fill'],
                 qualification='PROVISIONAL_SOURCE_SELECTION; NOT_T04_OR_MANUFACTURING_ACCEPTANCE')
     if settings.get('candidate_coverage_mode'):ledger['candidate_route_coverage']=candidate_coverage
+    if settings.get('coverage_granularity'):
+        ledger['candidate_source_coverage']=source_coverage
     return ledger,index
 
 

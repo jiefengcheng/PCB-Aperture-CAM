@@ -38,6 +38,10 @@ def _run(store,scene,*,route_ids=None,settings=None):
     paths=all_paths if route_ids is None else {s:all_paths[s]for s in sorted(route_ids)}
     if not paths:raise ValueError('NO_EXPOSED_GERBER_ROUTES')
     if settings is None:settings=read_snapshot(store.root.parent/SNAPSHOT_NAME)
+    from src import trace_growth_policy
+    eligibility,_=trace_growth_policy.prepare(p.ROOT/'out/lacie_work/source_artifacts/t04_trace_eligibility',
+        scene,rows,current,{r:v['source_ids']for r,v in all_paths.items()},trace_growth_policy.for_job(store))
+    keep_routes={r:why for r,why in eligibility['kept_routes'].items()if r in paths}
     used={m for v in paths.values()for m in v['source_ids']}
     if any(not current[m].equals_exact(original[m],0)for m in used):
         raise ValueError('T04_ORIGINAL_SOURCE_TRACE_REQUIRED; preceding-stage trace edits cannot be compounded')
@@ -64,7 +68,7 @@ def _run(store,scene,*,route_ids=None,settings=None):
     def evaluate(s,f):
         q=incremental.evaluate(s,f);evaluations.append(dict(route_id=s,factor=f,report_ref=store.put_json('width-check',q)));return q
     try:
-        solution=solve(widths,settings,evaluate,incremental.accept)
+        solution=solve(widths,settings,evaluate,incremental.accept,keep_routes=keep_routes)
         selected=solution['selected_scales'];full=p.PreparedWidthScene(baseline,fixed)
         checks={name:full.check(trial(selected,envelope),materialize_scene=True)
                 for name,envelope in (('nominal',False),('envelope',True))}
@@ -100,6 +104,7 @@ def _run(store,scene,*,route_ids=None,settings=None):
         fence.ACTIVE=fence.Rule.from_accepted(p.unary_union(denied),accepted,before,binding)
         ref=p.artifact_scene(store,scene,after,'t04')
         return dict(output_scene_ref=ref,admission=admission,qualification_route_ids=None if route_ids is None else sorted(route_ids),
+                    trace_eligibility_policy=eligibility,
                     solution=solution,checks=checks,evaluations=evaluations,part_factors=factors,
                     settings_snapshot=dict(source_sha256=settings.source_sha256,resolved=settings.resolved()),
                     checking_only_native_headroom_mm=checking_headroom,

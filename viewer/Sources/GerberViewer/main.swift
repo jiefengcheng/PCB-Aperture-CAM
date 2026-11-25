@@ -64,7 +64,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
             web = WKWebView(frame: .zero, configuration: config)
             web.navigationDelegate = self
             window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1280, height: 820), styleMask: [.titled,.closable,.miniaturizable,.resizable], backing: .buffered, defer: false)
-            window.title = "Gerber Viewer"; window.minSize = NSSize(width: 760, height: 520)
+            window.title = CommandLine.arguments.contains("--t04-only") ? "T04 Trace Growth" : "Gerber Viewer"; window.minSize = NSSize(width: 760, height: 520)
             window.contentView = NSHostingView(rootView: CanvasHost(web: web))
             window.center(); window.makeKeyAndOrderFront(nil)
             let menu = NSMenu(); let item = NSMenuItem(); menu.addItem(item)
@@ -140,7 +140,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     }
     func fatalDialog(_ message: String) { let alert = NSAlert(); alert.messageText = "Gerber Viewer"; alert.informativeText = message; alert.runModal(); NSApp.terminate(nil) }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { pageReady = true; if portable { send("configurePortableCleanup", "") }; if CommandLine.arguments.contains("--live") { send("configureLive", "") }; poll() }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { pageReady = true; if portable { send("configurePortableCleanup", "") }; if CommandLine.arguments.contains("--t04-only") { send("configureT04Only", "") }; if CommandLine.arguments.contains("--live") { send("configureLive", "") }; poll() }
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
         navigationAction.navigationType == .other && navigationAction.request.url?.isFileURL == true ? .allow : .cancel
     }

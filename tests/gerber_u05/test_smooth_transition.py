@@ -28,3 +28,11 @@ def test_polygonal_approximation_has_an_explicit_error_bound():
         for f in(.25,.5,.75):
             t=(a+(b-a)*f)/.3
             assert abs(value(c,t)-(x+(y-x)*f))<=1e-7+1e-14
+
+
+def test_tessellation_end_station_is_the_exact_certified_length():
+    from src.gerber_u05.smooth_transition import tessellate,value
+    controls=[.035,.035,.03501,.03501]
+    points=tessellate(controls,.1,error_mm=1e-6)
+    assert points[-1][0]==.1 and all(0<=t/.1<=1 for t,_ in points)
+    assert value(controls,points[-1][0]/.1)==controls[-1]

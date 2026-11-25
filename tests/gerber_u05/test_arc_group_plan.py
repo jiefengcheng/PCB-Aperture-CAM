@@ -48,9 +48,10 @@ def maximal_fixture():
     return rows,original,groups
 
 
-def test_complete_arc_member_has_no_internal_seam_reserves_or_islands():
+@pytest.mark.parametrize('container',[tuple,list])
+def test_complete_arc_member_has_no_internal_seam_reserves_or_islands(container):
     rows,original,groups=maximal_fixture()
-    cores,proof=prepare_maximal(rows,original,original,groups,set(rows),lambda s:('A'if s in('a','b')else'B',),{},
+    cores,proof=prepare_maximal(rows,original,original,groups,set(rows),lambda s:container(['A'if s in('a','b')else'B']),{},
         SimpleNamespace(maximum_factor=1.5,maximum_total_width_increase_mm=.03),dict.fromkeys(rows,.075))
     assert set(cores)==set(rows)
     assert cores['a']['body'].wkb==cores['b']['body'].wkb
@@ -60,6 +61,13 @@ def test_complete_arc_member_has_no_internal_seam_reserves_or_islands():
     assert proof['native_source_seam_reserves']==0 and not proof['geometry_audit']
     assert len(proof['models'][0]['source_members'][cores['a']['member_id']]['source_refs'])==2
     assert canonical(proof)
+
+
+def test_restored_array_membership_still_rejects_changed_arc_owner():
+    rows,original,groups=maximal_fixture()
+    with pytest.raises(ValueError,match='MAXIMAL_ARC_SOURCE_OWNER_CHANGED'):
+        prepare_maximal(rows,original,original,groups,set(rows),lambda s:[s],{},
+            SimpleNamespace(maximum_factor=1.5,maximum_total_width_increase_mm=.03),dict.fromkeys(rows,.075))
 
 
 def test_a_covered_occurrence_does_not_get_growth_through_a_member_alias():

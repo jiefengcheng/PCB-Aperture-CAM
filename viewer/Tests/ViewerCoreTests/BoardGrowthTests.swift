@@ -62,6 +62,16 @@ final class BoardGrowthTests: XCTestCase {
             "displayHausdorffMM":0,"findings":[finding],"grownRoutes":1,"keptRoutes":0,"connectionChecks":1,
             "nominalCutoffMM":0.25,"maximumFactor":1.5,"maximumWidthIncreaseMM":0.03,"summary":"T04 only","note":"Saved data only"]
         value["t04"]=t04;XCTAssertNoThrow(try validate(value))
+        var shoulder:[String:Any] = ["beforeWkbSHA256":sha,"afterWkbSHA256":sha,
+            "parts":[t04Part],"bounds":["x":0,"y":0,"width":4,"height":2],
+            "addedAreaMM2":0,"removedAreaMM2":0,"displayHausdorffMM":0,
+            "summary":"Previous widening","note":"Saved geometry only"]
+        t04["shoulderReview"]=shoulder;value["t04"]=t04;XCTAssertNoThrow(try validate(value))
+        shoulder["afterWkbSHA256"]=String(repeating:"d",count:64)
+        t04["shoulderReview"]=shoulder;value["t04"]=t04;XCTAssertThrowsError(try validate(value))
+        shoulder["afterWkbSHA256"]=sha;shoulder["displayHausdorffMM"]=0.001
+        t04["shoulderReview"]=shoulder;value["t04"]=t04;XCTAssertThrowsError(try validate(value))
+        t04.removeValue(forKey:"shoulderReview")
         t04["fullBoard"]=false;t04["largeFillCoverageFraction"]=0.8;value["t04"]=t04;XCTAssertNoThrow(try validate(value))
         t04["largeFillCoverageFraction"]=1.1;value["t04"]=t04;XCTAssertThrowsError(try validate(value));t04["largeFillCoverageFraction"]=0.8
         t04["inputSceneSHA256"]="stale";value["t04"]=t04;XCTAssertThrowsError(try validate(value));t04["inputSceneSHA256"]=sha

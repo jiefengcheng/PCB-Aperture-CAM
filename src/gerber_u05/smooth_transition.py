@@ -61,4 +61,6 @@ def tessellate(c,length,*,error_mm=1e-7):
     if error_mm<=0 or length<=0 or len(c)!=4:raise ValueError('VALID_TESSELLATION_REQUIRED')
     second=6*max(abs(c[2]-2*c[1]+c[0]),abs(c[3]-2*c[2]+c[1]))
     count=max(1,math.ceil(math.sqrt(second/(8*error_mm))))
-    return [(i*length/count,value(c,i/count))for i in range(count+1)]
+    # Multiplying then dividing can put the final station one ULP beyond
+    # length (for example 3*.1/3). Preserve the exact certified endpoint.
+    return [(length if i==count else i*length/count,value(c,i/count))for i in range(count+1)]

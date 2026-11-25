@@ -114,6 +114,10 @@ def test_coverage_uses_complete_route_area_not_tiny_pad_entry_or_segment_count()
     ledger,_=classify(rows,shapes,dict(route=['entry','exposed']),capture())
     assert 'route'not in ledger['kept_routes']
     assert ledger['large_fill_route_coverage']['route']['large_fill_coverage_fraction']==pytest.approx(1/6)
+    assert ledger['candidate_source_coverage']['route']['entry']['keep']
+    assert not ledger['candidate_source_coverage']['route']['exposed']['keep']
+    assert ledger['keep_source_reasons']['entry']==['LARGELY_COVERED_SOURCE_SEGMENT_BY_LARGE_FILLED_COPPER']
+    assert 'entry'in ledger['fixed_source_ids']and 'exposed'not in ledger['fixed_source_ids']
 
 
 def test_holes_other_native_traces_and_exact_aliases_cannot_establish_fill_coverage():
@@ -121,7 +125,7 @@ def test_holes_other_native_traces_and_exact_aliases_cannot_establish_fill_cover
     trace=box(3,3,7,3.1)
     shapes=dict(fill=fill,trace=trace,alias=trace,other=box(3,3,7,3.2))
     rows={s:dict(kind='stroke',metadata=dict(minimum_caliper_mm=.1))for s in shapes}
-    value=capture().value;value['revision']=5;del value['candidate_coverage_mode']
+    value=capture().value;value['revision']=5;del value['candidate_coverage_mode'];del value['coverage_granularity'];del value['source_coverage_mode']
     ledger,_=classify(rows,shapes,dict(route=['trace'],other=['other']),Policy(json.dumps(value).encode()))
     assert 'route'not in ledger['kept_routes']
     assert 'alias'not in ledger['large_fill_coverage_support_source_ids']
@@ -129,7 +133,7 @@ def test_holes_other_native_traces_and_exact_aliases_cannot_establish_fill_cover
 
 
 def test_previous_policy_snapshot_does_not_acquire_new_coverage_exclusion():
-    value=capture().value;value['revision']=3;del value['minimum_large_fill_coverage_fraction'];del value['smooth_native_route_profiles'];del value['candidate_coverage_mode']
+    value=capture().value;value['revision']=3;del value['minimum_large_fill_coverage_fraction'];del value['smooth_native_route_profiles'];del value['candidate_coverage_mode'];del value['coverage_granularity'];del value['source_coverage_mode']
     shapes=dict(fill=box(0,0,10,5),trace=box(1,4.91,2,5.01))
     rows={s:dict(kind='stroke',metadata=dict(minimum_caliper_mm=.1))for s in shapes}
     ledger,_=classify(rows,shapes,dict(route=['trace']),Policy(json.dumps(value).encode()))
@@ -201,5 +205,80 @@ def test_candidate_coverage_borrows_revision_source_index_after_trim(tmp_path):
         assert not second['candidate_route_coverage']['route']['keep']
         assert second==third
         assert context.stats['revision_overlay_index_builds']==1
-        assert context.stats['source_queries']==3
+        # Three coverage queries plus one bounded revision-publication query
+        # borrow the same source index; publication no longer scans every owner.
+        assert context.stats['source_queries']==4
         assert context.stats['source_index_builds']==1
+
+
+def test_each_piece_uses_its_own_area_and_retains_exposed_neighbour(tmp_path):
+    from src.gerber_u05.covered_traces import prepare
+    shapes=dict(at=box(0,0,1,.1),below=box(1,0,2,.1),tail=box(2,0,8,.1),
+        cover_a=box(-4,-3,.8,3),cover_b=box(1,-3,1.799,3))
+    rows={s:dict(kind='stroke',metadata=dict(minimum_caliper_mm=.1,route_kind='segment'))for s in shapes}
+    paths=dict(route=['at','below','tail'])
+    ledger,_=classify(rows,shapes,paths,capture())
+    assert 'route'not in ledger['kept_routes']
+    records=ledger['candidate_source_coverage']['route']
+    assert records['at']['other_entry_coverage_fraction']==pytest.approx(.8)
+    assert records['at']['keep']and not records['below']['keep']and not records['tail']['keep']
+    active,coverage,_=prepare(tmp_path,{},rows,shapes,paths,fixed_source_reasons=ledger['keep_source_reasons'])
+    assert active==dict(route=['below','tail'])
+    assert coverage['reports']['at']['growth_excluded']and not coverage['reports']['at']['fully_covered']
+
+
+def test_piece_coverage_reuses_shared_route_query_and_excludes_siblings_and_aliases(tmp_path):
+    from src.shared_copper_context import CopperContext
+    shapes=dict(a=box(0,0,2,.1),b=box(.01,0,2.01,.1),alias=box(0,0,2,.1),
+        exposed=box(2,0,6,.1),cover=box(-3,-3,1.8,3))
+    rows={s:dict(kind='stroke',metadata=dict(minimum_caliper_mm=.1))for s in shapes}
+    paths=dict(route=['a','b','exposed'])
+    expected,_=classify(rows,shapes,paths,capture())
+    with CopperContext(shapes,source_binding=dict(source='pieces'),frame=dict(units='mm'),root=tmp_path/'context')as context:
+        actual,_=classify(rows,shapes,paths,capture(),copper=context)
+        assert actual==expected
+        assert context.stats['source_queries']==1
+        assert context.stats['source_index_builds']==1
+    records=actual['candidate_source_coverage']['route']
+    assert records['a']['other_entry_coverage_fraction']==pytest.approx(.9)
+    assert records['b']['other_entry_coverage_fraction']==pytest.approx(.895)
+    assert not records['exposed']['keep']
+
+
+def test_revision_six_keeps_original_route_only_semantics():
+    value=capture().value;value['revision']=6;del value['coverage_granularity'];del value['source_coverage_mode']
+    shapes=dict(fill=box(0,0,1,.1),entry=box(0,0,1,.1),tail=box(1,0,5,.1))
+    # An independent non-alias cover, so the historical route is genuinely partial.
+    shapes['fill']=box(-.01,-.01,1,.11)
+    rows={s:dict(kind='stroke',metadata=dict(minimum_caliper_mm=.1))for s in shapes}
+    ledger,_=classify(rows,shapes,dict(route=['entry','tail']),Policy(json.dumps(value).encode()))
+    assert 'candidate_source_coverage'not in ledger
+    assert 'entry'not in ledger['keep_source_reasons']
+
+
+def test_invalid_piece_policy_rejects():
+    value=capture().value;value['coverage_granularity']='ROUTE_ONLY'
+    with pytest.raises(ValueError,match='INVALID_COVERAGE_GRANULARITY'):Policy(json.dumps(value).encode())
+
+
+@pytest.mark.parametrize('pad_kind',['rectangle','circle'])
+def test_ordinary_pad_overlap_does_not_freeze_partly_exposed_source_piece(tmp_path,pad_kind):
+    from src.gerber_u05.covered_traces import prepare
+    from shapely.geometry import Point
+    shapes=dict(pad=box(-.1,-.2,.89,.2),entry=box(0,0,1,.1),tail=box(1,0,5,.1))
+    if pad_kind=='circle':shapes['pad']=Point(.445,.05).buffer(.445,quad_segs=128)
+    rows={s:dict(kind=pad_kind if s=='pad'else'stroke',metadata=dict(minimum_caliper_mm=.1,route_kind='segment'))for s in shapes}
+    paths=dict(route=['entry','tail'])
+    ledger,_=classify(rows,shapes,paths,capture())
+    assert 'entry'not in ledger['keep_source_reasons']
+    assert ledger['candidate_source_coverage']['route']['entry']['other_entry_coverage_fraction']==0
+    active,_,_=prepare(tmp_path,{},rows,shapes,paths,fixed_source_reasons=ledger['keep_source_reasons'])
+    assert active==paths
+    old=capture().value;old['revision']=7;del old['source_coverage_mode']
+    previous,_=classify(rows,shapes,paths,Policy(json.dumps(old).encode()))
+    assert previous['candidate_source_coverage']['route']['entry']['keep']
+
+
+def test_invalid_source_coverage_mode_rejects():
+    value=capture().value;value['source_coverage_mode']='ANY_PAD'
+    with pytest.raises(ValueError,match='INVALID_SOURCE_COVERAGE_MODE'):Policy(json.dumps(value).encode())

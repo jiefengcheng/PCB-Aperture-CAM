@@ -77,7 +77,7 @@ def construction_map(stage, config):
     return {sid: record['wkb_hex'] for sid, record in result.items()}
 
 
-def initialize(root, *, template, legacy, construction, thread, context='retained_t03'):
+def initialize(root, *, template, legacy, construction, thread, context='retained_t03',initial_report=None):
     import gzip
     root = Path(root)
     if root.exists():
@@ -150,7 +150,13 @@ def initialize(root, *, template, legacy, construction, thread, context='retaine
     (root / 'connection.json').write_bytes(encode(config))
     (root / 'base-fingerprints.json').write_bytes(encode(fingerprints))
     (root / 'templates.json').write_bytes(encode(template_objects))
-    save_revision(root, snapshot, fingerprints, event='initial')
+    # A newly allocated saved-result workspace can bind its first snapshot
+    # directly to the completed producer event. No native display ACK is
+    # invented and the ACK requirement for subsequent live updates remains.
+    initial='initial'
+    if initial_report is not None:
+        initial=enqueue(root,label='Saved T04 result',report=initial_report,construction=construction)['event_id']
+    save_revision(root, snapshot, fingerprints, event=initial)
     return config
 
 

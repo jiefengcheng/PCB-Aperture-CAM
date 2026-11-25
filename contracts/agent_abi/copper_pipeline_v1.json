@@ -1,0 +1,21 @@
+{
+  "schema": "pcb-copper-pipeline-interface/1",
+  "sequence": ["large_copper", "t04"],
+  "coordinator": "tools/run_copper_pipeline.py",
+  "phase_seal_schema": "pcb-copper-phase-seal/2",
+  "execution": "SEPARATE_PROCESS_LOCAL_WORKERS",
+  "storage": "out/lacie_work/",
+  "shared_preparation": "out/lacie_work/shared_copper_context/",
+  "phase_workspace_ownership": "DISJOINT_PRODUCER_JOBS_AND_VIEWER_HEADS",
+  "input_selection": "EXPLICIT_ABSOLUTE_SOURCE_OR_AUTHENTICATED_SAVED_CLEANUP_JOB",
+  "handoff": "CALLER_PINNED_SHA256; RECURSIVE_SOURCE_BINDING_AND_SCENE_ARTIFACT_CLOSURE",
+  "t04_entry": "EXACT_ORDERED_CLEANUP_OUTPUT_GEOMETRY; ORIGINAL_SOURCE_PROVENANCE_RETAINED",
+  "native_handles": "NEVER_SERIALIZED; RECONSTRUCT_ONCE_PER_PHASE_WORKER",
+  "cleanup_policy": "EXISTING_TRIM_ONLY_RULES; UNRESOLVED_AND_IGNORED_FINDINGS_RETAINED",
+  "t04_policy": "EXISTING_T04_SETTINGS_AND_QUALIFICATION; T05_TERMINALS_REMAIN_T05",
+  "failure": "STOP_DOWNSTREAM; RETAIN_ALL_EVIDENCE; NO_AUTOMATIC_RETRY_OR_RESUME",
+  "publication": "ATOMIC_CREATE_ONLY_PHASE_SEALS; SEPARATE_SAVED_VIEWER_PREPARATION",
+  "viewer": "GREY_COPPER; SAVED_ONLY_NAVIGATION; NO_TREATMENT_EXECUTION",
+  "acceptance": "NO_PROMOTION",
+  "export": false
+}

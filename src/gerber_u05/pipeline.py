@@ -306,6 +306,8 @@ def run_t05(store,scene,t04):
     from .prior_copper import prepare as prepare_prior
     scene,prior_floor=prepare_prior(store,scene)
     rows,current,original=operands(store,scene);objects=copy.deepcopy(scene['objects']);byid={r['source_id']:r for r in objects};lands=[s for s,r in rows.items()if t05_land(r)]
+    from .terminal_handoff import pending as pending_terminals,finish as finish_terminals
+    terminal_handoff=pending_terminals(store,scene,current)
     for sid in lands:
         r=byid[sid]
         if r['kind']=='inclusive_rectangle':
@@ -337,7 +339,12 @@ def run_t05(store,scene,t04):
     finally:
         adapter.close()
     if not check['passed']:raise ValueError('T05_COMPLETE_ATTACHMENT_RECONSTRUCTION_FAILED')
-    return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,**({}if prior_floor is None else{'prior_positive_floor':prior_floor}),summary=dict(routes=len(targets),**(dict(protected_frame_routes=sum(c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'for c in contacts),protected_frame_source_contacts=sum(len(c['lands'])for c in contacts if c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'))if functional is not None else{}),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
+    terminal_completion=None
+    if terminal_handoff is not None:
+        terminal_completion=finish_terminals(terminal_handoff,from_wkb(store.get(candidate['after_ref'],kind='geometry')),current)
+        if not terminal_completion['passed']:raise ValueError('T05_DEFERRED_TERMINAL_SHOULDERS_UNRESOLVED')
+    return dict(output_scene_ref=candidate['output_scene_ref'],candidate=candidate,plan=plan,verification=check,contacts=contacts,
+        **({}if terminal_completion is None else{'terminal_completion':terminal_completion}),**({}if prior_floor is None else{'prior_positive_floor':prior_floor}),summary=dict(routes=len(targets),**(dict(protected_frame_routes=sum(c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'for c in contacts),protected_frame_source_contacts=sum(len(c['lands'])for c in contacts if c.get('t05_disposition')=='KEEP_PROTECTED_TEMPORARY_COMMON_FRAME'))if functional is not None else{}),source_attachments=sum(len(c['lands'])for c in contacts),grown=candidate['coverage']['grown'],attachment_outcomes=candidate['coverage']['attachment_outcomes']))
 
 from contextlib import contextmanager
 

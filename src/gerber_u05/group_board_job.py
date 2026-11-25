@@ -41,6 +41,19 @@ def checked(stage):
         if h.get(name)is not True:failures.append(name)
     if stage.get('publication_ready')is not False or stage.get('output_scene_ref')is not None:
         failures.append('diagnostic_publication_boundary')
+    transitions=h.get('boundary_transitions')
+    if transitions is not None:
+        retained=transitions.get('schema')=='t04-retained-widening-bridges/1'
+        held=(transitions.get('schema')in('t04-growth-gap-bridges/1','t04-retained-widening-bridges/1')and transitions.get('preserved_unresolved')is True and
+              all(r.get('baseline_preserved')is True and r.get('added_area_mm2')==r.get('removed_area_mm2')==0.
+                  for r in transitions['reports']if r['status']=='UNRESOLVED'))
+        if (transitions['unresolved']and not held) or transitions['partial']:failures.append('boundary_transitions')
+        if retained and(not transitions.get('copper_budgets',{}).get('passed')or
+                not transitions.get('final_dependency_checks',{}).get('passed')):failures.append('flexible_boundary_dependencies')
+        if transitions.get('schema')=='t04-growth-gap-bridges/1' and any(
+                r.get('net_growth_area_mm2',-1.) < -1e-12 or r.get('original_removed_area_mm2',0.)>1e-12
+                for r in transitions['reports']if r['status']=='BRIDGED'):failures.append('bridge_growth_budget')
+        if not h['frozen_endpoint_obligations']['passed']:failures.append('finished_endpoint_sections')
     if failures:raise ValueError('T04_GROUP_DIAGNOSTIC_COMPONENT_FAILURE:'+','.join(failures))
     return dict(reference=True,functional=True,pockets=True,
         native_connections=len(connections),constructed_groups_audited=0,
@@ -73,8 +86,8 @@ def failure_operands(error,directory):
         frame=tb.tb_frame;values=frame.f_locals
         if frame.f_code.co_name=='run'and 'route'in values:
             site={k:values[k]for k in('route','pt','ends')if k in values}
-        if frame.f_code.co_name in('skin_fill','face_cut','spindle_addition','difference_for_window'):
-            shapes={k:v for k,v in values.items()if k in('support','path','window','protected','opened','closed','padded','left','right')and isinstance(v,BaseGeometry)}
+        if frame.f_code.co_name in('skin_fill','face_cut','spindle_addition','difference_for_window','subtract_optional','retain_carriers'):
+            shapes={k:v for k,v in values.items()if k in('support','path','window','protected','opened','closed','padded','left','right','body','cut','floor','local','result')and isinstance(v,BaseGeometry)}
             if shapes:frames.append((frame.f_code.co_name,shapes))
         tb=tb.tb_next
     if not frames:return None

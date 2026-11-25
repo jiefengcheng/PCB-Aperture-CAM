@@ -55,7 +55,13 @@ class LazyOwners(Mapping):
     def __init__(self,context,entries):self.context=context;self.entries=dict(entries)
     def __len__(self):return len(self.entries)
     def __iter__(self):return iter(self.entries)
-    def __getitem__(self,key):return self.context._load_geometry(self.entries[key])
+    def __getitem__(self,key):
+        self.context._check()
+        shape=self.entries[key]
+        if shape in self.context.shapes:
+            self.context.stats['resident_owner_geometry_hits']+=1
+            return self.context.shapes[shape]
+        return self.context._load_geometry(shape)
 
 
 class Revision:
@@ -129,6 +135,7 @@ class CopperContext:
         if not self.root.is_relative_to(workspace):
             raise ValueError('SHARED_COPPER_LACIE_WORKSPACE_REQUIRED')
         self.limit, self.weight, self.closed = limit, 0, False
+        self.role=role
         self.geometry_limit,self.geometry_weight=geometry_limit,0
         self.stats = Counter()
         self.lock = threading.RLock()
@@ -245,31 +252,43 @@ class CopperContext:
             self.shapes[key] = g
         return self.shapes[key]
 
-    def _geometry(self, g):
-        self._retain(g)
+    def _geometry(self, g, *, resident=True):
+        if resident:self._retain(g)
         key = geometry_key(g)
         path = self.directory / 'geometry' / (key + '.json.gz')
-        if path.exists(): self._load_geometry(key,g)
+        if path.exists(): self._load_geometry(key,g,resident=resident)
         else: self._write(path, dict(key=key, wkb=to_wkb(g, include_srid=True).hex(), precision=float(get_precision(g))))
         return key
 
-    def _load_geometry(self, key, known=None):
+    def _verify_geometry_reference(self,key):
+        """Authenticate an inactive snapshot without making a native copy."""
+        r=self._read(self.directory/'geometry'/(key+'.json.gz'))
+        try:actual=digest(encoded([digest(bytes.fromhex(r['wkb'])),float(r['precision'])]))
+        except (ValueError,KeyError,TypeError)as error:
+            raise ValueError('SHARED_COPPER_GEOMETRY_BINDING_CHANGED')from error
+        if r['key']!=key or actual!=key:raise ValueError('SHARED_COPPER_GEOMETRY_BINDING_CHANGED')
+
+    def _load_geometry(self, key, known=None, *, resident=True):
         r = self._read(self.directory / 'geometry' / (key + '.json.gz'))
         if known is not None:
             if (r['key'] != key or geometry_key(known) != key or
                     r['wkb'] != to_wkb(known,include_srid=True).hex() or r['precision'] != float(get_precision(known))):
                 raise ValueError('SHARED_COPPER_GEOMETRY_BINDING_CHANGED')
-            return self._retain(known,borrowed=True)
+            return self._retain(known,borrowed=True)if resident else known
         g = from_wkb(bytes.fromhex(r['wkb']))
         if r['precision']: g = set_precision(g, r['precision'], mode='pointwise')
         if r['key'] != key or geometry_key(g) != key:
             raise ValueError('SHARED_COPPER_GEOMETRY_BINDING_CHANGED')
-        return self._retain(g)
+        return self._retain(g)if resident else g
 
     def _record(self, revision, **extra):
+        if isinstance(revision.owners,LazyOwners):
+            owners=list(revision.owners.entries.items())
+            for key in dict.fromkeys(k for _,k in owners):self._verify_geometry_reference(key)
+        else:owners=[[o,self._geometry(g)]for o,g in revision.owners.items()]
         return dict(key=revision.key, parent=revision.parent,
                     sources=[[s, self._geometry(g)] for s, g in revision.values.items()],
-                    owners=[[o, self._geometry(g)] for o, g in revision.owners.items()],
+                    owners=owners,
                     membership=dict(revision.membership), changes=dict(revision.changes),
                     image=self._geometry(revision._image) if revision._image is not None else None, **extra)
 
@@ -279,6 +298,8 @@ class CopperContext:
             raise ValueError('SHARED_COPPER_ORDER_CHANGED')
         if values is not None and any(geometry_key(values[s]) != geometry_key(g) for s, g in sources.items()):
             raise ValueError('SHARED_COPPER_REVISION_BINDING_CHANGED')
+        if lazy_owners:
+            for key in dict.fromkeys(k for _,k in record['owners']):self._verify_geometry_reference(key)
         revision=Revision(self, record['key'], sources,
                         LazyOwners(self,record['owners']) if lazy_owners else {o: self._load_geometry(k) for o, k in record['owners']},
                         record['membership'], record['parent'], record['changes'])
@@ -362,15 +383,40 @@ class CopperContext:
             if path.exists():
                 record = self._read(path)
                 if record['key'] != key: raise ValueError('SHARED_COPPER_REVISION_KEY_CHANGED')
-                result = self._restore(record, values)
+                result = self._restore(record, values,lazy_owners=self.role=='native-stage')
                 self.stats['revision_warm_loads'] += 1
             else:
                 affected = set(o for s in changes for o in parent.membership[s])
                 # Complete owners touching new copper are included: growth can
                 # cross an old envelope or merge previously separate owners.
+                owner_order={o:i for i,o in enumerate(parent.owners)}
+                exact_source_bounds=all(get_precision(g)==0 for g in parent.values.values())
+                screens={}
                 for g in changes.values():
-                    for o, body in parent.owners.items():
-                        if body.intersects(g): affected.add(o)
+                    # Borrow the existing source/overlay index. Its bounds
+                    # conservatively select owners; keep the original exact
+                    # owner-intersection predicate and closure below.
+                    # Fixed-grid unions may snap beyond an individual input
+                    # bound. Keep the established exhaustive-owner fallback
+                    # for those operands; no geometric tolerance is added.
+                    candidates=({o for s in parent.sources(g.envelope,predicate=None)for o in parent.membership[s]}
+                                if exact_source_bounds else set(parent.owners))
+                    for o in candidates-affected:screens.setdefault(o,[]).append(g)
+                if not exact_source_bounds:self.stats['publication_owner_bounds_fallbacks']+=1
+                for o in sorted(screens,key=owner_order.__getitem__):
+                    if isinstance(parent.owners,LazyOwners):
+                        shape=parent.owners.entries[o]
+                        body=(self.shapes[shape]if shape in self.shapes else
+                              self._load_geometry(shape,resident=False))
+                    else:body=parent.owners[o]
+                    # Membership already proves the initial affected set.
+                    # Screen other candidates once per owner; an inactive
+                    # alternate snapshot need not become retained preparation
+                    # just to answer this exact dependency predicate.
+                    for g in screens[o]:
+                        self.stats['publication_owner_intersection_checks']+=1
+                        if body.intersects(g):affected.add(o);break
+                    del body
                 affected_sources = set(changes)
                 pending=list(affected)
                 while pending:
@@ -381,19 +427,30 @@ class CopperContext:
                 local = {s: values[s] for s in self.ids if s in affected_sources}
                 image = polygon(unary_union(list(local.values())))
                 self.stats['affected_owner_unions'] += 1
-                owners = {o: g for o, g in parent.owners.items() if o not in affected}
+                lazy=self.role=='native-stage'
+                if lazy:
+                    # Native callers already own the source contributions.
+                    # Saved output-owner and delta snapshots are inactive at
+                    # publication: use the existing lazy representation, not
+                    # another resident copy beside pinned stage indexes.
+                    existing=parent.owners.entries if isinstance(parent.owners,LazyOwners)else{
+                        o:self._geometry(g,resident=False)for o,g in parent.owners.items()}
+                    owners={o:k for o,k in existing.items()if o not in affected}
+                else:owners = {o: g for o, g in parent.owners.items() if o not in affected}
                 membership = dict(parent.membership)
                 if image.is_empty:
                     membership.update({s: () for s in local})
                 else:
                     partition = OriginalOwners(image)
                     self.stats['owner_preparations'] += 1
-                    owners.update({o: self._retain(g) for o, g in zip(partition.ids, partition.owners)})
+                    owners.update({o:self._geometry(g,resident=False)if lazy else self._retain(g)
+                                   for o,g in zip(partition.ids,partition.owners)})
                     membership.update(partition.memberships(local))
                 delta = {s: dict(before=geometry_key(parent.values[s]), after=geometry_key(g),
-                                 removed=self._geometry(parent.values[s].difference(g)),
-                                 added=self._geometry(g.difference(parent.values[s]))) for s, g in changes.items()}
-                result = Revision(self, key, {s: self._retain(g,borrowed=True) for s, g in values.items()}, owners, membership, parent.key, delta)
+                                 removed=self._geometry(parent.values[s].difference(g),resident=not lazy),
+                                 added=self._geometry(g.difference(parent.values[s]),resident=not lazy)) for s, g in changes.items()}
+                result = Revision(self, key, {s: self._retain(g,borrowed=True) for s, g in values.items()},
+                                  LazyOwners(self,owners.items())if lazy else owners,membership,parent.key,delta)
                 self._write(path, self._record(result))
                 self.stats['revision_cold_preparations'] += 1
             self.revisions[key] = result
@@ -474,6 +531,40 @@ class CopperContext:
         self._check()
         return self.boundary_preparation.index(shape)
 
+    def prepared_broad_fill(self,revision,source_ids,*,radius,minimum_area):
+        """Reuse the independent fill role already used by trace eligibility.
+
+        The subset image, exact operands, broad-core settings and kernel are
+        authenticated preparation. This grants no growth or clearance verdict.
+        """
+        self._check()
+        if revision.context is not self:raise ValueError('SHARED_COPPER_FOREIGN_REVISION')
+        import math
+        if any(type(v)not in(int,float)or not math.isfinite(v)or v<=0 for v in(radius,minimum_area)):
+            raise ValueError('POSITIVE_BROAD_FILL_SETTINGS_REQUIRED')
+        selected=set(source_ids)
+        if not selected<=revision.values.keys():raise ValueError('SHARED_COPPER_SUBSET_INVENTORY_CHANGED')
+        ids=[s for s in self.ids if s in selected]
+        material=self.prepared_subset(revision,ids)
+        binding=dict(schema='shared-copper-broad-fill/1',revision=revision.key,
+            sources=ids,subset=geometry_key(material),radius_mm=radius,minimum_core_area_mm2=minimum_area)
+        key=digest(encoded(binding));cache=getattr(self,'broad_fills',None)
+        if cache is None:self.broad_fills=cache={}
+        if key in cache:
+            self.stats['broad_fill_resident_hits']+=1;return cache[key]
+        with self.lock,self._publication_lock():
+            path=self.directory/'broad_fills'/(key+'.json.gz')
+            if path.exists():
+                record=self._read(path)
+                if record['binding']!=binding:raise ValueError('SHARED_COPPER_BROAD_FILL_BINDING_CHANGED')
+                shape=self._load_geometry(record['geometry']);self.stats['broad_fill_warm_loads']+=1
+            else:
+                faces=[]if material.is_empty else([material]if material.geom_type=='Polygon'else list(material.geoms))
+                broad=[g for g in faces if g.area>=minimum_area and g.buffer(-radius,quad_segs=128).area>=minimum_area]
+                shape=unary_union(broad);self.stats['broad_fill_preparations']+=1
+                self._write(path,dict(binding=binding,geometry=self._geometry(shape)))
+            cache[key]=shape;return shape
+
     def boundary_sections(self, shape, window):
         """Ordered complete runs; never clip, simplify or reverse source edges."""
         tree,parts=self.boundary_index(shape)
@@ -517,6 +608,7 @@ class CopperContext:
         for revision in self.revisions.values(): revision._tree=None;revision._image=None
         if hasattr(self,'pad_fill_preparation'):self.pad_fill_preparation.clear()
         if hasattr(self,'source_subsets'):self.source_subsets.clear()
+        if hasattr(self,'broad_fills'):self.broad_fills.clear()
         if hasattr(self,'query_views'):
             for view in self.query_views.values():view._tree=None
             self.query_views.clear()

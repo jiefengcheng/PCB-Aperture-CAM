@@ -12,7 +12,7 @@ import traceback
 from contextlib import nullcontext
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from shapely import to_wkb
+from shapely import to_wkb,from_wkb
 from shapely.ops import unary_union
 from src.gerber_u05 import pipeline as p, profile_intake as intake, bounded_order as b
 from src.gerber_u05 import group_stage, group_board_job as board
@@ -56,8 +56,15 @@ def verify_preserved_contributions(before, after, fixed_ids, terminal_ids, admit
 
 
 
-def execute(source_job, cleanup_result, output, preparation_from=None, *, control='trimmed',route_ids=None,finalize_from=None):
+def execute(source_job, cleanup_result, output, preparation_from=None, *, control='trimmed',route_ids=None,finalize_from=None,cleanup_seal=None):
     p.configure()
+    sealed=None
+    if cleanup_seal is not None:
+        from src.copper_phase_seal import verify
+        sealed=verify(cleanup_seal['path'],cleanup_seal['sha256'],phase='large_copper')
+        if control!='trimmed'or cleanup_result is not None or source_job is not None and Path(source_job).resolve()!=Path(sealed['job']):
+            raise ValueError('T04_SEALED_INPUT_MUST_BE_EXCLUSIVE')
+        source_job=Path(sealed['job']);cleanup_result=source_job/'RESULT.json'
     output = Path(output).resolve()
     if not output.is_relative_to((p.ROOT/'out/lacie_work').resolve()):
         raise ValueError('T04_AFTER_CLEANUP_REQUIRES_LACIE')
@@ -79,6 +86,7 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
         reader.get(binding['source_ref'],kind='gerber-source')
         if control=='trimmed':
             cleanup, changes, custody=load_cleanup(cleanup_result,binding['source_ref']['sha256'])
+            if sealed is not None:custody['seal']=dict(cleanup_seal)
             if cleanup['input_binding']['original_scene_ref'] != binding['scene_ref']:
                 raise ValueError('T04_CLEANUP_ORIGINAL_SCENE_CHANGED')
         elif control in ('baseline','identity'):
@@ -115,7 +123,7 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
         full_board=route_ids is None
         scope='FULL_BOARD_DIAGNOSTIC' if full_board else 'BOUNDED'
         p.save(output/'JOB.json',dict(inputs=inputs,scope=scope,control=control,
-            source_files=intake.source_inventory(),full_board_run=full_board,complete_t04=False))
+            source_files=intake.source_inventory(),runner_sha256=board.file_sha(Path(__file__)),full_board_run=full_board,complete_t04=False))
         def progress(event):
             value=dict(event,elapsed_s=time.perf_counter()-started)
             with (output/'PROGRESS.jsonl').open('a') as stream:stream.write(json.dumps(value)+'\n')
@@ -141,7 +149,7 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
         if distance.measurement_engine().owner is not None:
             raise ValueError('T04_BASELINE_DISTANCE_LIFETIME_REQUIRED')
         engine=distance.measurement_engine()
-        with (nullcontext(None) if control=='baseline' else for_board(raw_original,role='native-stage')) as copper:
+        with (nullcontext(None) if control=='baseline'and settings._transitions is None else for_board(raw_original,role='native-stage')) as copper:
             retained_execution=None
             if finalize_from is None:
                 phase('source_context_construction',lambda:p.initialize_t04(store,binding,entry))
@@ -191,6 +199,64 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
                 proof['protected_large_fill_occurrences_byte_preserved']=len(eligibility['protected_large_fill_source_ids'])
                 return proof
             proof=phase('cleanup_and_terminal_preservation',preservation)
+            outline=None
+            if settings._transitions is not None:
+                def assembled_outline():
+                    from src.gerber_u05.boundary_finish import board_outline,outline_images
+                    from src.t04_transition_policy import decode
+                    policy=decode(settings._transitions);baseline=None
+                    if policy['revision']>=3:
+                        baseline=dict(after)
+                        saved=stage['hybrid_components']['boundary_transition_inputs']
+                        for s,sha in saved['source_sha256'].items():
+                            raw=bytes.fromhex(saved['geometry_wkb_hex_by_sha256'][sha])
+                            if p.digest(raw)!=sha:raise ValueError('T04_BRIDGE_BASELINE_HASH_MISMATCH')
+                            baseline[s]=from_wkb(raw)
+                    angle=policy['maximum_transition_angle_degrees']
+                    transitions=stage['hybrid_components']['boundary_transitions']
+                    terminals=transitions.get('deferred_terminals',())
+                    evaluation={}
+                    before_image,after_image,receipt=board_outline(current,after,angle,terminals,baseline_sources=baseline,evaluation=evaluation)
+                    if policy['revision']==4:
+                        shoulder_baseline=dict(after);saved=transitions['shoulder_baseline_inputs']
+                        for s,sha in saved['source_sha256'].items():
+                            raw=bytes.fromhex(saved['geometry_wkb_hex_by_sha256'][sha])
+                            if p.digest(raw)!=sha:raise ValueError('T04_SHOULDER_BASELINE_HASH_MISMATCH')
+                            shoulder_baseline[s]=from_wkb(raw)
+                        shoulder_image=unary_union(list(shoulder_baseline.values()))
+                        shoulder_check=outline_images(before_image,after_image,angle,terminals,baseline=shoulder_image,evaluation=evaluation)
+                        receipt.update(shoulder_phase=shoulder_check,
+                            shoulder_baseline_ref=store.put('geometry',to_wkb(shoulder_image)),
+                            complete_board_unions=receipt['complete_board_unions']+1,
+                            passed=receipt['passed']and shoulder_check['passed'])
+                        from src.gerber_u05.marked_shoulders import audit,contract
+                        marked_policy,_=contract()
+                        if inputs['source_sha256']==marked_policy['source_sha256']:
+                            marked=audit(shoulder_image,after_image,before_image,terminals=transitions['deferred_terminals'])
+                            stage['hybrid_components']['boundary_transitions']['marked_review']=marked
+                            p.save(output/'MARKED_SHOULDERS.json',marked)
+                            if not marked['passed']:raise ValueError('T04_MANDATORY_MARKED_SHOULDER_CHECK_FAILED')
+                    receipt.update(before_ref=store.put('geometry',to_wkb(before_image)),
+                        after_ref=store.put('geometry',to_wkb(after_image)),
+                        input_scene_sha256=entry_ref['sha256'],output_scene_sha256=assembly['scene_ref']['sha256'])
+                    p.save(output/'BOARD_OUTLINE.json',receipt)
+                    if not receipt['passed']:raise ValueError('T04_ASSEMBLED_BOARD_OUTLINE_OR_GROWTH_BUDGET_FAILED:'+str(receipt['additional_shoulders']))
+                    return receipt
+                outline=phase('assembled_boundary_outline',assembled_outline)
+            output_revision=None
+            if copper is not None and settings._transitions is not None:
+                from src.t04_transition_policy import decode
+                if decode(settings._transitions)['revision']==4:
+                    def publish_revision():
+                        entry_revision=copper.acquire({s:g for s,g in current.items()if to_wkb(g)!=to_wkb(source[s])})
+                        final_revision=copper.acquire({s:g for s,g in after.items()if to_wkb(g)!=to_wkb(current[s])},parent=entry_revision)
+                        previous={frozenset(ss)for ss in entry_revision.owner_sources.values()}
+                        final_owners={frozenset(ss)for ss in final_revision.owner_sources.values()}
+                        if previous!=final_owners:raise ValueError('T04_PHYSICAL_OWNER_RELATION_CHANGED')
+                        return dict(source_context=copper.key,entry_revision=entry_revision.key,
+                            output_revision=final_revision.key,owner_relation_preserved=True,
+                            acceptance='PREPARATION_ONLY; DIAGNOSTIC_RESULT')
+                    output_revision=phase('shared_copper_output_revision',publish_revision)
             # Serialize a complete map relative to RAW original, including
             # unchanged cleanup contributions not emitted by the T04 caller.
             h=stage['hybrid_components']; h['continuous_source_bodies']={
@@ -200,9 +266,12 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
             stage['trimmed_predecessor']=custody; stage['cleanup_preservation']=proof
             artifact=phase('construction_write',lambda:board.write_stage(output/'construction.json.gz',stage))
             phase('artifact_revalidation',store.verify_reads)
+            if sealed is not None:
+                phase('sealed_input_revalidation',lambda:verify(cleanup_seal['path'],cleanup_seal['sha256'],phase='large_copper'))
             if copper is not None:copper.validate()
             result=dict(status='FULL_BOARD_T04_AFTER_CLEANUP_DIAGNOSTIC_COMPLETE' if full_board else 'BOUNDED_T04_PARITY_ARM_COMPLETE',scope=scope,control=control,
-                inputs=inputs,stage=artifact,assembly=assembly,checks=checks,cleanup_preservation=proof,
+                inputs=inputs,stage=artifact,assembly=assembly,checks=checks,cleanup_preservation=proof,board_outline=outline,
+                shared_copper_output_revision=output_revision,
                 summary=stage['summary'],requested_admitted_routes=len(stage['requested_routes']),
                 accounted_native_routes=len(stage.get('native_route_dispositions',[])),
                 settings=settings.resolved(),asset_manifest=assets,hole_policy=holes,
@@ -229,14 +298,22 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--source-job',type=Path,required=True)
+    parser.add_argument('--source-job',type=Path)
     parser.add_argument('--cleanup-result',type=Path)
+    parser.add_argument('--cleanup-seal',type=Path,help='Hash-pinned cleanup output; derives the producer source job')
+    parser.add_argument('--cleanup-seal-sha256',help='Required caller-pinned digest, never read from a mutable current pointer')
     parser.add_argument('--control',choices=('trimmed','baseline','identity'),default='trimmed')
     parser.add_argument('--scope',type=Path,help='Engineering parity cohort; omit for the full board')
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--preparation-from',type=Path)
     parser.add_argument('--finalize-from',type=Path,help='Finalize only a same-code completed construction stopped by the obsolete zero-overlap guard')
     args=parser.parse_args()
-    if args.control=='trimmed' and args.cleanup_result is None:parser.error('--cleanup-result is required for trimmed input')
+    if args.cleanup_seal is not None:
+        if not args.cleanup_seal_sha256 or args.source_job is not None or args.cleanup_result is not None or args.control!='trimmed':
+            parser.error('--cleanup-seal requires its SHA-256 and excludes --source-job/--cleanup-result/other controls')
+    elif args.source_job is None or args.control=='trimmed'and args.cleanup_result is None:
+        parser.error('--source-job and (for trimmed input) --cleanup-result are required')
+    elif args.cleanup_seal_sha256 is not None:parser.error('--cleanup-seal-sha256 requires --cleanup-seal')
     routes=None if args.scope is None else p.load(args.scope)['requested_routes']
-    execute(args.source_job,args.cleanup_result,args.output,args.preparation_from,control=args.control,route_ids=routes,finalize_from=args.finalize_from)
+    execute(args.source_job,args.cleanup_result,args.output,args.preparation_from,control=args.control,route_ids=routes,finalize_from=args.finalize_from,
+        cleanup_seal=None if args.cleanup_seal is None else dict(path=str(args.cleanup_seal.resolve()),sha256=args.cleanup_seal_sha256))

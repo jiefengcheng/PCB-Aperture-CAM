@@ -34,6 +34,40 @@ def test_saved_corner_and_endpoint_findings_remain_distinct_and_explained():
     assert len({f['id']for f in items})==2
 
 
+def test_transition_navigation_uses_saved_angle_and_explicit_growth_withdrawal():
+    stage,report=fixture()
+    stage['hybrid_components']['boundary_transitions']=dict(maximum_transition_angle_degrees=10.,reports=[
+        dict(route_id='r',point_mm=[4,5],source_ids=['s'],kind='THREE_WAY',status='SMOOTHED',optional_growth_withdrawn=True)])
+    record=findings(stage)[-1]
+    assert record['kind']=='transition' and record['bounds']==dict(x=3.8,y=4.8,width=.4,height=.4)
+    assert '10.0 degrees' in record['description'] and 'withdrawn' in record['description']
+
+
+def test_terminal_handoff_stays_pending_in_a_distinct_saved_list():
+    stage,_=fixture()
+    stage['hybrid_components']['boundary_transitions']=dict(deferred_terminals=[dict(
+        route_id='r',source_ids=['trace'],land_ids=['pad'],points_mm=[[1,2]])])
+    record=findings(stage)[-1]
+    assert record['kind']=='terminal'and record['reasons']==['DEFERRED_TO_T05']
+    assert record['sourceIDs']==['trace','pad']and 'pending'in record['description']
+
+
+def test_withdrawn_old_chain_recipe_is_not_advertised_as_final_growth():
+    stage,_=fixture()
+    stage['hybrid_components'].update(residual_end_matching=dict(reports=[dict(
+        optional_floor_replaced=True,shared_contour_sha256='a'*64,route_id='r',source_ids=['s'])]),
+        boundary_transitions=dict(chains=[dict(source_ids=['s'],recipe=None)]))
+    assert not any(r['kind']=='continuity'for r in review_places(stage,{'s':box(0,0,1,1)}))
+
+
+def test_unchanged_normal_chain_record_survives_finishing_elsewhere():
+    stage,_=fixture()
+    stage['hybrid_components'].update(residual_end_matching=dict(reports=[dict(
+        optional_floor_replaced=True,shared_contour_sha256='a'*64,route_id='r',source_ids=['s'])]),
+        boundary_transitions=dict(chains=[dict(source_ids=['other'],recipe=None)]))
+    assert any(r['kind']=='continuity'for r in review_places(stage,{'s':box(0,0,1,1)}))
+
+
 def test_bounded_scope_and_eighty_percent_policy_are_saved_display_data():
     stage,report=fixture();stage['full_board_run']=False
     report['settings']['trace_eligibility']=dict(source_json=json.dumps(dict(minimum_large_fill_coverage_fraction=.8)))
@@ -62,3 +96,44 @@ def test_cleaned_input_requires_exact_bound_scene_and_geometry_bytes(tmp_path):
     (folder/ref['artifact_id']).write_bytes(to_wkb(original['s']))
     with pytest.raises(ValueError,match='(CHANGED|checksum|CHECKSUM)'):
         saved_input(report,tmp_path/'RESULT.json',original)
+
+
+def test_covered_segment_in_exposed_route_is_navigable_from_saved_measurements():
+    stage,_=fixture();stage.update(requested_routes=['r'],native_trace_source_ids_by_route=dict(r=['a','b']),
+        trace_eligibility_policy=dict(kept_routes={},candidate_source_coverage=dict(r=dict(
+            a=dict(keep=True,other_entry_coverage_fraction=.996),
+            b=dict(keep=False,other_entry_coverage_fraction=.2)))))
+    places=review_places(stage,dict(a=box(0,0,1,1),b=box(1,0,10,1)))
+    assert len(places)==1 and places[0]['sourceIDs']==['a']and places[0]['routeID']=='r'
+    assert places[0]['kind']=='eligibility'and '99.600%'in places[0]['description']
+    assert places[0]['bounds']['width']==pytest.approx(1.08)
+
+
+def test_large_fill_segment_explanation_does_not_claim_ordinary_pad_coverage():
+    stage,_=fixture();stage.update(requested_routes=['r'],trace_eligibility_policy=dict(
+        kept_routes={},candidate_source_coverage=dict(r=dict(a=dict(keep=True,
+            basis='INDEPENDENT_BROAD_FILL',other_entry_coverage_fraction=.866)))))
+    places=review_places(stage,dict(a=box(0,0,1,1)))
+    assert 'Large filled copper covers 86.600%'in places[0]['description']
+    assert 'Ordinary pad overlap does not'in places[0]['description']
+    assert places[0]['reasons']==['LARGELY_COVERED_SOURCE_SEGMENT_BY_LARGE_FILLED_COPPER']
+
+
+def test_saved_gap_bridges_show_net_gain_and_held_gaps_preserve_widening():
+    stage,_=fixture()
+    stage['hybrid_components']['boundary_transitions']=dict(schema='t04-growth-gap-bridges/1',
+        maximum_transition_angle_degrees=10.,reports=[
+            dict(route_id='r',point_mm=[1,2],source_ids=['s'],status='BRIDGED',added_area_mm2=.02,
+                 removed_area_mm2=.01,net_growth_area_mm2=.01),
+            dict(route_id='q',point_mm=[2,3],source_ids=['t'],status='UNRESOLVED',reason='WIDTH_CAP')])
+    records=[r for r in findings(stage)if r['kind']=='transition']
+    assert len(records)==2 and 'net gain 0.010000000'in records[0]['description']
+    assert 'previous widening is unchanged'in records[1]['description'].lower()
+    assert all('only preceding optional growth was removed'not in r['description']for r in records)
+
+
+def test_rejected_floor_overlay_is_explained_without_claiming_actual_copper_loss():
+    from src.viewer_abi.t04_workspace import bridge_reason
+    text=bridge_reason('BASELINE_RETAINED; SOURCE_FLOOR_POSITIVE_COPPER_STILL_MISSING,LOCAL_GROWTH_LOSS')
+    assert 'proposed overlay'in text and 'rejected'in text and 'would remove more'in text
+    assert 'SOURCE_FLOOR'not in text

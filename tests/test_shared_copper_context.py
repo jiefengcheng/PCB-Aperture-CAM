@@ -272,3 +272,151 @@ def test_altered_native_owner_assignment_rejected_even_with_recomputed_envelope(
     path.write_bytes(gzip.compress(encoded(envelope)))
     with open_context(tmp_path,role='native-stage') as c:
         with pytest.raises(ValueError,match='OWNER_MEMBERSHIP_CHANGED'):c.original_owner_index(source)
+
+
+def test_broad_fill_exact_role_parity_resident_restart_and_boundary_reuse(tmp_path):
+    fill=box(0,0,4,4).difference(box(1,1,2,2))
+    values=dict(fill=fill,thin=box(5,0,5.02,4),alias=fill)
+    with open_context(tmp_path,values)as c:
+        subset=c.prepared_subset(c.source,['fill','thin'])
+        faces=[subset]if subset.geom_type=='Polygon'else list(subset.geoms)
+        expected=unary_union([g for g in faces if g.area>=.1 and g.buffer(-.1,quad_segs=128).area>=.1])
+        actual=c.prepared_broad_fill(c.source,['fill','thin'],radius=.1,minimum_area=.1)
+        assert actual.wkb==expected.wkb and len(actual.interiors)==1
+        assert c.prepared_broad_fill(c.source,['thin','fill'],radius=.1,minimum_area=.1)is actual
+        first=c.boundary_sections(actual,box(-1,-1,6,5))
+        assert c.boundary_sections(actual,box(-1,-1,6,5))==first
+        assert c.stats['boundary_index_builds']==1
+        assert c.stats['broad_fill_preparations']==1
+        changed=c.acquire(dict(fill=box(-1,0,4,4)))
+        assert c.prepared_broad_fill(changed,['fill'],radius=.1,minimum_area=.1).bounds[0]==-1
+    with open_context(tmp_path,values)as c:
+        actual=c.prepared_broad_fill(c.source,['fill','thin'],radius=.1,minimum_area=.1)
+        assert actual.wkb==expected.wkb
+        assert c.stats['broad_fill_warm_loads']==1 and c.stats['broad_fill_preparations']==0
+
+
+def test_broad_fill_corruption_and_invalid_settings_fail_closed(tmp_path):
+    with open_context(tmp_path)as c:
+        c.prepared_broad_fill(c.source,['a'],radius=.1,minimum_area=.1);directory=c.directory
+        for value in(float('nan'),float('inf'),True,0,-1):
+            with pytest.raises(ValueError,match='POSITIVE_BROAD_FILL_SETTINGS_REQUIRED'):
+                c.prepared_broad_fill(c.source,['a'],radius=value,minimum_area=.1)
+    path=next((directory/'broad_fills').glob('*.json.gz'));path.write_bytes(b'corrupt')
+    with open_context(tmp_path)as c:
+        with pytest.raises(ValueError,match='SHARED_COPPER_CORRUPT_ENTRY'):
+            c.prepared_broad_fill(c.source,['a'],radius=.1,minimum_area=.1)
+        assert c.stats['broad_fill_preparations']==0
+    assert path.read_bytes()==b'corrupt'
+
+
+def test_native_revision_does_not_load_unaffected_large_owner(tmp_path,monkeypatch):
+    values=dict(a=box(0,0,1,1),b=box(10,0,12,2),c=box(11,0,13,2))
+    with open_context(tmp_path,values):pass
+    with open_context(tmp_path,values,role='native-stage')as c:
+        far=c.source.membership['b'][0];key=c.source.owners.entries[far]
+        assert key not in c.shapes
+        load=c._load_geometry
+        def guarded(shape,*args,**kwargs):
+            assert shape!=key,'UNRELATED_OWNER_DESERIALIZED'
+            return load(shape,*args,**kwargs)
+        monkeypatch.setattr(c,'_load_geometry',guarded)
+        revision=c.acquire(dict(a=box(0,0,1.5,1)))
+        assert revision.owners.entries[far]==key and key not in c.shapes
+        assert c.stats['publication_owner_intersection_checks']==0
+        assert revision.membership['b']==c.source.membership['b']
+
+
+def test_lazy_owner_reuses_one_native_object_within_worker(tmp_path,monkeypatch):
+    values=dict(a=box(0,0,2,2),b=box(1,0,3,2))
+    with open_context(tmp_path,values):pass
+    with open_context(tmp_path,values,role='native-stage')as c:
+        key=c.source.owners.entries[c.source.membership['a'][0]]
+        calls=[];load=c._load_geometry
+        def counted(shape,*args,**kwargs):
+            if shape==key:calls.append(shape)
+            return load(shape,*args,**kwargs)
+        monkeypatch.setattr(c,'_load_geometry',counted)
+        first=c.source.owner('a')[1]
+        assert c.source.owner('a')[1]is first and calls==[key]
+
+
+def test_native_publication_keeps_inactive_snapshots_on_disk_and_budget_enforced(tmp_path):
+    values=dict(a=box(0,0,1,1),b=box(1.5,0,2,1))
+    changes=dict(a=Point(.5,.5).buffer(2,quad_segs=1024),b=box(1.5,0,3,1))
+    with open_context(tmp_path,values):pass
+    with open_context(tmp_path,values,role='native-stage',geometry_limit=32768)as c:
+        pinned=c.boundary_index(values['a'])[0]
+        revision=c.acquire(changes)
+        assert len(revision.owners)==1 and c.geometry_weight<32768
+        assert c.boundary_index(values['a'])[0]is pinned
+        assert c.stats['source_index_builds']==c.stats['boundary_index_builds']==1
+        assert revision.sources(box(2.8,.2,2.9,.3))==('b',)
+        key=next(iter(revision.owners.entries.values()))
+        assert key not in c.shapes
+        assert (c.directory/'geometry'/(key+'.json.gz')).exists()
+        # Loading that new owner really would exceed the small resident budget.
+        # Publication did not waive the guard or evict the active index.
+        with pytest.raises(ValueError,match='GEOMETRY_CAPACITY_EXCEEDED'):revision.owner('a')
+    with open_context(tmp_path,values,role='native-stage',geometry_limit=32768)as c:
+        revision=c.acquire(changes)
+        assert c.stats['revision_warm_loads']==1 and not c.stats['affected_owner_unions']
+        assert c.geometry_weight<32768
+        assert revision.sources(box(2.8,.2,2.9,.3))==('b',)
+
+
+def test_native_cold_revision_bytes_match_existing_cleanup_publication(tmp_path):
+    values=dict(a=box(0,0,2,2),alias=box(0,0,2,2),b=box(3,0,4,2))
+    changes=dict(a=box(-1,0,3.5,2),alias=Polygon())
+    with open_context(tmp_path/'reference',values)as c:
+        expected=c.acquire(changes);reference=json.loads(gzip.decompress((c.directory/'revisions'/(expected.key+'.json.gz')).read_bytes()))
+    with open_context(tmp_path/'native',values):pass
+    with open_context(tmp_path/'native',values,role='native-stage')as c:
+        actual=c.acquire(changes);saved=json.loads(gzip.decompress((c.directory/'revisions'/(actual.key+'.json.gz')).read_bytes()))
+        assert actual.key==expected.key and saved==reference
+        split=c.acquire(dict(a=box(-1,0,1,2)),parent=actual)
+        assert len(split.owners)==2 and split.membership['alias']==()
+
+
+def test_corrupt_inactive_revision_owner_stops_on_reopen_without_rebuild(tmp_path):
+    values=dict(a=box(0,0,2,2),b=box(3,0,4,2));changes=dict(a=box(0,0,3.5,2))
+    with open_context(tmp_path,values):pass
+    with open_context(tmp_path,values,role='native-stage')as c:
+        revision=c.acquire(changes);key=next(iter(revision.owners.entries.values()))
+        path=c.directory/'geometry'/(key+'.json.gz')
+    path.write_bytes(b'corrupt-owner')
+    with open_context(tmp_path,values,role='native-stage')as c:
+        with pytest.raises(ValueError,match='SHARED_COPPER_CORRUPT_ENTRY'):c.acquire(changes)
+        assert not c.stats['revision_cold_preparations'] and not c.stats['affected_owner_unions']
+    assert path.read_bytes()==b'corrupt-owner'
+
+
+def test_fixed_precision_publication_keeps_exact_owner_fallback(tmp_path):
+    values=dict(a=set_precision(box(0,0,2,2),.01),b=set_precision(box(3,0,4,2),.01))
+    with open_context(tmp_path,values)as c:
+        revision=c.acquire(dict(a=set_precision(box(0,0,3.5,2),.01)))
+        assert len(revision.owners)==1
+        assert c.stats['publication_owner_intersection_checks']==1
+        assert c.stats['publication_owner_bounds_fallbacks']==1
+        assert not c.stats['source_queries']
+
+
+def test_native_lazy_owner_cannot_reload_after_worker_close(tmp_path):
+    with open_context(tmp_path,role='native-stage')as c:revision=c.source
+    with pytest.raises(ValueError,match='SHARED_COPPER_CONTEXT_CLOSED'):revision.owner('a')
+
+
+def test_native_dependency_screen_does_not_pin_inactive_large_owner(tmp_path):
+    # The large ring's envelope intersects the small changed source inside its
+    # hole. Its exact ownership predicate must still run, but only transiently.
+    ring=Point(0,0).buffer(2,quad_segs=1024).difference(Point(0,0).buffer(1,quad_segs=1024))
+    values=dict(a=box(0,0,.2,.2),b=ring,c=box(1.8,-.1,2.2,.1))
+    with open_context(tmp_path,values):pass
+    with open_context(tmp_path,values,role='native-stage',geometry_limit=32768)as c:
+        owner=c.source.membership['b'][0];shape=c.source.owners.entries[owner]
+        assert shape not in c.shapes
+        revision=c.acquire(dict(a=box(0,0,.3,.3)))
+        assert len(revision.owners)==2 and shape not in c.shapes
+        assert c.stats['publication_owner_intersection_checks']==1
+        assert c.geometry_weight<32768
+        with pytest.raises(ValueError,match='GEOMETRY_CAPACITY_EXCEEDED'):revision.owner('b')

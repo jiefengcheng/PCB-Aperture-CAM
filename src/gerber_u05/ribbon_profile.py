@@ -51,6 +51,19 @@ def frame(points,*,extra_stations=()):
     return p,normals,stations,length
 
 
+def window_frame(points,first,last,*,extra_stations=()):
+    """Restrict the original moving frame without rebuilding its end normals.
+
+    A cut inside a native chord must inherit that chord's interpolated rail
+    normal. Treating it as a new path endpoint changes the offset geometry and
+    can create an artificial fold on a very short remainder of the chord.
+    """
+    p,n,t,length=frame(points,extra_stations=[first,last,*[first+s for s in extra_stations]])
+    if not 0<=first<last<=length:raise ValueError('ORDERED_NATIVE_FRAME_WINDOW_REQUIRED')
+    keep=(t>=first-1e-12)&(t<=last+1e-12)
+    return p[keep],n[keep],t[keep]-first,last-first
+
+
 def build(points,width,target_width,*,ends=(None,None),maximum_side_slope=.25,interior_width=None,plateau=None,maximum_extra_reach_mm=.11,direct_transition=False,middle_faces=None):
     p,normals,stations,length=frame(points,extra_stations=()if plateau is None else(plateau['first_mm'],plateau['last_mm']))
     desired=max(0.,((target_width if interior_width is None else interior_width)-width)/2)

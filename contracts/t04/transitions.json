@@ -1,0 +1,8 @@
+{
+  "schema": "pcb-t04-boundary-transitions/1",
+  "revision": 4,
+  "maximum_transition_angle_degrees": 10.0,
+  "copper_policy": "BRIDGE_GAPS_WITH_NO_NET_GROWTH_LOSS",
+  "terminal_owner": "T05_SOURCE_LAND_WINDOW",
+  "repair_principle": "FLEXIBLE_ENDS_PRIMARY"
+}

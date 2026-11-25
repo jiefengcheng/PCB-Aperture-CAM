@@ -49,6 +49,7 @@ class T04Settings:
     source_sha256: str
     _raw: bytes = field(repr=False)
     _eligibility: bytes | None = field(default=None,repr=False)
+    _transitions: bytes | None = field(default=None,repr=False)
 
     @property
     def factor_increment(self):
@@ -91,6 +92,9 @@ class T04Settings:
         if self._eligibility is not None:
             from src.trace_growth_policy import Policy
             value['trace_eligibility']=Policy(self._eligibility).snapshot()
+        if self._transitions is not None:
+            from src.t04_transition_policy import decode
+            value['boundary_transitions']=decode(self._transitions)
         return value
 
     def write_snapshot(self, path):
@@ -99,6 +103,8 @@ class T04Settings:
                        source_json=self._raw.decode('utf-8'), resolved=self.resolved())
         if self._eligibility is not None:
             payload.update(schema='pcb-t04-ladder-job-snapshot/2',trace_eligibility_json=self._eligibility.decode())
+        if self._transitions is not None:
+            payload.update(schema='pcb-t04-ladder-job-snapshot/3',boundary_transitions_json=self._transitions.decode())
         body = _json(payload)
         with Path(path).open('xb') as stream:
             stream.write(body)
@@ -128,23 +134,30 @@ def from_bytes(raw):
 
 def capture(path=DEFAULT_REGISTRY):
     from src.trace_growth_policy import capture as eligibility
-    settings=from_bytes(Path(path).read_bytes());policy=eligibility()
-    return replace(settings,_eligibility=policy.raw,source_sha256=hashlib.sha256(settings._raw+policy.raw).hexdigest())
+    from src.t04_transition_policy import capture as transitions
+    settings=from_bytes(Path(path).read_bytes());policy=eligibility();transition=transitions()
+    return replace(settings,_eligibility=policy.raw,_transitions=transition,
+                   source_sha256=hashlib.sha256(settings._raw+policy.raw+transition).hexdigest())
 
 
 def read_snapshot(path):
     payload = _decode(Path(path).read_bytes())
-    version2=isinstance(payload,dict)and payload.get('schema')=='pcb-t04-ladder-job-snapshot/2'
-    keys={'schema', 'source_sha256', 'source_json', 'resolved'}|({'trace_eligibility_json'}if version2 else set())
+    version3=isinstance(payload,dict)and payload.get('schema')=='pcb-t04-ladder-job-snapshot/3'
+    version2=isinstance(payload,dict)and payload.get('schema')in('pcb-t04-ladder-job-snapshot/2','pcb-t04-ladder-job-snapshot/3')
+    keys={'schema', 'source_sha256', 'source_json', 'resolved'}|({'trace_eligibility_json'}if version2 else set())|({'boundary_transitions_json'}if version3 else set())
     if (type(payload) is not dict
             or set(payload) != keys
-            or payload['schema'] not in('pcb-t04-ladder-job-snapshot/1','pcb-t04-ladder-job-snapshot/2')):
+            or payload['schema'] not in('pcb-t04-ladder-job-snapshot/1','pcb-t04-ladder-job-snapshot/2','pcb-t04-ladder-job-snapshot/3')):
         raise ValueError('T04_SNAPSHOT_SCHEMA_CHANGED')
     policy = from_bytes(payload['source_json'].encode('utf-8'))
     if version2:
         from src.trace_growth_policy import Policy
         eligibility=Policy(payload['trace_eligibility_json'].encode())
         policy=replace(policy,_eligibility=eligibility.raw,source_sha256=hashlib.sha256(policy._raw+eligibility.raw).hexdigest())
+    if version3:
+        from src.t04_transition_policy import decode
+        raw=payload['boundary_transitions_json'].encode();decode(raw)
+        policy=replace(policy,_transitions=raw,source_sha256=hashlib.sha256(policy._raw+policy._eligibility+raw).hexdigest())
     if (policy.source_sha256 != payload['source_sha256']
             or policy.resolved() != payload['resolved']):
         raise ValueError('T04_JOB_SNAPSHOT_CHANGED')

@@ -1,0 +1,276 @@
+{
+  "schema": "t04-marked-shoulder-review/1",
+  "source_sha256": "207a51318f103190a4d61e76f4a0457fcfd11fd3db560c9439dd2f5f460f9b90",
+  "predecessor_revision": "e95641a61e4748089209cda5bc7fc53b",
+  "predecessor_construction_sha256": "e9c83794831215112b812169d74c96aaf07ef0584a89cb8d08ce8e43090c8ec8",
+  "maximum_transition_angle_degrees": 10.0,
+  "repair_principle": "FLEXIBLE_ENDS_PRIMARY; NO_FIXED_ADDITIVE_SEED_PREREQUISITE",
+  "net_copper_policy": "NONNEGATIVE_IN_EACH_NEARBY_DEPENDENCY_GROUP_AND_BOARD; ORIGINAL_FLOOR_FIXED; NO_REMOTE_CREDIT; NO_WHOLE_TRACE_WITHDRAWAL",
+  "cases": [
+    {
+      "id": "g",
+      "image": "Untitledg.jpg",
+      "regions_mm": [
+        [
+          47.6,
+          71.63,
+          48.98,
+          71.88
+        ]
+      ],
+      "disposition": "ALL_MARKED_SHOULDERS_MUST_BE_RESOLVED",
+      "target_points_mm": [
+        [
+          47.9100575,
+          71.6894625
+        ],
+        [
+          47.9100575,
+          71.8045375
+        ],
+        [
+          47.7099425,
+          71.8045375
+        ],
+        [
+          47.7099425,
+          71.6894625
+        ],
+        [
+          48.54887704919231,
+          71.79992215433714
+        ]
+      ],
+      "target_radius_mm": 0.04
+    },
+    {
+      "id": "f",
+      "image": "Untitledf.jpg",
+      "regions_mm": [
+        [
+          43.72,
+          71.64,
+          44.16,
+          71.88
+        ]
+      ],
+      "disposition": "ALL_MARKED_SHOULDERS_MUST_BE_RESOLVED",
+      "target_points_mm": [
+        [
+          43.8519425,
+          71.6894625
+        ],
+        [
+          44.0520575,
+          71.6894625
+        ],
+        [
+          43.8519425,
+          71.8045375
+        ],
+        [
+          44.0520575,
+          71.8045375
+        ]
+      ],
+      "target_radius_mm": 0.04
+    },
+    {
+      "id": "e",
+      "image": "Untitlede.jpg",
+      "regions_mm": [
+        [
+          42.0,
+          0.0,
+          46.4,
+          3.4
+        ]
+      ],
+      "disposition": "ALL_MARKED_SHOULDERS_MUST_BE_RESOLVED",
+      "target_points_mm": [
+        [
+          44.24236372423515,
+          1.500986874958119
+        ],
+        [
+          43.819803677334235,
+          0.3810084638071942
+        ],
+        [
+          45.86308648598069,
+          1.0798250998312664
+        ],
+        [
+          45.51692654798616,
+          0.3842877990445629
+        ],
+        [
+          45.97853714209364,
+          1.0802136337652442
+        ]
+      ],
+      "target_radius_mm": 0.04
+    },
+    {
+      "id": "tracea",
+      "image": "Gerber Viewer T04 Growth Tracea.jpg",
+      "regions_mm": [
+        [
+          47.34,
+          -7.8,
+          47.6,
+          -7.65
+        ]
+      ],
+      "disposition": "ALL_MARKED_SHOULDERS_MUST_BE_RESOLVED",
+      "target_points_mm": [
+        [
+          47.410542818206686,
+          -7.729104889439785
+        ],
+        [
+          47.52790364559417,
+          -7.72887021454321
+        ]
+      ],
+      "target_radius_mm": 0.04
+    },
+    {
+      "id": "d_mark",
+      "image": "Untitledd.jpg",
+      "regions_mm": [
+        [
+          6.8,
+          -10.84,
+          7.23,
+          -10.52
+        ]
+      ],
+      "disposition": "ALL_MARKED_SHOULDERS_MUST_BE_RESOLVED",
+      "target_points_mm": [
+        [
+          7.0503128008326,
+          -10.792949
+        ],
+        [
+          7.155,
+          -10.800822375157242
+        ],
+        [
+          7.155,
+          -10.585551
+        ],
+        [
+          7.079,
+          -10.570551
+        ],
+        [
+          7.0496160768525,
+          -10.563051
+        ],
+        [
+          6.881556577788073,
+          -10.627137423116672
+        ],
+        [
+          6.886059325,
+          -10.678
+        ]
+      ],
+      "target_radius_mm": 0.04
+    },
+    {
+      "id": "c_mark",
+      "image": "Untitledc.jpg",
+      "regions_mm": [
+        [
+          1.95,
+          -15.55,
+          2.4,
+          -15.25
+        ]
+      ],
+      "disposition": "ALL_MARKED_SHOULDERS_MUST_BE_RESOLVED",
+      "target_points_mm": [
+        [
+          2.1275692823209034,
+          -15.385231839505305
+        ]
+      ],
+      "target_radius_mm": 0.04
+    },
+    {
+      "id": "arrow",
+      "image": "aUntitled.jpg",
+      "regions_mm": [
+        [
+          0.65,
+          -15.3,
+          1.5,
+          -14.7
+        ]
+      ],
+      "disposition": "UNCHANGED_COVERAGE_CONTROL"
+    },
+    {
+      "id": "b",
+      "image": "Untitledb.jpg",
+      "regions_mm": [
+        [
+          4.74,
+          -16.06,
+          5.01,
+          -15.82
+        ],
+        [
+          5.2,
+          -15.87,
+          5.48,
+          -15.6
+        ]
+      ],
+      "disposition": "ALL_MARKED_SHOULDERS_MUST_BE_RESOLVED",
+      "target_points_mm": [
+        [
+          4.885346954731056,
+          -15.965822144150163
+        ],
+        [
+          5.273283811913494,
+          -15.79747716612575
+        ],
+        [
+          5.27298,
+          -15.734934048433914
+        ],
+        [
+          5.428549989951888,
+          -15.631502662315972
+        ]
+      ],
+      "target_radius_mm": 0.04
+    },
+    {
+      "id": "a_mark",
+      "image": "Untitleda.jpg",
+      "regions_mm": [
+        [
+          12.61,
+          -15.17,
+          12.71,
+          -15.02
+        ]
+      ],
+      "disposition": "ALL_MARKED_SHOULDERS_MUST_BE_RESOLVED",
+      "target_points_mm": [
+        [
+          12.65351856649033,
+          -15.093017908840245
+        ]
+      ],
+      "target_radius_mm": 0.04
+    }
+  ],
+  "target_scope": "OWNER_MARKED_FEATURES_AND_ADDITIONAL_LOWER_BEND; ALL_NEW_CORNERS_IN_REPAIR_WINDOWS_STILL_REJECT",
+  "terminal_division": "INTERIOR_SHOULDERS_REQUIRED; ONLY_HASH_BOUND_ORIGINAL_POSITIVE_PAD_TRACE_ATTACHMENTS_REMAIN_PENDING_T05; SEARCH_WINDOW_ALONE_NEVER_EXEMPTS"
+}

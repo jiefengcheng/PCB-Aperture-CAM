@@ -107,3 +107,26 @@ def test_duplicate_registry_key_rejected():
                                 b'"maximum_factor": 1.5, "maximum_factor": 1.25,')
     with pytest.raises(ValueError, match='DUPLICATE_T04_SETTING'):
         from_bytes(raw)
+
+
+def test_transition_angle_is_bound_to_job_snapshot_and_tampering_rejected(tmp_path):
+    snapshot=tmp_path/SNAPSHOT_NAME
+    settings=capture();settings.write_snapshot(snapshot)
+    payload=json.loads(snapshot.read_bytes())
+    assert payload['schema']=='pcb-t04-ladder-job-snapshot/3'
+    assert settings.resolved()['boundary_transitions']['maximum_transition_angle_degrees']==10
+    changed=json.loads(payload['boundary_transitions_json']);changed['maximum_transition_angle_degrees']=12
+    payload['boundary_transitions_json']=json.dumps(changed)
+    snapshot.write_text(json.dumps(payload))
+    with pytest.raises(ValueError,match='T04_JOB_SNAPSHOT_CHANGED'):
+        read_snapshot(snapshot)
+
+
+def test_flexible_end_policy_has_its_own_revision_and_keeps_historical_reading():
+    from src.t04_transition_policy import decode,capture as transitions
+    previous=decode(transitions());previous.pop('repair_principle',None);previous['revision']=3
+    assert decode(json.dumps(previous).encode())==previous
+    current=dict(previous,revision=4,repair_principle='FLEXIBLE_ENDS_PRIMARY')
+    assert decode(json.dumps(current).encode())==current
+    current['repair_principle']='FIXED_SEED_FIRST'
+    with pytest.raises(ValueError,match='INVALID_T04_BOUNDARY_TRANSITION_POLICY'):decode(json.dumps(current).encode())

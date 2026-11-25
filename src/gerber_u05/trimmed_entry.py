@@ -54,6 +54,31 @@ def constructor_operands(loaded, receipt):
     return rows, current, current
 
 
+def sealed_subtractive_entry(store,scene):
+    """Identify the exact sealed trim output, without inventing prior growth.
+
+    The runner authenticates the complete pinned file closure before/after
+    execution. Here the phase type and ordered entry identities determine
+    whether a prior additive-reference reservation is applicable at all.
+    """
+    if scene is None or [v.get('stage')for v in scene.get('lineage',[])]!=[
+            'gerber-source-intake','verified-large-copper-trim-entry']:return False
+    receipt=store.get_json(scene['lineage'][-1]['receipt_ref'],kind='t04-trimmed-entry')
+    ref=receipt.get('seal')
+    if ref is None:return False
+    from src.copper_phase_seal import SCHEMA,read_file
+    raw=read_file(ref['path'])
+    if p.digest(raw)!=ref['sha256']:raise ValueError('T04_SUBTRACTIVE_ENTRY_SEAL_CHANGED')
+    seal=json.loads(raw)
+    ledger=[[r['source_id'],r['geometry_ref']['sha256']]for r in scene['objects']]
+    if (seal['schema']!=SCHEMA or seal['phase']!='large_copper'or seal['parent']is not None or
+            receipt.get('schema')!='t04-verified-trimmed-entry/1'or
+            seal['source_sha256']!=scene['source_sha256']or receipt['source_sha256']!=scene['source_sha256']or
+            seal['output_geometry_sha256']!=p.digest(p.canonical(ledger))):
+        raise ValueError('T04_SUBTRACTIVE_ENTRY_BINDING_CHANGED')
+    return True
+
+
 def operands(store, scene):
     """Read exact cleanup tombstones without weakening positive-only geometry.
 
