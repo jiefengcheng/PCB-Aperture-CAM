@@ -21,7 +21,7 @@ def saved_inputs(before,sources):
 
 def verify_dependencies(plans,local,report,before,after,original,angle):
     """Check the combined emitted output once per prepared dependency group."""
-    from shapely.geometry import Point
+    from shapely.geometry import Point,Polygon
     from shapely.ops import unary_union
     from .boundary_finish import sharp_points,sharp_vertices
     from .growth_bridge import meaningful_shoulders
@@ -29,6 +29,7 @@ def verify_dependencies(plans,local,report,before,after,original,angle):
     from .pipeline import EPS
     from src.native_inventory import ERROR_MM
     records={r['plan_index']:r for r in report['reports']};checks=[];partial=0
+    source_missing={}
     for group in report['copper_budgets']['groups']:
         members=group['members'];clips=[local[i]['clip']for i in members]
         clip=unary_union(clips)
@@ -42,11 +43,22 @@ def verify_dependencies(plans,local,report,before,after,original,angle):
         view=b.simplify(ERROR_MM/10,preserve_topology=True);vertices=sharp_vertices(view,angle)
         corners=[p for p in meaningful_shoulders(b,sharp_points(view,a,angle,vertices=vertices))
             if clip.boundary.distance(Point(p))>2*ERROR_MM and changed.distance(Point(p))<=2*ERROR_MM]
-        missing=polygonal(floor.difference(b))
+        # Preserve exact contribution containment before clipping/unioning.
+        # Independently assembled floors can manufacture overlay slivers even
+        # when every original contribution survives in its own emitted body.
+        # Cache each source subtraction across overlapping dependency groups;
+        # actual missing material still has to be covered by emitted neighbors.
+        for s in ordered:
+            if s not in source_missing:
+                source_missing[s]=(original[s].difference(after[s])
+                    if original[s] is not after[s] else Polygon())
+        missing=polygonal(unary_union([source_missing[s].intersection(clip)
+            for s in ordered if not source_missing[s].is_empty]).difference(b))
         lost=missing.area>EPS or not polygonal(missing.difference(b.buffer(ERROR_MM,quad_segs=128))).is_empty
         pockets=new_pockets(a,floor,b)
         check=dict(group=group['id'],passed=not corners and not lost and not pockets,
             new_corners_mm=corners,source_floor_loss_mm2=missing.area,new_pockets=len(pockets),
+            source_floor_preserved=not lost,
             source_ids=ordered,clip_wkb_hex=to_wkb(clip).hex(),
             before_sha256=digest(to_wkb(a)),after_sha256=digest(to_wkb(b)))
         checks.append(check)

@@ -1,5 +1,14 @@
 # Original-source full-board T04 after large-copper cleanup
 
+## Numerical-check correction — 2026-11-27
+
+T04 now distinguishes complete-face numerical overlay artefacts from actual
+source loss or positive additions, using the existing shared copper boundary
+sections. This is implemented in the repository and carried unchanged into
+the portable package. The widening constructor is unchanged. See
+[T04_NUMERICAL_OUTPUT_CHECKS.md](T04_NUMERICAL_OUTPUT_CHECKS.md) for the exact
+proof, regression controls, fresh Neo completion and memory/time accounting.
+
 ## Current corrected full-board result — 2026-11-24
 
 The latest run is

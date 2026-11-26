@@ -1,7 +1,116 @@
 from types import SimpleNamespace
+import pytest
 from shapely.geometry import box
 from src.t04_settings import T04Settings
 from src.gerber_u05 import group_components as c
+
+
+def test_positive_addition_keeps_real_growth_and_bounds_source_edge_roundoff():
+    import math
+    from shapely.geometry import Polygon
+    source=box(1.,1.,2.,2.);reference=source;proofs=[]
+    # One numerical skin along the old edge and one finite, isolated addition.
+    skin=box(2.,1.2,2.+2*math.ulp(2.),1.8)
+    growth=box(2.1,1.2,2.2,1.8)
+    actual=source.union(skin).union(growth)
+    delta=c.positive_addition(actual,reference,source,source_contribution=source,roundoff_proofs=proofs)
+    assert delta.equals(growth) and proofs
+    assert all(p['complete_face_within_source_roundoff']for p in proofs)
+    # Small area alone never excuses a face outside the original edge bound.
+    tiny=box(2.1,1.2,2.1+1e-10,1.2+1e-10)
+    assert c.positive_addition(source.union(tiny),reference,source,source_contribution=source).equals(tiny)
+    beyond=box(2.,1.2,2.+32*math.ulp(2.),1.8)
+    assert not c.positive_addition(source.union(beyond),reference,source,source_contribution=source).is_empty
+
+
+def test_positive_addition_uses_trimmed_entry_and_keeps_threshold_adjacent_growth():
+    from shapely.geometry import Polygon
+    from src.gerber_u05.limiting_math import GUARD
+    entry=box(0.,0.,1.,1.);regrown=box(1.,.2,1.01,.8)
+    # Previously removed space is not an exemption for new T04 growth.
+    delta=c.positive_addition(entry.union(regrown),entry,entry,source_contribution=entry)
+    assert delta.equals(regrown)
+    for offset,passed in ((-2e-12,False),(2e-12,True)):
+        neighbor=box(1.01+GUARD+offset,.2,1.2,.8)
+        assert (delta.distance(neighbor)+1e-12>=GUARD)is passed
+
+
+def test_roundoff_support_includes_overlapping_original_contributions_and_reuses_preparation():
+    import math
+    source=box(0.,0.,1.,1.);pad=box(.9,.1,2.,.9)
+    floor=source.union(pad);growth=box(.2,1.,.8,1.1)
+    actual=source.union(box(.8,.2,2.+2*math.ulp(2.),.8)).union(growth)
+    cache={};proofs=[]
+    for _ in range(3):
+        delta=c.positive_addition(actual,floor,floor,source_contribution=source,
+            roundoff_cache=cache,roundoff_proofs=proofs)
+        assert delta.equals(growth)
+    assert len(cache)<=2 and proofs
+    assert all(p['support_scope']=='IMMUTABLE_STAGE_ENTRY_CONTRIBUTIONS'for p in proofs)
+    # The owner floor is the trimmed entry, never the raw pad footprint.
+    trimmed=source.union(box(.9,.1,1.8,.9))
+    delta=c.positive_addition(actual,trimmed,trimmed,source_contribution=source,roundoff_cache=cache)
+    assert delta.intersection(box(1.81,.2,1.99,.8)).area>.1
+
+
+def test_exact_roundoff_proof_covers_a_complete_face_and_cannot_bridge_a_hole():
+    import math
+    from shapely.geometry import Polygon
+    source=box(0.,0.,1.,1.);epsilon=math.ulp(1.)
+    face=Polygon([(.4,1.+epsilon),(.6,1.+2*epsilon),(.5,1.+epsilon)])
+    proof=c.source_edge_roundoff(face,source,8*epsilon,{})
+    assert proof and proof['method']=='EXACT_RATIONAL_SOURCE_EDGE_CAPSULE'
+    holed=source.difference(box(.4,.4,.6,.6))
+    bridge=Polygon([(.4,.45),(.6,.45),(.5,.6)])
+    # Vertices on several different source edges do not prove the interior.
+    assert c.source_edge_roundoff(bridge,holed,8*epsilon,{})is None
+
+
+def test_numerical_source_support_never_excuses_a_foreign_contact():
+    import math
+    from shapely.geometry import Polygon
+    source=box(0.,0.,1.,1.);epsilon=math.ulp(1.)
+    face=box(.4,1.,.6,1.+4*epsilon);foreign=box(.4,1.+epsilon,.6,1.1)
+    actual=source.union(face)
+    delta=c.positive_addition(actual,source,source,source_contribution=source,
+        foreign_contact=lambda p:p.intersects(foreign))
+    assert not delta.is_empty and delta.distance(foreign)==0
+
+
+def test_roundoff_proof_reuses_the_shared_t02_t05_boundary_structure(tmp_path):
+    import math
+    from src.shared_copper_context import CopperContext
+    source=box(1.,1.,2.,2.);epsilon=math.ulp(2.)
+    actual=source.union(box(2.,1.2,2.+2*epsilon,1.8));cache={}
+    with CopperContext({'s':source},source_binding={'case':'roundoff-boundary-reuse'},
+                       frame={'units':'mm'},root=tmp_path/'prepared')as context:
+        for _ in range(3):
+            delta=c.positive_addition(actual,source,source,source_contribution=source,
+                roundoff_cache=cache,boundary_sections=context.boundary_sections)
+            assert delta.is_empty
+        assert context.stats['source_index_builds']==1
+        assert context.stats['boundary_index_builds']==1
+        assert context.stats['boundary_index_hits']>=2
+
+
+@pytest.mark.parametrize('offset',[-64.125,0.,1000.25])
+@pytest.mark.parametrize('angle',[0.,17.,45.])
+@pytest.mark.parametrize('hole',[False,True])
+def test_source_edge_proofs_generalize_across_frames_overlaps_and_holes(offset,angle,hole):
+    from shapely.affinity import rotate,translate
+    from shapely.ops import unary_union
+    def frame(g):return translate(rotate(g,angle,origin=(0,0)),offset,-offset)
+    core=box(0.,0.,1.,1.)
+    if hole:core=core.difference(box(.3,.3,.7,.7))
+    source=frame(core);alias=frame(box(.8,.1,1.,.9))
+    entry=unary_union([source,alias]);reference=unary_union([
+        source.difference(frame(box(.1,.1,.2,.2))),alias])
+    grown=source.union(frame(box(.95,.2,1.1,.8)))
+    delta=c.positive_addition(grown,reference,entry,source_contribution=source)
+    # Existing close copper at the opposite edge must not become a false
+    # growth violation. The real addition must remain finite and checked.
+    neighbor=frame(box(-.2,.1,-.02,.9))
+    assert delta.area>.05 and delta.distance(neighbor)>.9
 
 
 def fixture():
@@ -134,6 +243,47 @@ def test_source_anchored_join_has_positive_overlap_not_a_floating_butt_contact()
     residual=current['s'].difference(domains['s'])
     assert residual.intersection(strips[0][1]).area>0
     assert len(OriginalOwners(residual.union(strips[0][1])).owners)==1
+
+
+def test_source_subtraction_reference_is_not_new_copper_at_an_inherited_close_gap():
+    lane,construction,rows,current,settings=fixture()
+    construction['reference_policy']='SOURCE_ANCHORED'
+    construction['source_width_targets_mm']={'s':.075}
+    lane['face_growth_mm']=dict(left=.005,right=.005)
+    # Existing source copper is closer than the construction guard near the
+    # endpoint. It must remain; only genuinely new copper needs that guard.
+    current=dict(current,blocker=box(.9,.06475,1.1,.1))
+    scope=SimpleNamespace(ids={'s':('T',),'blocker':('B',)},cores={'T':current['s'],'B':current['blocker']})
+    q=c.run(rows,current,current,{}, {'r':['s']},construction,settings,scope,continuous=True,coherent_pose=True)
+    assert q['reference_checks']['passed']and q['reference_checks']['source_subtraction_proofs']==1
+    assert q['functional_checks']['source_subtraction_proofs']==0
+    assert q['functional_checks']['passed']
+
+
+def test_moved_reference_is_still_checked_against_foreign_copper():
+    lane,construction,rows,current,settings=fixture()
+    lane.update(left_mm=-.02,right_mm=.04,profile_midline_shift_mm=.01,
+                face_growth_mm=dict(left=-.005,right=.015),
+                vertices_mm=[[.2,-.02],[.8,-.02],[.8,.04],[.2,.04]])
+    current=dict(current,blocker=box(.9,.06475,1.1,.1))
+    scope=SimpleNamespace(ids={'s':('T',),'blocker':('B',)},cores={'T':current['s'],'B':current['blocker']})
+    q=c.run(rows,current,current,{}, {'r':['s']},construction,settings,scope,continuous=True,coherent_pose=True)
+    assert not q['reference_checks']['passed']
+    assert q['reference_checks']['source_subtraction_proofs']==0
+    assert any(r['reason']=='RESIDUAL_FUNCTIONAL_GAP'for r in q['reference_checks']['failures'])
+
+
+def test_exact_source_difference_can_have_positive_overlay_slivers_without_adding_copper():
+    from shapely.geometry import LineString
+    from shapely.affinity import rotate
+    x,y=1.2345,-3.4567
+    source=LineString([(x,y),(x+1.1,y+.7)]).buffer(.025,quad_segs=128)
+    mask=rotate(box(x+.2,y-.2,x+.6,y+.2),45,origin=(x,y))
+    residual=source.difference(mask)
+    # This is why a constructive subtraction proof is needed. Do not add an
+    # area threshold, snap the geometry, or weaken the foreign-copper limit.
+    sliver=residual.difference(source)
+    assert not sliver.is_empty and 0<sliver.area<1e-12
 
 
 def anchored_joint_fixture(kind='arc'):

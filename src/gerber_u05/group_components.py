@@ -6,6 +6,7 @@ remain diagnostic until functional/source-void and assembled connection custody
 are integrated; a physical component pass is not full T04 acceptance.
 """
 import copy
+import math
 from time import perf_counter
 import numpy as np
 from shapely import STRtree, to_wkb
@@ -35,6 +36,88 @@ from src.trace_width_clearance import TraceWidthContract
 from .normalized_additions import verify as verify_normalized_additions
 from . import corner_transition
 from .component_workspace import StripReservations, ResidualScene
+
+
+def source_edge_roundoff(part, support, allowance, cache, sections=None):
+    """Prove the complete face lies in one original edge's convex capsule.
+
+    Exact rational segment distances avoid non-monotone microscopic GEOS
+    buffers. A polygon lies in the convex hull of its exterior vertices;
+    proving every vertex lies in the same convex capsule proves the face.
+    """
+    from fractions import Fraction as F
+    from src.indexed_polygon_distance import chunks
+    key=id(support);known=cache.get(key)
+    if known is None or known[0]is not support:
+        known=(support,None if sections is not None else chunks(support));cache[key]=known
+    x,y,x1,y1=part.bounds;window=box(x-allowance,y-allowance,x1+allowance,y1+allowance)
+    runs=sections(support,window)if sections is not None else enumerate(known[1])
+    points=[(F(float(a)),F(float(b)))for a,b in list(part.exterior.coords)[:-1]];limit=F(allowance)**2
+    for index,run in runs:
+        coords=list(run.coords)
+        for j,(a,b)in enumerate(zip(coords,coords[1:])):
+            if (x<min(a[0],b[0])-allowance or x1>max(a[0],b[0])+allowance or
+                y<min(a[1],b[1])-allowance or y1>max(a[1],b[1])+allowance):continue
+            ax,ay=map(F,map(float,a));bx,by=map(F,map(float,b));vx,vy=bx-ax,by-ay;length=vx*vx+vy*vy
+            if length==0:continue
+            maximum=F(0)
+            for px,py in points:
+                dx,dy=px-ax,py-ay;t=dx*vx+dy*vy
+                distance=(dx*dx+dy*dy if t<=0 else
+                    (px-bx)**2+(py-by)**2 if t>=length else(vx*dy-vy*dx)**2/length)
+                maximum=max(maximum,distance)
+                if maximum>limit:break
+            if maximum<=limit:return dict(method='EXACT_RATIONAL_SOURCE_EDGE_CAPSULE',
+                boundary_chunk=int(index),edge_in_chunk=j,edge_mm=[list(a),list(b)],
+                maximum_vertex_distance_squared_mm2=float(maximum))
+    return None
+
+
+def positive_addition(actual, reference, source_floor, *, source_contribution=None,
+                      source_supports=None, roundoff_proofs=None, roundoff_cache=None,
+                      boundary_sections=None, foreign_contact=None):
+    """Measure physical additions against exact immutable entry contributions.
+
+    An assembled owner is useful for coarse subtraction, but its independently
+    noded boundary cannot disprove original-source support. Numerical faces
+    need a complete-face containment proof against the actual entry pieces.
+    """
+    delta=actual if source_contribution is None else actual.difference(source_contribution)
+    delta=polygonal(delta.difference(reference).difference(source_floor))
+    if source_contribution is None or source_floor.is_empty or delta.is_empty:return delta
+    cache={}if roundoff_cache is None else roundoff_cache
+    # The caller prepares these borrowed references/bounds once from frozen
+    # owner membership. No private spatial index or owner reconstruction.
+    supports=(source_supports if source_supports is not None else
+              [(source_contribution,source_contribution.bounds),(source_floor,source_floor.bounds)])
+    parts=list(delta.geoms)if delta.geom_type=='MultiPolygon'else[delta];retained=[]
+    for part in parts:
+        low_x,low_y,high_x,high_y=part.bounds;proven=None
+        # Only a prefilter for numerical-envelope work; area alone never
+        # grants an exemption, and genuine small additions remain checked.
+        for support,bounds in supports:
+            if support.is_empty:continue
+            # Coordinate roundoff belongs to this exact operand, not to a
+            # far-away coordinate elsewhere in its assembled owner.
+            allowance=8*max(math.ulp(v)for v in bounds)
+            thin=part.area<=2*allowance*part.length
+            x,y,x1,y1=bounds
+            if high_x<x-allowance or low_x>x1+allowance or high_y<y-allowance or low_y>y1+allowance:continue
+            if support.covers(part):proven=(support,0.,dict(method='EXACT_ENTRY_CONTRIBUTION_CONTAINMENT'));break
+            if not thin:continue
+            witness=source_edge_roundoff(part,support,allowance,cache,boundary_sections)
+            if witness is not None:proven=(support,allowance,witness);break
+        if proven is None or(foreign_contact is not None and foreign_contact(part)):retained.append(part)
+        elif roundoff_proofs is not None:
+            support,bound,witness=proven
+            roundoff_proofs.append(dict(source_sha256=p.digest(to_wkb(source_contribution)),
+                support_sha256=p.digest(to_wkb(support)),face_sha256=p.digest(to_wkb(part)),
+                area_mm2=part.area,support_scope='IMMUTABLE_STAGE_ENTRY_CONTRIBUTIONS',
+                coordinate_roundoff_bound_mm=bound,complete_face_within_source_roundoff=True,
+                containment_witness=witness))
+    # Keep exact retained contours; another union can reintroduce edge noise.
+    from shapely.geometry import MultiPolygon
+    return Polygon()if not retained else retained[0]if len(retained)==1 else MultiPolygon(retained)
 
 
 def joints(construction,rows=None):
@@ -122,7 +205,7 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
     if coherent_pose:
         for s in used:
             record=profiles['segments'][s];tx,ty=record['route_translation_mm']
-            moved=translate(original[s],xoff=tx,yoff=ty)
+            moved=original[s] if tx==0. and ty==0. else translate(original[s],xoff=tx,yoff=ty)
             if record['axis'] is not None and (tx!=0. or ty!=0.):
                 w=rows[s]['metadata']['minimum_caliper_mm']
                 minimum=reference_profile(record,w,zero_side_shift=True)
@@ -131,22 +214,45 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                 moved=polygonal(unary_union([straight_body(minimum,w),caps]))
             references[s]=moved
     residual={s:references[s].difference(domains[s]) if s in domains else references[s] for s in used}
+    # A difference of the exact current source can only remove copper. Keep
+    # that constructor proof bound to the actual result object: overlaying the
+    # result against a re-unioned owner can otherwise manufacture microscopic
+    # positive slivers and misclassify unchanged source as growth. A moved
+    # reference, a changed result object or later growth gets no exemption.
+    source_subtractions={s:residual[s] for s in used if references[s] is current[s]}
     # Verified cleanup can leave zero source contributions. Retain their source
     # custody in the mapping; ResidualScene indexes only nonempty material.
     material=ResidualScene({s:g for s,g in changed.items() if s not in used})
     material.update({s:g for s,g in residual.items() if not g.is_empty});material.update(group_fixed)
-    joint_owners={}
-    def changed_owner_checks(before_material,after_material):
+    joint_owners={};source_owner_floor=None;source_owner_supports=None
+    def changed_owner_checks(before_material,after_material,source_subtractions=None):
+        nonlocal source_owner_floor,source_owner_supports
         shadow=copy.copy(scope);shadow.ids=dict(scope.ids)
         shadow.ids.update({f'group:{i}':scope.ids[lane['source_ids'][0]] for i,(lane,_)in enumerate(strips)})
         shadow.ids.update(joint_owners)
         before=owner_material(shadow,before_material)
+        if before_material is current:
+            # Borrow the already assembled entry floor only for affected
+            # owners. No second full-board union or private index is needed.
+            source_owner_floor={scope.ids[s][0]:before[scope.ids[s][0]]for s in used}
+            source_owner_supports={o:[]for o in source_owner_floor}
+            for sid,shape in current.items():
+                for own in shadow.ids[sid]:
+                    if own in source_owner_supports:source_owner_supports[own].append((shape,shape.bounds))
         after=owner_material(shadow,after_material)
         ids=sorted(after);tree=STRtree([after[o]for o in ids]);failures=[];checked=0
-        additions={}
-        for s in used|set(joint_owners):
+        additions={};roundoff_proofs=[];roundoff_cache={}
+        for s in sorted(used|set(joint_owners)):
             if s not in after_material:continue
-            own=shadow.ids[s][0];delta=polygonal(after_material[s].difference(before[own]))
+            if source_subtractions is not None and source_subtractions.get(s) is after_material[s]:continue
+            own=shadow.ids[s][0]
+            delta=(polygonal(after_material[s].difference(before[own]))if before_material is current else
+                positive_addition(after_material[s],before[own],source_owner_floor[own],
+                    source_contribution=current[s],source_supports=source_owner_supports[own],
+                    boundary_sections=None if copper is None else copper.boundary_sections,
+                    foreign_contact=lambda part:any(ids[int(i)]!=own for i in tree.query(part,predicate='intersects')),
+                    roundoff_proofs=roundoff_proofs,
+                    roundoff_cache=roundoff_cache))
             if not delta.is_empty:additions.setdefault(own,[]).append(delta)
         for own,pieces in additions.items():
             delta=polygonal(unary_union(pieces))
@@ -159,9 +265,13 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
             if len(OriginalOwners(after[own]).owners)>len(OriginalOwners(before[own]).owners):
                 failures.append(dict(owner=own,reason='ROUTE_ATTACHMENT_DISCONNECTED'))
         return dict(passed=not failures,failures=failures,pairs_checked=checked,
+                    source_subtraction_proofs=0 if source_subtractions is None else len(source_subtractions),
+                    source_edge_roundoff_proofs=roundoff_proofs,
+                    source_roundoff_support_preparations=len(roundoff_cache),
+                    addition_scope='OUTSIDE_REFERENCE_AND_UNCHANGED_STAGE_ENTRY_COPPER',
                     checked_candidates='RESIDUAL_ONLY; GROUPS_FIXED_SUPPORT')
     reference_material=dict(material)
-    reference_checks=changed_owner_checks(current,material) if coherent_pose else None
+    reference_checks=changed_owner_checks(current,material,source_subtractions) if coherent_pose else None
     if reference_checks is not None and not reference_checks['passed']:
         return dict(status='COMMON_ROUTE_REFERENCE_REJECTED; NO_FRAGMENT_FALLBACK',
                     smooth_source_field_plans=smooth_plans,

@@ -1,4 +1,5 @@
 import json
+import pytest
 from shapely.ops import unary_union
 from src.shared_copper_context import CopperContext
 from src.gerber_u05.boundary_prepare import supports
@@ -48,6 +49,37 @@ def test_final_dependency_check_rejects_source_loss_after_local_success(tmp_path
             contacts=contacts,revision=context.source,eligibility=eligibility)
         assert report['partial'] and not report['final_dependency_checks']['passed']
         assert any(r['source_floor_loss_mm2']>0 for r in report['final_dependency_checks']['groups'])
+
+
+def test_dependency_floor_allows_overlapping_contribution_custody_but_rejects_actual_loss():
+    from shapely.geometry import box
+    from src.gerber_u05.retained_boundary import verify_dependencies
+    original={'a':box(0.,0.,1.,1.),'b':box(.5,0.,1.5,1.)}
+    record=dict(plan_index=0,point_mm=[.75,.5],height_mm=.01,status='UNRESOLVED',source_ids=['a','b'])
+    local={0:dict(clip=box(-1.,-1.,2.,2.),neighbors=['a','b'])}
+    for after,preserved in (({'a':box(0.,0.,.5,1.),'b':original['b']},True),
+                            ({'a':box(0.,0.,.5,1.),'b':box(.6,0.,1.5,1.)},False)):
+        report=dict(reports=[dict(record)],copper_budgets=dict(groups=[dict(id=0,members=[0])]))
+        verify_dependencies([dict(record=record)],local,report,original,after,original,10.)
+        check=report['final_dependency_checks']['groups'][0]
+        assert check['source_floor_preserved']is preserved
+
+
+@pytest.mark.parametrize('angle',[0.,17.,45.])
+@pytest.mark.parametrize('offset',[-64.125,0.,1000.25])
+def test_dependency_source_proofs_survive_changed_union_and_clipping_order(angle,offset):
+    from shapely.affinity import rotate,translate
+    from shapely.geometry import box
+    from src.gerber_u05.retained_boundary import verify_dependencies
+    def frame(g):return translate(rotate(g,angle,origin=(0,0)),offset,-offset)
+    original={'a':frame(box(0.,0.,1.,1.)),'b':frame(box(.5,.5,1.5,1.5))}
+    after={'a':original['a'].union(frame(box(.9,.2,1.1,.8))),'b':original['b']}
+    clip=frame(box(-.1,.1,1.2,1.3));record=dict(plan_index=0,
+        point_mm=list(clip.centroid.coords)[0],height_mm=.01,status='UNRESOLVED',source_ids=list(original))
+    report=dict(reports=[record],copper_budgets=dict(groups=[dict(id=0,members=[0])]))
+    verify_dependencies([dict(record=record)],{0:dict(clip=clip,neighbors=list(original))},report,original,after,original,10.)
+    check=report['final_dependency_checks']['groups'][0]
+    assert check['source_floor_preserved'] and check['source_floor_loss_mm2']==0
 
 
 def test_construction_headroom_uses_actual_dense_two_face_widths(tmp_path,monkeypatch):
