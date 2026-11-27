@@ -31,7 +31,7 @@ from src import pin_separation as pin
 from .arc_group_plan import prepare as prepare_arc_groups,prepare_maximal as prepare_maximal_arcs
 from .profile_refinement import clearance_barrier
 from .ribbon_profile import build as sided_ribbon,sections as end_sections
-from .finite_profile_union import certified_union, polygonal
+from .finite_profile_union import certified_union, polygonal, assembly_union
 from src.trace_width_clearance import TraceWidthContract
 from .normalized_additions import verify as verify_normalized_additions
 from . import corner_transition
@@ -222,7 +222,8 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
     source_subtractions={s:residual[s] for s in used if references[s] is current[s]}
     # Verified cleanup can leave zero source contributions. Retain their source
     # custody in the mapping; ResidualScene indexes only nonempty material.
-    material=ResidualScene({s:g for s,g in changed.items() if s not in used})
+    material=ResidualScene({s:g for s,g in changed.items() if s not in used},
+        source_floors={s:original[s]for s in used}if continuous else None)
     material.update({s:g for s,g in residual.items() if not g.is_empty});material.update(group_fixed)
     joint_owners={};source_owner_floor=None;source_owner_supports=None
     def changed_owner_checks(before_material,after_material,source_subtractions=None):
@@ -291,8 +292,8 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
     def neighbours(s,candidate):
         window=candidate.envelope.buffer(GUARD+2*MARGIN)
         ids=[k for k in material.query(window) if k!=s and (not anchored or owner(k)!=scope.ids[s])]
-        fixed=[dict(id=k,geometry=material[k],trace_width_mm=rows.get(k,{}).get('metadata',{}).get('source_port_width_mm',0.))
-               for k in ids]
+        fixed=[dict(id=identity,geometry=geometry,trace_width_mm=rows.get(k,{}).get('metadata',{}).get('source_port_width_mm',0.))
+               for k in ids for identity,geometry in material.reservation_rows(k)]
         return fixed
     def check(s,core,candidate):
         return verify_width_scene([dict(id=s,original=core,candidate=candidate,
@@ -686,11 +687,11 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
         resolved_joint_sites={key for key,statuses in sites.items()if all(s in('FILLED','ALREADY_COVERED')for s in statuses)}
         phases.append(dict(phase='JOINT_CORNER_FILLS',wall_s=corner_report['wall_s']))
         if progress:progress(dict(event='joint_corner_fills',filled=corner_report['filled'],unresolved=corner_report['unresolved'],wall_s=corner_report['wall_s']))
-    assembly_cuts={};finish_report=None
+    assembly_cuts={};finish_report=None;assembly_recoveries=[]
     if anchored and corner_report is not None:
         from .tangent_finish import run as finish
-        assembled_sources={s:unary_union(([material[s]]if s in material else[])+[g for lane,g in strips if s in lane['source_ids']]+
-            [v['geometry']for v in corner_patches if v['source_id']==s])for ss in native_paths.values()for s in ss}
+        assembled_sources={s:assembly_union(([material[s]]if s in material else[])+[g for lane,g in strips if s in lane['source_ids']]+
+            [v['geometry']for v in corner_patches if v['source_id']==s],recoveries=assembly_recoveries,label='finish:'+s)for ss in native_paths.values()for s in ss}
         assembly_cuts,finish_report=finish(rows,native_paths,assembled_sources,descriptors,
             [(lane['source_ids'],g)for lane,g in strips],covered=construction.get('covered_trace_projection',{}).get('covered_source_ids',[]),source_cores=references)
         phases.append(dict(phase='SUBTRACTIVE_TANGENT_FINISH',wall_s=finish_report['wall_s']))
@@ -702,7 +703,7 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
     if finish_report is not None:
         from .tangent_finish import materialize as materialize_finish
         floor_started=perf_counter()
-        route_floors={r:unary_union([material[s]for s in ss if s in material]+[g for lane,g in strips if lane.get('route_id')==r or set(lane['source_ids']).intersection(ss)])for r,ss in native_paths.items()}
+        route_floors={r:assembly_union([material[s]for s in ss if s in material]+[g for lane,g in strips if lane.get('route_id')==r or set(lane['source_ids']).intersection(ss)],recoveries=assembly_recoveries,label='route:'+r)for r,ss in native_paths.items()}
         finished_patches,attachment=materialize_finish(corner_patches,assembly_cuts,route_floors)
         finish_report['attachment']=attachment
         finish_report['wall_s']+=perf_counter()-floor_started
@@ -713,8 +714,8 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
     bodies={};source_bodies={};source_floor_records={}
     def source_body(s):
         attached=[g for lane,g in strips if s in lane['source_ids']]
-        body=unary_union(([material[s]] if s in material else [])+attached+
-                         [v['geometry']for v in finished_patches if v['source_id']==s])
+        body=assembly_union(([material[s]] if s in material else [])+attached+
+                         [v['geometry']for v in finished_patches if v['source_id']==s],recoveries=assembly_recoveries,label='emit:'+s)
         if anchored:
             from .source_trace_floor import preserve
             body,proof=preserve(original[s],body)
@@ -737,18 +738,34 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                 bodies[s]['joint_additions']=added_joints
                 if s in arc_cores and arc_cores[s].get('complete_member'):
                     bodies[s]['body_scope']='MAXIMAL_MEMBER_SHARED_CONTOUR_PLUS_JOINT_ADDITIONS'
-    tick=perf_counter();connections=[];contact_recovery=[]
+    tick=perf_counter();connections=[];contact_recovery=[];generated_carrier_cleanup=[]
+    def retain_route_carriers(route,sources,body,baseline=None):
+        from .native_contact_support import retain_generated_carriers
+        if baseline is None:baseline=unary_union([original[s]for s in sources])
+        updates,result,proof=retain_generated_carriers(sources,source_bodies,material,original,baseline,body)
+        if proof is not None:
+            source_bodies.update(updates)
+            for source,shape in updates.items():
+                bodies[source].update(wkb_hex=to_wkb(shape).hex(),
+                    connected_components=boundary_component_count(shape),generated_carrier_cleanup=True)
+            generated_carrier_cleanup.append(dict(route_id=route,**proof))
+        return result,proof
+    from .boundary_finish import component_count as boundary_component_count
     for r,ss in sorted(native_paths.items()):
         baseline=unary_union([original[s] for s in ss])
         def assemble():
             if continuous:
                 from .native_contact_support import assemble as declared_route
-                return declared_route(ss,source_bodies,material)
+                return declared_route(ss,source_bodies,material,recoveries=assembly_recoveries,label='contact:'+r)
             attached=[g for lane,g in strips if lane.get('route_id')==r or set(lane['source_ids']).intersection(ss)]
             return unary_union([material[s]for s in ss if s in material]+attached+[v['geometry']for v in finished_patches if v['route_id']==r])
-        from .native_contact_support import component_count
-        assembled=assemble();old_count=component_count(baseline)
-        new_count=component_count(assembled)
+        from .native_contact_support import component_count,contribution_count
+        assembled=assemble()
+        old_count=contribution_count(ss,original,{})if continuous else component_count(baseline)
+        new_count=contribution_count(ss,source_bodies,material)if continuous else component_count(assembled)
+        if continuous and new_count>old_count:
+            assembled,carrier_proof=retain_route_carriers(r,ss,assembled,baseline)
+            if carrier_proof is not None:new_count=carrier_proof['assembled_components']
         if anchored and continuous and new_count>old_count:
             from .native_contact_support import proposals as native_contacts
             from .corner_transition import new_pocket_regions
@@ -767,8 +784,9 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                     joined,_=certified_union(source_bodies[s],cap)
                     if not joined.covers(source_bodies[s]):continue
                     from .native_contact_support import assemble as declared_route
-                    trial=declared_route(ss,dict(source_bodies,**{s:joined}),material)
-                    if len(OriginalOwners(trial).owners)>=new_count:continue
+                    trial_bodies=dict(source_bodies,**{s:joined})
+                    if contribution_count(ss,trial_bodies,material)>=new_count:continue
+                    trial=declared_route(ss,trial_bodies,material)
                 q,_=additions_check(s,source_bodies[s],cap)
                 record={k:v for k,v in proposal.items()if k!='geometry'}
                 record.update(route_id=r,passed=q['passed'],failures=q['failures'],
@@ -787,7 +805,7 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                 bodies[s].update(wkb_hex=to_wkb(source_bodies[s]).hex(),
                                  connected_components=len(OriginalOwners(source_bodies[s]).owners),
                                  joint_additions=sum(v['source_id']==s for v in corner_patches))
-                assembled=assemble();new_count=len(OriginalOwners(assembled).owners)
+                assembled=assemble();new_count=contribution_count(ss,source_bodies,material)
                 if new_count<=old_count:break
         connections.append(dict(route_id=r,source_components=old_count,assembled_components=new_count,
                                 passed=new_count<=old_count))
@@ -814,8 +832,11 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
         for record in connections:
             ss=native_paths[record['route_id']]
             if not set(ss).intersection(wide_end_cuts):continue
-            joined=declared_route(ss,refined,material)
-            record.update(assembled_components=len(OriginalOwners(joined).owners))
+            count=contribution_count(ss,source_bodies,material)
+            if count>record['source_components']:
+                _,proof=retain_route_carriers(record['route_id'],ss,declared_route(ss,source_bodies,material))
+                if proof is not None:count=proof['assembled_components']
+            record.update(assembled_components=count)
             record['passed']=record['assembled_components']<=record['source_components']
         phases.append(dict(phase='WIDER_END_TRIM_TO_NARROWER_CONTINUATION',wall_s=wide_end_report['wall_s']))
         if progress:progress(dict(event='wider_end_trimming',trimmed=wide_end_report['trimmed_joints'],wall_s=wide_end_report['wall_s']))
@@ -901,8 +922,12 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                 changed_routes={r for r,ss in native_paths.items()if set(ss).intersection(interface_cuts)}
                 for record in connections:
                     if record['route_id']not in changed_routes:continue
-                    ss=native_paths[record['route_id']];body=declared_route(ss,source_bodies,material)
-                    record['assembled_components']=len(OriginalOwners(body).owners)
+                    ss=native_paths[record['route_id']]
+                    count=contribution_count(ss,source_bodies,material)
+                    if count>record['source_components']:
+                        _,proof=retain_route_carriers(record['route_id'],ss,declared_route(ss,source_bodies,material))
+                        if proof is not None:count=proof['assembled_components']
+                    record['assembled_components']=count
                     record['passed']=record['assembled_components']<=record['source_components']
                     record['final_interface_refinement_checked']=True
                 trimmed={(v['route_id'],tuple(round(x,10)for x in v['endpoint_mm']))for v in interface_report['reports']if v['status']=='TRIMMED_OPTIONAL_INTERFACE'}
@@ -985,8 +1010,13 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
         changed_routes={r for r,ss in native_paths.items()if set(ss).intersection(boundary_cuts)}
         for record in connections:
             if record['route_id']in changed_routes:
-                body=declared_route(native_paths[record['route_id']],source_bodies,material)
-                record.update(assembled_components=boundary_components(body),final_boundary_refinement_checked=True)
+                ss=native_paths[record['route_id']]
+                count=contribution_count(ss,source_bodies,material)
+                if count>record['source_components']:
+                    body=declared_route(ss,source_bodies,material)
+                    body,carrier_proof=retain_route_carriers(record['route_id'],ss,body)
+                    if carrier_proof is not None:count=carrier_proof['assembled_components']
+                record.update(assembled_components=count,final_boundary_refinement_checked=True)
                 record['passed']=record['assembled_components']<=record['source_components']
         superseded=[]
         for item in obligations:
@@ -1023,6 +1053,8 @@ def run(rows,current,original,roles,paths,construction,settings,scope,*,progress
                 component_setup_wall_s=component_setup_wall,
                 frozen_endpoint_obligations=endpoint_audit,
                 original_trace_floor_checks=source_floor_records,
+                local_assembly_union_recoveries=assembly_recoveries,
+                generated_carrier_cleanup=generated_carrier_cleanup,
                 source_baseline_joint_pockets=source_pockets,
                 straight_copper_preserved_through_later_phases=True,
                 covered_trace_copper_preserved=True,covered_trace_sources=covered_ids,

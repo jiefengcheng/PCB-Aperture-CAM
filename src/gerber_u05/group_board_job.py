@@ -27,15 +27,18 @@ def file_sha(path):
 
 
 def checked(stage):
-    """Re-evaluate existing component dispositions; no group geometry audit."""
-    h=stage['hybrid_components'];failures=[]
+    """Require valid output; retain nonfatal finishing findings explicitly."""
+    from .output_disposition import pocket_findings,dependency_findings,endpoint_findings,outcome
+    h=stage['hybrid_components'];failures=[];findings=[]
     for name in('reference_checks','functional_checks'):
         if not h.get(name,{}).get('passed'):failures.append(name)
     if h.get('bulk',{}).get('error')is not None:failures.append('bulk')
     connections=h.get('joint_connections',{}).get('reports')
     if connections is None or not all(r['passed']for r in connections):failures.append('native_connections')
     pocket=h.get('corner_smoothing',{}).get('pocket_completion',{})
-    if not pocket.get('passed'):failures.append('pockets')
+    pending=pocket_findings(pocket)
+    if pending is None:failures.append('pockets')
+    else:findings.extend(pending)
     if h.get('constructed_groups_audited')!=0:failures.append('constructed_group_audit')
     for name in('constructed_group_bytes_preserved','covered_trace_copper_preserved'):
         if h.get(name)is not True:failures.append(name)
@@ -47,15 +50,21 @@ def checked(stage):
         held=(transitions.get('schema')in('t04-growth-gap-bridges/1','t04-retained-widening-bridges/1')and transitions.get('preserved_unresolved')is True and
               all(r.get('baseline_preserved')is True and r.get('added_area_mm2')==r.get('removed_area_mm2')==0.
                   for r in transitions['reports']if r['status']=='UNRESOLVED'))
-        if (transitions['unresolved']and not held) or transitions['partial']:failures.append('boundary_transitions')
-        if retained and(not transitions.get('copper_budgets',{}).get('passed')or
-                not transitions.get('final_dependency_checks',{}).get('passed')):failures.append('flexible_boundary_dependencies')
+        if transitions['unresolved']and not held:failures.append('boundary_transitions')
+        dependencies=dependency_findings(transitions.get('final_dependency_checks',{}))if retained else []
+        if transitions['partial']and(not retained or dependencies is None):failures.append('boundary_transitions')
+        if retained and(not transitions.get('copper_budgets',{}).get('passed')or dependencies is None):
+            failures.append('flexible_boundary_dependencies')
+        elif dependencies:findings.extend(dependencies)
         if transitions.get('schema')=='t04-growth-gap-bridges/1' and any(
                 r.get('net_growth_area_mm2',-1.) < -1e-12 or r.get('original_removed_area_mm2',0.)>1e-12
                 for r in transitions['reports']if r['status']=='BRIDGED'):failures.append('bridge_growth_budget')
-        if not h['frozen_endpoint_obligations']['passed']:failures.append('finished_endpoint_sections')
+        pending=endpoint_findings(h.get('frozen_endpoint_obligations',{}))
+        if pending is None:failures.append('finished_endpoint_sections')
+        else:findings.extend(pending)
     if failures:raise ValueError('T04_GROUP_DIAGNOSTIC_COMPONENT_FAILURE:'+','.join(failures))
-    return dict(reference=True,functional=True,pockets=True,
+    return dict(reference=True,functional=True,pockets=pocket['passed'],output_valid=True,
+        completion=outcome(findings),review_findings=findings,
         native_connections=len(connections),constructed_groups_audited=0,
         frozen_endpoint_obligations=h['frozen_endpoint_obligations'],
         unresolved_corner_records=h['corner_smoothing']['unresolved'])

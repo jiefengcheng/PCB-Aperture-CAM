@@ -62,6 +62,25 @@ def bound_file(path):
     return dict(path=str(Path(path).resolve()),sha256=digest(read_file(path,1024**3)))
 
 
+def authenticate_assembly(job,binding,result,store):
+    """Authenticate saved input-assembly custody without repeating geometry."""
+    assembly=binding.get('input_assembly')
+    if assembly is None:return None # historical raw-source cleanup
+    from src.gerber_u05.source_assembly import POLICY
+    proof=store.get_json(assembly['proof_ref'],kind='source-assembly-proof')
+    original=store.get(assembly['original_source_ref'],kind='gerber-source')
+    ref=result['original_input'];path=Path(ref['path']).resolve()
+    if (path!=job/'original.gbr' or digest(read_file(path))!=ref['sha256'] or
+            ref['sha256']!=digest(original) or proof.get('status')!='PASS' or proof.get('policy')!=POLICY or
+            proof['raw_source_sha256']!=ref['sha256'] or
+            proof['assembled_source_sha256']!=binding['source_ref']['sha256'] or
+            proof['retained_objects']!=binding['source_objects'] or
+            proof['source_objects']!=proof['removed_objects']+proof['retained_objects'] or
+            result['execution_binding']['source_sha256']!=ref['sha256']):
+        raise ValueError('CLEANUP_SOURCE_ASSEMBLY_BINDING_CHANGED')
+    return proof
+
+
 def authenticate(job):
     """Byte custody only. Never treatment, discovery, or geometry acceptance."""
     job=workspace_path(job)
@@ -86,6 +105,7 @@ def authenticate(job):
     if not (job/'runtime/artifacts').is_dir():raise ValueError('CLEANUP_SAVED_RUNTIME_MISSING')
     store=Store(job/'runtime')
     binding=json.loads(read_file(result['source_binding']['path']))
+    authenticate_assembly(job,binding,result,store)
     if binding['scene_ref']!=stage['input_binding']['scene_ref']:
         raise ValueError('CLEANUP_SAVED_SCENE_CHANGED')
     scene=store.get_json(binding['scene_ref'],kind='scene')
@@ -139,9 +159,11 @@ def status(job):
 
 def execution_binding(raw,policy,code):
     """One canonical producer identity for execution and orchestration."""
+    from src.gerber_u05.source_assembly import POLICY as assembly_policy
     return dict(schema=SCHEMA,source_sha256=digest(raw),implementation=code,
         policy=policy.resolved(),discovery=dict(profile=PROFILE,minimum_support_mm=MIN_SUPPORT_MM,
             maximum_span_mm=MAX_SPAN_MM,circular_fit_bound_mm=.004),
+        source_preparation=assembly_policy,
         treatment=dict(selection='ALL_REQUIRED_FAMILIES; NO_EXECUTION_FAMILY_SWITCHES',
             required_families=list(REQUIRED_FAMILIES),
             unresolved_discovery_families=list(DISCOVERY_GAPS),
@@ -216,7 +238,18 @@ def run(source, *, output=None, progress_callback=lambda **event: None):
             if function and function[0]!='Copper' or polarity and polarity!=('Positive',):
                 raise ValueError('SELECTED_POSITIVE_COPPER_SURFACE_REQUIRED')
             del parsed
-            binding=build_source(store,raw)
+            progress(phase='source_assembly')
+            from src.gerber_u05.source_assembly import reconstruct
+            assembled,assembly=reconstruct(raw,store)
+            (job/'original.gbr').write_bytes(raw)
+            (job/'source.gbr').write_bytes(assembled)
+            assembly_ref=store.put_json('source-assembly-proof',assembly)
+            original_ref=store.put('gerber-source',raw)
+            timings['source_assembly_seconds']=time.perf_counter()-t
+            progress(phase='intake',removed_enclosure_occurrences=assembly['removed_objects'])
+            t=time.perf_counter()
+            binding=build_source(store,assembled)
+            binding['input_assembly']=dict(original_source_ref=original_ref,proof_ref=assembly_ref)
             (job/'source.json').write_bytes(encode(binding))
             scene=store.get_json(binding['scene_ref'],kind='scene')
             rows,original,_=operands(store,scene)
@@ -267,7 +300,8 @@ def run(source, *, output=None, progress_callback=lambda **event: None):
                     if f['status']=='corrected':f['reason']='VALIDATED_SAVED_CORRECTION'
                 changes={s:dict(wkb_hex=to_wkb(g).hex()) for s,g in after.values.items() if to_wkb(g)!=to_wkb(original[s])}
                 stage=dict(schema='source-bulk-trim-preview/1',operation='TRIM_ONLY',
-                    input_binding=dict(context='original',accepted_t03=False,source_sha256=digest(raw),
+                    input_binding=dict(context='original',accepted_t03=False,source_sha256=digest(assembled),
+                        original_input_sha256=digest(raw),
                         scene_ref=binding['scene_ref'],original_scene_ref=binding['scene_ref']),
                     execution_binding=execution,ordered_source_ids=list(rows),
                     hybrid_components=dict(continuous_source_bodies={},changed_bulk_copper=changes),
@@ -285,6 +319,7 @@ def run(source, *, output=None, progress_callback=lambda **event: None):
             result=dict(schema=SCHEMA,status='COMPLETED_WITH_UNRESOLVED' if DISCOVERY_GAPS or counts['unresolved'] or
                 any(r['unsupported_edge_count'] for r in coverage) else 'COMPLETED_FOR_PROFILE',
                 stage=artifact,source=bound_file(job/'source.gbr'),source_binding=bound_file(job/'source.json'),
+                original_input=bound_file(job/'original.gbr'),
                 execution_binding=execution,asset_manifest=assets,counts=counts,timings=timings,
                 diagnostics=diagnostics,peak_process_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
                 discovery_completeness='NOT_ESTABLISHED_FOR_GENERAL_CURVES_OR_OTHER_DEFECT_FAMILIES',

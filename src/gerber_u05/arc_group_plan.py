@@ -45,13 +45,16 @@ def retain_attached_skin(body, original):
     return (unary_union(attached)if pending else body),proof
 
 
-def prepare(rows,original,material,groups,used,owner,roles,settings,width_caps,*,protected_domains=(),complete_members=False):
+def prepare(rows,original,material,groups,used,owner,roles,settings,width_caps,*,protected_domains=(),complete_members=False,source_reservations=None):
     started=perf_counter();working=dict(material);claimed=set();models=[];cores={};deferred=[]
+    reservations_source=material if source_reservations is None else source_reservations
     ordered=sorted(groups,key=lambda g:(-sum(m['length_mm']for m in g['members']),g['group_id']))
     for group in ordered:
         if not any(m['source_id']in used and m['source_id']not in claimed for m in group['members']):continue
-        ids=sorted(k for k,g in working.items()if not g.is_empty)
-        tree=STRtree([working[k]for k in ids])
+        reservations=[(s,identity,g)for s in sorted(working)for identity,g in
+            (reservations_source.reservation_rows(s,working[s])if hasattr(reservations_source,'reservation_rows')else[(s,working[s])])if not g.is_empty]
+        ids=[s for s,_,_ in reservations];shapes=[g for _,_,g in reservations]
+        tree=STRtree(shapes)
         members={};caps={};rails={};pairs=[];witnesses=[]
         for member in group['members']:
             s=member['source_id']
@@ -89,10 +92,10 @@ def prepare(rows,original,material,groups,used,owner,roles,settings,width_caps,*
                 for i in sorted(map(int,tree.query(g.envelope.buffer(cap+GUARD+2*MARGIN)))):
                     other=ids[i]
                     if other==s or other in roles or owner(other)==owner(s):continue
-                    gap=g.distance(working[other]);budget=max(0.,gap-GUARD-2*MARGIN)
+                    gap=g.distance(shapes[i]);budget=max(0.,gap-GUARD-2*MARGIN)
                     caps[key]=min(caps[key],budget)
                     witnesses.append(dict(face=key,foreign_source=other,source_gap_mm=gap,
-                        maximum_growth_mm=budget,foreign_geometry_sha256=p.digest(to_wkb(working[other]))))
+                        maximum_growth_mm=budget,foreign_geometry_sha256=p.digest(to_wkb(shapes[i]))))
             pairs.append((s+'#negative',s+'#positive',max(0.,cap)))
         if not members:
             deferred.append(dict(group_id=group['group_id'],reason='NO_ADMITTED_SOURCE_RAIL_MEMBERS'));continue
@@ -170,7 +173,7 @@ def prepare_maximal(rows,original,material,groups,used,owner,roles,settings,widt
         if live:projected.append(dict(group_id=group['group_id'],members=live))
     def member_owner(k):return owner(members[k]['source_ids'][0])if k in members else owner(k)
     built,proof=prepare(virtual_rows,virtual_original,working,projected,set(members),member_owner,roles,
-        settings,virtual_caps,protected_domains=protected_domains,complete_members=True)
+        settings,virtual_caps,protected_domains=protected_domains,complete_members=True,source_reservations=material)
     cores={}
     for mid,value in built.items():
         m=members[mid]

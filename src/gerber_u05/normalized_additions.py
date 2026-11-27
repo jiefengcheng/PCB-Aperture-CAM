@@ -11,8 +11,35 @@ This proves clearance of additions only. Width, source custody, removal policy
 and route/joint continuity remain separate obligations of the caller.
 """
 from dataclasses import asdict
+from shapely.geometry import MultiPolygon, Polygon
 from src.native_inventory import ERROR_MM
 from src.trace_width_clearance import TraceWidthContract,sha
+
+
+def _area_delta(difference):
+    """Keep every exact area component of an overlay, without rounding/union.
+
+    Valid polygon subtraction can also return coincident line/point remnants.
+    They carry no copper area; input bodies and direct patches remain subject
+    to the strict polygon-only checks below.
+    """
+    if not difference.is_valid:
+        raise ValueError('INVALID_FINITE_COPPER_GEOMETRY')
+    if difference.geom_type in ('Polygon','MultiPolygon'):
+        return difference
+    polygons=[]
+    def collect(geometry):
+        if geometry.geom_type=='Polygon':
+            if not geometry.is_empty:polygons.append(geometry)
+        elif geometry.geom_type in ('GeometryCollection','MultiPolygon'):
+            for part in geometry.geoms:collect(part)
+        elif geometry.geom_type not in ('Point','MultiPoint','LineString','MultiLineString') or geometry.area!=0:
+            raise ValueError('INVALID_FINITE_COPPER_GEOMETRY')
+    collect(difference)
+    delta=MultiPolygon(polygons) if polygons else Polygon()
+    if not delta.is_valid:
+        raise ValueError('INVALID_FINITE_COPPER_GEOMETRY')
+    return delta
 
 
 def verify_patch(delta,fixed,contract=TraceWidthContract()):
@@ -38,7 +65,7 @@ def verify(core,actual,fixed,contract=TraceWidthContract()):
     for geometry in [core,actual,*[r['geometry']for r in fixed]]:
         if geometry.is_empty or not geometry.is_valid or geometry.geom_type not in('Polygon','MultiPolygon'):
             raise ValueError('INVALID_FINITE_COPPER_GEOMETRY')
-    delta=actual.difference(core)
+    delta=_area_delta(actual.difference(core))
     # A checking reservation only. It never becomes plotted copper and never
     # rounds down the unchanged construction guard.
     check=verify_patch(delta,fixed,contract)

@@ -25,6 +25,25 @@ def test_arc_members_get_two_sided_source_budgets_before_contours_are_emitted():
     assert canonical(proof)
 
 
+def test_arc_budgets_reserve_a_neighbors_original_cap_before_it_is_restored():
+    from shapely.geometry import Point,box
+    from src.gerber_u05.component_workspace import ResidualScene
+    original={};rows={}
+    for s,r in [('a',1.),('b',1.1)]:
+        points=[[r*math.cos(.6*i/100),r*math.sin(.6*i/100)]for i in range(101)]
+        original[s]=LineString(points).buffer(.025,quad_segs=128)
+        rows[s]=dict(original_ref={},metadata=dict(route_points_mm=points,minimum_caliper_mm=.05,aperture_family=['C',.05]))
+    floor=Point(.91*math.cos(.3),.91*math.sin(.3)).buffer(.025,quad_segs=128)
+    original['foreign']=floor
+    working=dict(original,foreign=box(10,10,11,11))
+    scene=ResidualScene(working,source_floors={'foreign':floor})
+    _,proof=prepare(rows,original,scene,[dict(group_id='g',members=[dict(source_id=s,length_mm=1.)for s in rows])],
+        set(rows),lambda s:(s,),{},SimpleNamespace(maximum_factor=1.5,maximum_total_width_increase_mm=.03),dict(a=.075,b=.075))
+    witnesses=[r for r in proof['models'][0]['witnesses']if r.get('foreign_source')=='foreign']
+    assert witnesses and min(r['maximum_growth_mm']for r in witnesses)==0.
+    assert scene['foreign'].wkb==working['foreign'].wkb
+
+
 def test_arc_core_inside_a_protected_pin_domain_remains_a_default_case():
     from shapely.geometry import box
     pts=[[math.cos(.6*i/100),math.sin(.6*i/100)]for i in range(101)]

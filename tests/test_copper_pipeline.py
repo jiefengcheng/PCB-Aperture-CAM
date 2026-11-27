@@ -58,6 +58,14 @@ def test_real_joined_workers_separate_jobs_and_exact_sealed_t04_entry(tmp_path,m
     assert viewers['workspaces']['large_copper']!=viewers['workspaces']['t04']
     assert viewers['copper_color']=='GREY'and not viewers['geometry_treatment_executed']
     assert viewers['native_display']=='PENDING_NATIVE_ACK'
+    links=[json.loads((Path(path)/'phase-navigation.json').read_bytes())for path in viewers['workspaces'].values()]
+    assert links[0]==links[1]and links[0]['sourceSHA256']==result['source_sha256']
+    assert links[0]['pipelineResultSHA256']==digest((job/'RESULT.json').read_bytes())
+    for name,destination in links[0]['workspaces'].items():
+        assert destination['path']==viewers['workspaces'][name]
+        assert destination['snapshotSHA256']==viewers['snapshot_sha256'][name]
+        presentation=Path(destination['path'])/'presentations'/(destination['snapshotSHA256']+'.json')
+        assert destination['presentationSHA256']==digest(presentation.read_bytes())
     for name in('large_copper','t04'):
         root=Path(viewers['workspaces'][name]);manifest,snapshot=read_current(root)
         envelope=json.loads((root/'presentations'/(manifest['sha256']+'.json')).read_bytes())

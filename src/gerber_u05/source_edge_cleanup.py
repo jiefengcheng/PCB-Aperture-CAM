@@ -17,6 +17,26 @@ from src.native_inventory import ERROR_MM
 from .finite_profile_union import polygonal
 
 
+def check_split_source_contacts(working, updates, neighbours):
+    """Reject a cut that detaches copper among already prepared neighbours.
+
+    A source split can be supported by an overlapping contribution. Count
+    actual finite-face contacts only when a cut increases a source's face
+    count. No area threshold, union, spatial search or board rebuild is used.
+    The caller commits nothing until this and its other local checks pass.
+    """
+    def faces(g):
+        return 0 if g.is_empty else 1 if g.geom_type=='Polygon'else len(g.geoms)
+    if not any(faces(value)>faces(working[s])for s,value in updates.items()):
+        return None
+    from .native_contact_support import contribution_count
+    before=contribution_count(neighbours,working,{})
+    after=contribution_count(neighbours,updates,working)
+    if after>before:raise ValueError('TRIM_WOULD_DETACH_LOCAL_COPPER')
+    return dict(before_components=before,after_components=after,
+        method='PREPARED_NEIGHBOUR_FINITE_FACE_CONTACTS',board_unions=0,clearance_searches=0)
+
+
 def legacy_trim_supported_feature(rows,current,original,causing_id,domain,smooth_edge,
                            reference_evidence,backing_point,*,policy=None):
     policy=capture()if policy is None else policy
@@ -286,6 +306,7 @@ class CleanupBatch:
                             retained_contact_sha256=hashlib.sha256(to_wkb(new)).hexdigest(),
                             before_mm2=old.area,after_mm2=new.area))
         if sid not in updates: raise ValueError('CAUSING_SOURCE_NOT_TRIMMED')
+        split_contact_check=check_split_source_contacts(self.working,updates,self.neighbours[index][0])
         for other in self.neighbours[index][1]:
             row=self.rows[other]
             if pad_aliases:
@@ -315,6 +336,7 @@ class CleanupBatch:
             geometry_checks=geometry,policy=self.policy.resolved(),source_bytes_edited=False,
             rule=rule,shallow_edge_check=shallow,disposition='STAGED_REQUIRES_BATCH_VERIFICATION')
         if self.preserve_all_contacts:record['original_source_contact_checks']=strict_contact_checks
+        if split_contact_check is not None:record['split_source_contact_check']=split_contact_check
         if self.preserve_source_paths:record['original_source_paths_preserved']=not removed_paths
         if self.preserve_causing_paths:
             record['original_causing_path_preserved']=not any(r['source_id']==sid for r in removed_paths)

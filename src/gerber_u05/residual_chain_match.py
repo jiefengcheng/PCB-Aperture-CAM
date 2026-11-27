@@ -133,7 +133,10 @@ def run(rows,material,paths,reports,endpoint_sections,width_caps,fixed_sources,o
         row=dict(chain_id=cid,route_id=chain['route_id'],source_ids=sources,length_mm=chain['length_mm'],preceding_factors={s:decisions[s]['selected_factor']for s in sources})
         records.append(row)
         if cap<=w:row.update(status='KEEP_PRECEDING_RESULT; CONSTRUCTION_LIMIT',reason='NO_WIDTH_HEADROOM_FOR_NOMINAL_SKIN');continue
-        pts,n,ts,L=frame(chain['points'])
+        try:pts,n,ts,L=frame(chain['points'])
+        except ValueError as error:
+            if str(error) not in ('RESIDUAL_MITER_OUTLIER','RESIDUAL_REVERSAL_JOIN_UNSUPPORTED'):raise
+            row.update(status='KEEP_PRECEDING_RESULT; CONSTRUCTION_LIMIT',reason=str(error));continue
         # Match the constructor's endpoint frame before deriving rail budgets.
         for j,end in zip((0,-1),ends):
             if end is not None:

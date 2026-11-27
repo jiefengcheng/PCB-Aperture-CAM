@@ -57,7 +57,7 @@ def verify_preserved_contributions(before, after, fixed_ids, terminal_ids, admit
 
 
 def execute(source_job, cleanup_result, output, preparation_from=None, *, control='trimmed',route_ids=None,finalize_from=None,cleanup_seal=None):
-    p.configure()
+    work=p.configure().resolve()
     sealed=None
     if cleanup_seal is not None:
         from src.copper_phase_seal import verify
@@ -66,7 +66,7 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
             raise ValueError('T04_SEALED_INPUT_MUST_BE_EXCLUSIVE')
         source_job=Path(sealed['job']);cleanup_result=source_job/'RESULT.json'
     output = Path(output).resolve()
-    if not output.is_relative_to((p.ROOT/'out/lacie_work').resolve()):
+    if not output.is_relative_to(work) or output==work:
         raise ValueError('T04_AFTER_CLEANUP_REQUIRES_LACIE')
     output.mkdir(parents=True, exist_ok=False)
     started=time.perf_counter(); phases={}; active='setup'; stage=None
@@ -130,7 +130,7 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
             if event.get('event')!='hybrid_residual' or event.get('index',0)%100==0:
                 print(json.dumps(value),flush=True)
         cache=Path(preparation_from).resolve() if preparation_from else output/'preparation'
-        if not cache.is_relative_to((p.ROOT/'out/lacie_work').resolve()):
+        if not cache.is_relative_to(work) or cache==work:
             raise ValueError('T04_PREPARATION_REQUIRES_LACIE')
         if preparation_from:
             if not cache.is_dir():raise ValueError('T04_PREPARATION_MISSING')
@@ -162,7 +162,7 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
                 # incorrectly introduced an unrequested permanent keep-out.
                 def authenticate_completed_construction():
                     prior=Path(finalize_from).resolve()
-                    if not prior.is_relative_to((p.ROOT/'out/lacie_work').resolve()):raise ValueError('T04_FINALIZATION_REQUIRES_LACIE')
+                    if not prior.is_relative_to(work) or prior==work:raise ValueError('T04_FINALIZATION_REQUIRES_LACIE')
                     job=p.load(prior/'JOB.json');failure=p.load(prior/'FAILURE.json')
                     from src.trace_growth_policy import read_snapshot as read_eligibility_snapshot, SNAPSHOT as ELIGIBILITY_SNAPSHOT
                     if (control!='trimmed' or not full_board or job['inputs']!=inputs or
@@ -239,8 +239,12 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
                     receipt.update(before_ref=store.put('geometry',to_wkb(before_image)),
                         after_ref=store.put('geometry',to_wkb(after_image)),
                         input_scene_sha256=entry_ref['sha256'],output_scene_sha256=assembly['scene_ref']['sha256'])
+                    from src.gerber_u05.output_disposition import outline_disposition
+                    disposition=outline_disposition(receipt)
+                    receipt.update(disposition)
                     p.save(output/'BOARD_OUTLINE.json',receipt)
-                    if not receipt['passed']:raise ValueError('T04_ASSEMBLED_BOARD_OUTLINE_OR_GROWTH_BUDGET_FAILED:'+str(receipt['additional_shoulders']))
+                    if not disposition['output_valid']:
+                        raise ValueError('T04_ASSEMBLED_BOARD_OUTPUT_INVALID:'+','.join(disposition['errors']))
                     return receipt
                 outline=phase('assembled_boundary_outline',assembled_outline)
             output_revision=None
@@ -264,12 +268,16 @@ def execute(source_job, cleanup_result, output, preparation_from=None, *, contro
                 for s,g in after.items()if to_wkb(g)!=to_wkb(source[s])}
             h['changed_bulk_copper']={}
             stage['trimmed_predecessor']=custody; stage['cleanup_preservation']=proof
+            from src.gerber_u05.output_disposition import outcome,combine_findings
+            findings=combine_findings(checks['review_findings'],[]if outline is None else outline['review_findings'])
+            h['output_review_findings']=findings
             artifact=phase('construction_write',lambda:board.write_stage(output/'construction.json.gz',stage))
             phase('artifact_revalidation',store.verify_reads)
             if sealed is not None:
                 phase('sealed_input_revalidation',lambda:verify(cleanup_seal['path'],cleanup_seal['sha256'],phase='large_copper'))
             if copper is not None:copper.validate()
             result=dict(status='FULL_BOARD_T04_AFTER_CLEANUP_DIAGNOSTIC_COMPLETE' if full_board else 'BOUNDED_T04_PARITY_ARM_COMPLETE',scope=scope,control=control,
+                completion=outcome(findings),output_valid=True,review_findings=findings,
                 inputs=inputs,stage=artifact,assembly=assembly,checks=checks,cleanup_preservation=proof,board_outline=outline,
                 shared_copper_output_revision=output_revision,
                 summary=stage['summary'],requested_admitted_routes=len(stage['requested_routes']),

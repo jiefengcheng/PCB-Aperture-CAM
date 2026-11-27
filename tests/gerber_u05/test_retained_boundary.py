@@ -122,3 +122,26 @@ def test_dependency_group_classifies_final_points_once_for_all_members(monkeypat
     verify_dependencies(plans,local,report,before,before,original,10)
     assert calls==[True] and report['final_dependency_checks']['passed']
     assert len({tuple(tuple(p)for p in r['final_remaining_points_mm'])for r in records})==1
+
+
+@pytest.mark.parametrize('status,added,expected,partial',[
+    ('RESOLVED_BY_COUPLED_BRIDGE',0.,'UNRESOLVED',0),
+    ('RESOLVED_BY_COUPLED_BRIDGE',.001,'FAILED_FINAL_DEPENDENCY_CHECK',1),
+    ('BRIDGED',0.,'FAILED_FINAL_DEPENDENCY_CHECK',1),
+])
+def test_remaining_inherited_shoulder_is_not_a_failed_zero_action_repair(monkeypatch,status,added,expected,partial):
+    from shapely.geometry import box
+    import src.gerber_u05.boundary_finish as boundary
+    import src.gerber_u05.growth_bridge as growth
+    from src.gerber_u05.retained_boundary import verify_dependencies
+    body=box(-1,-1,1,1);original={'s':body}
+    monkeypatch.setattr(boundary,'sharp_points',lambda *a,**k:[[0.,0.]])
+    monkeypatch.setattr(growth,'meaningful_shoulders',lambda body,points:points)
+    record=dict(plan_index=0,point_mm=[0.,0.],height_mm=.01,status=status,
+        source_ids=['s'],baseline_preserved=True,added_area_mm2=added,removed_area_mm2=0.)
+    report=dict(reports=[record],copper_budgets=dict(groups=[dict(id=0,members=[0])]))
+    verify_dependencies([dict(record=record)],{0:dict(clip=box(-2,-2,2,2),neighbors=['s'])},
+        report,original,original,original,10.)
+    assert record['status']==expected and report['partial']==partial
+    assert report['final_dependency_checks']['groups'][0]['passed']
+    assert report['final_dependency_checks']['passed']is (partial==0)

@@ -154,14 +154,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     func poll() {
         guard pageReady, !loading else { return }
         do { try verifyStorage() } catch { send("viewerError", error.localizedDescription); return }
-        if cleanupBusy, let job = cleanupJob,
-           let data = try? Data(contentsOf: job.appendingPathComponent("PROGRESS.json")),
-           let progress = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            let state = progress["status"] as? String ?? "Working"
-            let phase = progress["phase"] as? String ?? (state.hasPrefix("COMPLETED") ? "preparing saved display" : state)
-            let count = (progress["completed"] as? Int).map { " · \($0)/\(progress["candidates"] as? Int ?? 0)" } ?? ""
-            send("receiveCleanupStatus", ["busy": true, "text": "Large copper: " + phase + count])
-        }
+        pollCopperPipeline()
         pollExplanation()
         guard FileManager.default.fileExists(atPath: workspace.appendingPathComponent("current.json").path) else { return }
         if let data = try? Data(contentsOf: workspace.appendingPathComponent("current.json")), SnapshotReader.digest(data) == lastManifestDigest, loaded != nil {
@@ -176,10 +169,13 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                 let next = try await Task.detached { try SnapshotReader.read(workspace: root) }.value
                 lastManifestDigest = next.manifestDigest
                 if next.digest != loaded?.digest {
+                    let navigation = try PhaseNavigationReader.read(workspace: root, workRoot: workRoot,
+                        digest: next.digest, sourceSHA256: next.current.sources.first?.sha256 ?? "")
                     let encoder = JSONEncoder()
                     let current = try JSONSerialization.jsonObject(with: encoder.encode(next.current))
                     let previous: Any = try next.previous.map { try JSONSerialization.jsonObject(with: encoder.encode($0)) } ?? NSNull()
                     var value: [String: Any] = ["current": current, "previous": previous]
+                    if let navigation { value["phaseNavigation"] = try phaseConfiguration(navigation, at: root) }
                     var presentationKey: String?
                     let presentation = root.appendingPathComponent("presentations/" + next.digest + ".json")
                     if FileManager.default.fileExists(atPath: presentation.path) {
@@ -187,8 +183,9 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                         if let date = stamp.contentModificationDate, let size = stamp.fileSize {
                             presentationKey = next.digest + ":" + String(date.timeIntervalSince1970) + ":" + String(size)
                         }
+                        let expected = try navigation.map { $0.workspaces[try $0.phase(at: root)]!.presentationSHA256 }
                         let growth = try await Task.detached {
-                            try BoardGrowthReader.read(presentation, scene: next.current, digest: next.digest)
+                            try BoardGrowthReader.read(presentation, scene: next.current, digest: next.digest, expectedFileSHA256: expected)
                         }.value
                         value["boardGrowth"] = try JSONSerialization.jsonObject(with: encoder.encode(growth))
                     }
@@ -216,8 +213,11 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         Task {
             defer { loadingPresentation = false }
             do {
+                let navigation = try PhaseNavigationReader.read(workspace: workspace, workRoot: workRoot,
+                    digest: current.digest, sourceSHA256: current.current.sources.first?.sha256 ?? "")
+                let expected = try navigation.map { $0.workspaces[try $0.phase(at: workspace)]!.presentationSHA256 }
                 let growth = try await Task.detached {
-                    try BoardGrowthReader.read(url, scene: current.current, digest: current.digest)
+                    try BoardGrowthReader.read(url, scene: current.current, digest: current.digest, expectedFileSHA256: expected)
                 }.value
                 guard loaded?.digest == current.digest else { return }
                 let value = try JSONSerialization.jsonObject(with: JSONEncoder().encode(growth))
@@ -252,8 +252,9 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
     }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: String], let action = body["action"] else { return }
+        if action == "openSavedPhase" { openSavedPhase(); return }
         if action == "open" { if !portable { openGerbers() }; return }
-        if action == "runLargeCopper" { runLargeCopper(); return }
+        if action == "runCopperPipeline" { runCopperPipeline(); return }
         if action == "modelStatus" {
             Task { send("modelResult", await AppleViewerProvider().availability()) }; return
         }
@@ -382,6 +383,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
         smokeStarted = true
         let folder = URL(fileURLWithPath: args[i + 1]).resolvingSymlinksInPath()
         guard folder.path.hasPrefix(workRoot.path + "/") else { return }
+        if args.contains("--phase-navigation-smoke") { runPhaseNavigationSmoke(folder: folder); return }
         if args.contains("--cleanup-smoke") { runCleanupSmoke(folder: folder); return }
         if args.contains("--t04-smoke") { runT04Smoke(folder: folder); return }
         if let ri = args.firstIndex(of: "--route-smoke-response"), ri + 1 < args.count,
@@ -511,7 +513,7 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                     $('cleanup-filter').value='all';$('cleanup-filter').onchange();
                   }
                   check('source geometry unchanged',revision===scene().revision&&sourcePaths===scene().objects.map(o=>o.path).join('|'));
-                  check('zero treatment or selection requests',messages.length===0);
+                  check('zero treatment or selection requests',messages.every(m=>m.action==='displayed'));
                   $('cleanup-all').click();
                 } finally {post=actualPost}
                 return {checks,revision,constructionSHA256:bundle.boardGrowth.constructionSHA256,sourceSHA256:bundle.boardGrowth.sourceSHA256,cases:cleanupData().cases.length,trimmed:cleanupData().cases.filter(c=>c.kind==='bump'&&c.status==='corrected').length,recesses:cleanupData().cases.filter(c=>c.kind==='recess').length,unresolved:cleanupData().cases.filter(c=>c.status==='unresolved').length,ignored:cleanupData().cases.filter(c=>c.status==='ignored').length};
@@ -682,57 +684,6 @@ final class ViewerHost: NSObject, NSApplicationDelegate, WKScriptMessageHandler,
                    let bitmap = NSBitmapImageRep(data:tiff), let png = bitmap.representation(using:.png,properties:[:]) {
                     try? png.write(to:folder.appendingPathComponent("failed-viewer.png"))
                 }
-            }
-        }
-    }
-    func runLargeCopper() {
-        guard !cleanupBusy, !importing else { return }
-        let panel = NSOpenPanel(); panel.allowsMultipleSelection = false; panel.canChooseDirectories = false
-        panel.message = "Choose one Gerber source. One fixed trimming policy is applied; viewing filters do not select treatment families. Unresolved findings remain unchanged in the saved Preview."
-        panel.beginSheetModal(for: window) { [weak self] response in
-            guard response == .OK, let self, let source = panel.url else { return }
-            self.cleanupBusy = true
-            let repo = self.repository!
-            let work = self.workRoot!, portable = self.portable, portableEnvironment = self.workerEnvironment
-            let job = work.appendingPathComponent("large_copper_jobs/viewer-" + UUID().uuidString)
-            self.cleanupJob = job
-            self.send("receiveCleanupStatus", ["busy": true, "text": "Reading source and preparing copper…"])
-            Task {
-                let result = await Task.detached { () -> (URL?, String) in
-                    do {
-                        let process = Process(); process.executableURL = repo.appendingPathComponent(".venv/bin/python")
-                        process.currentDirectoryURL = repo
-                        process.arguments = (portable ? ["-B", "tools/portable_cleanup.py", "--workspace", work.path, "run"] : ["-B", "tools/run_large_copper.py", "run"]) + ["--source", source.path,
-                                             "--output", job.path, "--prepare-display"]
-                        var env = portable ? portableEnvironment : ProcessInfo.processInfo.environment
-                        env["PYTHONDONTWRITEBYTECODE"] = "1"
-                        env["TMPDIR"] = work.appendingPathComponent("tmp").path
-                        process.environment = env
-                        let log = work.appendingPathComponent("large-copper-" + UUID().uuidString + ".log")
-                        FileManager.default.createFile(atPath: log.path, contents: nil)
-                        let errors = try FileHandle(forWritingTo: log); defer { try? errors.close() }
-                        let output = Pipe(); process.standardOutput = output; process.standardError = errors
-                        try process.run()
-                        let data = output.fileHandleForReading.readDataToEndOfFile(); process.waitUntilExit()
-                        guard process.terminationStatus == 0,
-                              let value = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                              let display = value["display"] as? [String: Any], let path = display["workspace"] as? String else {
-                            return (nil, "Trimming stopped. Retained evidence: " + log.path)
-                        }
-                        let target = URL(fileURLWithPath: path).resolvingSymlinksInPath()
-                        let fence = work.path + "/"
-                        guard target.path.hasPrefix(fence) else { return (nil, "Cleanup display path rejected") }
-                        return (target, "Saved trimming result · one fixed policy · review unresolved findings")
-                    } catch { return (nil, error.localizedDescription) }
-                }.value
-                self.cleanupBusy = false; self.cleanupJob = nil
-                if let target = result.0 {
-                    self.workspace = target; self.loaded = nil; self.lastManifestDigest = nil
-                    self.lastExplanationKey = nil; self.lastPresentationKey = nil; self.initialSelection = nil
-                    self.pendingTrace = nil; self.routePresentations.removeAll()
-                    self.poll()
-                }
-                self.send("receiveCleanupStatus", ["busy": false, "text": result.1])
             }
         }
     }

@@ -105,6 +105,13 @@ def _inspect(job,phase,parent=None):
         if parent is not None or result.get('schema')!='large-copper-execution/1'or result['status']not in('COMPLETED_FOR_PROFILE','COMPLETED_WITH_UNRESOLVED'):
             raise ValueError('PHASE_SEAL_COMPLETED_CLEANUP_REQUIRED')
         stage=json.loads(gzip.decompress(read_file(path,1024**3)))
+        if binding.get('input_assembly')is not None:
+            from src.large_copper_runner import authenticate_assembly
+            from src.gerber_u05.pipeline import Store
+            assembly=authenticate_assembly(job,binding,result,Store(job/'runtime'))
+            raw_path=Path(result['original_input']['path']).resolve()
+            local(raw_path.relative_to(job).as_posix())
+        else:assembly=None
         proof=stage['trim_only_phase']
         if (stage['operation']!='TRIM_ONLY'or stage['input_binding']['scene_ref']!=binding['scene_ref']or
             stage['input_binding']['source_sha256']!=source_sha or proof['passed']is not True or
@@ -123,11 +130,18 @@ def _inspect(job,phase,parent=None):
         preparation=result.get('diagnostics',{}).get('context')
         summary=dict(status=result['status'],counts=result['counts'],unresolved_preserved=True,
                      treatment_complete=result.get('treatment_complete',False))
+        if assembly is not None:summary['input_assembly']=dict(policy=assembly['policy'],
+            removed_objects=assembly['removed_objects'],raw_source_sha256=assembly['raw_source_sha256'])
     elif phase=='t04':
         if parent is None or parent['phase']!='large_copper'or parent['source_sha256']!=source_sha:
             raise ValueError('PHASE_SEAL_T04_CLEANUP_PARENT_REQUIRED')
         if result['status']not in('FULL_BOARD_T04_AFTER_CLEANUP_DIAGNOSTIC_COMPLETE','BOUNDED_T04_PARITY_ARM_COMPLETE'):
             raise ValueError('PHASE_SEAL_COMPLETED_T04_REQUIRED')
+        if 'completion'in result:
+            if (result['completion']not in('COMPLETED','COMPLETED_WITH_REVIEW_FINDINGS')or
+                    result.get('output_valid')is not True or result['checks'].get('output_valid')is not True or
+                    result.get('board_outline')is not None and result['board_outline'].get('output_valid')is not True):
+                raise ValueError('PHASE_SEAL_VALID_T04_OUTPUT_REQUIRED')
         if result['inputs']['cleanup'].get('seal')!=parent['_reference']:
             raise ValueError('PHASE_SEAL_T04_PARENT_CHANGED')
         entry=identities(json.loads(artifact(result['inputs']['trimmed_entry_scene_ref'],'scene')))
@@ -146,6 +160,9 @@ def _inspect(job,phase,parent=None):
         preparation=(result.get('shared_copper')or{}).get('context')
         summary=dict(status=result['status'],scope=result['scope'],checks=result['checks'],
                      complete_t04=result['complete_t04'],export=result['export'])
+        if 'completion'in result:
+            summary.update(completion=result['completion'],review_finding_count=len(result['review_findings']),
+                           output_valid=result['output_valid'])
     else:raise ValueError('PHASE_SEAL_UNKNOWN_PHASE')
     policy_presence={name:(_path(job,name).exists())for name in POLICIES}
     for name,present in policy_presence.items():

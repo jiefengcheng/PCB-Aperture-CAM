@@ -50,6 +50,8 @@ def status(job):
     phases={name:verify(**result['outputs'][name],phase=name)for name in('large_copper','t04')}
     if (phases['t04']['parent']!=result['outputs']['large_copper']or
             result['source_sha256']!=phases['large_copper']['source_sha256']or
+            result.get('input_source_sha256',phases['large_copper']['source_sha256'])!=
+                phases['large_copper']['summary'].get('input_assembly',{}).get('raw_source_sha256',phases['large_copper']['source_sha256'])or
             result['workspaces']!={name:phases[name]['job']for name in phases}or
             result['execution_sha256']!=value['execution_sha256']):
         raise ValueError('COPPER_PIPELINE_OUTPUT_BINDING_CHANGED')
@@ -71,7 +73,7 @@ def run(*,source=None,cleanup_job=None,output=None,scope=None,progress=lambda **
         cleanup_job=workspace_path(cleanup_job)
         from src.large_copper_runner import authenticate,execution_identity
         result,_,_,_=authenticate(cleanup_job)
-        source_sha=result['source']['sha256'];input_binding=dict(cleanup=reference(cleanup_job/'RESULT.json'))
+        source_sha=result['execution_binding']['source_sha256'];input_binding=dict(cleanup=reference(cleanup_job/'RESULT.json'))
         producer_key=execution_identity(result['execution_binding'])
         raw=None
     code=implementation();scope_raw=None if scope is None else read_file(Path(scope))
@@ -127,21 +129,25 @@ def run(*,source=None,cleanup_job=None,output=None,scope=None,progress=lambda **
             unchanged();phase='seal_cleanup_output';state('RUNNING')
             cleanup=publish(cleanup_job,job/'handoffs/large_copper.output.json')
             saved=verify(cleanup['path'],cleanup['sha256'],phase='large_copper')
-            if saved['source_sha256']!=source_sha:raise ValueError('COPPER_PIPELINE_SOURCE_CHANGED')
+            if saved['summary'].get('input_assembly',{}).get('raw_source_sha256',saved['source_sha256'])!=source_sha:
+                raise ValueError('COPPER_PIPELINE_SOURCE_CHANGED')
             phase='t04';state('RUNNING')
             command=['tools/run_t04_after_cleanup.py','--cleanup-seal',cleanup['path'],
                      '--cleanup-seal-sha256',cleanup['sha256'],'--output',str(job/'t04')]
             if scope_raw is not None:
                 path=job/'t04-scope.json';path.write_bytes(scope_raw);command.extend(['--scope',str(path)])
             _worker(command,job,'t04');unchanged()
-            verify(cleanup['path'],cleanup['sha256'],phase='large_copper')
+            prepared=verify(cleanup['path'],cleanup['sha256'],phase='large_copper')
             phase='seal_t04_output';state('RUNNING')
             t04=publish(job/'t04',job/'handoffs/t04.output.json',phase='t04',parent_ref=cleanup)
-            verify(t04['path'],t04['sha256'],phase='t04')
+            child=verify(t04['path'],t04['sha256'],phase='t04')
             value=dict(schema='pcb-copper-pipeline-result/1',status='COMPLETED',job=str(job),
-                execution_sha256=key,source_sha256=source_sha,scope=plan['scope'],outputs=dict(large_copper=cleanup,t04=t04),
+                execution_sha256=key,source_sha256=prepared['source_sha256'],input_source_sha256=source_sha,
+                scope=plan['scope'],outputs=dict(large_copper=cleanup,t04=t04),
                 workspaces=dict(large_copper=str(cleanup_job),t04=str(job/'t04')),
                 shared_preparation=plan['shared_preparation'],wall_seconds=time.perf_counter()-started,
+                completion=child['summary'].get('completion','COMPLETED'),
+                review_finding_count=child['summary'].get('review_finding_count',0),
                 display='NOT_REQUESTED; SEPARATE_SAVED_WORKSPACES',export=False,acceptance='NO_PROMOTION')
             atomic_write(job/'RESULT.json',encode(value));phase='complete';state('COMPLETED',result=reference(job/'RESULT.json'))
             return value

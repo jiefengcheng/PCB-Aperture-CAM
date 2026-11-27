@@ -20,7 +20,7 @@ camera state. The trimming execution button is hidden in T04.
 
 T04 comparisons begin at the authenticated cleaned input scene, not the raw
 Gerber before cleanup. Therefore earlier trimming is not presented as a T04
-removal. Copper stays grey; comparison additions use green outlines and optional
+removal. Copper stays grey; the Added edges toggle shows green outlines in both T04 result and Comparison views, with optional
 removals use pink. Navigation never invokes treatment or changes policy.
 
 Prepare an already committed full-board diagnostic using:

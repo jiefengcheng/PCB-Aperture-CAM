@@ -4,6 +4,7 @@ Only this project's code/contracts/synthetic assets and its installed runtime
 are copied. Client sources, jobs, caches and previous results are excluded.
 """
 import argparse
+import datetime
 import hashlib
 import importlib.metadata
 import json
@@ -109,7 +110,8 @@ def audit_native(app):
     return inventory
 
 
-def build(output,*,build_workspace=None):
+def build(output,*,build_workspace=None,version='0.2.0'):
+    if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',version):raise ValueError('SEMANTIC_PACKAGE_VERSION_REQUIRED')
     from src.gerber_u05.workspace import configure
     from src.cleanup_runtime import PROFILE
     from tools.preflight import verify_manifest
@@ -153,9 +155,9 @@ def build(output,*,build_workspace=None):
     files={str(p.relative_to(payload)):sha(p) for p in sorted(payload.rglob('*')) if p.is_file()}
     (payload/'PAYLOAD_MANIFEST.json').write_text(json.dumps(dict(schema='portable-cleanup-payload/1',files=files),sort_keys=True))
     base=Path(sys.base_prefix);site=Path(sysconfig.get_paths()['purelib'])
-    version,runtime=make_runtime(app,base,site)
+    runtime_version,runtime=make_runtime(app,base,site)
     (payload/'.venv/bin').mkdir(parents=True)
-    (payload/'.venv/bin/python').symlink_to(os.path.relpath(version/'bin/python3.14',payload/'.venv/bin'))
+    (payload/'.venv/bin/python').symlink_to(os.path.relpath(runtime_version/'bin/python3.14',payload/'.venv/bin'))
     licenses=resources/'Third Party Notices';licenses.mkdir()
     shutil.copy2(base/'Resources/English.lproj/Documentation/_sources/license.rst.txt',licenses/'Python-license.txt')
     packages={d.metadata['Name']:d.version for d in importlib.metadata.distributions(path=[str(site)]) if d.metadata['Name'].lower() not in ('pip','pytest')}
@@ -175,15 +177,18 @@ def build(output,*,build_workspace=None):
     shutil.copy2(binary/'GerberViewer',app/'Contents/MacOS/CopperTrimming')
     shutil.copytree(binary/'GerberViewer_GerberViewer.bundle',resources/'GerberViewer_GerberViewer.bundle')
     info=dict(CFBundleIdentifier='local.pcbcam.coppertrimming',CFBundleName='Copper Trimming',CFBundleDisplayName='Copper Trimming',
-        CFBundleExecutable='CopperTrimming',CFBundlePackageType='APPL',CFBundleVersion='20261123.3',
-        CFBundleShortVersionString='0.2.0',LSMinimumSystemVersion='15.0',LSArchitecturePriority=['arm64'],
+        CFBundleExecutable='CopperTrimming',CFBundlePackageType='APPL',CFBundleVersion=('20261123.3'if version=='0.2.0'else datetime.datetime.now(datetime.UTC).strftime('%Y%m%d.%H%M%S')),
+        CFBundleShortVersionString=version,LSMinimumSystemVersion='15.0',LSArchitecturePriority=['arm64'],
         NSHighResolutionCapable=True,CleanupPortable=True)
     (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
     readme='''Copper Trimming — Apple silicon / macOS 15 or newer
 
-Open Copper Trimming.app directly, or copy it to a folder on the other Mac.
-Choose an APFS work folder with at least 5 GiB free. Click “Run large copper
-trimming…” and select a supported positive-copper Gerber source.
+Open Copper Trimming.app or double-click Run Trimming.command to open the viewer.
+The command also opens the viewer when run from Terminal without arguments.
+You may copy the app to a folder on the other Mac.
+Choose an APFS work folder with at least 5 GiB free. Click “Open GBR · Trim →
+T04…” and select a supported positive-copper Gerber source. The app runs trimming,
+seals its output, then runs T04 trace growth from that exact input.
 
 Python, the geometry libraries and the native viewer are included. No Python,
 KiCad, Xcode, package installation, network connection or original checkout is
@@ -195,15 +200,25 @@ draws, proven redundant endpoint flashes and the separate shallow-edge rule.
 Unqualified findings remain unresolved; declared and unrelated terminals stay
 protected. Rectangular bumps are ignored. All family/rule filters affect SAVED
 viewing only. Grey/pink views and Play never run treatment.
-No growth, additions, rerouting, Gerber export or manufacturing approval.
+Trimming removes copper only; T04 performs the existing qualified trace growth.
+Terminal teardrops remain for T05. No rerouting, Gerber export or manufacturing approval.
 
 Keep the chosen work folder in place: saved evidence uses absolute paths.
 The app itself can move. Client inputs, historical jobs and caches are excluded.
+After both steps complete, review the trimming result. Open T04 result and Back
+to trimming navigate in the same window. Copper stays grey and Added edges
+shows green outlines in T04 result and Comparison. Navigation runs no treatment.
+The Open GBR button remains available in trimming to choose another source.
+Failed jobs retain evidence and do not retry automatically. Reopening a completed
+identical execution reuses its authenticated saved results.
 The synthetic coupon assets required by integrity checks are included.
 
 CLI: "./Run Trimming.command" --workspace /ABSOLUTE/WORK/FOLDER init
+     "./Run Trimming.command" --workspace /ABSOLUTE/WORK/FOLDER run-pipeline --source /ABSOLUTE/source.gbr --prepare-display
      "./Run Trimming.command" --workspace /ABSOLUTE/WORK/FOLDER run --source /ABSOLUTE/source.gbr --prepare-display
      "./Run Trimming.command" --workspace /ABSOLUTE/WORK/FOLDER status --job /ABSOLUTE/JOB
+Viewer with an explicit work folder:
+     "./Run Trimming.command" viewer --work-root /ABSOLUTE/WORK/FOLDER
 
 The app is locally ad-hoc signed, not Developer ID notarized. No security
 settings are changed by this package. Physical testing on another Mac remains
@@ -214,6 +229,13 @@ separate from relocation tests on the build Mac.
 set -eu
 TASK_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 TASK_APP="$TASK_DIR/Copper Trimming.app"
+if [ "$#" -eq 0 ]; then
+    exec "$TASK_APP/Contents/MacOS/CopperTrimming"
+fi
+if [ "$1" = "viewer" ]; then
+    shift
+    exec "$TASK_APP/Contents/MacOS/CopperTrimming" "$@"
+fi
 export PYTHONHOME="$TASK_APP/Contents/Frameworks/Python.framework/Versions/3.14"
 export PYTHONPATH="$TASK_APP/Contents/Resources/payload"
 export PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1
@@ -224,7 +246,7 @@ exec "$PYTHONHOME/bin/python3.14" -B "$PYTHONPATH/tools/portable_cleanup.py" "$@
     run(['/usr/bin/codesign','--force','--sign','-',app])
     (output/'native-dependencies.json').write_text(json.dumps(audit_native(app),sort_keys=True,indent=2))
     run(['/usr/bin/codesign','--verify','--deep','--strict',app])
-    manifest=dict(schema='portable-copper-build/1',app=str(app),architecture='arm64',minimum_macos='15.0',
+    manifest=dict(schema='portable-copper-build/1',app=str(app),version=version,architecture='arm64',minimum_macos='15.0',
         assets_verified=assets,payload_files=files,runtime=runtime,packages=packages,
         signing='AD_HOC_LOCAL_NOT_NOTARIZED',client_data_included=False,
         app_signature=run(['/usr/bin/codesign','-dv','--verbose=2',app]) if False else 'verified --deep --strict',
@@ -244,11 +266,12 @@ exec "$PYTHONHOME/bin/python3.14" -B "$PYTHONPATH/tools/portable_cleanup.py" "$@
     return manifest
 
 
-def seal(output):
+def seal(output,*,version='0.2.0'):
     """Create and verify a new image; never overwrite an existing delivery."""
-    image=output/'Copper_Trimming_0.2.0.dmg'
+    if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',version):raise ValueError('SEMANTIC_PACKAGE_VERSION_REQUIRED')
+    image=output/('Copper_Trimming_'+version+'.dmg')
     if image.exists():raise ValueError('IMMUTABLE_DMG_ALREADY_EXISTS')
-    creation=run(['/usr/bin/hdiutil','create','-volname','Copper Trimming 0.2.0',
+    creation=run(['/usr/bin/hdiutil','create','-volname','Copper Trimming '+version,
                   '-srcfolder',output/'image','-format','UDZO',image])
     (output/'dmg-create.log').write_text(creation)
     verification=run(['/usr/bin/hdiutil','verify',image])
@@ -266,8 +289,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output-dir',type=Path,required=True)
     parser.add_argument('--build-workspace',type=Path,help='Existing separate APFS directory for an explicit standalone build on another Mac; default retains the checkout LaCie policy')
     parser.add_argument('--seal-dmg',action='store_true',help='After app/runtime checks, create and verify a new read-only DMG')
-    args=parser.parse_args();manifest=build(args.output_dir,build_workspace=args.build_workspace)
-    if args.seal_dmg:manifest['dmg']=seal(args.output_dir.resolve())
+    parser.add_argument('--version',default='0.2.0',help='Package version; the historical default remains unchanged')
+    args=parser.parse_args();manifest=build(args.output_dir,build_workspace=args.build_workspace,version=args.version)
+    if args.seal_dmg:manifest['dmg']=seal(args.output_dir.resolve(),version=args.version)
     print(json.dumps(manifest,sort_keys=True))
 
 

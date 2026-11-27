@@ -166,3 +166,6 @@ This is a construction diagnostic; endpoint/corner findings remain explicit.
 acceptance. Failure evidence remains in the exclusive output directory; no
 automatic resume or retry. Viewer publication requires the completed validated
 report/construction and a genuine native display acknowledgement.
+
+For declared leading-zero source formats and exact mixed-dimensional overlay
+handling, see [T04_DECLARED_SOURCE_INTAKE.md](T04_DECLARED_SOURCE_INTAKE.md).

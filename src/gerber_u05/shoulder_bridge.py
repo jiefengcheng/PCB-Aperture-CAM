@@ -12,6 +12,7 @@ from src.native_inventory import ERROR_MM
 from .boundary_finish import polygons, sharp_points as native_sharp_points
 from .finite_profile_union import polygonal
 from shapely.ops import unary_union
+from shapely.errors import GEOSException
 
 
 def unit(v):
@@ -646,6 +647,7 @@ def run(rows,paths,bodies,original,caps,*,covered=(),supports=None,prepare=None,
             addition_parts=[]if native_reference else list(polygons(variant['image'].difference(before_image)))
             try:
                 for source in sources:
+                    domain=None;owned=None;proposed=None;source_floor=None
                     if native_reference:
                         if source not in variant['reference_sources']:
                             trial[source]=before[source];continue
@@ -685,6 +687,17 @@ def run(rows,paths,bodies,original,caps,*,covered=(),supports=None,prepare=None,
                         reasons.append('T05_SOURCE_ATTACHMENT_CHANGED')
                     if trial[source].symmetric_difference(before[source]).difference(clip).area>ERROR_MM**2:
                         reasons.append('SOURCE_CHANGE_OUTSIDE_PREPARED_WINDOW')
+            except GEOSException as error:
+                if not before[source].is_valid or not original[source].is_valid:raise
+                # Only an uncommitted optional proposal failed. Keep the
+                # valid admitted widening and try the next bounded variant.
+                reasons.append('OPTIONAL_SOURCE_OVERLAY_FAILED')
+                rejected_geometry=dict(source_id=source,kernel_error=str(error),
+                    before_wkb_hex=to_wkb(before[source]).hex(),
+                    original_floor_wkb_hex=to_wkb(original[source]).hex(),
+                    **({}if domain is None else dict(domain_wkb_hex=to_wkb(domain).hex())),
+                    **({}if owned is None else dict(owned_wkb_hex=to_wkb(owned).hex())))
+                record.setdefault('rejected_generated_overlays',[]).append(rejected_geometry)
             except ValueError as error:
                 if (str(error)=='SOURCE_FLOOR_REQUIRES_VALID_FINITE_COPPER'and
                         not source_floor.is_empty and source_floor.is_valid and

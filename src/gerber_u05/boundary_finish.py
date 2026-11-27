@@ -41,7 +41,18 @@ def component_count(geometry):
 def contact_components(geometry):
     if not geometry.is_empty and (not geometry.is_valid or geometry.geom_type not in('Polygon','MultiPolygon')):
         raise ValueError('VALID_FILLED_SOURCE_REQUIRED')
-    faces=polygons(geometry)
+    return face_contact_components(polygons(geometry))
+
+
+def face_contact_components(faces):
+    """Count actual finite-face contacts without first unioning the inputs.
+
+    Overlapping contributions are valid independent operands. A fresh union
+    can mint or discard microscopic faces, so it is not a contact oracle.
+    """
+    faces=list(faces)
+    if any(face.is_empty or not face.is_valid or face.geom_type!='Polygon'for face in faces):
+        raise ValueError('VALID_FILLED_SOURCE_REQUIRED')
     if len(faces)<2:return [faces]if faces else[]
     parents=list(range(len(faces)))
     def root(i):

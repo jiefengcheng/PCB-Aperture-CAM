@@ -56,7 +56,8 @@ def run(store, scene, *, route_ids, settings, rule, copper=None):
     rule = dict(rule, role_table_sha256=p.digest((Path(rule['source_preparation'])/'ROLES.json.gz').read_bytes()))
     from .durable_groups import prepare as durable_members,source_catalogue
     from .covered_traces import prepare as covered_traces
-    artifact_root=p.ROOT/'out/lacie_work/source_artifacts'
+    from src.cleanup_runtime import workspace_root
+    artifact_root=workspace_root()/'source_artifacts'
     from src import trace_growth_policy
     trace_policy=trace_growth_policy.for_job(store)
     all_native_paths={v['path_id']:v['source_ids']for v in admission['admitted']}

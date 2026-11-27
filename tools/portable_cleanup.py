@@ -22,7 +22,7 @@ def verify_payload():
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--workspace',type=Path,required=True)
-    parser.add_argument('command',choices=['init','run','status','prepare-display','self-check'])
+    parser.add_argument('command',choices=['init','run','run-pipeline','status','prepare-display','self-check'])
     args,rest=parser.parse_known_args()
     from src.cleanup_runtime import initialize,is_portable,configure_portable
     if not is_portable():raise ValueError('SEALED_PORTABLE_PACKAGE_REQUIRED')
@@ -44,8 +44,13 @@ def main():
             architecture=platform.machine(),numpy=numpy.__version__,shapely=shapely.__version__,
             geos=shapely.geos_version_string,gerbonara=gerbonara.__version__,exact_distance_mm=distance,
             loaded_extensions=[m.__file__ for m in sys.modules.values() if (getattr(m,'__file__','') or '').endswith(('.so','.dylib'))])));return
-    from tools.run_large_copper import main as run_cli
-    sys.argv=[sys.argv[0],args.command,*rest]
+    if args.command=='run-pipeline':
+        from tools.run_copper_pipeline import main as run_cli
+        command='run'
+    else:
+        from tools.run_large_copper import main as run_cli
+        command=args.command
+    sys.argv=[sys.argv[0],command,*rest]
     raise SystemExit(run_cli())
 
 

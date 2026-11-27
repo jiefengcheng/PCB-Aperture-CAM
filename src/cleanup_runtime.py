@@ -14,8 +14,8 @@ import tempfile
 import uuid
 
 ROOT=Path(__file__).resolve().parents[1]
-PROFILE={'schema':'portable-copper-cleanup/1','architecture':'arm64','minimum_macos':'15.0',
-         'workspace':'EXPLICIT_USER_SELECTED_APFS_DIRECTORY','operation':'TRIM_ONLY'}
+PROFILE={'schema':'portable-copper-cleanup/2','architecture':'arm64','minimum_macos':'15.0',
+         'workspace':'EXPLICIT_USER_SELECTED_APFS_DIRECTORY','operation':'TRIM_THEN_T04'}
 MARKER='CLEANUP_WORKSPACE.json'
 _binding=None
 

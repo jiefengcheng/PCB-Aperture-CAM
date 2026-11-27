@@ -18,9 +18,10 @@ def source_catalogue(directory,store,scene,rows,admission,roles,rule,loader):
              role_table_sha256=rule['role_table_sha256'],
              implementation_sha256=digest(b''.join(p.read_bytes()for p in dependencies)),
              shapely_version=shapely.__version__,geos_version=shapely.geos_version_string)
-    from .pipeline import ROOT
+    from src.cleanup_runtime import workspace_root
     directory=Path(directory)
-    if not directory.resolve().is_relative_to((ROOT/'out/lacie_work').resolve()):
+    work=workspace_root()
+    if not directory.resolve().is_relative_to(work) or directory.resolve()==work:
         raise ValueError('T04_DURABLE_ARTIFACT_REQUIRES_LACIE')
     root=directory/digest(canonical(key));hit=(root/'BINDING.json').exists()
     seed=Path(rule['group_cache']);imported=False
@@ -40,9 +41,10 @@ def source_catalogue(directory,store,scene,rows,admission,roles,rule,loader):
 
 def retain(directory,key,name,build):
     """Publish a binding last; an incomplete or altered artifact is an error."""
-    from .pipeline import ROOT
+    from src.cleanup_runtime import workspace_root
     directory=Path(directory)
-    if not directory.resolve().is_relative_to((ROOT/'out/lacie_work').resolve()):
+    work=workspace_root()
+    if not directory.resolve().is_relative_to(work) or directory.resolve()==work:
         raise ValueError('T04_DURABLE_ARTIFACT_REQUIRES_LACIE')
     root=directory/digest(canonical(key));header=root/'BINDING.json'
     hit=header.exists()

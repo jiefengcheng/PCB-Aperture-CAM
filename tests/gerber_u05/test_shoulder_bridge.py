@@ -491,7 +491,7 @@ def test_changed_miter_section_refreshes_in_its_qualified_frame():
 def test_invalid_generated_source_is_rejected_with_exact_evidence(monkeypatch):
     from shapely.geometry import MultiPolygon
     import src.gerber_u05.shoulder_bridge as module
-    bad=MultiPolygon([box(-.2,-.02,.2,.02),box(-.1,-.01,.1,.01)])
+    bad=MultiPolygon([box(-.2,-.02,.2,.02),box(-.1,-.01,.3,.01)])
     assert not bad.is_valid
     raw_union=module.unary_union
     fired=[]
@@ -511,4 +511,22 @@ def test_invalid_generated_source_is_rejected_with_exact_evidence(monkeypatch):
     # The real bounded regression also covers this GEOS nested-shell case.
     assert fired and rejected
     assert rejected[0]['proposed_wkb_hex']==bad.wkb_hex.lower()
+    assert floor['s'].difference(after['s']).area<1e-12
+
+
+def test_failed_optional_source_overlay_retains_widening_and_continues(monkeypatch):
+    from shapely.errors import GEOSException
+    import src.gerber_u05.shoulder_bridge as module
+    rows,paths,before,floor,caps=straight();saved=before['s'].wkb
+    raw_union=module.unary_union;fired=[]
+    def failed_materialization(shapes):
+        shapes=list(shapes)
+        if len(shapes)==3 and not fired and any(g.equals(floor['s'])for g in shapes):
+            fired.append(True);raise GEOSException('controlled optional non-noded intersection')
+        return raw_union(shapes)
+    monkeypatch.setattr(module,'unary_union',failed_materialization)
+    after,_,_,report=run(rows,paths,before,floor,caps,prepare=prepare)
+    rejected=[v for r in report['reports']for v in r.get('rejected_generated_overlays',[])]
+    assert fired and rejected and 'controlled optional' in rejected[0]['kernel_error']
+    assert before['s'].wkb==saved and after['s'].area>=before['s'].area-1e-12
     assert floor['s'].difference(after['s']).area<1e-12

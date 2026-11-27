@@ -85,3 +85,43 @@ def test_empty_trial_has_no_candidates_without_losing_material():
     assert scene.query(Polygon())==()
     assert len(scene)==1
     assert scene.query(box(-1,-1,2,2))==('a',)
+
+
+def test_original_floor_bounds_and_only_missing_copper_stay_reserved():
+    source=box(0,0,2,1);skin=box(1,0,2.2,1)
+    floors={'trace':source};scene=ResidualScene({'trace':skin},source_floors=floors)
+    assert scene.query(box(.1,.1,.2,.2))==('trace',)
+    first=scene.reservation_rows('trace');second=scene.reservation_rows('trace')
+    assert first[0][1]is skin and first[1][1]is second[1][1]
+    assert first[1][1].equals(source.difference(skin))
+    assert first[0][1].intersection(first[1][1]).area==0
+    assert scene['trace']is skin
+    scene['trace']=source
+    assert scene.reservation_rows('trace')==[('trace',source)]
+    scene['trace']=Polygon()
+    assert scene.query(box(.1,.1,.2,.2))==('trace',)
+    assert scene.reservation_rows('trace')[0][1]is source
+    del scene['trace']
+    assert 'trace'in scene and scene.query(box(.1,.1,.2,.2))==('trace',)
+    assert floors=={'trace':source}
+
+
+def test_source_floor_capacity_failure_never_builds_a_replacement_tree():
+    scene=ResidualScene({'trace':box(1,0,2,1)},source_floors={'trace':box(0,0,2,1)},index_bytes=0)
+    with pytest.raises(ValueError,match='T04_SOURCE_FLOOR_RESERVATION_CAPACITY'):
+        scene.query(box(-1,-1,3,3))
+
+
+def test_all_captured_end_cap_guard_failures_are_reserved_before_growth():
+    import json
+    from pathlib import Path
+    from shapely import from_wkb
+    from src.gerber_u05.normalized_additions import verify_patch
+    raw=json.loads((Path(__file__).parent/'fixtures/l35_source_floor_reservations.json').read_text())
+    assert len(raw['cases'])==9
+    for case in raw['cases']:
+        delta,profile,floor=[from_wkb(bytes.fromhex(case[k]))for k in ('delta','working_profile','source_floor')]
+        scene=ResidualScene({'neighbor':profile},source_floors={'neighbor':floor})
+        assert verify_patch(delta,[dict(id='neighbor',geometry=profile)])['passed']
+        assert not verify_patch(delta,[dict(id=k,geometry=g)for k,g in scene.reservation_rows('neighbor')])['passed']
+        assert scene['neighbor'].wkb==profile.wkb

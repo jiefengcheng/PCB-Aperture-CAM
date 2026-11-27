@@ -16,6 +16,16 @@ def partition(before, after):
             ('removed', before.difference(after))]
 
 
+def area_parts(shape):
+    """Borrow every positive-area display face; overlay wires are not copper."""
+    if shape.is_empty:return
+    if shape.geom_type=='Polygon':
+        if shape.area>0:yield shape
+    elif shape.geom_type in ('MultiPolygon','GeometryCollection'):
+        for part in shape.geoms:yield from area_parts(part)
+    elif shape.area!=0:raise ValueError('BOARD_GROWTH_UNSUPPORTED_AREA_GEOMETRY')
+
+
 def publish_board_growth(root):
     root = Path(root)
     config = load_connection(root)
@@ -57,8 +67,7 @@ def publish_board_growth(root):
     parts, areas, display_error = [], {}, 0.
     for kind, shape in partition(before, after):
         areas[kind] = shape.area
-        polygons = [] if shape.is_empty else [shape] if shape.geom_type == 'Polygon' else list(shape.geoms)
-        for polygon in polygons:
+        for polygon in area_parts(shape):
             if polygon.geom_type != 'Polygon' or polygon.is_empty or polygon.area == 0:
                 continue
             physical_area = polygon.area

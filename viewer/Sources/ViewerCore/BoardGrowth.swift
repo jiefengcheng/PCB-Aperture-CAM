@@ -102,7 +102,7 @@ public enum BoardGrowthReader {
                   (t04.maximumTransitionAngleDegrees == nil || (t04.maximumTransitionAngleDegrees!.isFinite && t04.maximumTransitionAngleDegrees! > 0 && t04.maximumTransitionAngleDegrees! < 45)),
                   t04.summary.count <= 1000, t04.note.count <= 2000,
                   t04.findings.count <= 20000, Set(t04.findings.map(\.id)).count == t04.findings.count,
-                  t04.findings.allSatisfy({["corner","endpoint","eligibility","continuity","transition","terminal","marked"].contains($0.kind) && $0.bounds.valid &&
+                  t04.findings.allSatisfy({["corner","endpoint","pocket","eligibility","continuity","transition","terminal","marked"].contains($0.kind) && $0.bounds.valid &&
                       $0.description.count <= 2000 && $0.reasons.count <= 50 &&
                       $0.sourceIDs.allSatisfy({$0.hasPrefix(value.sourceSHA256+":")}) &&
                       ($0.missingSectionMM == nil || ($0.missingSectionMM!.isFinite && $0.missingSectionMM! >= 0))}),
@@ -174,7 +174,11 @@ public enum BoardGrowthReader {
         }
         return value
     }
-    public static func read(_ url: URL, scene: Snapshot, digest: String) throws -> BoardGrowth {
-        try decode(SnapshotReader.limitedData(url, limit: 90 * 1024 * 1024), scene: scene, digest: digest)
+    public static func read(_ url: URL, scene: Snapshot, digest: String, expectedFileSHA256: String? = nil) throws -> BoardGrowth {
+        let data = try SnapshotReader.limitedData(url, limit: 90 * 1024 * 1024)
+        if let expectedFileSHA256, SnapshotReader.digest(data) != expectedFileSHA256 {
+            throw ABIError.invalid("Linked phase presentation changed")
+        }
+        return try decode(data, scene: scene, digest: digest)
     }
 }

@@ -71,19 +71,23 @@ class SourceParser(CompletionParser):
 def parse_source(raw):
     normalized,tokens,proof=normalize(raw);g=GerberFile();p=SourceParser(g,tokens,raw);p.parse(normalized,filename='source:'+digest(raw))
     if not p.eof_found or p.current_region is not None or p.block_frame is not None:raise ValueError('INCOMPLETE_GERBER_SOURCE')
-    expected={
-        'MM_L46_ABSOLUTE':((4,6),'leading'),
-        'MM_L33_ABSOLUTE':((3,3),'leading'),
-    }.get(proof.get('source_format'),((3,5),'trailing'))
+    declared=re.fullmatch(r'MM_L([1-6])([1-6])_ABSOLUTE',proof.get('source_format',''))
+    expected=(((int(declared[1]),int(declared[2])),'leading')
+              if declared else((3,5),'trailing'))
     if p.file_settings.unit!=MM or p.file_settings.number_format!=expected[0]or p.file_settings.zeros!=expected[1]or p.file_settings.notation!='absolute':raise ValueError('SOURCE_FORMAT_DRIFT')
     if p.inventory['MO']!=1 or p.inventory['FS']!=1:raise ValueError('AMBIGUOUS_FORMAT_OR_UNITS')
     if set(p.spans)!=set(range(len(g.objects))):raise ValueError('SOURCE_OBJECT_SPAN_COVERAGE')
-    if proof.get('source_format')=='MM_L33_ABSOLUTE':
-        # L33 arc endpoints were rounded on a 1 µm source grid. This
-        # allowance applies only to source arc recognition.
+    grid=recognition_arc_grid(proof)
+    if grid!=.00001:
+        # Recognition follows the declared source grid. Existing L46's
+        # separately qualified legacy recognition bound remains unchanged.
         for obj in g.objects:
-            obj.u05_source_arc_grid_mm=.001
+            obj.u05_source_arc_grid_mm=grid
     return g,p,proof
+
+def recognition_arc_grid(proof):
+    return (.00001 if proof.get('source_format')=='MM_L46_ABSOLUTE'
+            else proof['coordinate_grid_mm'])
 
 def source_arc_grid(obj):
     return getattr(obj,'u05_source_arc_grid_mm',.00001)
@@ -137,7 +141,7 @@ def qualify(raw,out):
     image=ordered(items)
     if not image.is_valid or image.is_empty:raise ValueError('COMPOSED_IMAGE_INVALID_OR_EMPTY')
     body=to_wkb(image);(out/'original_image.wkb').write_bytes(body)
-    return dict(schema='gerber-only-source-qualification/1',status='SOURCE_GEOMETRY_ONLY_NO_U05_EXECUTION',source_sha256=digest(raw),source_objects=len(records),records=records,composition_sha256=digest(body),composition_area_mm2=image.area,coordinate_oracle=proof,max_arc_radius_residual_mm=max_residual,arc_coordinate_bound_mm=2*math.sqrt(2)*(.001 if proof.get('source_format')=='MM_L33_ABSOLUTE'else .00001),polygon_sag_mm=SAG,source_file_untouched=True,owner='PENDING_USER',electrical_manufacturing='NOT_ESTABLISHED')
+    return dict(schema='gerber-only-source-qualification/1',status='SOURCE_GEOMETRY_ONLY_NO_U05_EXECUTION',source_sha256=digest(raw),source_objects=len(records),records=records,composition_sha256=digest(body),composition_area_mm2=image.area,coordinate_oracle=proof,max_arc_radius_residual_mm=max_residual,arc_coordinate_bound_mm=2*math.sqrt(2)*recognition_arc_grid(proof),polygon_sag_mm=SAG,source_file_untouched=True,owner='PENDING_USER',electrical_manufacturing='NOT_ESTABLISHED')
 
 # Millimetre leading-zero formats preserve the source bytes and spans.
 # Empty coordinate words are only admitted by the separate legacy T35 profile.
@@ -146,12 +150,14 @@ def decode_l46(spelling):
  if not digits or not digits.isdigit()or len(digits)>10:raise ValueError('L46_INTEGER_COORDINATE_REQUIRED')
  return sign*int(digits)
 
-def normalize_leading(raw, *, coarse=False):
+def normalize_leading(raw, *, coarse=False, number_format=None):
  text=raw.decode('ascii')
- header='%FSLAX33Y33*%' if coarse else '%FSLAX46Y46*%'
- max_digits=6 if coarse else 10
+ integer,fraction=number_format or((3,3)if coarse else(4,6))
+ header=f'%FSLAX{integer}{fraction}Y{integer}{fraction}*%'
+ max_digits=integer+fraction
  if text.count(header)!=1 or text.count('%MOMM*%')!=1:
-  raise ValueError('GERBER_ONLY_L33_PROFILE_REQUIRES_MM_ABSOLUTE' if coarse else 'GERBER_ONLY_L46_PROFILE_REQUIRES_MM_ABSOLUTE')
+  raise ValueError('GERBER_ONLY_DECLARED_LEADING_PROFILE_REQUIRES_MM_ABSOLUTE'if number_format is not None else
+   'GERBER_ONLY_L33_PROFILE_REQUIRES_MM_ABSOLUTE' if coarse else 'GERBER_ONLY_L46_PROFILE_REQUIRES_MM_ABSOLUTE')
  if '%IPNEG' in text or text.count('%IPPOS*%')>1:raise ValueError('POSITIVE_IMAGE_POLARITY_REQUIRED')
  tokens=[];output=[];coordinates=0;end=0
  for m in TOKEN.finditer(text):
@@ -163,18 +169,25 @@ def normalize_leading(raw, *, coarse=False):
    fields=FIELD.findall(original)
    for _,spelling in fields:
     if coarse and len(spelling.lstrip('+-'))>max_digits:raise ValueError('L33_COORDINATE_WORD_TOO_LONG')
-    decode_l46(spelling)
+    # In leading suppression, digits are already source-grid integers.
+    # Never right-pad them as the separate trailing-zero profile does.
+    digits=spelling.lstrip('+-')
+    if not digits or not digits.isdigit()or len(digits)>max_digits:
+     raise ValueError('L46_INTEGER_COORDINATE_REQUIRED'if number_format is None else'DECLARED_LEADING_INTEGER_COORDINATE_REQUIRED')
+    int(spelling)
    coordinates+=len(fields)
   start=m.start()+len(original)-len(original.lstrip());stop=start+len(trim)
   output.append(original);tokens.append(dict(command=trim.strip('%').rstrip('*'),span=[start,stop]))
  if text[end:].strip():raise ValueError('TRAILING_UNCONSUMED_SOURCE')
  return ''.join(output),tokens,dict(coordinate_fields=coordinates,legacy_empty_zero_fields=0,
-  zero_semantics='STANDARD_LEADING_ZERO_SUPPRESSION',coordinate_grid_mm=.001 if coarse else .000001,
-  source_bytes_changed=False,source_format='MM_L33_ABSOLUTE' if coarse else 'MM_L46_ABSOLUTE',
-  arc_semantics='Original declared source grid bounds retained source arcs only' if coarse else 'Existing explicit legacy-source arc recognition bound retained; independent of clearance and file quantization')
+  zero_semantics='STANDARD_LEADING_ZERO_SUPPRESSION',coordinate_grid_mm=10.**-fraction,
+  source_bytes_changed=False,source_format=f'MM_L{integer}{fraction}_ABSOLUTE',
+  arc_semantics='Original declared source grid bounds retained source arcs only' if coarse or number_format is not None else 'Existing explicit legacy-source arc recognition bound retained; independent of clearance and file quantization')
 
 _normalize_t35=normalize
 def normalize(raw):
  if b'%FSLAX33Y33*%' in raw:return normalize_leading(raw,coarse=True)
  if b'%FSLAX46Y46*%' in raw:return normalize_leading(raw)
+ declared=re.search(rb'%FSLAX([1-6])([1-6])Y\1\2\*%',raw)
+ if declared:return normalize_leading(raw,number_format=(int(declared[1]),int(declared[2])))
  return _normalize_t35(raw)

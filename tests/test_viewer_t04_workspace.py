@@ -26,12 +26,43 @@ def test_t04_partition_uses_cleaned_input_and_does_not_relabel_inherited_trims()
     assert value['inputSceneSHA256']=='b'*64 and value['connectionChecks']==5
 
 
+def test_touching_display_images_have_no_copper_in_their_shared_wire():
+    stage,report=fixture()
+    value=build(stage,report,box(0,0,1,1),box(1,0,2,1),
+        layer='F.Cu',source_sha='a'*64,input_sha='b'*64)
+    assert {p['kind']for p in value['parts']}=={'added','removed'}
+    assert value['addedAreaMM2']==value['removedAreaMM2']==1
+
+
+def test_display_area_parts_retain_tiny_faces_and_ignore_only_zero_area():
+    from shapely.geometry import GeometryCollection,LineString,Point
+    from src.viewer_abi.board_growth import area_parts
+    tiny=box(0,0,1e-10,1e-10);large=box(1,1,2,2)
+    mixed=GeometryCollection([LineString([(0,0),(1,0)]),
+        GeometryCollection([tiny,Point(0,0)]),large])
+    assert [to_wkb(g)for g in area_parts(mixed)]==[to_wkb(tiny),to_wkb(large)]
+
+
 def test_saved_corner_and_endpoint_findings_remain_distinct_and_explained():
     stage,_=fixture();items=findings(stage)
     assert [f['kind']for f in items]==['corner','endpoint']
     assert 'Too little trace length' in items[0]['description']
     assert items[1]['missingSectionMM']==.001
     assert len({f['id']for f in items})==2
+
+
+def test_completed_review_result_keeps_endpoint_corner_and_unfilled_pocket_places():
+    stage,report=fixture()
+    reviews=[dict(kind='corner',reason='FINISHED_BOUNDARY_HAS_SHARP_POINT',point_mm=[4.,5.],source_ids=['s']),
+             dict(kind='unfilled_pocket',reason='OUTSIDE_ADMITTED_JOINT_CAPS',bounds_mm=[6.,7.,6.01,7.01])]
+    stage['hybrid_components']['output_review_findings']=reviews
+    report.update(completion='COMPLETED_WITH_REVIEW_FINDINGS',review_findings=reviews)
+    data=build(stage,report,box(0,0,1,1),box(0,0,1.1,1),layer='F.Cu',source_sha='a'*64,input_sha='b'*64)
+    assert data['completion']=='COMPLETED_WITH_REVIEW_FINDINGS'
+    assert 'completed with review findings'in data['summary']
+    assert [f['kind']for f in data['findings']]==['corner','endpoint','corner','pocket']
+    assert all(f['severity']=='REVIEW'for f in data['findings'])
+    assert data['findings'][1]['missingSectionMM']==.001
 
 
 def test_transition_navigation_uses_saved_angle_and_explicit_growth_withdrawal():

@@ -45,7 +45,7 @@ def findings(stage):
         'NO_LARGER_EXPOSED_CORNER':'The saved constructor found no larger exposed corner it could extend.',
         'CORNER_TRANSITION_TOO_SHORT':'Too little trace length was available for the allowed transition.',
         'CORNER_TRANSITION_REACH_OUTLIER':'The proposed transition exceeded the allowed local reach.',
-        'FROZEN_END_SECTION_NOT_REALIZED_BY_EMITTED_ROUTE':'The saved route does not fully reach its required endpoint width.'}
+        'FROZEN_END_SECTION_NOT_REALIZED_BY_EMITTED_ROUTE':'The emitted route differs from its optional endpoint-width target. Review the joint shape; this finding does not establish a disconnection.'}
     records=[('corner',r)for r in (h.get('corner_smoothing')or{}).get('reports',[])if r['status']=='KEEP_UNRESOLVED']
     records += [('endpoint',r)for r in h.get('frozen_endpoint_obligations',{}).get('failures',[])]
     for kind,r in records:
@@ -55,7 +55,7 @@ def findings(stage):
         result.append(dict(id='t04-finding:'+str(len(result)),kind=kind,routeID=r['route_id'],sourceIDs=sources,
             bounds=dict(x=point[0]-.12,y=point[1]-.12,width=.24,height=.24),
             reasons=codes,description=' '.join(explanations.get(c,c.replace('_',' ').capitalize())for c in codes) or 'Unresolved in the saved result.',
-            missingSectionMM=r.get('missing_section_length_mm')))
+            missingSectionMM=r.get('missing_section_length_mm'),severity='REVIEW'))
     transition= h.get('boundary_transitions') or {}
     withdrawal_reasons={s:r['reason']for r in transition.get('withdrawn_growth',[])for s in r['source_ids']}
     for record in transition.get('reports',[]):
@@ -101,6 +101,17 @@ def findings(stage):
                 description='Deferred to teardrop. This shoulder lies in an exact source-qualified pad attachment window owned by T05. '
                 'T04 keeps admitted trace growth and original copper. T05 must complete the junction and verify the saved obligation; '
                 'it stays pending until actual teardrop copper resolves it. This is not a completed final-board shape.'))
+    for record in h.get('output_review_findings',[]):
+        if record['kind']=='endpoint':continue # already bound to its exact saved route above
+        if record['kind']=='unfilled_pocket':
+            x,y,xx,yy=record['bounds_mm'];box=dict(x=x-.05,y=y-.05,width=xx-x+.1,height=yy-y+.1)
+            text='Unfilled enclosed void. The filling proposal was declined; no rejected filling copper was emitted. Review this finishing feature.'
+        else:
+            x,y=record['point_mm'];box=dict(x=x-.12,y=y-.12,width=.24,height=.24)
+            text='A sharp point remains after nearby finishing repairs were combined. This is a review finding; output validity checks remain separate.'
+        result.append(dict(id='t04-output-review:'+str(len(result)),kind='corner'if record['kind']=='corner'else'pocket',
+            routeID=record.get('route_id','Local finishing'),sourceIDs=record.get('source_ids',[]),bounds=box,
+            reasons=[record['reason']],missingSectionMM=None,description=text,severity='REVIEW'))
     return result
 
 
@@ -172,11 +183,11 @@ def review_places(stage, inputs):
 
 
 def build(stage, report, before, after, *, layer, source_sha, input_sha,input_shapes=None):
-    from .board_growth import partition
+    from .board_growth import partition,area_parts
     parts=[];areas={};error=0.
     for kind,g in partition(before,after):
         areas[kind]=g.area
-        for polygon in ([]if g.is_empty else[g]if g.geom_type=='Polygon'else g.geoms):
+        for polygon in area_parts(g):
             if polygon.geom_type!='Polygon' or polygon.area==0:continue
             physical=polygon.area;shown,e=display(polygon);error=max(error,e)
             parts.append(dict(id='growth:t04:'+str(len(parts)),sourceID=source_sha+':display-growth:t04:'+str(len(parts)),
@@ -191,7 +202,9 @@ def build(stage, report, before, after, *, layer, source_sha, input_sha,input_sh
         nominalCutoffMM=policy.get('maximum_eligible_source_width_mm',.25),maximumFactor=settings.get('maximum_factor',1.5),
         maximumWidthIncreaseMM=settings.get('maximum_total_width_increase_mm',.03),
         maximumTransitionAngleDegrees=settings.get('boundary_transitions',{}).get('maximum_transition_angle_degrees'),
-        summary='T04 only · cleaned input compared with saved T04 result · grey copper',
+        completion=report.get('completion','COMPLETED'),reviewFindingCount=len(report.get('review_findings',[])),
+        summary=('T04 · completed with review findings · grey copper'if report.get('completion')=='COMPLETED_WITH_REVIEW_FINDINGS'else
+                 'T04 only · cleaned input compared with saved T04 result · grey copper'),
         note='Saved diagnostic result. Findings and controls only navigate prepared display data; they do not execute treatment or change acceptance.')
 
 
@@ -224,7 +237,7 @@ def publish(root,*,create=False):
     inputs,input_sha=saved_input(report,event['report']['path'],originals)
     outline=report.get('board_outline')
     if outline is not None:
-        if (not outline['passed']or outline['input_scene_sha256']!=input_sha or
+        if (not outline.get('output_valid',outline['passed'])or outline['input_scene_sha256']!=input_sha or
                 outline['output_scene_sha256']!=report['assembly']['scene_ref']['sha256']):
             raise ValueError('T04_VIEW_BOARD_OUTLINE_BINDING_CHANGED')
         folder=Path(event['report']['path']).parent/'runtime/artifacts'

@@ -5,10 +5,67 @@ copper worker, seals its completed output, then starts the existing T04 worker
 with that exact input. It contains no geometry treatment. The phases keep their
 own job directories, settings, reports, failure evidence and viewer heads.
 All engineering storage stays on the prepared LaCie workspace.
+The standalone package uses its existing explicitly selected, volume-verified
+APFS work folder instead; it never selects an implicit fallback.
+
+## Viewer execution
+
+In the trimming workspace, **Open GBR · Trim → T04…** opens the native file
+picker. Selecting a supported source starts this same coordinator once, with
+`--prepare-display`. It runs trimming and T04 in separate worker processes,
+then prepares both saved views. The current view stays visible while processing;
+the status reports the active phase. A failed job retains its evidence and the
+current view. No later stage runs after a failed predecessor.
+
+On success, the window shows the new trimming result. **Open T04 result →**
+and **← Back to trimming** switch between its saved phase workspaces. The file
+picker button remains available in trimming for another source; it is hidden in
+the dedicated T04 workspace. Navigation and saved view controls never execute
+treatment. A new pipeline clears the preceding pair's camera/selection cache.
+
+Duplicate completed executions reopen authenticated saved results; failed or
+interrupted attempts remain blocked without automatic retry or resume. T04 uses
+the existing eligibility, width, shoulder and verification policies. This UI
+connector grants no new source support or manufacturing acceptance.
+
+Standalone CLI equivalent:
+
+```sh
+"./Run Trimming.command" --workspace /ABSOLUTE/APFS_WORK run-pipeline \
+  --source /ABSOLUTE/source.gbr --prepare-display
+```
 
 The interface contract is `contracts/agent_abi/copper_pipeline_v1.json`.
 The seal format is `pcb-copper-phase-seal/2`, implemented in
 `src/copper_phase_seal.py`. Earlier development seals of format 1 are not accepted.
+
+## Errors and finishing findings — 2026-11-26
+
+Stopping denotes erroneous output or missing validity evidence. The classifier
+in `src/gerber_u05/output_disposition.py` separates that from finishing targets:
+known optional endpoint-section mismatches and remaining sharp points are
+review findings. A declined source-baseline pocket-filling proposal is also
+retained for review when the existing receipts identify it and prove that
+original holes and constructed groups were preserved; the rejected filling
+copper is never emitted. Unknown failures remain errors.
+
+Connection, foreign-copper spacing, source/protected-copper preservation,
+nonnegative growth budgets, newly introduced bridge pockets, source custody,
+kernel/resource failures and missing evidence still stop. The assembled checks
+and sealed handoffs remain required. No failed check is rewritten to PASS.
+
+The execution protocol keeps `status: COMPLETED`, with a separate `completion`
+of `COMPLETED_WITH_REVIEW_FINDINGS` when applicable. The T04 result, phase seal,
+coordinator result and saved grey presentation retain this outcome and the
+review places. `output_valid` records the scoped validity checks; it does not
+grant electrical/manufacturing acceptance, export authority or completed T05.
+Historical failed jobs remain unchanged and cannot be resumed or resealed.
+
+Positive growth excludes unchanged copper from the authenticated trimmed entry,
+as well as fixed reference construction. The already assembled entry-owner
+floor is reused for this distinction, without a second union/index, geometry
+rounding, area exemption or spacing change. Actual new copper keeps the same
+guard. Operand iteration is ordered for reproducible numerical witnesses.
 
 ## Commands
 
@@ -120,9 +177,31 @@ and assembled-outline checks remain active.
 
 ## Separate grey viewer workspaces
 
+Before large-copper preparation, the cleanup producer calls the existing
+`gerber_u05.source_assembly.reconstruct` confirmed outer-enclosure removal.
+It keeps `original.gbr` byte-identical and prepares `source.gbr` separately.
+The source binding carries the original input and exact retained-atom proof
+as authenticated artifacts. Only confirmed enclosing source strokes are
+removed; open or inner loops remain. T04 receives the assembled source through
+the usual phase seal. Pipeline locking/duplicate identity stays bound to the
+original input; the result and viewer identify the assembled working source.
+Existing historical cleanup jobs without this preprocessing remain readable.
+
 ```sh
 .venv/bin/python -B tools/run_copper_pipeline.py prepare-display --job '/ABSOLUTE/JOINED_JOB'
 ```
+
+If a display preparation failed, preserve it and prepare a separate derivative
+after correcting the display implementation:
+
+```sh
+.venv/bin/python -B tools/run_copper_pipeline.py prepare-display --job '/ABSOLUTE/JOINED_JOB' --output '/ABSOLUTE/FRESH_DISPLAY_DIRECTORY'
+```
+
+The destination must be new and inside the verified workspace. The completed
+phase seals are authenticated again; neither worker is executed. The failed
+presentation and treatment receipts remain unchanged. Zero-area overlay wires
+are omitted from display copper; every positive-area polygon is retained.
 
 This saved-only operation returns two different `workspaces` paths. Cleanup keeps
 its producer's existing dedicated large-copper view. T04 gets a new dedicated
@@ -131,7 +210,21 @@ it does not include earlier trimming in its growth difference. The T04 view uses
 saved assembled images when available rather than building an extra raw-source
 board comparison. Source-level identities/inspection remain available.
 
-Open the returned paths independently:
+The same window can navigate between these saved workspaces. After display
+preparation, the cleanup window's centre button reads **Open T04 result →**.
+A click loads only its linked, completed T04 result; **← Back to trimming**
+returns to cleanup. Each phase retains its camera, saved-place selection and
+filters. Neither phase opens automatically and neither button executes treatment.
+The two workspace directories and phase seals remain separate.
+
+`phase-navigation.json` in each workspace binds the pair to the sealed pipeline
+result, source SHA-256, snapshot digests and presentation-file digests. Native
+navigation reads saved display bytes once and validates the target pins, source
+and phase kind before changing the window. A missing or changed target retains
+the current display and reports the error. No Python worker, clearance service,
+geometry preparation or full-board verification runs when switching.
+
+The returned paths can also be opened independently:
 
 ```sh
 tools/Start_Gerber_Viewer.command --workspace '/RETURNED/large_copper/workspace'

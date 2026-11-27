@@ -72,6 +72,14 @@ def verify_dependencies(plans,local,report,before,after,original,angle):
             if not remaining and record['status']=='UNRESOLVED':
                 record['status']='RESOLVED_BY_COUPLED_BRIDGE'
                 record['superseded_constructor_reason']=record.pop('reason',None)
+            elif (remaining and record['status']=='RESOLVED_BY_COUPLED_BRIDGE'and
+                    record.get('baseline_preserved')is True and
+                    record.get('added_area_mm2')==record.get('removed_area_mm2')==0.):
+                # A neighboring edit did not finish this pre-existing feature.
+                # No correction was applied here; retain it as unresolved,
+                # rather than inventing a failed material-changing repair.
+                record.update(status='UNRESOLVED',reason='PREEXISTING_SHOULDER_REMAINS',
+                    superseded_resolution='RESOLVED_BY_COUPLED_BRIDGE')
             elif remaining and record['status']in('BRIDGED','RESOLVED_BY_COUPLED_BRIDGE'):
                 record['status']='FAILED_FINAL_DEPENDENCY_CHECK';partial+=1
     report.update(final_dependency_checks=dict(passed=partial==0,groups=checks),partial=partial,

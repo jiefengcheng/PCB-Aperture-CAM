@@ -21,6 +21,15 @@ final class BoardGrowthTests: XCTestCase {
             _ = try BoardGrowthReader.decode(envelope(v),scene:scene,digest:sha)
         }
         XCTAssertNoThrow(try validate(value))
+        let testRoot = try XCTUnwrap(ProcessInfo.processInfo.environment["VIEWER_TEST_ROOT"])
+        let file = URL(fileURLWithPath: testRoot).appendingPathComponent(UUID().uuidString + ".json")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let bytes = try envelope(value)
+        try bytes.write(to: file)
+        XCTAssertNoThrow(try BoardGrowthReader.read(file, scene: scene, digest: sha,
+            expectedFileSHA256: SnapshotReader.digest(bytes)))
+        XCTAssertThrowsError(try BoardGrowthReader.read(file, scene: scene, digest: sha,
+            expectedFileSHA256: String(repeating: "0", count: 64)))
         let source: [String:Any] = ["sourceID":scene.sources[0].sha256+":source", "ordinal":1,
             "originalAreaMM2":1.0,"protrudingAreaMM2":0.2,"areaFraction":0.2,
             "rule":"SHALLOW_SOURCE_EDGE","contacts":"Saved bounded contact checks"]
@@ -62,6 +71,9 @@ final class BoardGrowthTests: XCTestCase {
             "displayHausdorffMM":0,"findings":[finding],"grownRoutes":1,"keptRoutes":0,"connectionChecks":1,
             "nominalCutoffMM":0.25,"maximumFactor":1.5,"maximumWidthIncreaseMM":0.03,"summary":"T04 only","note":"Saved data only"]
         value["t04"]=t04;XCTAssertNoThrow(try validate(value))
+        finding["kind"]="pocket";finding["description"]="Saved unfilled pocket review finding"
+        t04["findings"]=[finding];value["t04"]=t04;XCTAssertNoThrow(try validate(value))
+        finding["kind"]="endpoint";t04["findings"]=[finding]
         var shoulder:[String:Any] = ["beforeWkbSHA256":sha,"afterWkbSHA256":sha,
             "parts":[t04Part],"bounds":["x":0,"y":0,"width":4,"height":2],
             "addedAreaMM2":0,"removedAreaMM2":0,"displayHausdorffMM":0,

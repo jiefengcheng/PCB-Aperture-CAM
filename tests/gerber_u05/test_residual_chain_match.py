@@ -163,6 +163,39 @@ def test_chain_receipts_are_prepared_atomically(monkeypatch):
     assert all(to_wkb(material[s])==g for s,g in before.items())
 
 
+@pytest.mark.parametrize('points,reason',[
+    ([[0.,0.],[1.,0.],[.01,.1]],'RESIDUAL_MITER_OUTLIER'),
+    ([[0.,0.],[1.,0.],[.01,0.]],'RESIDUAL_REVERSAL_JOIN_UNSUPPORTED'),
+])
+def test_unsupported_chain_frame_keeps_prior_growth_and_decisions(points,reason):
+    from copy import deepcopy
+    core=LineString(points).buffer(.025);grown=LineString(points).buffer(.03)
+    rows={'s':dict(original_ref={},metadata=dict(route_points_mm=points,
+        minimum_caliper_mm=.05,aperture_family=['C',.05],route_kind='segment'))}
+    material={'s':grown};reports=[dict(source_id='s',selected_factor=1.2)]
+    before=deepcopy(reports)
+    accepted,q=run(rows,material,{'r':['s']},reports,
+        {('r',tuple(points[0])):section(0.,.075)},dict(s=.075),set(),
+        lambda s:('own',),source_cores={'s':core})
+    assert not accepted and q['constructed_sources']==0
+    assert q['reports'][0]['status']=='KEEP_PRECEDING_RESULT; CONSTRUCTION_LIMIT'
+    assert q['reports'][0]['reason']==reason
+    assert material['s']is grown and reports==before
+    assert q['candidate_geometry_verifications']==q['input_rail_distance_calls']==0
+
+
+def test_unexpected_frame_error_still_propagates(monkeypatch):
+    from src.gerber_u05 import residual_chain_match as module
+    rows,cores,material=fixture()
+    def unexpected(*args,**kwargs):raise ValueError('DELIBERATE_BAD_INPUT')
+    monkeypatch.setattr(module,'frame',unexpected)
+    with pytest.raises(ValueError,match='DELIBERATE_BAD_INPUT'):
+        run(rows,material,{'route':['a','b']},
+            [dict(source_id=s,selected_factor=1.2)for s in rows],
+            {('route',(0.,0.)):section(0.,.075)},dict(a=.075,b=.075),
+            set(),lambda s:('own',),source_cores=cores)
+
+
 def test_last_source_restriction_clamps_only_roundoff_at_true_chain_end():
     from src.gerber_u05.residual_chain_match import local_recipe
     from src.gerber_u05.ribbon_profile import match_ends

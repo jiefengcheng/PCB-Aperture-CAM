@@ -344,8 +344,11 @@ def reject_enclosing_additions(before,patches):
 
 
 def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),maximum_reach_mm=.11):
-    started=perf_counter();covered=set(covered);ids=sorted(s for s,g in material.items()if not g.is_empty)
-    tree=STRtree([material[s]for s in ids]);nodes=defaultdict(list);patches=[];reports=[]
+    started=perf_counter();covered=set(covered)
+    reservations=[(s,identity,g)for s in sorted(material)for identity,g in
+        (material.reservation_rows(s)if hasattr(material,'reservation_rows')else[(s,material[s])])if not g.is_empty]
+    ids=[s for s,_,_ in reservations];reservation_ids=[identity for _,identity,_ in reservations];shapes=[g for _,_,g in reservations]
+    tree=STRtree(shapes);nodes=defaultdict(list);patches=[];reports=[]
     for route,sources in sorted(paths.items()):
         for s in sources:
             if s not in descriptors:continue
@@ -444,7 +447,7 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
                         recipe=dict(recipe,joint_receiver_source_ids=span_receive['joint_receiver_source_ids'],
                                     source_seams_are_not_taper_boundaries=True)
                     window=shape.envelope.buffer(GUARD+2*MARGIN);near=sorted(map(int,tree.query(window)))
-                    own=owner(target);same=[material[ids[i]].intersection(shape.envelope.buffer(ERROR_MM))for i in near if owner(ids[i])==own]
+                    own=owner(target);same=[shapes[i].intersection(shape.envelope.buffer(ERROR_MM))for i in near if owner(ids[i])==own]
                     same.extend(p['geometry'].intersection(shape.envelope.buffer(ERROR_MM))for p in patches if p['owner']==own and p['geometry'].envelope.intersects(window))
                     support=unary_union(same)
                     addition=polygonal(shape.difference(support))
@@ -452,7 +455,7 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
                         record.update(status='ALREADY_COVERED',recipe=recipe);break
                     if any(addition.intersects(d)for d in protected_domains):
                         record['attempts'].append(dict(length_mm=length,passed=False,reasons=['PROTECTED_PIN_DOMAIN']));continue
-                    fixed=[dict(id=ids[i],geometry=material[ids[i]])for i in near if owner(ids[i])!=own]
+                    fixed=[dict(id=reservation_ids[i],geometry=shapes[i])for i in near if owner(ids[i])!=own]
                     fixed.extend(dict(id='joint:'+str(i),geometry=p['geometry'])for i,p in enumerate(patches)if p['owner']!=own and p['geometry'].envelope.intersects(window))
                     check=verify_patch(addition,fixed)
                     record['attempts'].append(dict(length_mm=length,passed=check['passed'],failures=check['failures'],check=check))
@@ -530,7 +533,7 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
         near_skin=support.buffer(ERROR_MM,quad_segs=128)
         addition=polygonal(unary_union([g for g in parts(addition)if not g.difference(near_skin).is_empty]))
         if addition.is_empty:skin_reports.append(record);continue
-        fixed=[dict(id=ids[i],geometry=material[ids[i]])for i in near if owner(ids[i])!=own]
+        fixed=[dict(id=reservation_ids[i],geometry=shapes[i])for i in near if owner(ids[i])!=own]
         fixed.extend(dict(id='joint:'+str(i),geometry=p['geometry'])for i,p in enumerate(patches)if p['owner']!=own and p['geometry'].envelope.intersects(prep))
         check=verify_patch(addition,fixed)
         limited=False
@@ -580,7 +583,7 @@ def run(rows,paths,material,owner,descriptors,*,covered=(),protected_domains=(),
                 record['reason']='JOINT_POCKET_OUTSIDE_INPUT_CAPS';pocket_reports.append(record);continue
             target=adjacent[0]['source_id'];own=owner(target)
             window=hole.envelope.buffer(GUARD+2*MARGIN);near=sorted(map(int,tree.query(window)))
-            fixed=[dict(id=ids[i],geometry=material[ids[i]])for i in near if owner(ids[i])!=own]
+            fixed=[dict(id=reservation_ids[i],geometry=shapes[i])for i in near if owner(ids[i])!=own]
             fixed.extend(dict(id='joint:'+str(i),geometry=p['geometry'])for i,p in enumerate(patches)if p['owner']!=own and p['geometry'].envelope.intersects(window))
             if any(hole.intersects(d)for d in protected_domains):
                 record['reason']='PROTECTED_PIN_DOMAIN';pocket_reports.append(record);continue
